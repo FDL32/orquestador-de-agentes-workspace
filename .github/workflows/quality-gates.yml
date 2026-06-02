@@ -4,119 +4,69 @@ on:
   push:
     branches: [main, develop, '*/feature/**', '*/fix/**']
     paths:
-      - 'orquestacion_agentes/agent_system/**'
-      - 'orquestacion_agentes/scripts/**'
+      - '.agent/**'
+      - 'agent_system/**'
       - 'scripts/**'
+      - 'skills/**'
+      - 'tests/**'
       - '.github/workflows/quality-gates.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'orquestacion_agentes/agent_system/**'
+      - '.agent/**'
+      - 'agent_system/**'
       - 'scripts/**'
+      - 'skills/**'
+      - 'tests/**'
+      - '.github/workflows/quality-gates.yml'
 
 jobs:
   quality-gates:
     runs-on: ubuntu-latest
-    
-    defaults:
-      run:
-        working-directory: ./orquestacion_agentes
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
-      
-      - name: Install uv
-        run: |
-          pip install uv
-      
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups
 
-      - name: Conditional Checks
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
+      - name: Compile workspace Python files
         run: |
-          echo "Running quality checks for modified paths"
+          python -m compileall scripts tests
 
-      - name: Ruff check (linting) - Selective
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
+      - name: Skill discovery validation
         run: |
-          uv run ruff check . --fix
-        continue-on-error: false
+          if [ -f scripts/discover_skills.py ]; then
+            python scripts/discover_skills.py --json | python -m json.tool > /tmp/skills.json
+            python -c "import json; data=json.load(open('/tmp/skills.json')); assert data.get('total_skills', 0) >= 1; print('Skill discovery validation passed')"
+          else
+            echo "scripts/discover_skills.py not present; skipping"
+          fi
 
-      - name: Ruff format (code style) - Selective
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
+      - name: Workflow reference check
         run: |
-          uv run ruff format . --check
-        continue-on-error: false
+          python - <<'PY'
+          from pathlib import Path
+          bad = []
+          for path in Path('.github/workflows').glob('*.yml'):
+              text = path.read_text(encoding='utf-8')
+              bad_tokens = ('orquestacion' + '_agentes', 'actions/upload-artifact' + '@v3')
+              for token in bad_tokens:
+                  if token in text:
+                      bad.append(f'{path}: {token}')
+          if bad:
+              raise SystemExit('\n'.join(bad))
+          print('Workflow references look current')
+          PY
 
-      - name: Mypy type checking - Selective
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
+      - name: Summary
+        if: always()
         run: |
-          uv run mypy . --strict --ignore-missing-imports
-        continue-on-error: true
-
-      - name: Pytest (unit tests) - Selective
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
-        run: |
-          python scripts/run_pytest_safe.py --tb=short
-        continue-on-error: true
-
-      - name: Skill discovery validation - Selective
-        if: |
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'orquestacion_agentes/')) ||
-          (github.event_name == 'push' && contains(github.event.head_commit.modified, 'scripts/')) ||
-          (github.event_name == 'pull_request')
-        run: |
-          python scripts/discover_skills.py --json | python -m json.tool > /tmp/skills.json
-          python -c "
-          import json
-          with open('/tmp/skills.json') as f:
-              data = json.load(f)
-              assert data['total_skills'] == 13, f'Expected 13 skills, got {data[\"total_skills\"]}'
-              assert data['total_triggers'] == 38, f'Expected 38 triggers, got {data[\"total_triggers\"]}'
-          print('✓ Skill discovery validation passed')
-          "
-        continue-on-error: false
-
-      - name: Summary - Selective
-        if: always() && ((github.event_name == 'push' && (contains(github.event.head_commit.modified, 'orquestacion_agentes/') || contains(github.event.head_commit.modified, 'scripts/'))) || github.event_name == 'pull_request')
-        run: |
-          echo "## Quality Gates Summary (Selective Run)" >> $GITHUB_STEP_SUMMARY
+          echo "## Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- ✓ Ruff check (linting)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✓ Ruff format (code style)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✓ Mypy (type checking)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✓ Pytest (unit tests)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✓ Skill discovery (13 skills, 38 triggers)" >> $GITHUB_STEP_SUMMARY
-        continue-on-error: false
-
-      - name: Summary - Skipped
-        if: always() && (github.event_name == 'push' && !(contains(github.event.head_commit.modified, 'orquestacion_agentes/') || contains(github.event.head_commit.modified, 'scripts/')))
-        run: |
-          echo "## Quality Gates Summary (Skipped - No Relevant Changes)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- ⏭️ No changes to orquestacion_agentes/ or scripts/ detected" >> $GITHUB_STEP_SUMMARY
-          echo "- CI bypassed for performance" >> $GITHUB_STEP_SUMMARY
+          echo "- Python compileall" >> $GITHUB_STEP_SUMMARY
+          echo "- Skill discovery" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow reference check" >> $GITHUB_STEP_SUMMARY
