@@ -5,9 +5,9 @@
 > Al arrancar un item, se convierte en `work_plan.md`; al cerrarlo, pasa a `CHANGELOG.md`.
 
 ## Politica
-- **Workspace:** desarrollo del motor portable.
-- **Ruta canonica Modelo B:** `C:\Users\fdl\Proyectos_Python\z_scripts\.agent\collaboration\backlog.md`.
-- **Motor:** `C:\Users\fdl\Proyectos_Python\z_scripts\orquestador_de_agentes`.
+- **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` — repo destino real que sirve para desarrollar el motor.
+- **Motor (fuente canonica):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes` — repo portable con `.git` propio.
+- **Contrato:** mejoras que nacen en el workspace y deben ser globales se portan explicitamente al motor; nunca se asume sincronizacion implicita.
 - **Escritura:** humano o Manager; Builder solo lo toca si el plan lo pide explicitamente.
 - **Destino:** cada proyecto destino tendra su propio `.agent/collaboration/backlog.md`.
 
@@ -59,6 +59,9 @@
 | Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | backlog | WT-2026-211 | session-2026-06-02-suite |
 | Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | backlog | WT-2026-211 | session-2026-06-02-terminology |
 | Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
+| Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
+| Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
+| Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -537,3 +540,69 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Tests requeridos:** una observacion con API key / JWT / ruta `C:\Users\<user>\` se persiste redactada; `post_tool_hook` no escribe secretos crudos; redaccion idempotente; no rompe entradas sin secretos.
 - **Criterio:** ninguna observacion nueva persiste secretos en claro; reusa `redact.py`, sin mecanismo paralelo.
 - **Depende de:** WT-2026-191.
+
+## WT-2026-218 - Regenerar y commitear memory_rules.md en el motor
+- **Prioridad:** Media
+- **Scope:** system/memory
+- **Estado:** backlog
+- **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino — pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
+- **Causa raiz:** `memory_rules.md` es un artefacto derivado deterministamente de `observations.jsonl` via `memory_consolidate.py`. El motor tiene `observations.jsonl` vivo (35 KB, schema canonico) pero nunca se corrio la consolidacion para generar `memory_rules.md` y commitearlo.
+- **Contexto clave (leer antes de ejecutar):**
+  - `memory_consolidate.py` tiene flags `--apply` (default dry-run) y modifica `observations.jsonl` (dedupe+filter+archive). NO correr `--apply` sobre el motor sin revisar el dry-run primero.
+  - El motor tiene `observations.jsonl` con cambios en working tree (modificado pero no commiteado a 2026-06-02). Verificar `git diff .agent/runtime/memory/observations.jsonl` antes de consolidar.
+  - `memory_rules.md` generado contendra wings engine/meta/project derivados de las observaciones del motor. Revisar que las reglas son coherentes antes de commitear.
+  - Una vez commiteado en el motor, el siguiente `--sync` en cualquier destino propagara automaticamente las wings engine/meta.
+- **Sketch:**
+  1) `git -C motor diff .agent/runtime/memory/observations.jsonl` — entender que cambio.
+  2) `python scripts/memory_consolidate.py` (dry-run) desde el motor — ver que generaria.
+  3) `python scripts/memory_consolidate.py --apply` — generar `memory_rules.md`, `MEMORY.md`, `memory_profile.md`.
+  4) Revisar `memory_rules.md` generado: debe tener wings coherentes y reglas derivadas de tickets reales.
+  5) Commitear en el motor: `memory_rules.md` (nuevo) + `observations.jsonl` (si cambio) + `MEMORY.md` (si cambio).
+  6) Verificar que el motor tiene `memory_rules.md` en git y que `.gitignore` del motor NO lo ignora.
+  7) Opcional: correr `install --sync --dry-run` en el workspace para confirmar que el sync ya ve la fuente.
+- **Tests requeridos:** `memory_rules.md` existe en motor tras consolidacion; contiene al menos un wing engine o meta; `install --sync --dry-run` desde workspace reporta "Would sync memory_rules.md" en vez de "Motor has no memory_rules.md".
+- **Criterio:** motor tiene `memory_rules.md` commiteado y el sync de destinos propaga wings engine/meta reales.
+- **Depende de:** ninguno. Es el desbloqueador de WT-2026-219 y WT-2026-220.
+- **Origen:** session-2026-06-02-memory-bootstrap
+
+## WT-2026-219 - Bootstrap de memoria garantizado en destinos nuevos
+- **Prioridad:** Media
+- **Scope:** system/memory
+- **Estado:** backlog
+- **Problema:** `install_agent_system.py --install/--sync` no garantiza que el directorio `runtime/memory/` del destino tenga los archivos minimos. `sync_memory_rules()` hace `mkdir` pero solo si va a escribir `memory_rules.md`; si el motor no tiene ese archivo (situacion pre-WT-2026-218), ni siquiera crea el directorio. `observations.jsonl` y `MEMORY.md` no se crean en ninguna ruta del instalador.
+- **Contexto clave:**
+  - `memory_consolidate.py` asume que `MEMORY_DIR` y `OBS` ya existen; si se llama sobre un destino virgen, puede fallar o crear archivos en el motor en vez del destino (usa `get_agent_dir()` que resuelve segun contexto de ejecucion).
+  - El sistema de wings (engine/meta/project) ya esta completamente implementado y es idempotente. Solo falta el bootstrap del esqueleto.
+  - El workspace actual ya tiene los archivos por ser heredero de `z_scripts`, pero un destino nuevo instalado desde cero no los tendria.
+- **Sketch:**
+  1) Crear funcion `ensure_memory_skeleton(project_agent, dry_run)` en `install_agent_system.py`.
+  2) Crea `runtime/memory/` si no existe.
+  3) Crea `observations.jsonl` vacio `[]` si no existe (nunca sobreescribe si ya existe).
+  4) Crea `MEMORY.md` con cabecera minima si no existe (nunca sobreescribe).
+  5) Crea `memory_rules.md` con estructura de wings vacia si no existe Y el motor tampoco tiene fuente (fallback seguro).
+  6) Llamar a `ensure_memory_skeleton` al inicio de `run_install()` y `run_sync()`, antes de `sync_memory_rules`.
+  7) Tests: instalar en directorio vacio crea el esqueleto; instalar en directorio con memoria existente no la pisa; dry-run reporta "Would create" sin escribir; idempotencia (instalar dos veces no cambia nada).
+- **Tests requeridos:** `install` en destino virgen crea `runtime/memory/{observations.jsonl,MEMORY.md}`; `sync` no pisa `observations.jsonl` con entradas; dry-run no escribe pero reporta; segunda ejecucion no altera nada.
+- **Criterio:** cualquier repo destino recien instalado tiene esqueleto de memoria funcional sin intervencion manual; la memoria existente nunca se pisa.
+- **Depende de:** WT-2026-218 (para que el sync posterior ya tenga fuente real).
+- **Origen:** session-2026-06-02-memory-bootstrap
+
+## WT-2026-220 - Flujo de promocion upstream de memoria para dogfooding
+- **Prioridad:** Media
+- **Scope:** system/memory
+- **Estado:** backlog
+- **Problema:** el flujo normal de memoria es downstream (motor -> destino via sync). Pero este workspace es dogfooding: sus tickets mejoran el motor, por lo que genera aprendizajes de wing engine/meta que deberian propagarse al motor, no quedarse solo en el workspace. `memory_upload.md` (prompt canonico en `orquestador_de_agentes/prompts/`) describe inspeccion y propuesta de memoria, pero solo contempla dos destinos: memoria del proyecto y memoria personal de Claude. No menciona promocion al repo motor externo.
+- **Contexto clave:**
+  - El modelo de wings ya hace la separacion conceptual: `engine`/`meta` = portables al motor; `project` = locales al destino.
+  - La promocion debe ser MANUAL con propuesta asistida. No automatica en cierre de ticket (riesgo de contaminar el motor con aprendizajes a medio cocer).
+  - La ruta fisica de promocion es: escribir observacion en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl` + reconsolidar motor (o dejar para siguiente sesion de consolidacion).
+  - `memory_upload.md` ya tiene la estructura correcta ("no escribas todavia; primero propón"). Solo necesita un tercer destino posible.
+- **Sketch:**
+  1) Extender `memory_upload.md` con una seccion "Destinos posibles" que incluya explicitamente: (a) memoria del proyecto destino (`wing: project`), (b) motor externo (`wing: engine` o `meta`, escribe en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl`), (c) memoria personal de Claude (habitos transversales del usuario).
+  2) La propuesta debe incluir el campo `wing` sugerido y el destino recomendado como parte del formato existente.
+  3) Si el destino es el motor externo, la propuesta debe mostrar el texto exacto de la observacion en formato canonico (json) lista para insertar manualmente o con confirmacion explicita.
+  4) El agente no escribe en el motor sin confirmacion humana explicita.
+  5) Opcional: crear `scripts/promote_observation.py --to-motor` como herramienta CLI que automatiza el append a `observations.jsonl` del motor y emite un recordatorio de reconsolidacion pendiente.
+- **Criterio:** al usar `memory_upload.md` en este workspace, el agente propone correctamente si un aprendizaje pertenece al proyecto, al motor o a Claude memory; el formato de propuesta incluye wing, destino y texto canonico; la escritura al motor requiere confirmacion humana.
+- **Depende de:** WT-2026-219.
+- **Origen:** session-2026-06-02-memory-bootstrap
