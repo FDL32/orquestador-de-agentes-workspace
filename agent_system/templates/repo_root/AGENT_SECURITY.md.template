@@ -1,0 +1,19 @@
+# AGENT_SECURITY.md
+
+## Flujo oficial
+
+`plan -> build -> review -> validate`
+
+## Seguridad por etapa
+
+- `plan`: readonly
+- `build`: write-scoped
+- `review`: readonly-diff
+- `validate`: exec-only
+
+## Archivos de control
+
+- `.agent_allowlist.json`
+- `.agent_denylist.json`
+- `.agent/known_models.json`
+- `.claude/settings.json`

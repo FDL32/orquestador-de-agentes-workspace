@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Safe pytest runner for Windows-oriented projects.
+
+This script coordinates pytest execution, uses a project-owned basetemp,
+and cleans known runtime folders before and after each run.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Iterable
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RUNTIME_DIR = PROJECT_ROOT / '.runtime' / 'pytest_safe'
+LOCK_FILE = RUNTIME_DIR / 'pytest.lock'
+LAST_RUN_LOG = RUNTIME_DIR / 'last-run.log'
+LAST_RUN_JSON = RUNTIME_DIR / 'last-run.json'
+DEFAULT_PYTEST_ARGS = ['tests', '-q', '-p', 'no:cacheprovider']
+
+
+def iso_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def ensure_runtime_dir() -> None:
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def is_pid_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def read_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return {}
+
+
+def write_json(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding='utf-8')
+
+
+def iter_runtime_dirs() -> Iterable[Path]:
+    for candidate in [PROJECT_ROOT / '.runtime' / 'test_runtime', PROJECT_ROOT / '.runtime' / 'probe_dirs']:
+        if candidate.exists():
+            yield candidate
+
+
+def remove_tree(path: Path) -> tuple[bool, str]:
+    try:
+        shutil.rmtree(path)
+        return True, ''
+    except FileNotFoundError:
+        return True, ''
+    except Exception as exc:
+        return False, str(exc)
+
+
+def cleanup_runtime_dirs() -> dict:
+    removed = []
+    failed = []
+    for path in iter_runtime_dirs():
+        ok, error = remove_tree(path)
+        if ok:
+            removed.append(str(path))
+        else:
+            failed.append({'path': str(path), 'error': error})
+    return {'removed': removed, 'failed': failed}
+
+
+def acquire_lock(force_unlock: bool = False) -> dict:
+    ensure_runtime_dir()
+    if LOCK_FILE.exists():
+        lock_data = read_json(LOCK_FILE)
+        lock_pid = int(lock_data.get('pid', 0) or 0)
+        if is_pid_running(lock_pid) and not force_unlock:
+            raise RuntimeError(f'pytest already running (pid={lock_pid}). Use --force-unlock if stale.')
+        LOCK_FILE.unlink(missing_ok=True)
+
+    payload = {'pid': os.getpid(), 'started_at': iso_now(), 'cwd': str(PROJECT_ROOT)}
+    fd = None
+    try:
+        fd = os.open(str(LOCK_FILE), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        with os.fdopen(fd, 'w', encoding='utf-8') as handle:
+            json.dump(payload, handle, indent=2, ensure_ascii=False)
+        fd = None
+    except Exception:
+        if fd is not None:
+            os.close(fd)
+        LOCK_FILE.unlink(missing_ok=True)
+        raise
+    return payload
+
+
+def release_lock() -> None:
+    LOCK_FILE.unlink(missing_ok=True)
+
+
+def make_run_dir() -> Path:
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    return RUNTIME_DIR / f'run-{stamp}-{os.getpid()}'
+
+
+def stream_pytest(command: list[str]) -> int:
+    lines = []
+    process = subprocess.Popen(
+        command,
+        cwd=PROJECT_ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding='utf-8',
+        errors='replace',
+        bufsize=1,
+    )
+    try:
+        assert process.stdout is not None
+        for line in process.stdout:
+            print(line, end='')
+            lines.append(line)
+        return process.wait()
+    finally:
+        LAST_RUN_LOG.write_text(''.join(lines), encoding='utf-8')
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Safe pytest runner for Windows-oriented projects.')
+    parser.add_argument('--cleanup-only', action='store_true', help='Clean runtime folders and exit.')
+    parser.add_argument('--status', action='store_true', help='Show last-run info and lock status.')
+    parser.add_argument('--force-unlock', action='store_true', help='Ignore stale pytest lock.')
+    parser.add_argument('--dry-run', action='store_true', help='Print the final pytest command and exit.')
+    parser.add_argument('pytest_args', nargs=argparse.REMAINDER, help='Extra pytest args. Use -- to separate.')
+    return parser.parse_args()
+
+
+def normalize_pytest_args(raw_args: list[str]) -> list[str]:
+    args = list(raw_args)
+    if args and args[0] == '--':
+        args = args[1:]
+    return args or list(DEFAULT_PYTEST_ARGS)
+
+
+def print_status() -> None:
+    print(f'Project: {PROJECT_ROOT}')
+    print(f'Runtime: {RUNTIME_DIR}')
+    if LOCK_FILE.exists():
+        lock_data = read_json(LOCK_FILE)
+        lock_pid = int(lock_data.get('pid', 0) or 0)
+        state = 'active' if is_pid_running(lock_pid) else 'stale'
+        print(f'Lock: {state} (pid={lock_pid})')
+    else:
+        print('Lock: free')
+    if LAST_RUN_JSON.exists():
+        print('Last run:')
+        print(LAST_RUN_JSON.read_text(encoding='utf-8'))
+    else:
+        print('Last run: none')
+
+
+def main() -> int:
+    args = parse_args()
+    ensure_runtime_dir()
+
+    if args.status:
+        print_status()
+        return 0
+
+    cleanup_before = cleanup_runtime_dirs()
+    if args.cleanup_only:
+        print(json.dumps(cleanup_before, indent=2, ensure_ascii=False))
+        return 0 if not cleanup_before['failed'] else 1
+
+    lock = acquire_lock(force_unlock=args.force_unlock)
+    run_dir = make_run_dir()
+    pytest_args = normalize_pytest_args(args.pytest_args)
+    command = [sys.executable, '-m', 'pytest', *pytest_args, f'--basetemp={run_dir}']
+
+    summary = {
+        'started_at': iso_now(),
+        'lock': lock,
+        'run_dir': str(run_dir),
+        'pytest_args': pytest_args,
+        'command': command,
+        'cleanup_before': cleanup_before,
+        'status': 'started',
+    }
+    write_json(LAST_RUN_JSON, summary)
+
+    try:
+        if args.dry_run:
+            print(' '.join(command))
+            summary['status'] = 'dry-run'
+            write_json(LAST_RUN_JSON, summary)
+            return 0
+
+        exit_code = stream_pytest(command)
+        summary['status'] = 'finished'
+        summary['exit_code'] = exit_code
+        return exit_code
+    finally:
+        cleanup_after = {'removed': [], 'failed': []}
+        if run_dir.exists():
+            ok, error = remove_tree(run_dir)
+            if ok:
+                cleanup_after['removed'].append(str(run_dir))
+            else:
+                cleanup_after['failed'].append({'path': str(run_dir), 'error': error})
+        summary['finished_at'] = iso_now()
+        summary['cleanup_after'] = cleanup_after
+        write_json(LAST_RUN_JSON, summary)
+        release_lock()
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

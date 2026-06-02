@@ -1,0 +1,24 @@
+﻿{
+  "protected_paths": [
+    "privada/",
+    ".ssh/",
+    ".gnupg/"
+  ],
+  "protected_filenames": [
+    ".env",
+    ".env.local",
+    ".env.production",
+    ".env.development",
+    "TURN.md"
+  ],
+  "blocked_command_patterns": [
+    "\\brm\\s+-rf\\b",
+    "\\brmdir\\b",
+    "\\bdel\\s+/[sÑ„qf]\\b",
+    "\\bgit\\s+push\\b",
+    "\\bgit\\s+reset\\s+--hard\\b",
+    "\\bgit\\s+clean\\s+-[fxd]+\\b"
+  ],
+  "comment": "Extiende las protecciones por defecto del hook guard_paths. AÃ±ade aquÃ­ rutas o comandos extra que deben bloquearse en este proyecto."
+}
+

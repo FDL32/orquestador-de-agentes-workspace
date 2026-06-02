@@ -1,0 +1,93 @@
+# Goose Hints para el proyecto Agent System
+
+Estás actuando dentro de una base local multi-agente supervisada por "Antigravity" (tu orquestador de interfaz principal). Estás configurado para trabajar con este sistema para proveer capacidades avanzadas como investigación o lectura mediante extensiones MCP, o tareas rápidas directas de código.
+
+## Reglas Obligatorias:
+1. **Seguridad**: Trabaja SIEMPRE dentro de la carpeta `publica/`. Nunca leas ni intentes modificar el contenido de la carpeta `privada/`. Las credenciales deben dejarse siempre a merced del desarrollador.
+2. **Contexto del Proyecto**: Al iniciar esta invocación en el proyecto, siempre que quieras orientarte al estado de Manager o Builder, lanza el script del controlador: `python .agent/agent_controller.py` para entender el estado de la máquina de estados local.
+3. **Poderes MCP de GitHub**: Tienes conectividad y permiso para usar la herramienta MCP de GitHub siempre que se te pida investigar repositorios externos, traer buenas prácticas o verificar Pull Requests externos asociados a las librerías construidas aquí.
+4. Si Antigravity te asignó una tarea concreta, sé directo en la ejecución sin detenerte excesivamente a charlar; este proyecto está pensado para una respuesta fluida código a código.
+
+## Sistema de Skills con Triggers (Fase 2 — Integración Completa)
+
+El proyecto z_scripts tiene un catálogo de **13 skills reutilizables** organizadas en `skills/`.
+Cada skill tiene un frontmatter YAML con metadata, incluyendo un campo opcional `triggers`.
+
+### Descubrimiento Automático (desde v2.3)
+
+**TÚ NO NECESITAS HACER NADA.** El orquestador carga automáticamente el mapa de triggers cada vez que se invoca.
+
+**Cómo funciona:**
+1. Cuando ejecutas `python scripts/orquestador.py ...`, el orquestador:
+   - Ejecuta internamente `discover_skills.py --json`
+   - Lee el `trigger_map` resultante
+   - Lo incluye en la sección "[SKILLS DISPONIBLES POR TRIGGER]" del payload
+2. Tú (Goose) recibes la lista de triggers automáticamente en el payload
+3. Puedes invocar skills por trigger sin rutas hardcodeadas
+
+**Ejemplo de payload que recibe Goose:**
+```
+[SKILLS DISPONIBLES POR TRIGGER]
+- /codereview         → skills/code-review/SKILL.md
+- /implement          → skills/bui-implement-from-plan/SKILL.md
+- review              → skills/man-review-implementation/SKILL.md
+```
+
+### Descubrimiento Manual (para debug)
+
+Si necesitas ver el mapa de triggers sin ejecutar orquestador:
+```bash
+python scripts/discover_skills.py --json
+```
+
+### Invocación de Skills desde Goose
+
+Cuando recibas un payload con "[SKILLS DISPONIBLES POR TRIGGER]":
+1. Lee la sección de triggers
+2. Si reconoces un trigger relevante en la instrucción:
+   - Busca el trigger en el mapa
+   - Accede a `skill['path']` → ubicación de SKILL.md
+   - Lee ese archivo completo
+   - Ejecuta el "Workflow" documentado
+3. Si no hay trigger relevante, procede con instrucción normal
+
+### Triggers Actuales
+
+Ejecuta `python scripts/discover_skills.py --goose` para obtener la lista más reciente.
+
+## Dual Mode Execution (Fase 3 — v2.4+)
+
+El orquestador soporta dos modos de ejecución complementarios:
+
+### 1. Goose Runtime (Tu Modo Normal)
+```bash
+python scripts/orquestador.py --engine goose --mode write --query "implementa el ticket"
+```
+- **Tú ejecutas** con tools completos
+- **Output:** Código implementado automáticamente
+- **Cuándo usar:** Tareas complejas, testing, múltiples archivos
+
+### 2. Skill Direct (Modo Consulta)
+```bash
+python scripts/orquestador.py --skill /implement --query "muestra workflow"
+```
+- **Orquestador muestra** workflow de skill en terminal
+- **Output:** Instrucciones paso a paso para implementación manual
+- **Cuándo usar:** Guidance, documentación, debug de procesos
+
+### Decision Rules
+
+| Si necesitas... | Usa... |
+|----------------|--------|
+| **Implementación automática** | `--engine goose` |
+| **Ver workflow de una skill** | `--skill /trigger` |
+| **Guidance sobre proceso** | `--skill /trigger` |
+| **Tools + testing automático** | `--engine goose` |
+| **Solo documentación** | `--skill /trigger` |
+
+### Integration
+
+- **Skills siguen siendo estáticas** (SKILL.md files)
+- **Tú decides** qué modo usar basado en complejidad
+- **Ambos modos** incluyen trigger_map en payload
+- **Compatibilidad total** con flujo legacy

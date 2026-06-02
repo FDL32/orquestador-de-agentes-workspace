@@ -1,0 +1,21 @@
+# Changelog
+
+Este proyecto sigue Keep a Changelog y versionado semantico.
+
+## [Unreleased]
+
+### Added
+- Estructura inicial del proyecto
+- Documentacion base (`README.md`, `PROJECT.md`, `CHANGELOG.md`)
+- Politica de seguridad en `AGENT_SECURITY.md`
+- Configuracion externa de seguridad en `.agent_allowlist.json` y `.agent_denylist.json`
+
+### Changed
+- `guard_paths.py` endurecido para bloquear Bash destructivo, escrituras fuera del repo y rutas sensibles
+- `orquestador.py` actualizado a v2.1 con modos `research` y `write`
+- `.claude/settings.json` ahora protege `Write|Edit|MultiEdit|Bash`
+
+## [0.1.0] - {{DATE}}
+
+### Added
+- Proyecto inicializado con `agent_system`

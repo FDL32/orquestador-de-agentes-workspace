@@ -1,0 +1,19 @@
+# Estado del proyecto
+- **Proyecto**: {{PROJECT_NAME}}
+- **Estado**: Setup inicial
+- **Ultima modificacion**: {{DATE}}
+- **Mision actual**: Definir alcance inicial y preparar el primer plan verificable
+
+# Esquemas de datos (source of truth)
+- [Pendiente] Documentar fuentes, formatos y campos clave
+
+# Configuracion y secretos (sin valores)
+- [Pendiente] Enumerar variables de entorno requeridas
+- [Pendiente] Listar archivos `.example` y rutas sensibles
+
+# Arquitectura y decisiones
+- [{{DATE}}] Proyecto inicializado con `agent_system`
+- [{{DATE}}] Registrar aqui decisiones tecnicas relevantes y su motivo
+
+# Lecciones aprendidas
+- [{{DATE}}] Base del proyecto creada

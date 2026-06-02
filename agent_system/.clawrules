@@ -1,0 +1,93 @@
+# Claw Rules — Integración de Skills en Claw
+
+Claw es un agente experimental que puede invocar skills descubiertos automáticamente.
+
+## Automatización: Skills Discovery
+
+Cuando invoques orquestador con `--engine claw`:
+
+```bash
+python scripts/orquestador.py --engine claw --mode write --query "implementa el ticket"
+    ↓
+1. Orquestador ejecuta discover_skills.py automáticamente
+2. Genera trigger_map con 28 triggers mapeados
+3. Agrega sección [SKILLS DISPONIBLES POR TRIGGER] al payload
+4. Claw recibe lista de skills + rutas automáticamente
+5. Claw puede invocar skills sin hardcoding
+```
+
+## Sistema de Triggers
+
+Cada skill puede ser invocada por palabras clave (triggers):
+
+Formato en SKILL.md:
+
+```
+triggers: [/keyword1, keyword2, alias]
+```
+
+### Triggers Actuales (28 total):
+
+**Builder:** /implement, /gates, /audit, + aliases  
+**Manager:** /plan, /review, /escalate, + aliases  
+**Meta:** /create-skill, /graphify, + aliases  
+**Setup:** /scaffold, /setup, /secure, /changelog, /finalize, + aliases
+
+## Cómo Claw Usa Skills
+
+1. **Claw recibe payload con:**
+
+```
+[SKILLS DISPONIBLES POR TRIGGER]
+- /implement       -> skills/bui-implement-from-plan/SKILL.md
+- /review         -> skills/man-review-implementation/SKILL.md
+... (28 triggers)
+```
+
+2. **Si Claw necesita revisar código:**
+   - Lee triggers en payload
+   - Identifica `/review` como relevante
+   - Busca ruta en trigger_map: `skills/man-review-implementation/SKILL.md`
+   - Lee archivo completo
+   - Extrae sección `## Workflow`
+   - Ejecuta pasos o reporta al usuario
+
+## Diferencias: Goose vs Claw
+
+| Aspecto | Goose | Claw |
+|---------|-------|------|
+| Status | Estable | Experimental |
+| Tools | Completos | En desarrollo |
+| Skills | Ejecuta automáticamente | Reporta pasos |
+| Triggers | Soportados | Soportados |
+| Payload | Mismo trigger_map | Mismo trigger_map |
+
+Ambos reciben y pueden usar el mismo trigger_map.
+
+## Invocación
+
+```bash
+# Claw con contexto de skills
+python scripts/orquestador.py --engine claw --mode write \
+  --query "Implementa y valida los cambios"
+
+# Claw en modo research
+python scripts/orquestador.py --engine claw --mode research \
+  --query "Audita el código"
+```
+
+## Reglas para Claw
+
+✅ Lee el payload completo incluyendo `[SKILLS DISPONIBLES]`  
+✅ Busca skills por trigger si relevante  
+✅ Lee SKILL.md por ruta en trigger_map  
+✅ Extrae `[Workflow]` y sigue pasos  
+❌ No asumas rutas hardcodeadas (usa trigger_map)  
+❌ No ejecutes pasos si SKILL.md no existe  
+
+## Forward Compatibility
+
+Este documento se actualiza cuando:
+- Nuevos triggers se agreguen a skills
+- Claw evolucione
+- Nuevos engines se integren

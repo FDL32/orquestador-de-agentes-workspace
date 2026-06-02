@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "name": "workspace_orquestador_de_agentes",
+      "path": "..\\workspace_orquestador_de_agentes"
+    },
+    {
+      "name": "orquestador_de_agentes",
+      "path": "..\\orquestador_de_agentes"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true,
+      "**/__pycache__": true,
+      "**/.codex": true
+    },
+    "search.exclude": {
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true,
+      "**/__pycache__": true,
+      "**/.codex": true,
+      "**/_legacy": true,
+      "**/_backups": true,
+      "**/.agent/runtime": true
+    }
+  }
+}

@@ -1,0 +1,5 @@
+﻿{
+  "write_roots": ["."],
+  "comment": "RaÃ­ces donde el agente puede escribir. '.' = todo el repo. AÃ±ade rutas especÃ­ficas para restringir mÃ¡s."
+}
+

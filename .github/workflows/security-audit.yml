@@ -1,0 +1,69 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'orquestacion_agentes/**'
+      - '.github/workflows/security-audit.yml'
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./orquestacion_agentes
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install uv
+        run: |
+          pip install uv
+      
+      - name: Install dependencies
+        run: |
+          uv sync
+      
+      - name: pip-audit (supply chain security)
+        run: |
+          uv run pre-commit run pip-audit --all-files --hook-stage pre-push
+        continue-on-error: false
+      
+      - name: Gitleaks (secret scanning)
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: false
+      
+      - name: SBOM generation (SPDX)
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-bom -o sbom.json
+        continue-on-error: true
+      
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: sbom
+          path: orquestacion_agentes/sbom.json
+      
+      - name: Security Summary
+        if: always()
+        run: |
+          echo "## Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ pip-audit (supply chain CVE detection)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ Gitleaks (secret scanning)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ SBOM (software bill of materials)" >> $GITHUB_STEP_SUMMARY

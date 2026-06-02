@@ -1,0 +1,84 @@
+# Workspace de desarrollo del orquestador
+# Este repo versiona documentos, planes y scripts del workspace.
+# No versiona runtime vivo, locks, eventos ni caches.
+
+# Config local
+.claude/settings.local.json
+.agent/config/hooks_config.local.json
+
+# Python / tooling cache
+.pytest_cache/
+.ruff_cache/
+.cache/
+.tmp/
+tmp_pytest_*/
+__pycache__/
+**/__pycache__/
+
+# Entornos locales
+.venv/
+
+# Archivos temporales / artifacts no versionables en raiz
+CTempskill_b64.txt
+NUL
+
+# Codex / editor / runtime local
+.codex/
+Microsoft/
+graphify-out/
+debug_output.txt
+output.txt
+temp_output.txt
+*.log
+
+# Runtime operativo del workspace
+.agent/logs/
+.agent/runtime/logs/
+.agent/runtime/approvals/
+.agent/.agent/
+.agent/test_logs/
+.agent/runtime/*.txt
+.agent/runtime/*.json
+.agent/runtime/audit/
+.agent/runtime/compare/
+.agent/runtime/reviews/
+.agent/runtime/review_packets/
+.agent/runtime/research/
+.agent/runtime/goose/
+.agent/runtime/tmp/
+.agent/runtime/uv-cache/
+.agent/runtime/pytest-safe/
+.agent/runtime/requeue_claims/
+.agent/runtime/events/
+.agent/runtime/memory/observations.jsonl
+.agent/runtime/memory/observations.jsonl.bak.*
+.agent/runtime/memory/CONSOLIDATION_REPORT.md
+.agent/context/
+.agent/backups/
+
+# Artefactos de sesion durables pero no versionables
+.session/
+.refactor/
+
+# Estado efimero de collaboration
+.agent/collaboration/.session_state.json
+.agent/collaboration/archive/
+
+# Link runtime workspace<->motor: se regenera al reubicar
+.agent/config/motor_destination_link.json
+
+# Sandboxes / artefactos de pruebas
+tests/.test_workspace/
+tests/sandbox/test_runtime/
+tests/sandbox/_check_mem/
+tests/sandbox/_check_mem2/
+tests/sandbox/debug_request/
+tests/sandbox/probe_dirs/
+tests/sandbox/tmp*/
+
+# Historico y basura pesada no operativa
+_backups/
+_legacy/
+
+# Carpeta portable del motor no debe vivir dentro del workspace final
+orquestador_de_agentes/

@@ -1,0 +1,77 @@
+# Tests Usage Guide
+
+This folder contains the Windows-safe test runtime used by the project.
+
+## What this folder is for
+
+Use this guide for day-to-day usage:
+- how to write tests
+- which temp helpers to use
+- how to run the suite safely
+- when an old test must be migrated
+
+For internal design details, see `tests/ARCHITECTURE.md`.
+
+## Standard policy
+
+Use:
+- `tmp_path` and `tmp_path_factory` from `tests/conftest.py`
+- `tests._temp_runtime.managed_test_dir()` for manual temp dirs
+- `python scripts/run_pytest_safe.py` as the recommended entry point
+- `.runtime/test_runtime/` as the only runtime root for test temps
+
+Avoid:
+- `TemporaryDirectory()` as the default pattern on Windows
+- native pytest temp handling outside the project override
+- `tests/tmp/` as a convention
+- temp directories scattered in the repo root
+
+## Migration rules for existing tests
+
+Leave a test as-is only if:
+- it does not create temp dirs or temp files
+- it only reads repo fixtures
+- it already passes consistently on Windows
+
+Migrate a test when:
+- it uses `TemporaryDirectory()`
+- it depends on native `tmp_path` from another shared plugin layer
+- it changes `cwd`
+- it leaves temp outputs behind after failures
+
+Use `tmp_path` when:
+- the test only needs one isolated temp directory
+- the lifecycle can be fully controlled by fixtures
+
+Use `managed_test_dir()` when:
+- the test wants explicit control with a context manager
+- you are migrating an older helper based on `TemporaryDirectory()`
+- the test needs nested temp workspaces or custom prefixes
+
+## Example
+
+```python
+from tests._temp_runtime import managed_test_dir
+
+
+def test_example(tmp_path):
+    data = tmp_path / 'data.txt'
+    data.write_text('ok', encoding='utf-8')
+    assert data.exists()
+
+
+def test_manual_probe_dir():
+    with managed_test_dir('probe_') as probe:
+        marker = probe / 'marker.txt'
+        marker.write_text('ok', encoding='utf-8')
+        assert marker.exists()
+```
+
+## Commands
+
+```powershell
+python scripts/run_pytest_safe.py
+python scripts/run_pytest_safe.py --status
+python scripts/run_pytest_safe.py --cleanup-only
+python -m pytest tests -q -p no:cacheprovider
+```
