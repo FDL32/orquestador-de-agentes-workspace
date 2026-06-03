@@ -101,3 +101,8 @@ Marked ready by Builder
 - Calidad Fase 3 parcial: python -m ruff check .agent/completion_checker.py tests/test_completion_checker.py -> All checks passed.
 - Clasificacion de residual: el bloque uv run vs safe-runner y la semantica READY_FOR_REVIEW/COMPLETED eran bug real de produccion en completion_checker; corregido via helpers canonicos compartidos.
 - Estado documental: IN_PROGRESS.
+- Fase 4 cerrada: rescate selectivo desde stash@{0} de 5 skills markdown (ui-self-audit, ui-implement-from-plan, man-review-implementation, log-format.md, common-fixes.md) para corregir mojibake legado.
+- Gate de rescate: git status --short mostro exactamente esos 5 ficheros y ningun otro path fuera de la familia de encoding.
+- Validacion Fase 4: python -m pytest tests/test_encoding_integrity.py -q -> 13 passed, 14 skipped.
+- Clasificacion de residual: los 5 fallos de 	est_encoding_integrity eran drift documental/encoding ya resuelto en stash@{0}; acentos restaurados y marcadores de mojibake clasicos eliminados.
+- Estado documental: IN_PROGRESS.
