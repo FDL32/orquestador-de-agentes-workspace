@@ -56,12 +56,15 @@
 | Baja | WT-2026-213 | Eliminar el doble STATE_CHANGED de --mark-ready | system/bus-events | backlog | WT-2026-210 | session-2026-06-02-bus-audit |
 | Media | WT-2026-206 | Scope gate y cierres manuales en workspace+motor | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-followup |
 | Media | WT-2026-207 | Gobernanza de collaboration legacy en el motor durante session-close | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-closeout |
-| Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | backlog | WT-2026-211 | session-2026-06-02-suite |
+| Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | active | WT-2026-211 | session-2026-06-02-suite |
 | Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | backlog | WT-2026-211 | session-2026-06-02-terminology |
 | Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
+| Alta | WT-2026-221a | Launcher-only execution contract: BUILDER_STARTED + guard de arranque | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -607,3 +610,34 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Criterio:** al usar `memory_upload.md` en este workspace, el agente propone correctamente si un aprendizaje pertenece al proyecto, al motor o a Claude memory; el formato de propuesta incluye wing, destino y texto canonico; la escritura al motor requiere confirmacion humana.
 - **Depende de:** WT-2026-219.
 - **Origen:** session-2026-06-02-memory-bootstrap
+
+## WT-2026-221a - Launcher-only execution contract: BUILDER_STARTED + guard de arranque
+- **Prioridad:** Alta
+- **Scope:** system/agent-launch
+- **Estado:** backlog
+- **Problema:** un Builder puede trabajar fuera del launcher y por tanto fuera del bus. Sin `BUILDER_STARTED`, el supervisor, circuit breaker, pre-handoff y mark-ready automatico no observan progreso ni stall.
+- **Objetivo:** hacer que el launcher emita `BUILDER_STARTED` obligatoriamente y que el Builder detecte al arrancar si no esta dentro de una sesion operativa valida.
+- **Sketch:** emitir `BUILDER_STARTED` desde `launch_agent_terminals.ps1`; anadir guard de arranque en bootstrap/prompt/controller que compruebe `AGENT_PROJECT_ROOT`, ticket activo, bus reciente para el ticket y `TURN.md` alineado; permitir solo `MANUAL_DEBUG=true` como modo explicito no cerrable.
+- **Criterio:** un Builder lanzado por launcher queda registrado en el bus; un Builder abierto manualmente recibe instruccion clara de no cerrar ticket operativo.
+- **Depende de:** WT-2026-208.
+
+## WT-2026-221b - Manager evidence gate: rechazar review sin bus activo y evidencia minima
+- **Prioridad:** Alta
+- **Scope:** system/review-gates
+- **Estado:** backlog
+- **Problema:** aunque el Builder entre por una puerta lateral, hoy puede dejar cambios sin baseline, sin pasadas y sin evidencia suficiente. El Manager solo detecta el problema tarde y de forma manual.
+- **Objetivo:** hacer que el Manager rechace `READY_FOR_REVIEW` si faltan evidencias minimas del ciclo operativo.
+- **Sketch:** en la ruta de review, exigir `BUILDER_STARTED` del ticket, baseline inicial, resultado por pasada, rerun asociado, ausencia de out-of-scope sin justificar y execution_log actualizado. Si falta algo, emitir CHANGES con razon estructurada.
+- **Criterio:** ningun ticket puede cerrarse por Manager sin evidencia minima aunque el Builder haya trabajado manualmente.
+- **Depende de:** WT-2026-208.
+
+## WT-2026-221c - Scope watch temprano contra Files Likely Touched
+- **Prioridad:** Media
+- **Scope:** system/scope-gate
+- **Estado:** backlog
+- **Problema:** el scope gate llega tarde, normalmente en `--mark-ready`. Cambios out-of-scope como `scripts/discover_skills.py` pueden vivir durante horas sin alerta.
+- **Objetivo:** crear un check barato que compare `git diff --name-only` contra `Files / surfaces likely touched` durante el trabajo, no solo al cierre.
+- **Sketch:** exponer un comando tipo `--scope-watch` o script focal que resuelva `motor_root`, lea el work_plan activo y reporte cambios fuera de scope con salida clara para Builder/Manager.
+- **Criterio:** un archivo fuera de scope se detecta antes de `READY_FOR_REVIEW` y queda justificado, revertido o separado en ticket propio.
+- **Depende de:** WT-2026-208.
+

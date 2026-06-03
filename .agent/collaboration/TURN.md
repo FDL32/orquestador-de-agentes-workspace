@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-02 20:35:00
+**Ultima actualizacion:** 2026-06-03 09:15:00
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | WT-2026-214 |
-| **Tipo** | CLOSEOUT |
-| **Accion** | CREATE_PLAN |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WT-2026-208 |
+| **Tipo** | IMPLEMENT |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> `WT-2026-214` esta completado y cerrado canonicamente en el bus. Preparar la migracion fisica del workspace solo despues de snapshot y cierre de procesos vivos.
+> Ejecuta WT-2026-208 de forma secuencial y concienzuda. Lee primero `work_plan.md`, `PLAN_WT-2026-208.md` y `AUDIT_WT-2026-208.md`. Trabaja por familias de fallos y por pasadas. No cierres con parches rapidos ni con una sola bajada del contador global; deja baseline, reruns por familia y rerun final de la suite completa.
 
 ---
 
@@ -25,9 +25,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | APPROVED |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
-*Cierre documental aplicado para WT-2026-214*
+*Preparado documentalmente para WT-2026-208*

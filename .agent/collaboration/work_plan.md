@@ -1,118 +1,108 @@
-# Work Ticket - WT-2026-214
+# Work Ticket - WT-2026-208
 
 ## Metadata
-- **ID:** WT-2026-214
-- **Title:** Protocolo de forced close en preflight para ticket anterior y runtime stale
-- **Scope:** system/preflight-reconcile
+- **ID:** WT-2026-208
+- **Title:** Estabilizacion de suite global tras transicion workspace+motor
+- **Scope:** system/testing
 - **Priority:** Alta
-- **Estado:** COMPLETED
+- **Estado:** APPROVED
 - **deliverable_type:** code
-- **Asignado a:** MANAGER
-- **Depende de:** WT-2026-210, WT-2026-216
+- **Asignado a:** BUILDER
+- **Depende de:** WT-2026-211
 
 ## Problema
-Hoy el launcher ya lee el bus como autoridad primaria para decidir qué agente lanzar, pero el preflight todavía no distingue formalmente entre dos clases de recuperación:
+La suite global del motor dejo de ser una senal fiable tras la transicion a workspace+motor.
+La evidencia actual combina varias familias distintas: rutas stale a `z_scripts`, tests que
+renombran `.agent` real del repo en Windows, assets limpios del motor que ya no existen,
+drift de semantica en estado/cierre, mojibake y tests de integracion con fixtures/copias
+que asumian otra topologia.
 
-1. limpiar runtime local stale del ticket anterior;
-2. reconciliar historia en el bus emitiendo cierre canónico del ticket anterior.
-
-Ese hueco fue la raíz operativa del drift que explotó en `WT-2026-205`: se podía abrir un ticket nuevo con `work_plan.md` y `STATE.md` avanzados mientras `supervisor_state.json`, `manager_bridge_state.json`, `builder_lock.txt` y el bus seguían anclados al ticket anterior.
-
-El riesgo ahora es integrar `reconcile_ticket.py` “a pelo” en el launcher y volver a mezclar operaciones locales reversibles con cierres históricos irreversibles en el bus.
+El riesgo principal de este ticket no es solo tecnico sino metodologico: intentar bajar el
+contador de fallos con parches rapidos, skips amplios o ajustes locales que tapan sintomas
+sin corregir el contrato real del sistema.
 
 ## Decision Arquitectonica
-- El bus sigue siendo la fuente canónica para decidir si un ticket previo está terminal o no.
-- El preflight debe separar explícitamente:
-  - limpieza local de runtime stale;
-  - reconciliación canónica en el bus.
-- `reconcile_ticket.py` se invoca solo cuando el ticket previo no es terminal y el drift está confirmado.
-- Si el ticket previo ya está terminal en el bus, el launcher limpia artefactos locales pero no emite eventos nuevos.
-- Si el bus es ilegible, ambiguo o contradictorio, el preflight aborta sin cerrar nada.
-- La decisión debe apoyarse en la derivación canónica del bus, no en heurísticas sobre `TURN.md`.
+- La suite global NO se trata como un unico bloque opaco; se trabaja por familias de fallos.
+- El Builder debe avanzar de forma secuencial, cerrando una familia antes de abrir la siguiente.
+- Cada fix debe empujar el contrato objetivo de workspace+motor; no reintroducir rutas o
+  heuristicas legacy solo para poner tests en verde.
+- No promover hotfixes como solucion estable si no dejan clara la deuda estructural o el
+  ticket hijo que la absorberia.
+- Los re-runs completos de la suite sirven como verificacion de convergencia, no como unica
+  herramienta de diagnostico.
+- Si una pasada deja dudas sobre causalidad o mezcla dos familias, el Builder debe cerrar esa pasada
+  con evidencia y abrir una nueva, no seguir encadenando fixes opacos.
 
 ## Non-goals
-- No rediseñar `reconcile_ticket.py` completo ni convertirlo en daemon.
-- No tocar todavía la terminalidad profunda de `StateMachine.derive_state_from_events()`; eso queda para ticket de especificación/hardening posterior.
-- No resolver aquí la duplicación del mapping `TicketState -> (role, action)`.
-- No reabrir la deuda del doble `STATE_CHANGED` de `--mark-ready`; eso sigue siendo `WT-2026-213`.
-- No cambiar la UX general del launcher más allá del preflight y sus mensajes/abortos.
+- No arreglar el ticket con `skip`, `xfail` o relajacion de asserts sin causa raiz verificada.
+- No parchear codigo productivo con rutas `z_scripts` o supuestos de repo anidado.
+- No mezclar en este ticket una barrida completa de nomenclatura historica (`WT-2026-209`).
+- No convertir `discover_skills.py` ni otros cambios sueltos no relacionados en parte del scope.
 
 ## Fases
-### Fase 0: Contrato de decisión
-- Fijar los tres casos del preflight:
-  - ticket previo terminal en bus + runtime stale -> limpiar local, no reconciliar;
-  - ticket previo no terminal + drift claro -> reconciliar en bus;
-  - bus ilegible o señales contradictorias -> abortar.
-- Definir qué señales mínimas componen “drift claro” y cuáles son “contradictorias”.
+### Fase 0: Baseline e inventario
+- Reproducir la suite global desde el motor con comando canonico.
+- Agrupar fallos por familias y fijar un baseline inicial con recuento y modulos afectados.
+- Confirmar que los fallos actuales siguen encajando en las familias ya observadas.
 
-### Fase 1: Inventario del preflight actual
-- Mapear `Repair-StartupBridgeState`, `Repair-StartupSupervisorState`, `Assert-StartupAlignment` y `Remove-StaleRuntimeArtifacts`.
-- Confirmar dónde se detecta hoy `SupervisorLastTicketId` / `BridgeLastTicketId` distinto de `WorkPlanId`.
-- Identificar el mejor punto para decidir entre cleanup local y `reconcile_ticket.py`.
+### Fase 1: Paths, roots y assets faltantes
+- Corregir tests y helpers que asumen rutas stale (`z_scripts`) o topologia previa.
+- Corregir referencias a assets/archivos que ya no forman parte del motor limpio.
+- Cerrar primero la familia de `run_llm_evals`, rutas del controller y tests que dependen del repo antiguo.
 
-### Fase 2: Implementación mínima
-- Añadir una decisión de reconciliación previa a la limpieza destructiva del runtime.
-- Reutilizar el estado derivado del bus para saber si el ticket previo está terminal.
-- Invocar `scripts/reconcile_ticket.py` con `--ticket` y `--reason` solo en el caso no terminal.
-- Mantener el cleanup local actual para el caso terminal.
+### Fase 2: Manipulacion de `.agent` real y permisos Windows
+- Sustituir patrones de rename/hide sobre `.agent` real del repo por sandboxes/copias seguras.
+- El objetivo es que los tests no dependan de renombrar superficies reales ni de permisos inestables.
 
-### Fase 3: Verificación
-- Probar drift con ticket previo terminal -> no se emiten eventos nuevos, solo limpieza local.
-- Probar drift con ticket previo no terminal -> se invoca reconciliación canónica.
-- Probar bus ilegible o estado no determinable -> aborta preflight sin cerrar nada.
-- Verificar que el caso sano no cambia.
+### Fase 3: Drift de semantica en estado y closeout
+- Revisar tests que fallan porque el contrato del sistema cambio de verdad.
+- Ajustar codigo o tests segun el contrato canonico actual, no segun expectativas legacy.
 
-### Fase 4: Deuda remanente
-- Documentar si la integración automática deja huecos para terminalidad profunda del bus.
-- Separar cualquier follow-up de limpieza o refactor del launcher/reconciler.
+### Fase 4: Encoding y superficies mojibake
+- Corregir archivos o expectativas de tests donde haya mojibake real.
+- No tocar contenido historico fuera del scope salvo que rompa una superficie operativa o un test vigente.
+
+### Fase 5: Convergencia y segunda pasada
+- Reejecutar la suite global.
+- Si aun quedan familias accionables, hacer una segunda pasada secuencial y cerrar otra familia completa.
+- Si la segunda pasada descubre una subfamilia distinta, abrir una tercera pasada breve antes del cierre.
+- No marcar READY_FOR_REVIEW mientras quede una familia entera claramente abordable dentro del scope.
+
+### Fase 6: Cierre con residuals explicitados
+- Reejecutar la suite completa y los subconjuntos tocados.
+- Si quedara algun residual, debe quedar clasificado: regresion real, deuda separada o bloqueo externo.
+- Actualizar backlog/CHANGELOG si se deriva deuda nueva o se absorbe deuda previa.
 
 ## Files / surfaces likely touched
-Esta lista es informativa y no un scope gate; el ticket se valida por el contrato de reconciliación del preflight.
+### Code / tests expected
+- `tests/`
+- `tests/unit/`
+- `runtime/`
+- `scripts/`
 
-### Writable deliverables
+### Documentation / control surfaces
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/PLAN_WT-2026-214.md`
-- `.agent/collaboration/AUDIT_WT-2026-214.md`
+- `.agent/collaboration/PLAN_WT-2026-208.md`
+- `.agent/collaboration/AUDIT_WT-2026-208.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 
-### Code / tests expected
-- `scripts/launch_agent_terminals.ps1`
-- `scripts/reconcile_ticket.py` (solo si hace falta exponer una interfaz más clara)
-- `scripts/get_launcher_state.py` (solo si hace falta helper adicional de estado)
-- `tests/test_launch_agent_terminals_script.py` (existente; no-regresión)
-- `tests/test_reconcile_ticket.py` (existente; ampliar si procede)
-- `tests/test_wt_2026_214_preflight_reconcile.py`
-
 ## Calidad
-- No contradecir `backlog.md`, `STATE.md`, `TURN.md` ni la memoria recién consolidada sobre `cleanup-vs-bus-reconcile`.
-- Registrar comandos y resultados si se ejecutan cambios o tests.
-- Mantener separación explícita entre cleanup local y reconciliación histórica.
-- No introducir una heurística que cierre tickets si el bus no puede leerse con confianza.
-- Quality gates mínimos:
-  - Desde `orquestador_de_agentes/`: `uv run pytest tests/test_launch_agent_terminals_script.py tests/test_reconcile_ticket.py tests/test_wt_2026_214_preflight_reconcile.py -q`
-  - Desde `orquestador_de_agentes/`: `uv run ruff check scripts/reconcile_ticket.py scripts/get_launcher_state.py tests/test_wt_2026_214_preflight_reconcile.py`
-  - Validación manual:
-    - drift con ticket previo terminal;
-    - drift con ticket previo no terminal;
-    - bus ilegible o contradictorio.
-- Estrategia de test prescrita para Case B:
-  - no basta con testear que `launch_agent_terminals.ps1` contiene cierta string;
-  - la lógica de decisión del preflight debe extraerse a un helper Python testeable;
-  - los tests de Case B deben verificar que la invocación de `reconcile_ticket.py` ocurre, ya sea con mocks de `subprocess.run` sobre el helper o con invocación real del reconciler en `tmp_path`.
+- Comando baseline/final de suite global en el motor:
+  - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m pytest tests -q`
+- Comando de ruff para superficies tocadas:
+  - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m ruff check <files>`
+- Verificacion minima por pasada:
+  - re-run del subconjunto tocado;
+  - recuento actualizado de la familia;
+  - nota corta de por que el fix corrige contrato y no solo sintoma.
+- Prohibido cerrar el ticket sin al menos un re-run completo de `pytest tests -q` al final.
 
 ## TP Check
-TP-01: el preflight distingue formalmente entre cleanup local y reconciliación en bus.
-TP-02: si el ticket previo ya está terminal en el bus, no se emiten eventos nuevos; solo se limpia runtime stale.
-TP-03: si el ticket previo no está terminal y el drift es claro, el launcher invoca `reconcile_ticket.py` con razón explícita.
-TP-04: si el bus es ilegible o contradictorio, el preflight aborta sin reconciliar ni limpiar de forma engañosa.
-TP-05: el caso sano permanece intacto cuando no hay drift entre ticket activo y runtime.
-TP-06: existen tests focales de los tres casos y pasan en verde con `pytest`; `ruff` pasa en las superficies tocadas.
-TP-07: la distinción cleanup local vs reconciliación histórica queda documentada como contrato del sistema.
-
-## Resultado
-- Implementacion aprobada y commiteada en el motor antes del cierre.
-- Cierre canonico ejecutado con `scripts/reconcile_ticket.py`.
-- El reconciler emitio `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED` para `WT-2026-214`.
-- Runtime local limpiado: `builder_lock.txt`, `supervisor_lock.txt` y claim de requeue del ticket.
-
+TP-01: existe baseline inicial de la suite con familias agrupadas, no solo una lista plana de fallos.
+TP-02: al menos una primera pasada cierra por completo una familia coherente de fallos.
+TP-03: no se introducen rutas legacy ni parches de corto plazo sin contrato claro.
+TP-04: los tests que manipulaban `.agent` real dejan de depender de renames/permisos fragiles del repo vivo.
+TP-05: los fallos de paths/assets se alinean con la topologia workspace+motor actual.
+TP-06: la suite completa se reejecuta y su resultado final queda documentado con evidencia.
+TP-07: cualquier residual queda clasificado y documentado, no escondido bajo skips amplios.

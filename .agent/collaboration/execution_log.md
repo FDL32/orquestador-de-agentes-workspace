@@ -1,6 +1,6 @@
 # Execution Log
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 
 ## WT-2026-205
@@ -64,4 +64,15 @@
   - TP-07: distincion documentada en docstring y contrato de decision.
 - Cierre canonico: `scripts/reconcile_ticket.py --ticket WT-2026-214` emitio `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; limpio locks y claim de requeue antes de la migracion fisica del workspace.
 - Estado documental: COMPLETED.
+
+## WT-2026-208
+- Inicio documental: 2026-06-03.
+- Objetivo: estabilizar la suite global del motor tras la transicion workspace+motor.
+- Baseline real tras cambios iniciales del Builder: 45 failed, 1772 passed, 21 skipped, 43 errors.
+- Pasada 1 - paths/cwd/assets: cambios validos en tests de integration/scope/bus drift/launcher preflight y `scripts/run_llm_evals.py`.
+- Validacion Pasada 1: `python -m pytest tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py -q` -> 36 passed.
+- Calidad Pasada 1: `python -m ruff check tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py scripts/run_llm_evals.py` -> All checks passed.
+- Pendiente: Fase 2 sigue concentrada en `tests/unit/test_upgrade.py` y `tests/unit/test_migrate_legacy_project.py`; no cerrar sin rerun global final.
+- Nota de scope: `.agent/agent_controller.py` queda fuera de Pasada 1 para revision separada; `.agent/hooks/__init__.py` queda sin commitear por estar fuera del scope actual.
+- Estado documental: IN_PROGRESS.
 
