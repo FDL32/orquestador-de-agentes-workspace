@@ -73,6 +73,6 @@
 - Validacion Pasada 1: `python -m pytest tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py -q` -> 36 passed.
 - Calidad Pasada 1: `python -m ruff check tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py scripts/run_llm_evals.py` -> All checks passed.
 - Pendiente: Fase 2 sigue concentrada en `tests/unit/test_upgrade.py` y `tests/unit/test_migrate_legacy_project.py`; no cerrar sin rerun global final.
-- Nota de scope: `.agent/agent_controller.py` queda fuera de Pasada 1 para revision separada; `.agent/hooks/__init__.py` queda sin commitear por estar fuera del scope actual.
+- Puente Pasada 1.1: `294174b` incluye `.agent/agent_controller.py` gobernado por `tests/unit/test_controller_project_map_cleanup.py` y `.agent/hooks/__init__.py` requerido por `tests/test_completion_integration.py` en checkout limpio.
 - Estado documental: IN_PROGRESS.
 

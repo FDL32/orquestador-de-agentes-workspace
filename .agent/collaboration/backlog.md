@@ -628,6 +628,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Problema:** aunque el Builder entre por una puerta lateral, hoy puede dejar cambios sin baseline, sin pasadas y sin evidencia suficiente. El Manager solo detecta el problema tarde y de forma manual.
 - **Objetivo:** hacer que el Manager rechace `READY_FOR_REVIEW` si faltan evidencias minimas del ciclo operativo.
 - **Sketch:** en la ruta de review, exigir `BUILDER_STARTED` del ticket, baseline inicial, resultado por pasada, rerun asociado, ausencia de out-of-scope sin justificar y execution_log actualizado. Si falta algo, emitir CHANGES con razon estructurada.
+- **Nota de metodo:** un cambio productivo es admisible si esta gobernado por un test concreto citado por nombre; es sospechoso si no hay test/evidencia que lo justifique.
 - **Criterio:** ningun ticket puede cerrarse por Manager sin evidencia minima aunque el Builder haya trabajado manualmente.
 - **Depende de:** WT-2026-208.
 
