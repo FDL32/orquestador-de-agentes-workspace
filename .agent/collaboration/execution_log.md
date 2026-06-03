@@ -106,3 +106,10 @@ Marked ready by Builder
 - Validacion Fase 4: python -m pytest tests/test_encoding_integrity.py -q -> 13 passed, 14 skipped.
 - Clasificacion de residual: los 5 fallos de 	est_encoding_integrity eran drift documental/encoding ya resuelto en stash@{0}; acentos restaurados y marcadores de mojibake clasicos eliminados.
 - Estado documental: IN_PROGRESS.
+- Fase residual final cerrada: `tests/test_council_broker.py` alinea la serializacion persistida con el valor canonico del enum (`ready_for_human_review`) y `scripts/update_project_map.py` deja de emitir mojibake en `graphify-out/GRAPH_REPORT.md`; `tests/test_project_map_freshness.py` estabiliza el detector con escapes Unicode para que no dependa de la codificacion del propio test.
+- Validacion focal residual: `python -m pytest tests/test_council_broker.py tests/test_project_map_freshness.py -q` -> 22 passed.
+- Calidad residual final: `python -m ruff check tests/test_council_broker.py scripts/update_project_map.py tests/test_project_map_freshness.py` -> All checks passed.
+- Rerun global canonico desde la raiz del motor: `python -m pytest tests -q` -> 11 failed, 1849 passed, 21 skipped.
+- Cierre de ticket: `WT-2026-208` agota el residual real; los 11 fallos restantes pertenecen integramente a `WT-2026-222` (contaminacion de suite / runtime root resolution) y no bloquean marcar `WT-2026-208` como completed.
+- Estado documental: COMPLETED.
+
