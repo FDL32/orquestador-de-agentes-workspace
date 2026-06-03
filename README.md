@@ -30,7 +30,7 @@ El motor es externo. El estado se configura via `motor_destination_link.json` (g
 
 ```powershell
 # Validar estado del sistema
-python orquestador_de_agentes\.agent\agent_controller.py --validate --project-root .
+python ..\orquestador_de_agentes\.agent\agent_controller.py --validate --project-root .
 
 # Sincronizar herramientas instaladas desde el motor
 python scripts\install_agent_system.py --sync
@@ -40,8 +40,8 @@ python scripts\install_agent_system.py --sync --dry-run
 ```
 
 Para el flujo completo de desarrollo con tickets, leer:
-- `orquestador_de_agentes/QUICKSTART.md`
-- `orquestador_de_agentes/INTERACTION_MODES.md`
+- `..\orquestador_de_agentes\QUICKSTART.md`
+- `..\orquestador_de_agentes\INTERACTION_MODES.md`
 
 ---
 

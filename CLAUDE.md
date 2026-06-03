@@ -28,7 +28,7 @@ Para cambios no triviales:
 4. Ejecuta verificaciones usando `/quality-gates`.
 
 Para operar por terminal en vez de por chat, lee el `QUICKSTART.md` del motor:
-`orquestador_de_agentes/QUICKSTART.md` y `orquestador_de_agentes/INTERACTION_MODES.md`.
+`..\orquestador_de_agentes\QUICKSTART.md` y `..\orquestador_de_agentes\INTERACTION_MODES.md`.
 
 ## Extensiones de Claude Code
 

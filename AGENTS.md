@@ -44,7 +44,7 @@ Este repo es `repo_destino` de dogfooding del motor. No usar "workspace" a secas
 
 - Sincronizar desde motor: `python scripts/install_agent_system.py --sync`
 - Vista previa sync: `python scripts/install_agent_system.py --sync --dry-run`
-- Estado del sistema: `python orquestador_de_agentes/.agent/agent_controller.py --validate --project-root .`
+- Estado del sistema: `python ..\orquestador_de_agentes\.agent\agent_controller.py --validate --project-root .`
 - Tests: `python scripts/run_pytest_safe.py`
 - Calidad: `ruff check . && ruff format .`
 - Auditoria de dependencias: `python scripts/pip_audit_project.py` (via `repo_motor`)
