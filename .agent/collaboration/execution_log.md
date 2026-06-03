@@ -72,7 +72,10 @@
 - Pasada 1 - paths/cwd/assets: cambios validos en tests de integration/scope/bus drift/launcher preflight y `scripts/run_llm_evals.py`.
 - Validacion Pasada 1: `python -m pytest tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py -q` -> 36 passed.
 - Calidad Pasada 1: `python -m ruff check tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py scripts/run_llm_evals.py` -> All checks passed.
-- Pendiente: Fase 2 sigue concentrada en `tests/unit/test_upgrade.py` y `tests/unit/test_migrate_legacy_project.py`; no cerrar sin rerun global final.
+- Fase 2 completada: los fixtures de `tests/unit/test_upgrade.py` y `tests/unit/test_migrate_legacy_project.py` dejan de renombrar `.agent` real del repo y pasan a aislarse via `tmp_path`.
+- Validacion Fase 2: `python -m pytest tests/unit/test_upgrade.py tests/unit/test_migrate_legacy_project.py -q` -> 30 passed.
+- Calidad Fase 2: `python -m ruff check tests/unit/test_upgrade.py tests/unit/test_migrate_legacy_project.py` -> All checks passed.
+- Pendiente: ejecutar siguiente pasada o rerun global final antes de cerrar el ticket.
 - Puente Pasada 1.1: `294174b` incluye `.agent/agent_controller.py` gobernado por `tests/unit/test_controller_project_map_cleanup.py` y `.agent/hooks/__init__.py` requerido por `tests/test_completion_integration.py` en checkout limpio.
 - Estado documental: IN_PROGRESS.
 
