@@ -1,4 +1,4 @@
-# Execution Log
+﻿# Execution Log
 
 **Estado:** IN_PROGRESS
 
@@ -55,11 +55,11 @@
   - `uv run pytest tests/test_launch_agent_terminals_script.py tests/test_reconcile_ticket.py tests/test_wt_2026_214_preflight_reconcile.py -q` -> 31 passed.
   - `uv run ruff check scripts/reconcile_ticket.py scripts/get_launcher_state.py scripts/preflight_reconcile.py tests/test_wt_2026_214_preflight_reconcile.py tests/test_reconcile_ticket.py tests/test_launch_agent_terminals_script.py` -> All checks passed.
 - Cobertura de TP Checks:
-  - TP-01: `test_preflight_returns_distinct_decisions` verifica los casos.
-  - TP-02: `test_terminal_prev_ticket_returns_cleanup` y `test_terminal_via_supervisor_closed` -> `CLEANUP_LOCAL` sin eventos nuevos.
-  - TP-03: `test_non_terminal_prev_ticket_returns_reconcile` y `test_non_terminal_in_review_returns_reconcile` -> `RECONCILE`.
+  - TP-01: est_preflight_returns_distinct_decisions` verifica los casos.
+  - TP-02: est_terminal_prev_ticket_returns_cleanup` y est_terminal_via_supervisor_closed` -> `CLEANUP_LOCAL` sin eventos nuevos.
+  - TP-03: est_non_terminal_prev_ticket_returns_reconcile` y est_non_terminal_in_review_returns_reconcile` -> `RECONCILE`.
   - TP-04: abortos por bus ilegible o contradictorio cubiertos por tests focales.
-  - TP-05: `test_no_runtime_state_returns_aligned` y `test_same_ticket_returns_aligned` -> `ALIGNED`.
+  - TP-05: est_no_runtime_state_returns_aligned` y est_same_ticket_returns_aligned` -> `ALIGNED`.
   - TP-06: tests verdes y `ruff` limpio.
   - TP-07: distincion documentada en docstring y contrato de decision.
 - Cierre canonico: `scripts/reconcile_ticket.py --ticket WT-2026-214` emitio `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; limpio locks y claim de requeue antes de la migracion fisica del workspace.
@@ -70,12 +70,29 @@
 - Objetivo: estabilizar la suite global del motor tras la transicion workspace+motor.
 - Baseline real tras cambios iniciales del Builder: 45 failed, 1772 passed, 21 skipped, 43 errors.
 - Pasada 1 - paths/cwd/assets: cambios validos en tests de integration/scope/bus drift/launcher preflight y `scripts/run_llm_evals.py`.
-- Validacion Pasada 1: `python -m pytest tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py -q` -> 36 passed.
-- Calidad Pasada 1: `python -m ruff check tests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py scripts/run_llm_evals.py` -> All checks passed.
-- Fase 2 completada: los fixtures de `tests/unit/test_upgrade.py` y `tests/unit/test_migrate_legacy_project.py` dejan de renombrar `.agent` real del repo y pasan a aislarse via `tmp_path`.
+- Validacion Pasada 1: `python -m pytest ttests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py -q` -> 36 passed.
+- Calidad Pasada 1: `python -m ruff check ttests/test_completion_integration.py tests/test_launcher_preflight.py tests/unit/test_bus_drift_detection.py tests/unit/test_scope_gate.py tests/unit/test_run_llm_evals.py scripts/run_llm_evals.py` -> All checks passed.
+- Fase 2 completada: los fixtures de tests/unit/test_upgrade.py` y tests/unit/test_migrate_legacy_project.py` dejan de renombrar `.agent` real del repo y pasan a aislarse via tmp_path`.
 - Validacion Fase 2: `python -m pytest tests/unit/test_upgrade.py tests/unit/test_migrate_legacy_project.py -q` -> 30 passed.
 - Calidad Fase 2: `python -m ruff check tests/unit/test_upgrade.py tests/unit/test_migrate_legacy_project.py` -> All checks passed.
+- Residual Fase 2 cerrado: `tests/test_project_paths.py` deja de ocultar `.agent` real del repo y pasa a confiar solo en `tmp_path`.
+- Validacion residual Fase 2: `python -m pytest tests/test_project_paths.py -q` -> 13 passed.
+- Calidad residual Fase 2: `python -m ruff check tests/test_project_paths.py` -> All checks passed.
 - Pendiente: ejecutar siguiente pasada o rerun global final antes de cerrar el ticket.
 - Puente Pasada 1.1: `294174b` incluye `.agent/agent_controller.py` gobernado por `tests/unit/test_controller_project_map_cleanup.py` y `.agent/hooks/__init__.py` requerido por `tests/test_completion_integration.py` en checkout limpio.
 - Estado documental: IN_PROGRESS.
+
+
+
+Marked ready by Builder
+- Fase 3 parcial cerrada: rescate selectivo desde stash@{0} de .agent/council/audit_rules.py, tests/test_prepush_check.py y tests/unit/test_validate_host_prefix.py, sin mezclar la familia de encoding.
+- Gate de rescate: git status --short mostro exactamente esos 3 ficheros y ningun path del bundle de encoding.
+- Validacion Fase 3 parcial: python -m pytest tests/test_audit_rules.py tests/test_prepush_check.py tests/unit/test_validate_host_prefix.py -q -> 37 passed.
+- Calidad Fase 3 parcial: python -m ruff check .agent/council/audit_rules.py tests/test_prepush_check.py tests/unit/test_validate_host_prefix.py -> All checks passed.
+- Clasificacion de residual: tests/unit/test_project_root_resolution.py -q -> 13 passed aislado; se clasifica como contaminacion de suite por orden/cache y queda como deuda de higiene para recuperar una senal global fiable.
+- Clasificacion de residual: tests/test_completion_checker.py -q -> 8 failed, 12 passed; residual real de Fase 3, pendiente de contrastar contra el contrato de produccion antes de alinear tests o tocar codigo.
+- Estado documental: IN_PROGRESS.
+
+
+
 
