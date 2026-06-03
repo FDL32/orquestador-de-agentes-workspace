@@ -96,3 +96,8 @@ Marked ready by Builder
 
 
 
+- Fase 3 parcial ampliada: .agent/completion_checker.py converge con completion_common y deja de mantener una implementacion local divergente para runner, checks de tareas y resumen.
+- Validacion Fase 3 parcial: python -m pytest tests/test_completion_checker.py -q -> 20 passed.
+- Calidad Fase 3 parcial: python -m ruff check .agent/completion_checker.py tests/test_completion_checker.py -> All checks passed.
+- Clasificacion de residual: el bloque uv run vs safe-runner y la semantica READY_FOR_REVIEW/COMPLETED eran bug real de produccion en completion_checker; corregido via helpers canonicos compartidos.
+- Estado documental: IN_PROGRESS.

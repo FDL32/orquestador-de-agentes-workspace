@@ -1,12 +1,12 @@
-# Backlog
+﻿# Backlog
 
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
 > Al arrancar un item, se convierte en `work_plan.md`; al cerrarlo, pasa a `CHANGELOG.md`.
 
 ## Politica
-- **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` — repo destino real que sirve para desarrollar el motor.
-- **Motor (fuente canonica):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes` — repo portable con `.git` propio.
+- **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` â€” repo destino real que sirve para desarrollar el motor.
+- **Motor (fuente canonica):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes` â€” repo portable con `.git` propio.
 - **Contrato:** mejoras que nacen en el workspace y deben ser globales se portan explicitamente al motor; nunca se asume sincronizacion implicita.
 - **Escritura:** humano o Manager; Builder solo lo toca si el plan lo pide explicitamente.
 - **Destino:** cada proyecto destino tendra su propio `.agent/collaboration/backlog.md`.
@@ -65,6 +65,7 @@
 | Alta | WT-2026-221a | Launcher-only execution contract: BUILDER_STARTED + guard de arranque | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | backlog | WT-2026-208 | session-2026-06-03-suite-hygiene |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -119,24 +120,24 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Alta
 - **Scope:** system/bus-durable-requeue
 - **Estado:** completed
-- **Problema:** `REVIEW_DECISION=CHANGES` puede quedar sin consumidor durable si el supervisor reactivo anterior ya no esta vivo. Eso deja tickets huérfanos en `READY_FOR_REVIEW` hasta intervención manual o bootstrap tardío.
+- **Problema:** `REVIEW_DECISION=CHANGES` puede quedar sin consumidor durable si el supervisor reactivo anterior ya no esta vivo. Eso deja tickets huÃ©rfanos en `READY_FOR_REVIEW` hasta intervenciÃ³n manual o bootstrap tardÃ­o.
 - **Objetivo:** garantizar que cada `CHANGES` tenga procesamiento durable y produzca relanzamiento o requeue sin depender de que el supervisor anterior siga vivo.
-- **Sketch inicial:** reforzar el consumidor de `CHANGES` con una ruta durable y verificable; puede ser supervisor persistente, bootstrap watchdog explícito o disparo controlado de `ticket_supervisor.py --once`, pero debe quedar una sola autoridad observable en el bus.
-- **Criterio:** un `REVIEW_DECISION=CHANGES` pendiente se procesa dentro de una ventana acotada sin intervención manual y sin tickets huérfanos.
+- **Sketch inicial:** reforzar el consumidor de `CHANGES` con una ruta durable y verificable; puede ser supervisor persistente, bootstrap watchdog explÃ­cito o disparo controlado de `ticket_supervisor.py --once`, pero debe quedar una sola autoridad observable en el bus.
+- **Criterio:** un `REVIEW_DECISION=CHANGES` pendiente se procesa dentro de una ventana acotada sin intervenciÃ³n manual y sin tickets huÃ©rfanos.
 - **Depende de:** WT-2026-211.
-- **Cierre:** la ruta canónica queda en `bus/review_bridge.py`: `REVIEW_DECISION=CHANGES` -> `--request-changes` -> `_ensure_durable_changes_consumer(...)` -> `bootstrap()+run_once()` del supervisor. Tests focales y regresión de bridge aprobados.
+- **Cierre:** la ruta canÃ³nica queda en `bus/review_bridge.py`: `REVIEW_DECISION=CHANGES` -> `--request-changes` -> `_ensure_durable_changes_consumer(...)` -> `bootstrap()+run_once()` del supervisor. Tests focales y regresiÃ³n de bridge aprobados.
 
 ## WT-2026-214 - Protocolo de forced close en preflight para ticket anterior y runtime stale
 - **Prioridad:** Alta
 - **Scope:** system/preflight-reconcile
 - **Estado:** completed
-- **Problema:** el launcher ya lee el bus como autoridad primaria para elegir agente, pero el preflight todavía no distingue formalmente entre limpiar runtime stale y reconciliar historia en el bus. Eso deja abierta la misma familia de drift que originó `WT-2026-205`.
-- **Objetivo:** integrar una decisión de preflight con tres casos explícitos:
+- **Problema:** el launcher ya lee el bus como autoridad primaria para elegir agente, pero el preflight todavÃ­a no distingue formalmente entre limpiar runtime stale y reconciliar historia en el bus. Eso deja abierta la misma familia de drift que originÃ³ `WT-2026-205`.
+- **Objetivo:** integrar una decisiÃ³n de preflight con tres casos explÃ­citos:
   - ticket previo terminal -> cleanup local;
-  - ticket previo no terminal -> reconciliación canónica;
+  - ticket previo no terminal -> reconciliaciÃ³n canÃ³nica;
   - bus ilegible o contradictorio -> aborto.
-- **Sketch inicial:** insertar la decisión entre `Assert-StartupAlignment` / `Repair-StartupSupervisorState` y `Remove-StaleRuntimeArtifacts`, reutilizando el bus como autoridad canónica e invocando `scripts/reconcile_ticket.py` solo cuando el drift no terminal esté confirmado.
-- **Criterio:** abrir WT-N+1 con runtime stale de WT-N no mezcla historias: limpia si WT-N ya cerró, reconcilia si WT-N quedó colgado y aborta si no puede decidir con seguridad.
+- **Sketch inicial:** insertar la decisiÃ³n entre `Assert-StartupAlignment` / `Repair-StartupSupervisorState` y `Remove-StaleRuntimeArtifacts`, reutilizando el bus como autoridad canÃ³nica e invocando `scripts/reconcile_ticket.py` solo cuando el drift no terminal estÃ© confirmado.
+- **Criterio:** abrir WT-N+1 con runtime stale de WT-N no mezcla historias: limpia si WT-N ya cerrÃ³, reconcilia si WT-N quedÃ³ colgado y aborta si no puede decidir con seguridad.
 - **Depende de:** WT-2026-210, WT-2026-216.
 - **Cierre:** implementacion aprobada y commiteada; cierre canonico emitido en el bus con `scripts/reconcile_ticket.py`; runtime stale de `WT-2026-214` limpiado antes de la migracion fisica del workspace.
 
@@ -144,19 +145,19 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Alta
 - **Scope:** system/launcher-bus-read
 - **Estado:** completed
-- **Problema:** el launcher sigue tomando su decisión operativa principal desde `TURN.md`. Si esa proyección queda stale aunque el bus refleje el estado correcto, puede relanzar el agente equivocado o no relanzar ninguno.
-- **Objetivo:** mover la decisión de arranque a lectura del bus o de un helper canónico basado en el bus, dejando `TURN.md` como proyección operativa secundaria.
-- **Sketch inicial:** introducir una ruta de decisión bus-read en `launch_agent_terminals.ps1`, con fallback explícito y acotado solo si el bus no puede leerse; cubrir el caso de `TURN.md` stale con tests focales.
+- **Problema:** el launcher sigue tomando su decisiÃ³n operativa principal desde `TURN.md`. Si esa proyecciÃ³n queda stale aunque el bus refleje el estado correcto, puede relanzar el agente equivocado o no relanzar ninguno.
+- **Objetivo:** mover la decisiÃ³n de arranque a lectura del bus o de un helper canÃ³nico basado en el bus, dejando `TURN.md` como proyecciÃ³n operativa secundaria.
+- **Sketch inicial:** introducir una ruta de decisiÃ³n bus-read en `launch_agent_terminals.ps1`, con fallback explÃ­cito y acotado solo si el bus no puede leerse; cubrir el caso de `TURN.md` stale con tests focales.
 - **Criterio:** con bus correcto y `TURN.md` stale, el launcher sigue eligiendo el agente correcto; el rescate durable de `WT-2026-212` pasa a ser fallback excepcional y no camino normal.
 - **Depende de:** WT-2026-211.
-- **Cierre:** `launch_agent_terminals.ps1` consulta `scripts/get_launcher_state.py` antes de leer `TURN.md`; el helper deriva estado vía `StateMachine.derive_state_from_events()` y los tests focales del launcher pasan.
-- **Nota residual:** el mapeo `TicketState -> (role, action)` está duplicado entre `scripts/get_launcher_state.py` y `bus/supervisor.py`; candidata a ticket de limpieza posterior, no bloqueante.
+- **Cierre:** `launch_agent_terminals.ps1` consulta `scripts/get_launcher_state.py` antes de leer `TURN.md`; el helper deriva estado vÃ­a `StateMachine.derive_state_from_events()` y los tests focales del launcher pasan.
+- **Nota residual:** el mapeo `TicketState -> (role, action)` estÃ¡ duplicado entre `scripts/get_launcher_state.py` y `bus/supervisor.py`; candidata a ticket de limpieza posterior, no bloqueante.
 
 ## WT-2026-215 - Gates Modelo B: operaciones git de tooling resuelven motor_root
 - **Prioridad:** Alta
 - **Scope:** system/gates-motor-root
 - **Estado:** backlog
-- **Problema:** varias operaciones git del tooling corren con `cwd=project_root` (el workspace, que NO es repo git) en vez de `motor_root` (`orquestador_de_agentes/`, que SÍ es repo y contiene los commits). El resultado es `git diff` vacío y decisiones falsas. Sintoma verificado en esta sesion: el pre-check de packaging del review bridge (`check_review_packet_diff_empty`) reporta "empty review diff" y emite `REVIEW_DECISION=CHANGES` automatico aunque el Builder SI haya commiteado codigo real en el motor. Bloqueo dos ciclos seguidos en `WT-2026-214` sin que el Manager llegara a revisar codigo.
+- **Problema:** varias operaciones git del tooling corren con `cwd=project_root` (el workspace, que NO es repo git) en vez de `motor_root` (`orquestador_de_agentes/`, que SÃ es repo y contiene los commits). El resultado es `git diff` vacÃ­o y decisiones falsas. Sintoma verificado en esta sesion: el pre-check de packaging del review bridge (`check_review_packet_diff_empty`) reporta "empty review diff" y emite `REVIEW_DECISION=CHANGES` automatico aunque el Builder SI haya commiteado codigo real en el motor. Bloqueo dos ciclos seguidos en `WT-2026-214` sin que el Manager llegara a revisar codigo.
 - **Causa raiz (VERIFICADA EN CODIGO):** `bus/review_bridge.py` -> `_git_diff_stat()`, `_resolve_review_base()` y `_build_diff_for_files_likely_touched()` usan `cwd=self.project_root`. `WT-2026-187` ya extrajo `runtime/motor_link.py` (`resolve_motor_root`) y listo `review_bridge.py` como consumidor, pero solo se migro `_resolve_motor_controller`; las funciones git quedaron sin migrar. Mismo patron en las gates diferidas de `WT-2026-205`: `prepush_check.py` y `session_closeout.py`.
 - **Principio unificador:** todas las operaciones git del tooling resuelven `motor_root` via `motor_link` y corren con ese `cwd`. "Las operaciones git siempre corren en motor_root, punto."
 - **Superficies a cubrir:**
@@ -167,7 +168,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Tests requeridos:** con workspace no-repo + motor con commits reales, `check_review_packet_diff_empty` devuelve False (diff visible); el pre-check no emite CHANGES espurio; `prepush_check`/`session_closeout` resuelven el repo del motor; fallback si no hay repo.
 - **Criterio:** un Builder que commitea codigo real en el motor pasa el pre-check de packaging del bridge y el Manager revisa codigo de verdad; las gates de cierre operan sobre el repo del motor sin overrides manuales.
 - **Depende de:** WT-2026-210. Relacionado: WT-2026-187 (motor_link), WT-2026-203 (introdujo el diff check), WT-2026-206 (scope gate, superficie adyacente).
-- **Nota de simplificacion:** si el motor pasa a ser carpeta hermana del workspace (decision en curso), el principio se vuelve trivial de razonar: no hay repo anidado, el `cwd` de git es siempre el repo del motor sin ambiguedad. La migracion fisica no arregla este bug por si sola — el codigo sigue viviendo en el repo del motor — pero elimina la confusion conceptual.
+- **Nota de simplificacion:** si el motor pasa a ser carpeta hermana del workspace (decision en curso), el principio se vuelve trivial de razonar: no hay repo anidado, el `cwd` de git es siempre el repo del motor sin ambiguedad. La migracion fisica no arregla este bug por si sola â€” el codigo sigue viviendo en el repo del motor â€” pero elimina la confusion conceptual.
 
 ## WT-2026-217 - Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES
 - **Prioridad:** Alta
@@ -233,31 +234,31 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Baja
 - **Scope:** system
 - **Estado:** backlog
-- **Problema:** `guard_paths.py` usa patrones de seguridad (privada, .env) pero no protege archivos de estado del workspace (work_plan.md, execution_log.md). En Modelo B, si el cwd es el motor, el guard no "ve" el workspace — work_plan.md puede sobreescribirse accidentalmente. Incidente: WP-2026-178 pisó WT-2026-182 en sesión 2026-05-30.
-- **Sketch:** añadir a `guard_paths.py` una lista de archivos de estado sagrados del workspace resueltos vía `AGENT_PROJECT_ROOT`; cualquier write a esos paths requiere confirmación explícita.
-- **Criterio:** intentar editar `z_scripts/.agent/collaboration/work_plan.md` desde Claude Code muestra alerta de guard y requiere confirmación.
+- **Problema:** `guard_paths.py` usa patrones de seguridad (privada, .env) pero no protege archivos de estado del workspace (work_plan.md, execution_log.md). En Modelo B, si el cwd es el motor, el guard no "ve" el workspace â€” work_plan.md puede sobreescribirse accidentalmente. Incidente: WP-2026-178 pisÃ³ WT-2026-182 en sesiÃ³n 2026-05-30.
+- **Sketch:** aÃ±adir a `guard_paths.py` una lista de archivos de estado sagrados del workspace resueltos vÃ­a `AGENT_PROJECT_ROOT`; cualquier write a esos paths requiere confirmaciÃ³n explÃ­cita.
+- **Criterio:** intentar editar `z_scripts/.agent/collaboration/work_plan.md` desde Claude Code muestra alerta de guard y requiere confirmaciÃ³n.
 - **Depende de:** WT-2026-182 (completado).
 
 ## WT-2026-182 - Integracion Repomix para Context Bootstrapping y Repo-Compare
 - **Prioridad:** Media
 - **Scope:** system/skills
 - **Estado:** backlog
-- **Problema:** En el arranque, los agentes exploran "a ciegas" perdiendo turnos; además, las herramientas de repo-compare son lentas fichero a fichero.
+- **Problema:** En el arranque, los agentes exploran "a ciegas" perdiendo turnos; ademÃ¡s, las herramientas de repo-compare son lentas fichero a fichero.
 - **Sketch:** 
-  1) `repomix-context`: generar `.agent/context/repomix.xml` (con `--compress`) del workspace en arranque y pasarlo como `-f` a los agentes para inyección de contexto Cero-Turno.
+  1) `repomix-context`: generar `.agent/context/repomix.xml` (con `--compress`) del workspace en arranque y pasarlo como `-f` a los agentes para inyecciÃ³n de contexto Cero-Turno.
   2) `repo-compare`: usar repomix para empaquetar origen + destino en XMLs comprimidos para que el agente reciba ambos de golpe detectando gaps inmediatamente.
-- **Criterio:** El agente arranca recibiendo todo el contexto comprimido automáticamente (sin overhead notable en repos pequeños), y la herramienta de repo-compare empaqueta y compara vía Repomix.
-- **Notas:** Depende de Node.js (que ya está instalado por OpenCode). Ideal usar opción `--compress` nativa de Tree-sitter.
+- **Criterio:** El agente arranca recibiendo todo el contexto comprimido automÃ¡ticamente (sin overhead notable en repos pequeÃ±os), y la herramienta de repo-compare empaqueta y compara vÃ­a Repomix.
+- **Notas:** Depende de Node.js (que ya estÃ¡ instalado por OpenCode). Ideal usar opciÃ³n `--compress` nativa de Tree-sitter.
 
 ## WT-2026-185 - Knowledge Layer: Glosario + Microagent + skill_resolver
 - **Prioridad:** Media
 - **Scope:** system/knowledge
 - **Estado:** completed
-- **Problema:** Los agentes carecían de marco canónico de terminología y onboarding; el skill_resolver fallaba silenciosamente ante catálogos vacíos.
-- **Sketch:** actualizar `EmptySkillCatalogError` para mencionar `.agent/microagents/`; crear `agent_system/templates/glossary.md` (14 términos); crear `templates/microagents/onboarding.md` con triggers y heurísticas de tech stack; integrar en instalador con guard `if not exists`; test unitario del mensaje.
-- **Criterio:** excepción guía al usuario; instalador deposita knowledge docs; `--validate` no emite warning `host-project` tras install.
+- **Problema:** Los agentes carecÃ­an de marco canÃ³nico de terminologÃ­a y onboarding; el skill_resolver fallaba silenciosamente ante catÃ¡logos vacÃ­os.
+- **Sketch:** actualizar `EmptySkillCatalogError` para mencionar `.agent/microagents/`; crear `agent_system/templates/glossary.md` (14 tÃ©rminos); crear `templates/microagents/onboarding.md` con triggers y heurÃ­sticas de tech stack; integrar en instalador con guard `if not exists`; test unitario del mensaje.
+- **Criterio:** excepciÃ³n guÃ­a al usuario; instalador deposita knowledge docs; `--validate` no emite warning `host-project` tras install.
 - **Depende de:** WT-2026-184.
-- **Nota post-cierre:** los knowledge docs depositados en `.agent/` raíz son vulnerables al prune de `--sync` → corregido en WT-2026-186.
+- **Nota post-cierre:** los knowledge docs depositados en `.agent/` raÃ­z son vulnerables al prune de `--sync` â†’ corregido en WT-2026-186.
 
 ## WT-2026-186 - Idempotencia del instalador y contrato de rutas gestionadas
 - **Prioridad:** Alta
@@ -266,9 +267,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Problema:** `scripts/install_agent_system.py --sync` puede podar `.agent/glossary.md` y `.agent/microagents/` en la segunda sincronizacion estricta. Esas rutas se depositan desde `agent_system/templates/`, no existen en `.agent/` fuente y no estan cubiertas por `LOCAL_DIRS`.
 - **Decision de semantica:** `glossary.md` y `microagents/` son plantilla-una-vez: el instalador los crea si faltan, luego pertenecen al workspace destino. `--sync` no los sobrescribe, pero tampoco debe podarlos.
 - **Sketch:**
-  1) Introducir `INSTALLER_MANAGED_PATHS = {"glossary.md", "microagents"}` — constante separada de `LOCAL_DIRS` con semántica distinta: estas rutas se depositan una vez y luego pertenecen al destino; `--sync` no las poda pero tampoco las sobrescribe. NO usar `is_preserved()` (footgun: bloquearía sync si algún día se añaden a la fuente).
+  1) Introducir `INSTALLER_MANAGED_PATHS = {"glossary.md", "microagents"}` â€” constante separada de `LOCAL_DIRS` con semÃ¡ntica distinta: estas rutas se depositan una vez y luego pertenecen al destino; `--sync` no las poda pero tampoco las sobrescribe. NO usar `is_preserved()` (footgun: bloquearÃ­a sync si algÃºn dÃ­a se aÃ±aden a la fuente).
   2) Modificar `detect_destination_residues()` para excluir las rutas de `INSTALLER_MANAGED_PATHS` antes de podar.
-  3) `copy_tree()`: corregir comportamiento — el allowlist se valida por archivo, no solo por directorio raíz; `shutil.copytree` sobre un dir parcialmente allowlisted puede meter archivos no permitidos. Alinear docstring con comportamiento real (hoy promete `RuntimeError`, hace `SKIP`+continue).
+  3) `copy_tree()`: corregir comportamiento â€” el allowlist se valida por archivo, no solo por directorio raÃ­z; `shutil.copytree` sobre un dir parcialmente allowlisted puede meter archivos no permitidos. Alinear docstring con comportamiento real (hoy promete `RuntimeError`, hace `SKIP`+continue).
   4) Eliminar entrada fantasma `BACKUP_VERIFIED.md` de `MANIFEST.workspace` (no existe en fuente ni destino).
 - **Tests requeridos:** `install && sync && sync` preserva knowledge docs; sync preserva glosario modificado por usuario; residuo real se poda; archivo no-allowlisted dentro de dir permitido no se copia; dry-run no escribe ni borra pero reporta correctamente; glosario y microagents existentes no se sobrescriben.
 - **Criterio:** `--install && --sync && --sync` deja vivos y personalizados los knowledge docs de WT-2026-185, mientras los residuos reales siguen siendo podados.
@@ -281,15 +282,15 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Problema:** varias rutas y comandos todavia asumen codigo local en el workspace o nombres fijos del motor. Esto debilita Modelo B y deja deuda legacy visible tras la auditoria de cierre.
 - **Sketch:**
   1) Extraer `runtime/motor_link.py`: API `resolve_motor_root(project_root)`, `resolve_motor_controller(project_root)`, `resolve_motor_script(project_root, script_name)`. Lee `motor_destination_link.json`. Consumidores: `review_bridge.py`, `prepush_check.py`, `session_closeout.py`.
-  2) Portabilidad: corregir `TEMPLATE_ROOT = Path(__file__).resolve().parent.parent` (bug activo: falla si motor se renombra); corregir log de éxito en install (usa `PROJECT_AGENT` global, debería usar `project_agent` local).
-  3) Portabilidad Modelo B: `prepush_check.py` usa `.agent/agent_controller.py` relativo — rompe en destino puro; resolver vía `motor_link`; mismo problema en `session_closeout.py` (invoca 6+ scripts desde `project_root/scripts/`).
-  4) Ampliar `_check_portability()` en `session_closeout.py` — hoy solo escanea `docs/markdowns/skills/.agent/rules` en `*.md`; no ve `scripts/`, `bus/`, `*.py`, `*.ps1` (los hardcodes de esta auditoría habrían sido invisibles).
-  5) `.git` check frágil: `pre_handoff_guard.py` devuelve `valid=True` silenciosamente si `.git` no existe en `project_root` (bypass de todos los checks). Decidir: "sin .git → skip con warning" vs `git -C <path> rev-parse --is-inside-work-tree`.
+  2) Portabilidad: corregir `TEMPLATE_ROOT = Path(__file__).resolve().parent.parent` (bug activo: falla si motor se renombra); corregir log de Ã©xito en install (usa `PROJECT_AGENT` global, deberÃ­a usar `project_agent` local).
+  3) Portabilidad Modelo B: `prepush_check.py` usa `.agent/agent_controller.py` relativo â€” rompe en destino puro; resolver vÃ­a `motor_link`; mismo problema en `session_closeout.py` (invoca 6+ scripts desde `project_root/scripts/`).
+  4) Ampliar `_check_portability()` en `session_closeout.py` â€” hoy solo escanea `docs/markdowns/skills/.agent/rules` en `*.md`; no ve `scripts/`, `bus/`, `*.py`, `*.ps1` (los hardcodes de esta auditorÃ­a habrÃ­an sido invisibles).
+  5) `.git` check frÃ¡gil: `pre_handoff_guard.py` devuelve `valid=True` silenciosamente si `.git` no existe en `project_root` (bypass de todos los checks). Decidir: "sin .git â†’ skip con warning" vs `git -C <path> rev-parse --is-inside-work-tree`.
   6) Limpieza legacy: eliminar `sync_agent_core.py` (deprecado v9.4.1, nadie lo importa, 35 occ mojibake); `strict_sync` no-op en `sync_agent_system()`; `import shutil` redundante en `copy_knowledge_docs()`.
-  7) Mensaje `EmptySkillCatalogError` engañoso (dice "add microagents" pero resolver no las conoce); test superficial de WT-2026-185 — reemplazar por test que ejerce ruta real de catálogo vacío.
-  8) Decisión explícita: `orquestador.py` usa rutas cwd (`Path(".agent/logs")`, allowlist/denylist) sin migrar a `runtime.project_root` + 9 occ mojibake. ¿Legacy o migrar?
-  9) Comandos en `AGENTS.md` listan `python .agent/agent_controller.py` sin `--project-root` — contradice la arquitectura Modelo B documentada en el mismo archivo.
-- **Criterio:** los comandos de cierre/calidad funcionan desde workspace destino Modelo B puro; chequeo de portabilidad detecta hardcodes en código fuente; no hay bypasses silenciosos en guards de higiene.
+  7) Mensaje `EmptySkillCatalogError` engaÃ±oso (dice "add microagents" pero resolver no las conoce); test superficial de WT-2026-185 â€” reemplazar por test que ejerce ruta real de catÃ¡logo vacÃ­o.
+  8) DecisiÃ³n explÃ­cita: `orquestador.py` usa rutas cwd (`Path(".agent/logs")`, allowlist/denylist) sin migrar a `runtime.project_root` + 9 occ mojibake. Â¿Legacy o migrar?
+  9) Comandos en `AGENTS.md` listan `python .agent/agent_controller.py` sin `--project-root` â€” contradice la arquitectura Modelo B documentada en el mismo archivo.
+- **Criterio:** los comandos de cierre/calidad funcionan desde workspace destino Modelo B puro; chequeo de portabilidad detecta hardcodes en cÃ³digo fuente; no hay bypasses silenciosos en guards de higiene.
 - **Depende de:** WT-2026-186.
 
 ## WT-2026-188 - Modularizacion progresiva de agent_controller.py
@@ -297,7 +298,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Scope:** system/architecture
 - **Estado:** completed
 - **Problema:** `.agent/agent_controller.py` concentra CLI, validacion, materializacion de estado y orquestacion. Es mantenible hoy, pero su tamano y centralidad elevan el coste de cambio.
-- **Non-goal:** no crear codigo bajo `.agent/validators/` — viola Modelo B (`.agent/` es estado, no codigo del motor). Namespace del motor: `bus/validators/`, `runtime/validators/` o similar segun dependencias reales.
+- **Non-goal:** no crear codigo bajo `.agent/validators/` â€” viola Modelo B (`.agent/` es estado, no codigo del motor). Namespace del motor: `bus/validators/`, `runtime/validators/` o similar segun dependencias reales.
 - **Sketch:** mapear responsabilidades internas (CLI dispatch, validacion, materializacion de estado, orquestacion) antes de mover nada; extraer solo funciones puras con tests previos; mantener `agent_controller.py` como fachada CLI estable; un modulo por responsabilidad; evitar refactors masivos sin cobertura previa.
 - **Criterio:** cada extraccion conserva comportamiento, reduce complejidad local y mantiene compatibilidad de CLI.
 - **Depende de:** WT-2026-187.
@@ -314,8 +315,8 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Baja
 - **Scope:** system/devx
 - **Estado:** backlog
-- **Problema:** `npx repomix` falla con `Permission denied while scanning directory` en `z_scripts` y `orquestador_de_agentes` en Windows. El error ocurre en globby antes de aplicar filtros de include/exclude. PowerShell accede sin problemas; el bloqueo es específico de Node.js (posiblemente antivirus o Windows Search). Repomix es best-effort y no bloquea el arranque.
-- **Sketch:** investigar ACLs con `icacls`, probar desactivar indexación de Windows Search en la carpeta, probar versión más reciente de repomix, o como alternativa usar `--working-dir` apuntando a un subdirectorio accesible.
+- **Problema:** `npx repomix` falla con `Permission denied while scanning directory` en `z_scripts` y `orquestador_de_agentes` en Windows. El error ocurre en globby antes de aplicar filtros de include/exclude. PowerShell accede sin problemas; el bloqueo es especÃ­fico de Node.js (posiblemente antivirus o Windows Search). Repomix es best-effort y no bloquea el arranque.
+- **Sketch:** investigar ACLs con `icacls`, probar desactivar indexaciÃ³n de Windows Search en la carpeta, probar versiÃ³n mÃ¡s reciente de repomix, o como alternativa usar `--working-dir` apuntando a un subdirectorio accesible.
 - **Criterio:** `npx repomix --compress` genera `.agent/context/repomix.xml` sin errores en el siguiente arranque del launcher.
 - **Depende de:** WT-2026-182.
 
@@ -357,7 +358,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Estado:** backlog
 - **Problema:** WT-2026-200 corrigio el bug real de precedencia `-OnlyBuilder` / `-ResumeBuilder`, pero aun quedan mejoras de robustez que conviene aislar para no reabrir un ticket ya cerrable: falta una prueba mas cercana al runtime real desde `bus/supervisor.py:_relaunch_builder()`, algunos tests dependen de asserts textuales sobre el `.ps1`, y el invariante de precedencia vive en codigo/tests pero no en una nota durable cercana al launcher.
 - **Sketch:**
-  1) Añadir un test o eval de integracion ligera que ejerza la invocacion real desde `_relaunch_builder()` hasta `launch_agent_terminals.ps1`.
+  1) AÃ±adir un test o eval de integracion ligera que ejerza la invocacion real desde `_relaunch_builder()` hasta `launch_agent_terminals.ps1`.
   2) Reducir dependencia de asserts sobre texto literal del script PowerShell, favoreciendo verificaciones de comportamiento.
   3) Documentar cerca del launcher/supervisor que `-OnlyBuilder` tiene precedencia sobre `-ResumeBuilder` para la decision de lanzar supervisor.
 - **Criterio:** una refactorizacion cosmetica del `.ps1` no rompe tests validos, el camino real supervisor -> launcher queda cubierto por al menos una prueba, y la precedencia de flags queda documentada junto al codigo que la implementa.
@@ -397,7 +398,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Estado:** backlog
 - **Problema:** hoy existen dos superficies de collaboration: la activa en `z_scripts/.agent/collaboration` y una copia legacy/stale en `orquestador_de_agentes/.agent/collaboration`. El `session_closeout` solo opera sobre el workspace activo, por lo que la copia del motor acumula `manager_feedback_*`, `review_queue.md`, `work_plan.md`, `TURN.md` y `execution_log.md` obsoletos sin una politica explicita.
 - **Sketch:** decidir y automatizar una de estas dos semanticas: (a) tratar la collaboration del motor como superficie legacy congelada y excluirla del lifecycle operativo; o (b) archivarla/limpiarla explicitamente durante `session-close` cuando `project_root != motor_root`. En ambos casos, dejarlo documentado y testeado para que no vuelva a parecer estado canonico.
-- **Criterio:** tras un cierre de sesion, no queda ambiguedad sobre cual collaboration es canonica y la copia del motor no arrastra estado operativo engañoso.
+- **Criterio:** tras un cierre de sesion, no queda ambiguedad sobre cual collaboration es canonica y la copia del motor no arrastra estado operativo engaÃ±oso.
 - **Depende de:** WT-2026-210.
 
 ## WT-2026-208 - Estabilizacion de suite global tras transicion workspace+motor
@@ -522,11 +523,11 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Media
 - **Scope:** system/bus
 - **Estado:** active
-- **Problema:** cuando el supervisor se cae durante un BUILDER_RELAUNCH_ATTEMPTED, al reiniciar lee el estado proyectado del bus. Si sigue siendo READY_FOR_REVIEW (porque el estado no se resetó a IN_PROGRESS antes del crash), despacha al Manager directamente sin relanzar Builder. Observado en WT-2026-192: seq 322 BUILDER_RELAUNCH_ATTEMPTED, seq 323 SUPERVISOR_RESTARTED, seq 324 MANAGER_REVIEWING sin Builder intermedio.
-- **Root cause:** el supervisor en startup no distingue entre READY_FOR_REVIEW legítimo (Builder terminó) y READY_FOR_REVIEW espurio (crash durante relaunch post-CHANGES).
-- **Sketch:** al reiniciar, el supervisor comprueba los últimos N eventos del bus. Si el último REVIEW_DECISION fue CHANGES y no hay BUILDER_EXIT posterior, forzar relaunch de Builder independientemente del estado proyectado. La condición es:  AND .
-- **Tests requeridos:** supervisor reinicia con READY_FOR_REVIEW tras CHANGES sin BUILDER_EXIT → lanza Builder, no Manager; supervisor reinicia con READY_FOR_REVIEW legítimo (BUILDER_EXIT posterior a REVIEW_DECISION) → lanza Manager correctamente; test de regresión del doble-requeue (no debe dispararse).
-- **Criterio:** tras reinicio del supervisor, el ciclo CHANGES → Builder → Manager se ejecuta siempre en orden correcto, incluso si el crash ocurrió entre REVIEW_DECISION y BUILDER_EXIT.
+- **Problema:** cuando el supervisor se cae durante un BUILDER_RELAUNCH_ATTEMPTED, al reiniciar lee el estado proyectado del bus. Si sigue siendo READY_FOR_REVIEW (porque el estado no se resetÃ³ a IN_PROGRESS antes del crash), despacha al Manager directamente sin relanzar Builder. Observado en WT-2026-192: seq 322 BUILDER_RELAUNCH_ATTEMPTED, seq 323 SUPERVISOR_RESTARTED, seq 324 MANAGER_REVIEWING sin Builder intermedio.
+- **Root cause:** el supervisor en startup no distingue entre READY_FOR_REVIEW legÃ­timo (Builder terminÃ³) y READY_FOR_REVIEW espurio (crash durante relaunch post-CHANGES).
+- **Sketch:** al reiniciar, el supervisor comprueba los Ãºltimos N eventos del bus. Si el Ãºltimo REVIEW_DECISION fue CHANGES y no hay BUILDER_EXIT posterior, forzar relaunch de Builder independientemente del estado proyectado. La condiciÃ³n es:  AND .
+- **Tests requeridos:** supervisor reinicia con READY_FOR_REVIEW tras CHANGES sin BUILDER_EXIT â†’ lanza Builder, no Manager; supervisor reinicia con READY_FOR_REVIEW legÃ­timo (BUILDER_EXIT posterior a REVIEW_DECISION) â†’ lanza Manager correctamente; test de regresiÃ³n del doble-requeue (no debe dispararse).
+- **Criterio:** tras reinicio del supervisor, el ciclo CHANGES â†’ Builder â†’ Manager se ejecuta siempre en orden correcto, incluso si el crash ocurriÃ³ entre REVIEW_DECISION y BUILDER_EXIT.
 - **Depende de:** WT-2026-192.
 
 ## WT-2026-193 - Redaccion previa en pipeline de memoria persistente
@@ -549,7 +550,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Media
 - **Scope:** system/memory
 - **Estado:** backlog
-- **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino — pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
+- **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino â€” pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
 - **Causa raiz:** `memory_rules.md` es un artefacto derivado deterministamente de `observations.jsonl` via `memory_consolidate.py`. El motor tiene `observations.jsonl` vivo (35 KB, schema canonico) pero nunca se corrio la consolidacion para generar `memory_rules.md` y commitearlo.
 - **Contexto clave (leer antes de ejecutar):**
   - `memory_consolidate.py` tiene flags `--apply` (default dry-run) y modifica `observations.jsonl` (dedupe+filter+archive). NO correr `--apply` sobre el motor sin revisar el dry-run primero.
@@ -557,9 +558,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   - `memory_rules.md` generado contendra wings engine/meta/project derivados de las observaciones del motor. Revisar que las reglas son coherentes antes de commitear.
   - Una vez commiteado en el motor, el siguiente `--sync` en cualquier destino propagara automaticamente las wings engine/meta.
 - **Sketch:**
-  1) `git -C motor diff .agent/runtime/memory/observations.jsonl` — entender que cambio.
-  2) `python scripts/memory_consolidate.py` (dry-run) desde el motor — ver que generaria.
-  3) `python scripts/memory_consolidate.py --apply` — generar `memory_rules.md`, `MEMORY.md`, `memory_profile.md`.
+  1) `git -C motor diff .agent/runtime/memory/observations.jsonl` â€” entender que cambio.
+  2) `python scripts/memory_consolidate.py` (dry-run) desde el motor â€” ver que generaria.
+  3) `python scripts/memory_consolidate.py --apply` â€” generar `memory_rules.md`, `MEMORY.md`, `memory_profile.md`.
   4) Revisar `memory_rules.md` generado: debe tener wings coherentes y reglas derivadas de tickets reales.
   5) Commitear en el motor: `memory_rules.md` (nuevo) + `observations.jsonl` (si cambio) + `MEMORY.md` (si cambio).
   6) Verificar que el motor tiene `memory_rules.md` en git y que `.gitignore` del motor NO lo ignora.
@@ -600,7 +601,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   - El modelo de wings ya hace la separacion conceptual: `engine`/`meta` = portables al motor; `project` = locales al destino.
   - La promocion debe ser MANUAL con propuesta asistida. No automatica en cierre de ticket (riesgo de contaminar el motor con aprendizajes a medio cocer).
   - La ruta fisica de promocion es: escribir observacion en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl` + reconsolidar motor (o dejar para siguiente sesion de consolidacion).
-  - `memory_upload.md` ya tiene la estructura correcta ("no escribas todavia; primero propón"). Solo necesita un tercer destino posible.
+  - `memory_upload.md` ya tiene la estructura correcta ("no escribas todavia; primero propÃ³n"). Solo necesita un tercer destino posible.
 - **Sketch:**
   1) Extender `memory_upload.md` con una seccion "Destinos posibles" que incluya explicitamente: (a) memoria del proyecto destino (`wing: project`), (b) motor externo (`wing: engine` o `meta`, escribe en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl`), (c) memoria personal de Claude (habitos transversales del usuario).
   2) La propuesta debe incluir el campo `wing` sugerido y el destino recomendado como parte del formato existente.
@@ -642,3 +643,13 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Criterio:** un archivo fuera de scope se detecta antes de `READY_FOR_REVIEW` y queda justificado, revertido o separado en ticket propio.
 - **Depende de:** WT-2026-208.
 
+
+## WT-2026-222 - Higiene de suite: reset determinista del cache de project_root entre tests
+- **Prioridad:** Media
+- **Scope:** system/testing-hygiene
+- **Estado:** backlog
+- **Problema:** 	ests/unit/test_project_root_resolution.py pasa aislado pero falla dentro de la suite global por contaminacion de orden/cache en la resolucion de untime.project_root. Mientras esto siga asi, la suite global no vuelve a ser una senal fiable y WT-2026-208 queda solo parcialmente estabilizado.
+- **Objetivo:** hacer que la resolucion de project_root sea determinista entre tests, ya sea limpiando cache global en fixture/teardown o endureciendo el contrato del modulo para que no fugue estado entre casos.
+- **Sketch inicial:** identificar el cache compartido en untime.project_root, anadir fixture o helper de reset reutilizable para la familia afectada, y rerun de la suite para demostrar que 	est_project_root_resolution.py deja de variar por orden.
+- **Criterio:** 	ests/unit/test_project_root_resolution.py pasa tanto aislado como dentro de la suite global; la clasificacion como "contaminacion de suite" deja de ser necesaria.
+- **Depende de:** WT-2026-208.
