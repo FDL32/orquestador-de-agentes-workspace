@@ -1,6 +1,26 @@
-﻿# CHANGELOG - Sistema Multi-Agente Manager/Builder
+﻿# CHANGELOG - orquestador_de_agentes_workspace
 
-Evolucion del sistema desde su primera version estable hasta el estado actual.
+Historial de este `repo_destino`. Entradas anteriores a 2026-06-03 corresponden
+al periodo en que este repo era parte de `z_scripts` (topologia anterior);
+se conservan como referencia historica.
+
+## 2026-06-03 - Migracion a topologia repo_motor / repo_destino
+
+### Changed
+
+- Repositorio renombrado de `z_scripts` a `orquestador_de_agentes_workspace`.
+- Motor (`orquestador_de_agentes/`) extraido como repo separado y hermano.
+- Primera inicializacion git como repo destino independiente.
+- Vocabulario canonico establecido: `repo_motor`, `repo_destino`, `workspace_activo`, `entorno_multi_root`.
+- `README.md`, `CLAUDE.md`, `AGENTS.md` alineados con la nueva nomenclatura.
+- Runtime historico del motor archivado en `.agent/backups/motor_cleanup_20260602_234429`.
+- Motor limpiado como producto: seeds neutros, prompts versionados, historial de tickets eliminado del git del motor.
+
+### Deprecado
+
+- Termino "workspace" a secas: sustituido por `repo_destino` o `workspace_activo` segun contexto.
+- Termino "Modelo B": sustituido por "topologia repo_motor + repo_destino" (pendiente barrida completa en WT-2026-209).
+- Referencias a rutas `z_scripts`: solo subsisten en historial del CHANGELOG (entradas anteriores a esta).
 
 ## 2026-06-02 - WT-2026-205 rescope and handoff to WT-2026-210
 

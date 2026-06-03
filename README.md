@@ -1,50 +1,72 @@
-# z_scripts — Workspace de desarrollo
+# orquestador_de_agentes_workspace
 
-Directorio raíz de trabajo. Contiene herramientas Python de programación y gestión de proyectos con agentes IA.
+Repositorio destino de dogfooding del motor multi-agente Manager/Builder.
+
+Funciona como cualquier `repo_destino` del motor, pero su carga principal son
+tickets para mejorar el propio motor (`orquestador_de_agentes/`).
 
 El estado operacional (tickets, planes, memoria) vive en `.agent/`:
-- Workspace activo: `z_scripts/.agent/collaboration/`
-- Motor del sistema: `orquestador_de_agentes/`
+- Estado activo: `.agent/collaboration/`
+- Memoria del proyecto: `.agent/runtime/memory/`
+- Motor externo: `orquestador_de_agentes/` (repo separado, enlazado via `motor_destination_link.json`)
 
 ---
 
-## Proyectos
+## Topologia
 
-| Proyecto | Descripción | Docs |
-|---|---|---|
-| `orquestador_de_agentes/` | Motor multi-agente Manager/Builder portable. Gestiona el ciclo completo de implementación con control de calidad, memoria persistente y revisión automática. | [QUICKSTART](orquestador_de_agentes/QUICKSTART.md) · [README](orquestador_de_agentes/README.md) |
-
----
-
-## Cómo arrancar
-
-El motor es code-only. El workspace (tickets, estado, memoria) se apunta con `AGENT_PROJECT_ROOT`:
-
-```powershell
-# Trabajar en este workspace (desarrollo del motor)
-$env:AGENT_PROJECT_ROOT = "C:\Users\fdl\Proyectos_Python\z_scripts"
-python orquestador_de_agentes\.agent\agent_controller.py --validate
-
-# Trabajar en un proyecto destino
-$env:AGENT_PROJECT_ROOT = "C:\ruta\a\mi_proyecto"
-python orquestador_de_agentes\.agent\agent_controller.py --validate
+```
+C:\Users\fdl\Proyectos_Python\
+├── orquestador_de_agentes\          ← repo_motor (fuente canonica, repo git propio)
+└── orquestador_de_agentes_workspace\ ← repo_destino / este repo (repo git propio)
 ```
 
-Para el flujo completo de desarrollo, leer: [QUICKSTART](orquestador_de_agentes/QUICKSTART.md)
+Regla: operaciones git del tooling corren en `repo_motor`. Estado de tickets vive aqui.
+
+---
+
+## Como arrancar
+
+El motor es externo. El estado se configura via `motor_destination_link.json` (generado por el instalador):
+
+```powershell
+# Validar estado del sistema
+python orquestador_de_agentes\.agent\agent_controller.py --validate --project-root .
+
+# Sincronizar herramientas instaladas desde el motor
+python scripts\install_agent_system.py --sync
+
+# Vista previa del sync
+python scripts\install_agent_system.py --sync --dry-run
+```
+
+Para el flujo completo de desarrollo con tickets, leer:
+- `orquestador_de_agentes/QUICKSTART.md`
+- `orquestador_de_agentes/INTERACTION_MODES.md`
 
 ---
 
 ## Estructura
 
 ```
-z_scripts/
-├── orquestador_de_agentes/   ← motor portable (code-only)
-├── .agent/                   ← workspace de z_scripts (tickets, memoria, config)
-│   ├── collaboration/        ← plans, work_plan.md, backlog.md
-│   ├── runtime/memory/       ← observations.jsonl, MEMORY.md
-│   └── config/               ← agents.json, motor_destination_link.json
-└── README.md                 ← este archivo
+orquestador_de_agentes_workspace\
+├── .agent\                  ← estado operativo de este destino
+│   ├── collaboration\       ← tickets, work_plan, STATE, TURN, backlog
+│   ├── runtime\memory\      ← observaciones y memoria del proyecto
+│   └── config\              ← config del destino (motor_destination_link gitignored)
+├── agent_system\            ← copia instalada del framework (sincronizable)
+├── scripts\                 ← utilidades instaladas del motor
+├── skills\                  ← micro-habilidades instaladas del motor
+├── tests\                   ← tests de este destino
+└── .claude\                 ← config Claude Code (rules, settings)
 ```
 
-Cada proyecto destino tiene su propio `.agent/` con la misma estructura.
-El motor nunca se copia: se referencia externamente via `AGENT_PROJECT_ROOT`.
+---
+
+## Vocabulario
+
+| Termino | Descripcion |
+|---------|-------------|
+| `repo_motor` | `orquestador_de_agentes/` — motor portable, fuente canonica |
+| `repo_destino` | Este repositorio — estado operativo del proyecto |
+| `workspace_activo` | Raiz con `.agent/` desde la que corre el ticket (= este repo) |
+| `entorno_multi_root` | IDE con ambos repos abiertos simultaneamente |
