@@ -1,6 +1,25 @@
 ﻿# Execution Log
 
-**Estado:** COMPLETED
+**Estado:** READY_FOR_REVIEW
+
+## WT-2026-225a
+- Inicio documental: 2026-06-04.
+- Objetivo: reconciliar `STATE.md` y `TURN.md` cuando el bus va por delante
+  antes de lanzar agente operativo.
+- Estado operativo: ciclo documental de `WT-2026-225a` abierto en el
+  `repo_destino` para preparar la implementacion.
+- Evidencia de arranque: `WT-2026-224a` ya quedo cerrado canonicamente y el
+  registry `docs/KNOWN_FAILURE_PATTERNS.md` deja `FP-001` como contrato de
+  entrada del ticket.
+- Camino real a confirmar antes de implementar:
+  - `scripts/get_launcher_state.py` deriva rol/accion desde el bus.
+  - `scripts/launch_agent_terminals.ps1:Get-ActiveRole` decide que agente
+    arrancar.
+  - `.agent/runtime/supervisor_state.json:last_processed_sequence` da la senal
+    local de proyeccion atrasada.
+  - `bus/supervisor.py` materializa proyecciones operativas.
+- Contrato de implementacion: detectar drift `bus ahead of projection` y hacer
+  catch-up antes del launch, sin reabrir el rediseño completo del supervisor.
 
 ## WT-2026-224a
 - Inicio documental: 2026-06-04.
@@ -246,3 +265,72 @@ Scope override: WT-2026-224a delivery committed in repo_motor (orquestador_de_ag
 Scope override: WT-2026-224a delivery committed in repo_motor (orquestador_de_agentes); repo_destino diff is limited to canonical collaboration/runtime handoff artifacts. Implementation already verified: _builder_alive() barrier in bus/supervisor.py, tests/test_relaunch_topology.py (+101 lines) covers suppression + proceed scenarios.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_relaunch_topology.py
 
 Manager approved canonical closeout for WT-2026-224a
+
+
+Scope override: WT-2026-225a delivery committed in repo_motor (orquestador_de_agentes/). repo_destino diff is limited to canonical collaboration/runtime handoff artifacts for this dogfood workspace. Implementation: bus/supervisor.py (+5 lines @staticmethod decorator), scripts/get_launcher_state.py (+150 lines drift detection + reprojection), tests/test_wt_2026_216_launcher_bus_read.py (+259 lines 6 new tests). See commit 301497e.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+
+## Sesion Builder - WT-2026-225a
+
+- Implementacion confirmada en el repo motor.
+- Test focal de drift pasa correctamente.
+- Corregido warning de calidad de prosa (TP-PROSE-04) en work_plan.md eliminando termino ambiguo.
+- agent_controller.py --validate en repo_destino retorna 0 warnings y 0 errores.
+- Evidencia cumple con el contrato CEM v0 y el criterio binario de salida del plan.
+
+### Estado documental: READY_FOR_REVIEW
+
+
+Scope override: WT-2026-225a delivery ya está integrado en el repo_motor; los diffs de este repo_destino se limitan a artefactos de colaboración y runtime para validación.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+## WT-2026-225a - Quality Gate Evidence (2026-06-04)
+
+### Implementación (repo_motor commit 301497e)
+- `scripts/get_launcher_state.py`: +190 líneas — `_check_and_reconcile_drift()` y `derive_launcher_state()` integrado
+- `tests/test_wt_2026_216_launcher_bus_read.py`: +223 líneas — 6 tests nuevos de drift (líneas 98-317)
+- `bus/supervisor.py`: +3 líneas — decorator `@staticmethod`
+
+### Tests focales ejecutados
+```
+python -m pytest tests/test_wt_2026_216_launcher_bus_read.py -v
+9 passed in 0.18s
+
+  test_derive_launcher_state_uses_bus_for_ready_for_review     PASSED
+  test_derive_launcher_state_defaults_to_builder_for_unknown_bus PASSED
+  test_derive_launcher_state_accepts_custom_ticket_prefix       PASSED
+  test_launcher_script_uses_python_helper_before_turn_fallback  PASSED
+  test_derive_launcher_state_detects_drift_when_bus_ahead       PASSED (TP-02/TP-05)
+  test_derive_launcher_state_skips_reconciliation_when_aligned  PASSED (TP-03)
+  test_derive_launcher_state_reconciles_state_and_turn          PASSED (TP-04)
+  test_derive_launcher_state_skips_when_no_supervisor_state     PASSED
+  test_derive_launcher_state_drift_fallback_when_bus_empty      PASSED
+```
+
+### Ruff
+```
+ruff check scripts/get_launcher_state.py tests/test_wt_2026_216_launcher_bus_read.py
+All checks passed!
+```
+
+### pip-audit
+```
+python scripts/pip_audit_project.py
+No known vulnerabilities found — 122 packages audited
+```
+
+### validate --json repo_destino
+```
+python .agent/agent_controller.py --validate --json --project-root <workspace>
+{"errors": {}, "warnings": {}}  — 0 errores, 0 warnings
+```
+
+### TP Coverage
+- TP-02: `test_derive_launcher_state_detects_drift_when_bus_ahead` — last_processed_sequence=0 < max bus seq
+- TP-03: `test_derive_launcher_state_skips_reconciliation_when_aligned` — no drift when up-to-date
+- TP-04: `test_derive_launcher_state_reconciles_state_and_turn` — STATE.md y TURN.md reprojected
+- TP-05: el test reproduce bus=READY_FOR_REVIEW vs STATE.md=IN_PROGRESS (FP-001)
+- TP-06: sin scope creep — rounds/locks no tocados
+
+### Scope override
+Implementación entregada en repo_motor (commit 301497e). El diff de repo_destino se limita a
+artefactos de colaboración y runtime (execution_log.md, STATE.md, TURN.md).
+
+### Estado: READY_FOR_REVIEW

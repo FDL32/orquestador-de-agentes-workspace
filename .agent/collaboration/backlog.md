@@ -68,6 +68,7 @@
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
 | Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | backlog | WT-2026-221a | session-2026-06-04-plan-grammar |
 | Alta | WT-2026-224a | Supervisor relaunch guard: no spawnear round nuevo con Builder vivo | system/supervisor-relaunch | completed | WT-2026-221a, WT-2026-221b | session-2026-06-04-overlap-guard |
+| Alta | WT-2026-225a | Durable projection catch-up cuando el bus va por delante | system/projection-reconcile | active | WT-2026-214, WT-2026-216, WT-2026-224a | session-2026-06-04-projection-catchup |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 

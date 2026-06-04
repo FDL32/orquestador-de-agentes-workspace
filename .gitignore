@@ -82,3 +82,7 @@ _legacy/
 
 # Carpeta portable del motor no debe vivir dentro del workspace final
 orquestador_de_agentes/
+
+# Session artifacts from agent_system installed copy
+agent_system/.agent/collaboration/.session_state.json
+agent_system/.agent/context/
