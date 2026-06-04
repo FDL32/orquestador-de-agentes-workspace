@@ -1,145 +1,156 @@
-# Work Ticket - WT-2026-225a
+# Work Ticket - WT-2026-227a
 
 ## Metadata
-- **ID:** WT-2026-225a
-- **Title:** Durable projection catch-up cuando el bus va por delante
-- **Scope:** system/projection-reconcile
-- **Priority:** Alta
-- **Estado:** APPROVED
+- **ID:** WT-2026-227a
+- **Title:** Repomix: estado estructurado y diagnostico verificable en review context
+- **Scope:** system/review-context
+- **Priority:** Media
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-214, WT-2026-216, WT-2026-224a
+- **Depende de:** WT-2026-182, WT-2026-226a
 
 ## Problema
-En `WT-2026-224a` vimos un fallo de autoridad/proyeccion ya catalogado como
-`FP-001`: el bus quedo en un estado mas reciente que `STATE.md` y `TURN.md`.
-Caso observado: el bus ya habia emitido `READY_FOR_REVIEW`, mientras el
-`repo_destino` seguia en `IN_PROGRESS`. Ese drift contamina el siguiente
-arranque y puede relanzar el agente equivocado o forzar reconciliaciones
-manuales evitables.
+Durante lanzamientos recientes se observo el warning opaco:
+`[repomix] Failed to generate context; continuing without repomix`. El fallo no
+bloquea el flujo, pero tampoco deja una razon estructurada que el Manager pueda
+auditar sin leer warnings.
+
+La auditoria ubico el seam real en el review bridge, no en el launcher:
+
+- `bus/review_bridge.py:_ensure_repomix_context`;
+- `bus/review_bridge.py:_run_opencode_review`: caller que usa
+  `repomix_path = self._ensure_repomix_context()` y luego `if repomix_path:`.
+
+El ticket no busca resolver toda la instalacion Windows/Node. Busca que Repomix
+sea best-effort, observable y verificable.
 
 ## Objetivo
-Implementar, en arranque o preflight, una deteccion binaria de drift donde
-`last_processed_sequence < max(bus seq)` y usarla para reproyectar `STATE.md` y
-`TURN.md` antes de decidir que agente lanzar.
+Exponer un estado estructurado de Repomix dentro del review context para que el
+Manager vea si Repomix termino `ok`, `failed` o `skipped`, con razon y evidencia
+minima (`returncode`, `stderr_tail` o excepcion capturada).
 
 Resultados esperados:
-1. si `last_processed_sequence` queda por detras del maximo `seq` del bus, el
-   sistema detecta drift antes del launch;
-2. cuando el bus refleja `READY_FOR_REVIEW` y `STATE.md` sigue en
-   `IN_PROGRESS`, la proyeccion se corrige antes de decidir rol/accion;
-3. la reconciliacion deja evidencia verificable mediante un `STATE.md` o
-   `TURN.md` actualizado y una salida estructurada o evento canonico asociado;
-4. existe al menos un test que reproduzca el drift tipo `bus ahead of
-   projection`.
+1. Repomix exitoso deja `repomix_status.status == "ok"` y evidencia del
+   artefacto o ruta generada;
+2. Repomix con `returncode != 0` deja `status == "failed"`, `returncode` y
+   `stderr_tail` acotado;
+3. Repomix no disponible o excepcion de subprocess deja
+   `status == "skipped"` o `status == "failed"` con `reason` claro;
+4. el review sigue siendo best-effort: un fallo de Repomix no bloquea al
+   Manager;
+5. los tests focales del ticket no usan `_mock_repomix_for_tests`.
 
 ## Contrato CEM v0
 - Contrato antes que fix.
 - Evidencia antes que relato.
-- Rigor proporcional: toca proyecciones, launcher y autoridad de estado.
+- Rigor proporcional: toca contexto de review y observabilidad de subprocess.
 - Ninguna afirmacion sin artefacto verificable.
-- Si aparece cambio fuera de scope, clasificarlo y justificarlo antes de tocarlo.
+- Los cambios fuera de scope quedan prohibidos en este ticket; cualquier hallazgo
+  adyacente debe registrarse como deuda o follow-up antes de tocar codigo.
 
 ## Decision Arquitectonica
-- La fuente de verdad sigue siendo el bus; `STATE.md` y `TURN.md` son
-  proyecciones derivadas.
-- El catch-up debe ocurrir antes de lanzar agente operativo si el drift esta
-  confirmado.
-- El fix inicial debe ser local y reusar el camino canonico de lectura del bus;
-  no redisenar todavia el writer/proyector completo.
+- Repomix sigue siendo best-effort, no gate obligatorio.
+- La observabilidad vive en el review context, junto al seam real que invoca
+  Repomix.
+- La salida estructurada minima es:
+  `repomix_status = {status: "ok"|"failed"|"skipped", reason: str, returncode?: int, stderr_tail?: str, output_path?: str}`.
+- Los literales de `status` son exactos: `"ok"`, `"failed"` y `"skipped"`.
+- El diagnostico queda acotado a resolucion de `npx`, `returncode`, `stderr` y
+  excepciones de subprocess. No investigar ACLs, antivirus, Windows Search ni
+  instalacion global de Node en este ticket.
 
 ## Decision de implementacion minima
-- No reabrir el rediseño completo del supervisor.
-- No tocar `WT-2026-221c`, `WT-2026-223a` ni el protocolo de rounds.
-- Reusar el estado derivado del bus y la reconciliacion/preflight existente
-  antes de introducir un writer paralelo, heartbeats nuevos o locks nuevos.
+- Confirmar en codigo:
+  - `bus/review_bridge.py:_ensure_repomix_context`;
+  - `bus/review_bridge.py:_run_opencode_review`, caller que hoy espera
+    `Path | None` y pasa `-f <path>` si el resultado es truthy;
+  - donde se construye el review packet o estructura equivalente.
+- Estrategia recomendada: cambiar `_ensure_repomix_context` para devolver
+  `(Path | None, repomix_status_dict)` y actualizar `_run_opencode_review` para
+  desempaquetar. Queda prohibido devolver solo un dict desde
+  `_ensure_repomix_context`, porque `if repomix_path:` pasaria `str(dict)` como
+  argumento `-f`.
+- Mantener compatibilidad con el flujo existente si Repomix falla.
+- Evitar que `warnings.warn` sea la unica evidencia.
 
 ## Evidencia minima esperada
 El cierre debe dejar, con artefactos verificables:
-- seam real confirmado donde se decide el launch y donde se conoce
-  `last_processed_sequence`;
-- prueba de drift reproducible con `bus=READY_FOR_REVIEW` y
-  `STATE.md=IN_PROGRESS`;
-- prueba de que la reconciliacion ocurre antes de lanzar el agente;
+- seam real confirmado en `bus/review_bridge.py`;
+- test de exito con subprocess simulado y `repomix_status.status = ok`;
+- test de fallo con `returncode != 0` y `stderr_tail`;
+- test de excepcion o `npx` no disponible con `reason` verificable;
+- prueba de que el review sigue cuando Repomix falla;
 - salida de tests focales;
 - salida de `ruff`;
 - `agent_controller.py --validate --json --project-root .` sin errores ni
   warnings.
 
 ## Non-goals
-- No resolver todavia `builder_launch_unverified`.
-- No redisenar el contrato completo de `builder_lock`.
-- No mezclar el registry de failure patterns con la implementacion del fix.
-- No mover la autoridad fuera del bus.
+- No arreglar instalacion global de Node/npm.
+- No hacer Repomix obligatorio.
+- No mover Repomix al launcher.
+- No redisenar el review packet completo.
+- No tocar evidence seam de `WT-2026-226a`.
+- No usar `_mock_repomix_for_tests` en los tests focales de este ticket.
 
 ## Fases
 ### Fase 0: Diagnostico del camino real
-- Confirmar en codigo:
-  - donde el launcher deriva el estado operativo;
-  - donde vive `last_processed_sequence`;
-  - donde se puede detectar que el bus va por delante;
-  - que funcion, helper o comando canonico puede reproyectar `STATE.md` y
-    `TURN.md`.
+- Confirmar el seam `_ensure_repomix_context`.
+- Confirmar el caller `_run_opencode_review` y su uso actual de `Path | None`.
+- Confirmar si hoy solo existe `warnings.warn` como evidencia.
+- Confirmar como se puede exponer el estado al Manager sin romper el flujo.
 
-### Fase 1: Catch-up de proyeccion
-- Antes del launch, comparar `last_processed_sequence` con el maximo `seq` del
-  bus y confirmar si la proyeccion local quedo por detras.
-- Si hay drift confirmado, reproyectar `STATE.md` y `TURN.md` desde el ultimo
-  estado derivado del bus antes de decidir rol/accion.
+### Fase 1: Estado estructurado
+- Capturar exito, fallo por returncode y excepcion de subprocess.
+- Exponer `repomix_status` con campos acotados.
+- Mantener el review best-effort.
 
 ### Fase 2: Pruebas
-- Reproducir el caso `bus=READY_FOR_REVIEW` con `STATE.md=IN_PROGRESS`.
-- Verificar que el catch-up ocurre antes de decidir el rol.
-- Verificar que, si `last_processed_sequence >= max(bus seq)` y
-  `STATE.md`/`TURN.md` ya reflejan el bus, el launch no reescribe proyecciones.
+- Test de exito: subprocess devuelve exit 0 y el status queda `ok`.
+- Test de fallo: subprocess devuelve exit distinto de 0 y el status queda
+  `failed` con `returncode` y `stderr_tail`.
+- Test de excepcion o `npx` ausente: status `skipped` o `failed` con `reason`
+  verificable.
+- Verificar que los tests focales no usan `_mock_repomix_for_tests`.
 
 ## Files Likely Touched
-- `scripts/launch_agent_terminals.ps1`
-- `scripts/get_launcher_state.py`
-- `bus/supervisor.py`
-- `tests/test_launch_agent_terminals_script.py`
-- `tests/test_wt_2026_216_launcher_bus_read.py`
+- `bus/review_bridge.py`
+- `tests/test_manager_review_bridge.py`
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/PLAN_WT-2026-225a.md`
-- `.agent/collaboration/AUDIT_WT-2026-225a.md`
+- `.agent/collaboration/PLAN_WT-2026-227a.md`
+- `.agent/collaboration/AUDIT_WT-2026-227a.md`
 - `.agent/collaboration/execution_log.md`
 
 ## Seams confirmados
-- `scripts/get_launcher_state.py`: helper canonico que deriva rol/accion desde
-  el bus; base real para detectar drift sin confiar en `TURN.md`.
-- `scripts/launch_agent_terminals.ps1:Get-ActiveRole`: ruta real de decision del
-  launcher; debe consumir estado correcto antes de lanzar.
-- `.agent/runtime/supervisor_state.json:last_processed_sequence`: senal local de
-  cuanto del bus fue procesado/proyectado.
-- `bus/supervisor.py`: writer/proyector operacional que materializa
-  `STATE.md`/`TURN.md` desde transiciones del bus.
-- `tests/test_wt_2026_216_launcher_bus_read.py`: base natural para el nuevo test
-  de drift entre bus y proyecciones.
+- `bus/review_bridge.py:_ensure_repomix_context`: seam real de invocacion
+  Repomix.
+- `bus/review_bridge.py:_run_opencode_review`: caller que agrega `-f` cuando
+  existe `repomix_path`.
+- `tests/test_manager_review_bridge.py:_mock_repomix_for_tests`: mock global que
+  no debe cubrir los tests focales nuevos de este ticket.
 
 ## Calidad
-- Ejecutar tests focales del launcher, bus read o proyeccion.
-- Ejecutar al menos un test nuevo que reproduzca el drift y su correccion.
+- Ejecutar tests focales del review bridge.
+- Ejecutar al menos un test nuevo que falle sin el fix.
 - Ejecutar `ruff check` sobre archivos Python modificados.
 - Ejecutar `agent_controller.py --validate --json --project-root .` en el
   `repo_destino` antes de marcar ready.
 
 ## TP Check
-TP-01: el diagnostico identifica el camino real donde se decide el launch.
-TP-02: existe deteccion binaria de drift cuando
-`last_processed_sequence < max(bus seq)`.
-TP-03: el catch-up corrige `STATE.md` y `TURN.md` desde el ultimo estado
-derivado del bus antes del launch.
-TP-04: el catch-up deja evidencia verificable en archivos proyectados y salida
-estructurada o evento asociado.
-TP-05: existe test de reproduccion del drift con `READY_FOR_REVIEW` en bus y
-`IN_PROGRESS` en `STATE.md`, y el test falla sin el fix.
-TP-06: no hay scope creep hacia tickets de rounds, locks o nomenclatura.
+TP-01: seam real `_ensure_repomix_context` confirmado.
+TP-02: `repomix_status` existe con literales exactos de `status`
+`"ok"|"failed"|"skipped"`, `reason` y campos opcionales verificables.
+TP-03: fallo por `returncode != 0` deja `returncode` y `stderr_tail`.
+TP-04: excepcion o `npx` ausente deja razon verificable.
+TP-05: el review continua cuando Repomix falla.
+TP-06: tests focales del ticket no usan `_mock_repomix_for_tests`.
+TP-07: sin scope creep hacia launcher, Node global, evidence seam o bus rounds.
 
 ## Criterio binario de salida
 - `agent_controller.py --validate --json --project-root .` devuelve 0 errores y
   0 warnings.
-- Existe al menos 1 test nuevo que demuestre que el drift se detecta cuando
-  `last_processed_sequence < max(bus seq)`.
-- Existe al menos 1 test nuevo que demuestre que el catch-up ocurre antes de
-  lanzar agente con `READY_FOR_REVIEW` en bus y `IN_PROGRESS` en `STATE.md`.
-- El sistema deja evidencia verificable de la reconciliacion de proyecciones.
+- Existe al menos 1 test de exito Repomix `ok`.
+- Existe al menos 1 test de fallo Repomix con `returncode` y `stderr_tail`.
+- Existe al menos 1 test de excepcion o `npx` ausente.
+- El review sigue funcionando sin convertir Repomix en gate obligatorio.

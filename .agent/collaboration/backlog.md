@@ -68,7 +68,9 @@
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
 | Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | backlog | WT-2026-221a | session-2026-06-04-plan-grammar |
 | Alta | WT-2026-224a | Supervisor relaunch guard: no spawnear round nuevo con Builder vivo | system/supervisor-relaunch | completed | WT-2026-221a, WT-2026-221b | session-2026-06-04-overlap-guard |
-| Alta | WT-2026-225a | Durable projection catch-up cuando el bus va por delante | system/projection-reconcile | active | WT-2026-214, WT-2026-216, WT-2026-224a | session-2026-06-04-projection-catchup |
+| Alta | WT-2026-225a | Durable projection catch-up cuando el bus va por delante | system/projection-reconcile | completed | WT-2026-214, WT-2026-216, WT-2026-224a | session-2026-06-04-projection-catchup |
+| Alta | WT-2026-226a | Unificar evidence seam entre mark-ready y review packet | system/evidence-packaging | completed | WT-2026-221b, WT-2026-225a | session-2026-06-04-evidence-seam |
+| Media | WT-2026-227a | Repomix: estado estructurado y diagnostico verificable en review context | system/review-context | active | WT-2026-182, WT-2026-226a | session-2026-06-04-repomix-observability |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 

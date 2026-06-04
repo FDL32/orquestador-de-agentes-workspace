@@ -1,6 +1,39 @@
 ﻿# Execution Log
 
-**Estado:** IN_PROGRESS
+**Estado:** COMPLETED
+
+## WT-2026-227a
+- Inicio documental: 2026-06-04.
+- Objetivo: exponer estado estructurado de Repomix en el contexto de review del
+  Manager sin convertir Repomix en gate obligatorio.
+- Estado operativo: ciclo documental de `WT-2026-227a` abierto en el
+  `repo_destino` para implementacion por Builder.
+- Evidencia de arranque: `WT-2026-226a` cerro canonicamente y dejo el flujo de
+  evidencia/packet estabilizado para probar una entrega end-to-end real.
+- Camino real a confirmar antes de implementar:
+  - `bus/review_bridge.py:_ensure_repomix_context`.
+  - llamador en `bus/review_bridge.py` durante preparacion del contexto de
+    review.
+  - `tests/test_manager_review_bridge.py:_mock_repomix_for_tests` como mock que
+    no debe cubrir los tests focales nuevos.
+- Contrato de implementacion: capturar `ok`, `failed` y `skipped` como
+  `repomix_status`, con razon verificable, manteniendo Repomix como best-effort.
+
+## WT-2026-226a
+- Inicio documental: 2026-06-04.
+- Objetivo: unificar la evidencia usada por `--mark-ready` y por el review
+  packet para evitar `mark-ready PASS` + `review packet EMPTY`.
+- Estado operativo: ciclo documental de `WT-2026-226a` abierto en el
+  `repo_destino` para implementacion por Builder.
+- Evidencia de arranque: `WT-2026-225a` cerro canonicamente, pero dejo
+  identificado el fallo de packaging por seams de evidencia divergentes.
+- Camino real a confirmar antes de implementar:
+  - `.agent/agent_controller.py:_check_implementation_evidence`.
+  - `.agent/agent_controller.py:_collect_git_diff_files`.
+  - `bus/review_bridge.py:_get_motor_diff_files`.
+  - `bus/review_bridge.py:classify_review_packet`.
+- Contrato de implementacion: unificar criterio de evidencia sin crear un gate
+  paralelo, sin relajar `--mark-ready` y sin tocar rounds/locks/relaunch.
 
 ## WT-2026-225a
 - Inicio documental: 2026-06-04.
@@ -337,3 +370,19 @@ artefactos de colaboración y runtime (execution_log.md, STATE.md, TURN.md).
 
 
 Scope override: WT-2026-225a delivery committed in repo_motor commit 301497e (414 lines: get_launcher_state.py +190, tests +223, bus/supervisor.py +3). repo_destino diff limited to canonical collaboration artifacts. Quality gates: 9/9 tests passed, ruff clean, pip-audit clean.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+
+Scope override: repo_motor clean; productive evidence anchored in commits 301497e, 6351a8e and 9302e4f while repo_destino only carries canonical handoff artifacts. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.gitignore, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+
+Scope override: repo_motor clean; productive evidence anchored in commits 301497e, 6351a8e and 9302e4f while repo_destino only carries canonical handoff artifacts. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+
+Manager approved canonical closeout for WT-2026-225a
+
+
+Scope override: Implementacion en repo_motor commits 74bc96d y 63b74ca. Manager review completado en chat: TP-01..TP-07 satisfechos, TP-03 barrera verificada con revert manual. Checkpoint M3 registrado.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\evidence.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\review_bridge.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_review_bridge.py
+
+Manager approved canonical closeout for WT-2026-226a
+
+
+Scope override: Cambios realizados en el motor (orquestador_de_agentes) de forma intencionada según WT-2026-227a. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\review_bridge.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_manager_review_bridge.py
+
+Manager approved canonical closeout for WT-2026-227a
