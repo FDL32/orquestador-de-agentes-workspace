@@ -62,7 +62,7 @@
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
-| Alta | WT-2026-221a | Launcher-only execution contract: BUILDER_STARTED + guard de arranque | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
@@ -612,14 +612,14 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Depende de:** WT-2026-219.
 - **Origen:** session-2026-06-02-memory-bootstrap
 
-## WT-2026-221a - Launcher-only execution contract: BUILDER_STARTED + guard de arranque
+## WT-2026-221a - Relaunch CEM: root verificado y capsula evidence-linked para Builder
 - **Prioridad:** Alta
 - **Scope:** system/agent-launch
 - **Estado:** backlog
-- **Problema:** un Builder puede trabajar fuera del launcher y por tanto fuera del bus. Sin `BUILDER_STARTED`, el supervisor, circuit breaker, pre-handoff y mark-ready automatico no observan progreso ni stall.
-- **Objetivo:** hacer que el launcher emita `BUILDER_STARTED` obligatoriamente y que el Builder detecte al arrancar si no esta dentro de una sesion operativa valida.
-- **Sketch:** emitir `BUILDER_STARTED` desde `launch_agent_terminals.ps1`; anadir guard de arranque en bootstrap/prompt/controller que compruebe `AGENT_PROJECT_ROOT`, ticket activo, bus reciente para el ticket y `TURN.md` alineado; permitir solo `MANUAL_DEBUG=true` como modo explicito no cerrable.
-- **Criterio:** un Builder lanzado por launcher queda registrado en el bus; un Builder abierto manualmente recibe instruccion clara de no cerrar ticket operativo.
+- **Problema:** tras `REVIEW_DECISION=CHANGES`, el relaunch puede abrir una nueva ventana de Builder sin root operativo verificado y sin continuidad suficiente. Evidencia de la sesion: `BUILDER_RELAUNCH_ATTEMPTED` seq 578 con `builder_launch_unverified` / `verify_signal: none`, coincidente con una ventana rooteada en el motor que no podia leer el estado canonico del destino. Un Builder relanzado asi conserva velocidad, pero pierde memoria y tiende a reconstruir contexto con parches locales.
+- **Objetivo:** convertir `WT-2026-221a` en la primera prueba real de CEM v0: el relaunch solo ocurre con topologia verificada y entrega una capsula fresca, evidence-linked y self-service al Builder.
+- **Sketch:** antes de lanzar Builder, verificar `AGENT_PROJECT_ROOT`, `repo_motor`, `repo_destino`, bus legible y ticket activo. Si falla, no abrir Builder operativo. Si pasa, generar una capsula CEM desde fuentes canonicas que separe hechos verificados, blockers del Manager, hipotesis y siguiente accion. La capsula se regenera en cada relaunch y no se edita/acumula como estado vivo. El tier de rigor se deriva de paths/superficie tocada, no de la autoevaluacion del Builder.
+- **Criterio:** un relaunch con root equivocado queda bloqueado con mensaje accionable; un relaunch valido genera capsula CEM fresh; Builder no puede marcar ready sin responder blockers evidence-linked; hay prueba que reproduce el fallo de topologia tipo seq 578.
 - **Depende de:** WT-2026-208.
 
 ## WT-2026-221b - Manager evidence gate: rechazar review sin bus activo y evidencia minima

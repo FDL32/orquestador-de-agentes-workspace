@@ -117,3 +117,7 @@ Marked ready by Builder
 - Validacion WT-2026-222: `python -m pytest tests/test_wt_2026_211_write_path.py tests/unit/test_project_root_resolution.py -q` -> 15 passed; `python -m ruff check tests/conftest.py tests/test_wt_2026_211_write_path.py` -> All checks passed.
 - Rerun global final del motor: `python -m pytest tests -q` -> 2071 passed, 22 skipped, 0 failed.
 - Estado documental WT-2026-222: COMPLETED.
+- Cierre de sesion / CEM v0: tras cerrar WT-2026-208, la ola de encoding y WT-2026-222, se adopta una v0 de Contrato-Evidencia-Memoria como regla minima de trabajo con agentes.
+- Memoria promovida al motor: CEM-01..CEM-06 registran que el auto-reporte es hipotesis, los falsos verdes son deuda critica, el contrato precede al fix, el rigor es proporcional, la deuda debe ser contractual y el relaunch necesita continuidad con root verificado.
+- Backlog actualizado: `WT-2026-221a` queda reformulado como primera prueba real de CEM v0: relaunch con root/topologia verificados y capsula evidence-linked para Builder.
+- Proximo capitulo recomendado: aplicar CEM v0 a `WT-2026-221a`, medir si reduce amnesia de relaunch, drift de root y retrabajo antes de endurecer mas el marco.
