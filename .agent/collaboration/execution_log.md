@@ -1,6 +1,6 @@
 ﻿# Execution Log
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** IN_PROGRESS
 
 ## WT-2026-225a
 - Inicio documental: 2026-06-04.
@@ -334,3 +334,6 @@ Implementación entregada en repo_motor (commit 301497e). El diff de repo_destin
 artefactos de colaboración y runtime (execution_log.md, STATE.md, TURN.md).
 
 ### Estado: READY_FOR_REVIEW
+
+
+Scope override: WT-2026-225a delivery committed in repo_motor commit 301497e (414 lines: get_launcher_state.py +190, tests +223, bus/supervisor.py +3). repo_destino diff limited to canonical collaboration artifacts. Quality gates: 9/9 tests passed, ruff clean, pip-audit clean.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py

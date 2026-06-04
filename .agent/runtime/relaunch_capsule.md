@@ -1,38 +1,35 @@
-# Capsula de Relaunch - WT-2026-224a
-Generada: 2026-06-04T16:18:08.983127+00:00
+# Capsula de Relaunch - WT-2026-225a
+Generada: 2026-06-04T18:01:52.820425+00:00
 
 Fuentes: work_plan.md, TURN.md, STATE.md, execution_log.md, bus events
 
 ## 1. Hechos Verificados
-- ID: WT-2026-224a
-- Title: Supervisor relaunch guard: no spawnear round nuevo con Builder vivo
+- ID: WT-2026-225a
+- Title: Durable projection catch-up cuando el bus va por delante
 - Estado: APPROVED
 - deliverable_type: code
-- STATE.md: ACTIVE_TICKET: WT-2026-224a
+- STATE.md: ACTIVE_TICKET: WT-2026-225a
 STATUS: IN_PROGRESS
 - Execution log tail:
--   - TP-03: test_classify_docs_only_diff + test_classify_collaboration_only_diff + test_integration_gate_rejects_collaboration_only.
--   - TP-04: test_accepts_motor_evidence + test_integration_gate_passes_with_motor_evidence.
--   - TP-05: test_integration_gate_rejects_collaboration_only reproduce familia seq 602/606/617.
--   - TP-06: test_classify_returns_structured_reason + rejection reason en feedback.
--   - TP-07: no se toco WT-2026-221c ni WT-2026-223a.
--   ### Estado documental: READY_FOR_REVIEW
--   AUTO-REJECTED: Quality Gates fallaron
--   Scope override: WT-2026-221b delivery committed in repo_motor; repo_destino diff is limited to canonical collaboration/runtime handoff artifacts. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\unit\test_launch_session.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\unit\test_mark_ready_idempotency.py
--   Manager approved canonical closeout for WT-2026-221b
--   Scope override: WT-2026-224a delivery committed in repo_motor (orquestador_de_agentes); repo_destino diff is limited to canonical collaboration/runtime handoff artifacts. Implementation: tests/test_relaunch_topology.py (+111 lines), verified _builder_alive() barrier with real builder_lock.txt tests. See commit 32ccff9.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_relaunch_topology.py
-- (event bus no disponible)
+-   - TP-02: `test_derive_launcher_state_detects_drift_when_bus_ahead` — last_processed_sequence=0 < max bus seq
+-   - TP-03: `test_derive_launcher_state_skips_reconciliation_when_aligned` — no drift when up-to-date
+-   - TP-04: `test_derive_launcher_state_reconciles_state_and_turn` — STATE.md y TURN.md reprojected
+-   - TP-05: el test reproduce bus=READY_FOR_REVIEW vs STATE.md=IN_PROGRESS (FP-001)
+-   - TP-06: sin scope creep — rounds/locks no tocados
+-   ### Scope override
+-   Implementación entregada en repo_motor (commit 301497e). El diff de repo_destino se limita a
+-   artefactos de colaboración y runtime (execution_log.md, STATE.md, TURN.md).
+-   ### Estado: READY_FOR_REVIEW
+-   Scope override: WT-2026-225a delivery committed in repo_motor commit 301497e (414 lines: get_launcher_state.py +190, tests +223, bus/supervisor.py +3). repo_destino diff limited to canonical collaboration artifacts. Quality gates: 9/9 tests passed, ruff clean, pip-audit clean.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\supervisor.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\get_launcher_state.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\launch_agent_terminals.ps1, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_launch_agent_terminals_script.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_wt_2026_216_launcher_bus_read.py
+- Event 723: outcome=builder_launch_unverified verify_signal=none
 
 ## 2. Blockers del Manager
-- - No redisenar el protocolo completo supervisor/Builder.
-- - No mezclar `WT-2026-221c` ni `WT-2026-223a`.
-- - No inventar un chequeo de PID como autoridad: el supervisor ya documenta `_builder_alive()` como mecanismo canonico.
-- - No afirmar que el overlap se resolvio sin una prueba que suprima el relaunch con `_builder_alive() == True`.
+- (No blockers documentados en TURN.md)
 
 ## 3. Hipotesis / Puntos No Verificados
 
 ## 4. Siguiente Accion Esperada
-- Implementar WT-2026-224a segun work_plan.md y ejecutar ruff + pytest-safe sobre archivos tocados.
+- Implementar WT-2026-225a segun work_plan.md y ejecutar ruff + pytest-safe sobre archivos tocados.
 
 ---
-*Capsula generada por supervisor para relaunch de WT-2026-224a. Fuentes primarias: work_plan.md, TURN.md, STATE.md, execution_log.md, bus events.*
+*Capsula generada por supervisor para relaunch de WT-2026-225a. Fuentes primarias: work_plan.md, TURN.md, STATE.md, execution_log.md, bus events.*
