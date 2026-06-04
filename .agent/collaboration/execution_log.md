@@ -1,6 +1,65 @@
 ﻿# Execution Log
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
+
+## WT-2026-228a
+- Inicio documental: 2026-06-04.
+- Objetivo: bloquear `--pre-handoff` cuando existen cambios productivos sin
+  commit en `repo_motor`.
+- Estado operativo: ciclo documental abierto para implementacion por Builder.
+- Evidencia de arranque: `WT-2026-227a` cerro en el bus con
+  `SUPERVISOR_CLOSED` y dejo Repomix observable como best-effort.
+- Camino real confirmado antes de implementar:
+  - `.agent/agent_controller.py:_handle_pre_handoff`.
+  - `.agent/agent_controller.py:_MOTOR_ROOT`.
+  - `.agent/agent_controller.py:_CHECKPOINT_KEYWORDS`.
+  - `bus/evidence.py:resolve_evidence`.
+- Contrato de implementacion: reutilizar `bus/evidence.py`, bloquear cambios
+  productivos sin commit del motor, no auto-commitear y no relajar
+  `--mark-ready`. El plan distingue dirty files de commits recientes; no se
+  debe usar `motor_productive` como proxy de uncommitted files.
+
+### Seams confirmados (líneas exactas)
+- `agent_controller.py:L3051` — `git_root = project_root` cuando workspace tiene .git
+- `agent_controller.py:L3139` — `commit_msg = f"chore({plan_id}): pre-handoff checkpoint"`
+- `agent_controller.py:L1279` — `_CHECKPOINT_KEYWORDS = frozenset({"checkpoint", "pre-handoff", "wip", "interim"})`
+- `bus/evidence.py:L80-87` — `motor_files_set` acumula `git log -10` además de `git diff`/`git diff --cached`
+- Punto de inserción: entre L3064 y L3065 (antes de `# Build live surface sets`)
+
+### Implementación
+1. **bus/evidence.py**: Añadida `motor_uncommitted_productive(motor_root)` que solo ejecuta
+   `git diff --name-only` + `git diff --cached --name-only` (sin `git log`), filtrando
+   docs-only y collaboration-only. Es backward-compatible (no renombra/elimina claves existentes).
+2. **agent_controller.py**: Insertada barrera en `_handle_pre_off` justo después de la
+   selección de `git_root`, llamando `motor_uncommitted_productive(_MOTOR_ROOT)`.
+   Si hay cambios productivos sin commit, imprime mensaje canónico y retorna 1.
+   No auto-commitea.
+
+### Quality Gates
+```
+python -m pytest tests/test_pre_handoff_guard.py -v
+  10 passed in 5.70s
+TP-02: motor con archivo productivo modificado (unstaged) bloquea. ✓
+TP-03: mensaje incluye string canónico y lista de archivos. ✓
+TP-04: motor con solo docs/collaboration no bloquea. ✓
+TP-05: motor limpio con commit WT-2026-228a pasa. ✓
+TP-06: motor limpio sin commit del ticket pasa. ✓
+TP-07: --pre-handoff no auto-commitea cambios productivos del motor. ✓
+TP-10: motor con commit reciente del ticket y working tree limpio NO bloquea. ✓
+Regresión: sin barrera → TP-02 falla; con barrera → pasa. ✓
+
+python -m ruff check .agent/agent_controller.py bus/evidence.py tests/test_pre_handoff_guard.py
+  0 errors, 0 warnings (5 auto-fixed: unused imports, trailing newlines)
+
+python .agent/agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
+  {"errors": {"work_plan.md": [], "execution_log.md": [], ...}, "warnings": {}}
+  0 errores, 0 warnings
+```
+
+### Test de regresión
+Sin la barrera (git_root = dest, no llama a `motor_uncommitted_productive`), el archivo
+dirty en motor NO es detectado → el test `test_regression_without_barrier` demuestra FAIL
+sin el fix y PASS con el fix restaurado.
 
 ## WT-2026-227a
 - Inicio documental: 2026-06-04.
@@ -30,48 +89,6 @@
 - Camino real a confirmar antes de implementar:
   - `.agent/agent_controller.py:_check_implementation_evidence`.
   - `.agent/agent_controller.py:_collect_git_diff_files`.
-  - `bus/review_bridge.py:_get_motor_diff_files`.
-  - `bus/review_bridge.py:classify_review_packet`.
-- Contrato de implementacion: unificar criterio de evidencia sin crear un gate
-  paralelo, sin relajar `--mark-ready` y sin tocar rounds/locks/relaunch.
-
-## WT-2026-225a
-- Inicio documental: 2026-06-04.
-- Objetivo: reconciliar `STATE.md` y `TURN.md` cuando el bus va por delante
-  antes de lanzar agente operativo.
-- Estado operativo: ciclo documental de `WT-2026-225a` abierto en el
-  `repo_destino` para preparar la implementacion.
-- Evidencia de arranque: `WT-2026-224a` ya quedo cerrado canonicamente y el
-  registry `docs/KNOWN_FAILURE_PATTERNS.md` deja `FP-001` como contrato de
-  entrada del ticket.
-- Camino real a confirmar antes de implementar:
-  - `scripts/get_launcher_state.py` deriva rol/accion desde el bus.
-  - `scripts/launch_agent_terminals.ps1:Get-ActiveRole` decide que agente
-    arrancar.
-  - `.agent/runtime/supervisor_state.json:last_processed_sequence` da la senal
-    local de proyeccion atrasada.
-  - `bus/supervisor.py` materializa proyecciones operativas.
-- Contrato de implementacion: detectar drift `bus ahead of projection` y hacer
-  catch-up antes del launch, sin reabrir el rediseño completo del supervisor.
-
-## WT-2026-224a
-- Inicio documental: 2026-06-04.
-- Objetivo: impedir que el supervisor relance un Builder nuevo cuando el round activo sigue protegido por `builder_lock.txt` y un PID vivo.
-- Estado operativo: siguiente ciclo abierto tras el cierre canonico de `WT-2026-221b`.
-- Evidencia de arranque: `WT-2026-221b` ya quedo aprobado y cerrado por Manager; la deuda R4 de overlap del supervisor pasa a ser el siguiente frente.
-- Camino real confirmado antes de implementar:
-  - `bus/supervisor.py:_relaunch_builder()` alrededor de L2619 es la ruta real de relaunch.
-  - `bus/supervisor.py:_bootstrap_requeue_if_needed()` ya reconoce `builder_lock_fresh` como razon para no reencolar.
-  - `bus/supervisor.py:_verify_builder_start()` ya usa `builder_lock` como verificacion post-spawn.
-- Contrato de implementacion: tocar la barrera minima en el supervisor, no redisenar el protocolo completo y dejar un test que suprima el relaunch con lock fresco + PID vivo.
-
-## WT-2026-221b
-- Inicio documental: 2026-06-04.
-- Objetivo: endurecer el Manager evidence gate para rechazar reviews sin bus activo y evidencia minima verificable.
-- Estado operativo: el bus emitio `STATE_CHANGED` bootstrap -> `IN_PROGRESS` en seq 625.
-- Evidencia de arranque: `WT-2026-221a` cerro canonicamente y limpio claims de requeue asociados a `seq-602`, `seq-606` y `seq-617`.
-- Familia de fallo a reproducir: Manager rechazo rondas donde el diff visible solo contenia artefactos documentales o de colaboracion, sin cambios reales del `repo_motor`.
-- Contrato de implementacion: diagnosticar `READY_FOR_REVIEW` -> review packet -> Manager antes de tocar codigo; bloquear docs-only/collaboration-only; no mezclar `WT-2026-221c` ni `WT-2026-223a`.
 - Cierre canonico Manager: `--manager-approve WT-2026-221b --force` limpio `manager_bridge_state.json` y `supervisor_state.json`.
 - Estado documental final: COMPLETED.
 

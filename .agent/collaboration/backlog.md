@@ -70,7 +70,8 @@
 | Alta | WT-2026-224a | Supervisor relaunch guard: no spawnear round nuevo con Builder vivo | system/supervisor-relaunch | completed | WT-2026-221a, WT-2026-221b | session-2026-06-04-overlap-guard |
 | Alta | WT-2026-225a | Durable projection catch-up cuando el bus va por delante | system/projection-reconcile | completed | WT-2026-214, WT-2026-216, WT-2026-224a | session-2026-06-04-projection-catchup |
 | Alta | WT-2026-226a | Unificar evidence seam entre mark-ready y review packet | system/evidence-packaging | completed | WT-2026-221b, WT-2026-225a | session-2026-06-04-evidence-seam |
-| Media | WT-2026-227a | Repomix: estado estructurado y diagnostico verificable en review context | system/review-context | active | WT-2026-182, WT-2026-226a | session-2026-06-04-repomix-observability |
+| Media | WT-2026-227a | Repomix: estado estructurado y diagnostico verificable en review context | system/review-context | completed | WT-2026-182, WT-2026-226a | session-2026-06-04-repomix-observability |
+| Alta | WT-2026-228a | Pre-handoff bloquea cambios productivos sin commit en repo_motor | system/pre-handoff-evidence | active | WT-2026-226a, WT-2026-227a | session-2026-06-04-prehandoff-evidence |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 

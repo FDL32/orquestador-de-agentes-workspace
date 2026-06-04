@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-04 23:18:00
+**Ultima actualizacion:** 2026-06-04 23:35:00
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WT-2026-228a |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WT-2026-227a closed. Create new work_plan.md for next cycle.
+> Implementar WT-2026-228a. Lee work_plan.md, PLAN_WT-2026-228a.md y AUDIT_WT-2026-228a.md antes de tocar codigo. Reutiliza bus/evidence.py y bloquea pre-handoff cuando repo_motor tenga cambios productivos sin commit.
 
 ---
 
@@ -25,8 +25,8 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
