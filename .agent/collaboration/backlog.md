@@ -62,10 +62,11 @@
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
-| Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | active | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
+| Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | backlog | WT-2026-221a | session-2026-06-04-plan-grammar |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -181,6 +182,32 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Tests requeridos:** un pre-check que rechaza por diff vacio produce `STATE_CHANGED -> IN_PROGRESS` en el bus; el supervisor reencola sin intervencion manual; no hay doble relaunch; el caso de diff valido no cambia.
 - **Criterio:** un rechazo de packaging (falso o legitimo) deja el ticket en estado consistente y reencola al Builder por la ruta durable, sin cirugia manual del bus.
 - **Depende de:** WT-2026-210. Relacionado: WT-2026-203 (introdujo el pre-check), WT-2026-212 (ruta canonica de CHANGES), WT-2026-215 (misma region de codigo: pre-check de `review_bridge.py`).
+
+## WT-2026-223a - Parser central de ticket IDs y contrato de nomenclatura
+- **Prioridad:** Alta
+- **Scope:** system/ticket-naming
+- **Estado:** backlog
+- **Problema:** la nomenclatura de tickets y planes sigue repartida en regex locales y comparadores ad hoc. El incidente real de `WT-2026-221a` lo hizo visible: `_ticket_sort_key()` no interpretaba bien sufijos alfanumericos y permitia que un ticket historico menor ganara autoridad en el relaunch. Si el sistema adopta tickets nuevos con sufijo obligatorio (`...a`, `...b`, `...c`), mantener regex dispersas volvera a abrir puntos ciegos en controller, supervisor, session tracking y tests.
+- **Decision de contrato:** todo ticket nuevo usa sufijo alfabetico obligatorio y empieza en `a`; el plan usa `PLAN-YYYY-NNN` sin sufijo. Ejemplos canonicos: `PLAN-2026-223`, `WT-2026-223a`, `WT-2026-223b`.
+- **Compatibilidad:** lectura legacy permisiva para historico existente sin sufijo (`WT-2026-208`), pero escritura/estado activo en modo estricto para tickets nuevos.
+- **Scope minimo:**
+  - crear `runtime/ticket_parser.py` como seam unico de parsing/validacion;
+  - exponer `parse_ticket_id()`, `ticket_to_plan_id()`, `validate_ticket_id(strict)` y `next_ticket_id()`;
+  - reemplazar regex dispersas al menos en `_ticket_sort_key()` y `.agent/agent_controller.py`;
+  - introducir validacion de contiguidad `a -> b -> c` y prohibicion de huecos;
+  - resolver el prefijo del host desde `PROJECT.md`, con fallback controlado en el motor.
+- **Non-goals iniciales:**
+  - no automatizar aun la transicion autonoma entre subtickets (`a -> b`);
+  - no reescribir `events.jsonl` historicos para forzar sufijos;
+  - no convertir este ticket en un rediseño completo del supervisor por planes.
+- **Tests requeridos:**
+  - IDs validos e invalidos;
+  - modo legacy permisivo sin romper historico;
+  - `ticket_to_plan_id()` para tickets con y sin sufijo;
+  - ordenacion/contiguidad de subtickets (`a`, `b`, `c`);
+  - regresion del bug real: un ticket como `WT-2026-221a` no pierde prioridad frente a `WT-2026-183` por parsing defectuoso.
+- **Criterio:** el sistema acepta de forma canonica tickets nuevos con sufijo obligatorio, conserva lectura segura del historico legacy y deja de depender de regex locales para validar, comparar o proyectar IDs de ticket/plan.
+- **Depende de:** WT-2026-221a. Relacionado: WT-2026-181 (nomenclatura WP->WT), WT-2026-209 (estandar workspace+motor).
 
 ## WT-2026-213 - Eliminar el doble STATE_CHANGED de --mark-ready
 - **Prioridad:** Baja
@@ -615,7 +642,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-221a - Relaunch CEM: root verificado y capsula evidence-linked para Builder
 - **Prioridad:** Alta
 - **Scope:** system/agent-launch
-- **Estado:** backlog
+- **Estado:** active
 - **Problema:** tras `REVIEW_DECISION=CHANGES`, el relaunch puede abrir una nueva ventana de Builder sin root operativo verificado y sin continuidad suficiente. Evidencia de la sesion: `BUILDER_RELAUNCH_ATTEMPTED` seq 578 con `builder_launch_unverified` / `verify_signal: none`, coincidente con una ventana rooteada en el motor que no podia leer el estado canonico del destino. Un Builder relanzado asi conserva velocidad, pero pierde memoria y tiende a reconstruir contexto con parches locales.
 - **Objetivo:** convertir `WT-2026-221a` en la primera prueba real de CEM v0: el relaunch solo ocurre con topologia verificada y entrega una capsula fresca, evidence-linked y self-service al Builder.
 - **Sketch:** antes de lanzar Builder, verificar `AGENT_PROJECT_ROOT`, `repo_motor`, `repo_destino`, bus legible y ticket activo. Si falla, no abrir Builder operativo. Si pasa, generar una capsula CEM desde fuentes canonicas que separe hechos verificados, blockers del Manager, hipotesis y siguiente accion. La capsula se regenera en cada relaunch y no se edita/acumula como estado vivo. El tier de rigor se deriva de paths/superficie tocada, no de la autoevaluacion del Builder.
