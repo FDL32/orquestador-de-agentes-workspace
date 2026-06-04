@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-04 23:35:00
+**Ultima actualizacion:** 2026-06-05 00:55:00
 
 ---
 
@@ -9,7 +9,7 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **BUILDER** |
-| **Plan ID** | WT-2026-228a |
+| **Plan ID** | WT-2026-229a |
 | **Tipo** | IMPLEMENTATION |
 | **Accion** | IMPLEMENT |
 
@@ -17,7 +17,7 @@
 
 ## Instruccion
 
-> Implementar WT-2026-228a. Lee work_plan.md, PLAN_WT-2026-228a.md y AUDIT_WT-2026-228a.md antes de tocar codigo. Reutiliza bus/evidence.py y bloquea pre-handoff cuando repo_motor tenga cambios productivos sin commit.
+> Implementar WT-2026-229a. El repo_motor debe quedar como producto portable y agnostico: sin historico operativo de este repo_destino en la raiz. Los planes/audits historicos van al repo_destino, y la memoria se propone antes de escribirse.
 
 ---
 

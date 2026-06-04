@@ -1,182 +1,139 @@
-# Work Ticket - WT-2026-228a
+# Work Ticket - WT-2026-229a
 
 ## Metadata
-- **ID:** WT-2026-228a
-- **Title:** Pre-handoff bloquea cambios productivos sin commit en repo_motor
-- **Scope:** system/pre-handoff-evidence
+- **ID:** WT-2026-229a
+- **Title:** Cierre de sesion portable: motor agnostico, historico al destino y memoria propuesta
+- **Scope:** system/session-closeout-portability
 - **Priority:** Alta
 - **Estado:** APPROVED
-- **deliverable_type:** code
+- **deliverable_type:** mixed
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-226a, WT-2026-227a
+- **Depende de:** WT-2026-228a
 
 ## Problema
-`--pre-handoff` puede dar una senal falsa en entorno multi-root.
+El `repo_motor` debe ser el producto portable y agnostico del sistema. Hoy aun
+contiene artefactos operativos historicos en la raiz, por ejemplo
+`PLAN_WP-2026-150.md` y `AUDIT_WP-2026-150.md`. Esos archivos son historia de
+trabajo del `repo_destino`, no parte del motor reusable.
 
-Bug 1 verificado en codigo: en Modelo B, `_handle_pre_handoff` elige
-`git_root = project_root` cuando el `repo_destino` tiene `.git`. Eso deja fuera
-los cambios productivos sin commit del `repo_motor` (`_MOTOR_ROOT`). Resultado:
-el Builder puede tener implementacion real en el motor y aun asi recibir una
-ruta de cierre que no ve esos archivos.
-
-Bug 2 verificado en codigo: si `--pre-handoff` detecta cambios y los
-auto-commitea, usa el mensaje `chore(<ticket>): pre-handoff checkpoint`.
-Ese mensaje contiene terminos incluidos en `_CHECKPOINT_KEYWORDS`
-(`checkpoint`, `pre-handoff`, `wip`, `interim`), por lo que `--mark-ready`
-rechaza despues ese commit como evidencia no significativa.
-
-La correccion correcta es bloquear con mensaje accionable, no auto-commitear.
+Ademas, el cierre de sesion debe convertir las ensenanzas del dia en decisiones
+claras: barreras ya implantadas, memoria candidata y deuda explicita. La memoria
+no se escribe automaticamente; primero se propone siguiendo
+`prompts/memory_upload.md`.
 
 ## Objetivo
-Antes de handoff, detectar cambios productivos sin commit en `repo_motor` usando
-el seam compartido `bus/evidence.py`. Si existen, bloquear con lista de archivos
-y pedir commit manual con el ticket ID. Si no existen cambios productivos sin
-commit, `--pre-handoff` no debe asumir responsabilidad del gate de commits:
-`--mark-ready` sigue siendo quien bloquea la ausencia de commit del ticket.
-
-Resultados esperados:
-1. `repo_motor` con cambios productivos sin commit bloquea `--pre-handoff`.
-2. El bloqueo muestra el texto:
-   `Uncommitted productive changes in repo_motor: commit with ticket ID before handoff.`
-   y lista los archivos productivos.
-3. `repo_motor` con cambios solo docs/collaboration no activa esta barrera.
-4. `repo_motor` limpio con commit reciente que contiene `WT-2026-228a` pasa
-   `--pre-handoff`.
-5. `repo_motor` limpio sin commit del ticket tambien pasa `--pre-handoff`; esa
-   ausencia queda para `--mark-ready`.
-6. `--pre-handoff` no auto-commitea cambios productivos del `repo_motor`.
+Dejar el `repo_motor` limpio como producto portable:
+1. mover planes/audits historicos `PLAN_WP-2026-*.md` y `AUDIT_WP-2026-*.md`
+   desde la raiz del `repo_motor` al `repo_destino`;
+2. ubicar ese historico en `.agent/collaboration/archive/legacy_motor_root/`;
+3. auditar si quedan otros artefactos locales o historicos en `repo_motor` que
+   contradigan su portabilidad;
+4. revisar aprendizajes del dia y proponer memoria sin escribirla todavia;
+5. contrastar la filosofia de `prompts/audit_agent_output.md` y CEM v0 contra
+   el codigo/prompts tocados en la sesion.
 
 ## Contrato CEM v0
 - Contrato antes que fix.
 - Evidencia antes que relato.
-- Rigor proporcional: toca handoff, evidence seam y flujo multi-root.
+- Rigor proporcional: toca higiene de repo, memoria y cierre de sesion.
 - Ninguna afirmacion sin artefacto verificable.
-- No crear otro detector paralelo de evidencia productiva.
-- Cambios fuera de scope: detenerse, clasificarlos y registrarlos antes de tocar.
+- El `repo_motor` conserva solo resultado reusable: codigo, tests, prompts,
+  docs del producto, templates y tooling.
+- El `repo_destino` conserva historico operativo: planes, auditorias, estado,
+  execution logs y memoria project.
 
 ## Decision Arquitectonica
-- Reutilizar `bus/evidence.py` como unica fuente para separar cambios
-  productivos de docs/collaboration.
-- No inferir dirty files desde `resolve_evidence()["motor_productive"]`, porque
-  ese campo tambien puede incluir archivos de commits recientes.
-- Si hace falta, extender `bus/evidence.py` con un campo explicito como
-  `motor_uncommitted_productive` construido solo desde `git diff --name-only` y
-  `git diff --cached --name-only`.
-- La barrera vive en `--pre-handoff`, antes de cualquier commit/tag de
-  checkpoint.
-- La barrera solo comprueba cambios productivos sin commit en `repo_motor`.
-- No convertir `--pre-handoff` en sustituto de `--mark-ready`.
-- No auto-commitear cambios del motor con mensajes genericos.
-
-## Decision de implementacion minima
-- Confirmar en codigo:
-  - `.agent/agent_controller.py:_handle_pre_handoff`;
-  - `.agent/agent_controller.py:_MOTOR_ROOT`;
-  - `.agent/agent_controller.py:_CHECKPOINT_KEYWORDS`;
-  - `bus/evidence.py:resolve_evidence`.
-- Insertar el check antes del bloque que calcula `needs_commit` o ejecuta
-  `git commit`.
-- Usar `bus/evidence.py` para obtener o clasificar un conjunto explicitamente
-  uncommitted del motor; no usar `motor_productive` como proxy de dirty files.
-- Bloquear solo cuando el conjunto uncommitted productivo del motor contenga
-  archivos reales. Los cambios ya presentes en commits recientes del
-  ticket no deben confundirse con dirty changes.
-- Mantener el comportamiento existente para tag de checkpoint cuando no haya
-  cambios productivos sin commit en `repo_motor`.
+- No mover historico operativo a `docs/` del motor.
+- No borrar historico sin migrarlo primero al `repo_destino`.
+- No escribir memoria engine/meta sin propuesta humana aprobada.
+- No meter rutas absolutas locales nuevas en el motor.
+- No mezclar esta limpieza con refactors funcionales.
 
 ## Evidencia minima esperada
-El cierre debe dejar, con artefactos verificables:
-- seam real confirmado en `.agent/agent_controller.py`;
-- prueba de bloqueo con `repo_motor` dirty en archivo productivo;
-- prueba de no bloqueo con cambios docs/collaboration;
-- prueba de paso con `repo_motor` limpio y commit del ticket;
-- prueba de paso con `repo_motor` limpio sin commit del ticket;
-- prueba de que `--pre-handoff` no crea commit automatico en `repo_motor`;
-- salida de tests focales;
-- salida de `ruff`;
-- `agent_controller.py --validate --json --project-root .` sin errores ni
-  warnings.
+El cierre debe dejar:
+- `git status` limpio en `repo_motor` despues del commit;
+- raiz del `repo_motor` sin `PLAN_WP-2026-*.md` ni `AUDIT_WP-2026-*.md`;
+- los archivos migrados visibles en
+  `.agent/collaboration/archive/legacy_motor_root/` del `repo_destino`;
+- inventario breve de otros artefactos sospechosos y decision por cada grupo:
+  mover ahora, dejar porque es producto, ignorar por gitignore o abrir deuda;
+- propuesta de memoria en formato de `prompts/memory_upload.md`, sin escritura
+  automatica;
+- auditoria corta de coherencia con `prompts/audit_agent_output.md` y
+  `.agent/rules/common/sustainable_engineering.md`;
+- `validate --json` del `repo_destino` con 0 errores y 0 warnings.
 
 ## Non-goals
-- No implementar Manager commit.
-- No auto-commitear cambios del `repo_motor`.
-- No tocar permisos `external_directory`.
-- No recuperar manualmente `WT-2026-227a`.
-- No modificar el review packet de `WT-2026-227a`.
-- No tocar rounds, locks ni relaunch.
-- No relajar `--mark-ready`.
+- No borrar `.venv`, `.git`, caches o directorios locales sin comprobar si estan
+  trackeados y si pertenecen al producto.
+- No modificar codigo funcional salvo que una barrera de portabilidad ya
+  existente falle y el cambio sea minimo.
+- No publicar memoria al `repo_motor` sin confirmacion humana explicita.
+- No reescribir historico de git.
+- No mover docs de arquitectura vigentes como `docs/BUS_ARCHITECTURE_*`.
 
 ## Fases
-### Fase 0: Diagnostico del camino real
-- Confirmar que `_handle_pre_handoff` decide `git_root` con `project_root` antes
-  que `_MOTOR_ROOT`.
-- Confirmar que el commit automatico usa `pre-handoff checkpoint`.
-- Confirmar que `_CHECKPOINT_KEYWORDS` rechazaria ese mensaje.
-- Confirmar que `resolve_evidence` mezcla fuentes de working tree, staged y
-  commits recientes, por lo que el fix necesita un conjunto uncommitted
-  explicito.
+### Fase 0: Diagnostico
+- Confirmar `repo_motor` limpio antes de tocar.
+- Listar artefactos root `PLAN_WP-2026-*.md` y `AUDIT_WP-2026-*.md`.
+- Confirmar que estan trackeados en git.
+- Revisar `docs/`, `.agent/collaboration/archive/`, `.gitignore` y manifests.
+- Revisar `prompts/audit_agent_output.md`,
+  `prompts/memory_upload.md` y
+  `.agent/rules/common/sustainable_engineering.md`.
 
-### Fase 1: Barrera de pre-handoff
-- Detectar cambios productivos sin commit en `repo_motor`.
-- Bloquear con mensaje accionable y lista de archivos.
-- Mantener docs/collaboration fuera de la barrera.
-- No ejecutar auto-commit para esos cambios.
+### Fase 1: Migracion de historico
+- Crear en `repo_destino`:
+  `.agent/collaboration/archive/legacy_motor_root/`.
+- Mover alli los `PLAN_WP-*` y `AUDIT_WP-*` historicos desde la raiz del
+  `repo_motor`.
+- En `repo_motor`, registrar los deletes como limpieza portable.
+- En `repo_destino`, conservar el historico como estado operativo del proyecto.
 
-### Fase 2: Pruebas
-- Usar repos git reales en `tmp_path`; no mockear subprocess de git.
-- El test de regresion debe fallar sin el fix y pasar con el fix.
-- Verificar la regresion con revert parcial del archivo central pre-fix, ejecutar
-  el test esperado en rojo, restaurar y registrar el resultado en
-  `execution_log.md`.
+### Fase 2: Auditoria de portabilidad
+- Inventariar root y directorios locales del `repo_motor`.
+- Clasificar cada grupo relevante:
+  - producto portable;
+  - historico operativo a destino;
+  - runtime/cache gitignored;
+  - deuda follow-up.
+- No tocar grupos ambiguos sin justificar en `execution_log.md`.
+
+### Fase 3: Memoria y filosofia
+- Proponer aprendizajes del dia con el formato de `memory_upload.md`.
+- No escribir memoria hasta aprobacion humana.
+- Revisar si `audit_agent_output.md`, `review_manager.md` y `launch_builder.md`
+  reflejan la regla: evidencia real antes que auto-reporte.
+- Registrar gaps como deuda o ticket follow-up.
 
 ## Files Likely Touched
-- `.agent/agent_controller.py`
-- `bus/evidence.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/test_agent_controller.py`
+- `PLAN_WP-2026-*.md`
+- `AUDIT_WP-2026-*.md`
+- `.agent/collaboration/archive/legacy_motor_root/`
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/PLAN_WT-2026-228a.md`
-- `.agent/collaboration/AUDIT_WT-2026-228a.md`
+- `.agent/collaboration/PLAN_WT-2026-229a.md`
+- `.agent/collaboration/AUDIT_WT-2026-229a.md`
 - `.agent/collaboration/execution_log.md`
 
-## Seams confirmados
-- `.agent/agent_controller.py:_handle_pre_handoff`: ruta real de
-  `--pre-handoff`.
-- `.agent/agent_controller.py:_MOTOR_ROOT`: raiz del `repo_motor`.
-- `.agent/agent_controller.py:_CHECKPOINT_KEYWORDS`: filtro que rechaza commits
-  genericos.
-- `bus/evidence.py:resolve_evidence`: seam compartido de evidencia productiva;
-  si se extiende, debe exponer dirty files productivos sin mezclar commits.
-
-## Calidad
-- Ejecutar tests focales del pre-handoff/evidence.
-- Ejecutar al menos un test nuevo que falle sin el fix.
-- Ejecutar `ruff check` sobre archivos Python modificados.
-- Ejecutar `agent_controller.py --validate --json --project-root .` en el
-  `repo_destino` antes de marcar ready.
-
 ## TP Check
-TP-01: seam real `_handle_pre_handoff` confirmado.
-TP-02: `repo_motor` con cambios productivos sin commit bloquea
-`--pre-handoff`.
-TP-03: el mensaje de bloqueo incluye el texto canonico y la lista de archivos.
-TP-04: cambios docs/collaboration-only no activan esta barrera.
-TP-05: `repo_motor` limpio con commit del ticket pasa `--pre-handoff`.
-TP-06: `repo_motor` limpio sin commit del ticket pasa `--pre-handoff`.
-TP-07: `--pre-handoff` no auto-commitea cambios productivos del motor.
-TP-08: la implementacion reutiliza `bus/evidence.py` y no usa
-`motor_productive` como proxy de uncommitted files.
-TP-09: sin scope creep hacia permisos, review packet, relaunch, locks o
-`--mark-ready`.
-TP-10: un commit reciente del ticket no se interpreta como dirty file.
+TP-01: `repo_motor` root queda sin `PLAN_WP-2026-*.md` ni
+`AUDIT_WP-2026-*.md`.
+TP-02: esos artefactos existen en el `repo_destino` bajo
+`.agent/collaboration/archive/legacy_motor_root/`.
+TP-03: no se pierden contenidos; conteo y nombres coinciden antes/despues.
+TP-04: la auditoria de portabilidad clasifica grupos sospechosos con evidencia.
+TP-05: la propuesta de memoria se entrega sin escribir `observations.jsonl`.
+TP-06: la revision CEM cita artefactos reales: `audit_agent_output.md`,
+`memory_upload.md`, `sustainable_engineering.md` y commits/tests del dia.
+TP-07: `repo_motor` no recibe rutas absolutas locales nuevas.
+TP-08: `validate --json` del `repo_destino` queda en 0/0.
 
 ## Criterio binario de salida
-- `agent_controller.py --validate --json --project-root .` devuelve 0 errores y
-  0 warnings.
-- Existe un test de regresion que falla sin el fix y pasa con el fix.
-- Existe un test negativo docs/collaboration-only.
-- Existe un test de no auto-commit.
-- No se crea un detector paralelo de evidencia productiva.
-- No se bloquea un `repo_motor` limpio solo porque tenga commits recientes del
-  ticket.
-- Los cambios no salen de la whitelist.
+- `git status --short` del `repo_motor` muestra solo cambios esperados antes del
+  commit y queda limpio tras commit.
+- `git ls-files "PLAN_WP-2026-*.md" "AUDIT_WP-2026-*.md"` en `repo_motor`
+  devuelve vacio despues de la migracion.
+- `Get-ChildItem .agent/collaboration/archive/legacy_motor_root` en
+  `repo_destino` muestra los 12 archivos migrados.
+- `agent_controller.py --validate --json --project-root <repo_destino>` devuelve
+  0 errores y 0 warnings.
