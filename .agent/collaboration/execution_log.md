@@ -113,3 +113,7 @@ Marked ready by Builder
 - Cierre de ticket: `WT-2026-208` agota el residual real; los 11 fallos restantes pertenecen integramente a `WT-2026-222` (contaminacion de suite / runtime root resolution) y no bloquean marcar `WT-2026-208` como completed.
 - Estado documental: COMPLETED.
 
+- Cierre WT-2026-222: `tests/test_wt_2026_211_write_path.py` restaura `sys.modules["runtime"]` y `sys.modules["runtime.project_root"]` en `teardown_module`, y `tests/conftest.py` limpia el cache de `runtime.project_root` via `clear_cache()` entre tests.
+- Validacion WT-2026-222: `python -m pytest tests/test_wt_2026_211_write_path.py tests/unit/test_project_root_resolution.py -q` -> 15 passed; `python -m ruff check tests/conftest.py tests/test_wt_2026_211_write_path.py` -> All checks passed.
+- Rerun global final del motor: `python -m pytest tests -q` -> 2071 passed, 22 skipped, 0 failed.
+- Estado documental WT-2026-222: COMPLETED.

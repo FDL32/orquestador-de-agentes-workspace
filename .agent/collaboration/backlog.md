@@ -65,7 +65,7 @@
 | Alta | WT-2026-221a | Launcher-only execution contract: BUILDER_STARTED + guard de arranque | system/agent-launch | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
-| Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | backlog | WT-2026-208 | session-2026-06-03-suite-hygiene |
+| Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -647,7 +647,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-222 - Higiene de suite: reset determinista del cache de project_root entre tests
 - **Prioridad:** Media
 - **Scope:** system/testing-hygiene
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** 	ests/unit/test_project_root_resolution.py pasa aislado pero falla dentro de la suite global por contaminacion de orden/cache en la resolucion de untime.project_root. Mientras esto siga asi, la suite global no vuelve a ser una senal fiable y WT-2026-208 queda solo parcialmente estabilizado.
 - **Objetivo:** hacer que la resolucion de project_root sea determinista entre tests, ya sea limpiando cache global en fixture/teardown o endureciendo el contrato del modulo para que no fugue estado entre casos.
 - **Sketch inicial:** identificar el cache compartido en untime.project_root, anadir fixture o helper de reset reutilizable para la familia afectada, y rerun de la suite para demostrar que 	est_project_root_resolution.py deja de variar por orden.
