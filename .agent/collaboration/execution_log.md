@@ -1,6 +1,6 @@
 # Execution Log
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## WT-2026-229a
 - Inicio documental: 2026-06-05.
@@ -18,7 +18,7 @@
   - `.agent/rules/common/sustainable_engineering.md`.
   - raiz del `repo_motor`.
 
-### Fase 0 & 1: Diagnóstico y Migración
+### Fase 0 & 1: Diagnostico y Migracion
 Se confirmaron, migraron y eliminaron del `repo_motor` los siguientes 12 archivos hacia `.agent/collaboration/archive/legacy_motor_root/` en el `repo_destino`:
 1. AUDIT_WP-2026-147.md
 2. AUDIT_WP-2026-148.md
@@ -33,27 +33,27 @@ Se confirmaron, migraron y eliminaron del `repo_motor` los siguientes 12 archivo
 11. PLAN_WP-2026-152.md
 12. PLAN_WP-2026-153.md
 
-### Fase 2: Auditoría de portabilidad
-- **Producto portable:** `scripts/`, `agent_system/`, `bus/`, `prompts/`, `skills/`, `templates/`, `tests/`, `tools/`, `docs/`, manifiestos y configuraciones raíz (`pyproject.toml`, `uv.lock`, `pytest.ini`, `*.md`). (Consolidado, no requiere acción).
-- **Histórico operativo a destino:** Completado en Fase 1 (12 archivos migrados).
+### Fase 2: Auditoria de portabilidad
+- **Producto portable:** `scripts/`, `agent_system/`, `bus/`, `prompts/`, `skills/`, `templates/`, `tests/`, `tools/`, `docs/`, manifiestos y configuraciones raiz (`pyproject.toml`, `uv.lock`, `pytest.ini`, `*.md`). (Consolidado, no requiere accion).
+- **Historico operativo a destino:** Completado en Fase 1 (12 archivos migrados).
 - **Runtime/cache gitignored:** `.venv/`, `.ruff_cache/`, `.session/`, `.tmp/`, `graphify-out/`, `.claude/`, `.claude-plugin/`, `.codex/`, `.opencode/`, `checkpoint/`. (Se ignoran, no afectan portabilidad).
 - **Deuda follow-up (ambiguos):** `.agent_allowlist.json`, `.agent_denylist.json`, `.refactor/`, `llms.txt`, `llms-full.txt`. Se mantienen en `repo_motor` por ahora, pero se sugiere evaluarlos en un ticket futuro para moverlos a `docs/` (en el caso de llms) o a config default del motor.
 
 ### PROPUESTA DE MEMORIA (Fase 3)
-- **Aprendizaje detectado:** La separación estricta entre motor y destino implica que la raíz del `repo_motor` no debe ser un basurero de historial operativo del dogfooding. Archivos como `PLAN_WP-*` y `AUDIT_WP-*` nacen del destino y deben vivir en `.agent/collaboration/` o `archive/` del destino.
-- **Por qué merece memoria:** Es fundamental para asegurar la portabilidad del framework. Si el motor arrastra archivos operativos locales, su empaquetado para terceros se contamina y provoca fugas de contexto o falsos positivos en calidad.
+- **Aprendizaje detectado:** La separacion estricta entre motor y destino implica que la raiz del `repo_motor` no debe ser un basurero de historial operativo del dogfooding. Archivos como `PLAN_WP-*` y `AUDIT_WP-*` nacen del destino y deben vivir en `.agent/collaboration/` o `archive/` del destino.
+- **Por que merece memoria:** Es fundamental para asegurar la portabilidad del framework. Si el motor arrastra archivos operativos locales, su empaquetado para terceros se contamina y provoca fugas de contexto o falsos positivos en calidad.
 - **Si ya existe algo parecido:** Se alinea fuertemente con el concepto de `.agent/collaboration/archive/` detallado en `AGENTS.md` y `PROJECT.md`.
 - **Tipo de aprendizaje:** `arquitectura-estable` y `contrato-operativo`.
-- **Ámbito exacto:** `ambos` (El `repo_motor` es responsable de su portabilidad, el `repo_destino` es responsable de su historial operativo).
+- **Ambito exacto:** `ambos` (El `repo_motor` es responsable de su portabilidad, el `repo_destino` es responsable de su historial operativo).
 - **Wing sugerido:** `engine`.
-- **Dónde debería vivir:** En la memoria del `repo_motor` (propuesto para promoción tras aprobación).
-- **Clasificación CEM:** Previene deuda técnica de arrastre y contención de artefactos.
+- **Donde deberia vivir:** En la memoria del `repo_motor` (propuesto para promocion tras aprobacion).
+- **Clasificacion CEM:** Previene deuda tecnica de arrastre y contencion de artefactos.
 - **Texto propuesto:**
   ```json
   {
     "type": "arquitectura-estable",
-    "content": "La raíz del repo_motor está estrictamente reservada para el producto portable (código, prompts, tests, scripts). Todo historial operativo del dogfooding (ej. planes, auditorías, estados antiguos) debe residir en el repo_destino bajo su propio .agent/collaboration/archive/. No commitear planes de tickets en el motor.",
-    "context": "WT-2026-229a (Migración de archivos legados operacionales para higiene de portabilidad).",
+    "content": "La raiz del repo_motor esta estrictamente reservada para el producto portable (codigo, prompts, tests, scripts). Todo historial operativo del dogfooding (ej. planes, auditorias, estados antiguos) debe residir en el repo_destino bajo su propio .agent/collaboration/archive/. No commitear planes de tickets en el motor.",
+    "context": "WT-2026-229a (Migracion de archivos legados operacionales para higiene de portabilidad).",
     "domain": "engine"
   }
   ```
@@ -464,3 +464,6 @@ Manager approved canonical closeout for WT-2026-227a
 Scope override: WT-2026-228a delivered in repo_motor commits 7d980c1 and 8403e50; repo_destino only carries operational state.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.gitignore, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\evidence.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_agent_controller.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_pre_handoff_guard.py
 
 Manager approved canonical closeout for WT-2026-228a
+
+
+Scope override: migration in repo_motor commit 2469ca4 + archive in repo_destino. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-147.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-148.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-149.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-150.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-152.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-153.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-147.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-148.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-149.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-150.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-152.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-153.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.gitignore, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\AUDIT_WP-2026-*.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\PLAN_WP-2026-*.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\checkpoint\review-WT-2026-229a
