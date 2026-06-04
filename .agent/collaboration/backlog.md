@@ -62,11 +62,12 @@
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
-| Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | active | WT-2026-208 | session-2026-06-03-builder-autonomy |
-| Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | completed | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | completed | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
 | Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | backlog | WT-2026-221a | session-2026-06-04-plan-grammar |
+| Alta | WT-2026-224a | Supervisor relaunch guard: no spawnear round nuevo con Builder vivo | system/supervisor-relaunch | completed | WT-2026-221a, WT-2026-221b | session-2026-06-04-overlap-guard |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 
@@ -642,7 +643,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-221a - Relaunch CEM: root verificado y capsula evidence-linked para Builder
 - **Prioridad:** Alta
 - **Scope:** system/agent-launch
-- **Estado:** active
+- **Estado:** completed
 - **Problema:** tras `REVIEW_DECISION=CHANGES`, el relaunch puede abrir una nueva ventana de Builder sin root operativo verificado y sin continuidad suficiente. Evidencia de la sesion: `BUILDER_RELAUNCH_ATTEMPTED` seq 578 con `builder_launch_unverified` / `verify_signal: none`, coincidente con una ventana rooteada en el motor que no podia leer el estado canonico del destino. Un Builder relanzado asi conserva velocidad, pero pierde memoria y tiende a reconstruir contexto con parches locales.
 - **Objetivo:** convertir `WT-2026-221a` en la primera prueba real de CEM v0: el relaunch solo ocurre con topologia verificada y entrega una capsula fresca, evidence-linked y self-service al Builder.
 - **Sketch:** antes de lanzar Builder, verificar `AGENT_PROJECT_ROOT`, `repo_motor`, `repo_destino`, bus legible y ticket activo. Si falla, no abrir Builder operativo. Si pasa, generar una capsula CEM desde fuentes canonicas que separe hechos verificados, blockers del Manager, hipotesis y siguiente accion. La capsula se regenera en cada relaunch y no se edita/acumula como estado vivo. El tier de rigor se deriva de paths/superficie tocada, no de la autoevaluacion del Builder.
@@ -652,13 +653,13 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-221b - Manager evidence gate: rechazar review sin bus activo y evidencia minima
 - **Prioridad:** Alta
 - **Scope:** system/review-gates
-- **Estado:** backlog
-- **Problema:** aunque el Builder entre por una puerta lateral, hoy puede dejar cambios sin baseline, sin pasadas y sin evidencia suficiente. El Manager solo detecta el problema tarde y de forma manual.
-- **Objetivo:** hacer que el Manager rechace `READY_FOR_REVIEW` si faltan evidencias minimas del ciclo operativo.
-- **Sketch:** en la ruta de review, exigir `BUILDER_STARTED` del ticket, baseline inicial, resultado por pasada, rerun asociado, ausencia de out-of-scope sin justificar y execution_log actualizado. Si falta algo, emitir CHANGES con razon estructurada.
+- **Estado:** active
+- **Problema:** aunque el Builder trabaje correctamente, hoy puede llegar a review con un packet que no contiene evidencia productiva visible del ticket activo. En `WT-2026-221a`, el Manager rechazo `seq 602`, `seq 606` y `seq 617` porque el diff visible solo contenia docs/collaboration y no cambios reales del `repo_motor`.
+- **Objetivo:** hacer que el Manager rechace o bloquee `READY_FOR_REVIEW` si faltan evidencias minimas del ciclo operativo y del diff/commit del `repo_motor`.
+- **Sketch:** en la ruta de review, exigir bus/estado activo del ticket, review packet del ticket correcto, diff/commit productivo del `repo_motor`, tests asociados y clasificacion de docs-only/collaboration-only. Si falta algo, emitir `CHANGES` o bloqueo con razon estructurada.
 - **Nota de metodo:** un cambio productivo es admisible si esta gobernado por un test concreto citado por nombre; es sospechoso si no hay test/evidencia que lo justifique.
-- **Criterio:** ningun ticket puede cerrarse por Manager sin evidencia minima aunque el Builder haya trabajado manualmente.
-- **Depende de:** WT-2026-208.
+- **Criterio:** ningun ticket puede llegar a cierre Manager con review packet docs-only/collaboration-only o sin evidencia minima del `repo_motor`, aunque el Builder haya trabajado manualmente.
+- **Depende de:** WT-2026-208, WT-2026-221a.
 
 ## WT-2026-221c - Scope watch temprano contra Files Likely Touched
 - **Prioridad:** Media

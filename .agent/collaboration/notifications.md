@@ -2,104 +2,6 @@
 
 ---
 
-### MANAGER_REVIEW - 2026-06-01 19:12:42
-- **Plan ID:** WT-2026-199
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 19:25:12
-- **Plan ID:** WT-2026-199
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 19:34:50
-- **Plan ID:** WT-2026-199
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 20:06:16
-- **Plan ID:** WT-2026-199
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 21:17:37
-- **Plan ID:** WT-2026-200
-- **Decision:** APPROVE
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 21:53:31
-- **Plan ID:** WT-2026-198
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 22:27:58
-- **Plan ID:** WT-2026-198
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 22:53:07
-- **Plan ID:** WT-2026-201
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-01 23:17:31
-- **Plan ID:** WT-2026-201
-- **Decision:** APPROVE
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-02 00:16:32
-- **Plan ID:** WT-2026-193
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-02 09:28:49
-- **Plan ID:** WT-2026-203
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-02 09:34:34
-- **Plan ID:** WT-2026-203
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-02 09:45:01
-- **Plan ID:** WT-2026-203
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-02 09:49:36
-- **Plan ID:** WT-2026-203
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
 ### MANAGER_REVIEW - 2026-06-02 09:55:45
 - **Plan ID:** WT-2026-203
 - **Decision:** CHANGES
@@ -142,9 +44,114 @@
 
 ---
 
----
-
 ### MANAGER_REVIEW - 2026-06-02 21:48:29
 - **Plan ID:** WT-2026-214
 - **Decision:** CHANGES
 - **Source:** manager-review-bridge pre-check
+
+---
+
+### MANAGER_REVIEW - 2026-06-03 11:58:10
+- **Plan ID:** WT-2026-208
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 11:37:12
+- **Plan ID:** WT-2026-183
+- **Decision:** CHANGES
+- **Source:** manager-review-bridge pre-check
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:07:14
+- **Plan ID:** WT-2026-221a
+- **Decision:** INSPECT
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:15:41
+- **Plan ID:** WT-2026-221a
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:16:20
+- **Plan ID:** WT-2026-221a
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:20:21
+- **Plan ID:** WT-2026-221a
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:22:38
+- **Plan ID:** WT-2026-221a
+- **Decision:** INSPECT
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:22:51
+- **Plan ID:** WT-2026-221a
+- **Decision:** INSPECT
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 13:22:57
+- **Plan ID:** WT-2026-221a
+- **Decision:** INSPECT
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 14:53:28
+- **Plan ID:** WT-2026-221b
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 14:59:09
+- **Plan ID:** WT-2026-221b
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 15:00:25
+- **Plan ID:** WT-2026-221b
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 15:08:18
+- **Plan ID:** WT-2026-221b
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
+
+---
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 18:09:28
+- **Plan ID:** WT-2026-224a
+- **Decision:** INSPECT
+- **Source:** manager backend exec review
+
+---
+
+### MANAGER_REVIEW - 2026-06-04 18:18:31
+- **Plan ID:** WT-2026-224a
+- **Decision:** CHANGES
+- **Source:** manager backend exec review
