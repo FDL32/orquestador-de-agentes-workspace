@@ -1,139 +1,136 @@
-# Work Ticket - WT-2026-229a
+# Work Ticket - WT-2026-215
 
 ## Metadata
-- **ID:** WT-2026-229a
-- **Title:** Cierre de sesion portable: motor agnostico, historico al destino y memoria propuesta
-- **Scope:** system/session-closeout-portability
+- **ID:** WT-2026-215
+- **Title:** Gates Modelo B: operaciones git de evidencia/provenance resuelven motor_root
+- **Scope:** system/gates-motor-root
 - **Priority:** Alta
-- **Estado:** APPROVED
-- **deliverable_type:** mixed
+- **Estado:** COMPLETED
+- **deliverable_type:** code
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-228a
+- **Depende de:** WT-2026-210 (completado), WT-2026-187 (completado)
 
 ## Problema
-El `repo_motor` debe ser el producto portable y agnostico del sistema. Hoy aun
-contiene artefactos operativos historicos en la raiz, por ejemplo
-`PLAN_WP-2026-150.md` y `AUDIT_WP-2026-150.md`. Esos archivos son historia de
-trabajo del `repo_destino`, no parte del motor reusable.
+Varias funciones git de evidencia en `bus/review_bridge.py`, `scripts/prepush_check.py`
+y `scripts/session_closeout.py` corren con `cwd=project_root` (el workspace, repo_destino)
+en vez de `motor_root` (orquestador_de_agentes, donde viven los commits).
 
-Ademas, el cierre de sesion debe convertir las ensenanzas del dia en decisiones
-claras: barreras ya implantadas, memoria candidata y deuda explicita. La memoria
-no se escribe automaticamente; primero se propone siguiendo
-`prompts/memory_upload.md`.
+Consecuencia real verificada en sesion actual: el review packet del Manager refleja
+artefactos de colaboracion del workspace, no codigo del motor. Cada cierre ha
+necesitado un "Scope override" manual para que el Manager no rechazara por diff vacio.
+
+`_resolve_motor_root` y `_resolve_motor_controller` ya migran a `motor_link` (WT-2026-187),
+pero las funciones git de evidencia quedaron sin migrar. Es deuda quirurgica con causa
+raiz verificada en codigo.
 
 ## Objetivo
-Dejar el `repo_motor` limpio como producto portable:
-1. mover planes/audits historicos `PLAN_WP-2026-*.md` y `AUDIT_WP-2026-*.md`
-   desde la raiz del `repo_motor` al `repo_destino`;
-2. ubicar ese historico en `.agent/collaboration/archive/legacy_motor_root/`;
-3. auditar si quedan otros artefactos locales o historicos en `repo_motor` que
-   contradigan su portabilidad;
-4. revisar aprendizajes del dia y proponer memoria sin escribirla todavia;
-5. contrastar la filosofia de `prompts/audit_agent_output.md` y CEM v0 contra
-   el codigo/prompts tocados en la sesion.
+Hacer que todas las operaciones git de evidencia/provenance del tooling de review y gates
+resuelvan `motor_root` via `motor_link`, de forma que el review packet refleje el codigo
+real del motor y el Manager no necesite overrides manuales de scope.
+
+Criterio verificable: `check_review_packet_diff_empty` devuelve `False` cuando el Builder
+commiteo codigo real en el motor; `python -m pytest tests/test_motor_root_gates.py -v`
+pasa; `ruff` limpio; `validate --json` 0/0.
 
 ## Contrato CEM v0
-- Contrato antes que fix.
-- Evidencia antes que relato.
-- Rigor proporcional: toca higiene de repo, memoria y cierre de sesion.
-- Ninguna afirmacion sin artefacto verificable.
-- El `repo_motor` conserva solo resultado reusable: codigo, tests, prompts,
-  docs del producto, templates y tooling.
-- El `repo_destino` conserva historico operativo: planes, auditorias, estado,
-  execution logs y memoria project.
+- Contrato antes que fix: clasificar cada call site (git-de-codigo vs git-de-estado-workspace)
+  antes de tocar.
+- Evidencia antes que relato: test con repos git reales (no mocks de git).
+- Rigor proporcional: Tier 3 (tooling de review/gates), no Tier 1 (bus core).
+- No-cambio-ciego: el principio no es "reemplazar todos los cwd=self.project_root",
+  sino corregir exactamente la superficie de evidencia/provenance.
 
 ## Decision Arquitectonica
-- No mover historico operativo a `docs/` del motor.
-- No borrar historico sin migrarlo primero al `repo_destino`.
-- No escribir memoria engine/meta sin propuesta humana aprobada.
-- No meter rutas absolutas locales nuevas en el motor.
-- No mezclar esta limpieza con refactors funcionales.
+Introducir un helper privado `_motor_root_or_raise()` en `review_bridge.py` que devuelve
+`motor_root` resuelto via `_resolve_motor_root()` o lanza excepcion controlada si no hay
+link. Todos los call sites de evidencia/provenance lo usan. El helper hace la intencion
+explicita y la decision auditable.
 
-## Evidencia minima esperada
-El cierre debe dejar:
-- `git status` limpio en `repo_motor` despues del commit;
-- raiz del `repo_motor` sin `PLAN_WP-2026-*.md` ni `AUDIT_WP-2026-*.md`;
-- los archivos migrados visibles en
-  `.agent/collaboration/archive/legacy_motor_root/` del `repo_destino`;
-- inventario breve de otros artefactos sospechosos y decision por cada grupo:
-  mover ahora, dejar porque es producto, ignorar por gitignore o abrir deuda;
-- propuesta de memoria en formato de `prompts/memory_upload.md`, sin escritura
-  automatica;
-- auditoria corta de coherencia con `prompts/audit_agent_output.md` y
-  `.agent/rules/common/sustainable_engineering.md`;
-- `validate --json` del `repo_destino` con 0 errores y 0 warnings.
+En `prepush_check.py` y `session_closeout.py`, separar la operacion git del motor como
+check bloqueante (usa `motor_root`) y dejar cualquier informacion del workspace como
+informativa (usa `project_root` si aporta algo, o se elimina si es redundante).
+
+El caso ambiguo `_get_untracked_files` (L1096 `review_bridge.py`) se resuelve
+explicitamente en `PLAN_WT-2026-215.md` antes de tocar: motor_root si es evidencia de
+codigo no commiteado, project_root si son deliverables locales del destino.
 
 ## Non-goals
-- No borrar `.venv`, `.git`, caches o directorios locales sin comprobar si estan
-  trackeados y si pertenecen al producto.
-- No modificar codigo funcional salvo que una barrera de portabilidad ya
-  existente falle y el cambio sea minimo.
-- No publicar memoria al `repo_motor` sin confirmacion humana explicita.
+- No tocar cwd de repomix (L483), review transport (L1907, 2011, 3222, 3280) ni
+  `_run_script()` de session_closeout.
+- No cambiar el contrato de `_resolve_motor_root()` ni de `motor_link.py`.
+- No modificar bus/state_machine, supervisor, controller ni relaunch.
+- No automatizar la emision de CHANGES ni tocar WT-2026-217.
 - No reescribir historico de git.
-- No mover docs de arquitectura vigentes como `docs/BUS_ARCHITECTURE_*`.
+- No refactorizar funciones mas alla de lo necesario para pasar cwd correcto.
 
 ## Fases
-### Fase 0: Diagnostico
-- Confirmar `repo_motor` limpio antes de tocar.
-- Listar artefactos root `PLAN_WP-2026-*.md` y `AUDIT_WP-2026-*.md`.
-- Confirmar que estan trackeados en git.
-- Revisar `docs/`, `.agent/collaboration/archive/`, `.gitignore` y manifests.
-- Revisar `prompts/audit_agent_output.md`,
-  `prompts/memory_upload.md` y
-  `.agent/rules/common/sustainable_engineering.md`.
 
-### Fase 1: Migracion de historico
-- Crear en `repo_destino`:
-  `.agent/collaboration/archive/legacy_motor_root/`.
-- Mover alli los `PLAN_WP-*` y `AUDIT_WP-*` historicos desde la raiz del
-  `repo_motor`.
-- En `repo_motor`, registrar los deletes como limpieza portable.
-- En `repo_destino`, conservar el historico como estado operativo del proyecto.
+### Fase 0: Diagnostico y clasificacion
+- Confirmar los call sites exactos (linea por linea) contra el codigo real del motor
+  en la sesion de implementacion (el codigo puede haber cambiado desde este plan).
+- Confirmar en el codigo real que `_get_untracked_files` mantiene semantica de
+  archivos de codigo no commiteados. La decision ya fue registrada por Manager
+  en `execution_log.md`: usar `motor_root`. Builder no escribe en
+  `.agent/collaboration/`.
+- Verificar que no existe ya un helper equivalente en `review_bridge.py`.
 
-### Fase 2: Auditoria de portabilidad
-- Inventariar root y directorios locales del `repo_motor`.
-- Clasificar cada grupo relevante:
-  - producto portable;
-  - historico operativo a destino;
-  - runtime/cache gitignored;
-  - deuda follow-up.
-- No tocar grupos ambiguos sin justificar en `execution_log.md`.
+### Fase 1: Helper en review_bridge.py
+- Introducir `_motor_root_or_raise()` como metodo privado de `ReviewBridge`
+  (o nombre equivalente si el contexto lo pide).
+- Migrar los call sites de evidencia/provenance clasificados en Fase 0:
+  `_git_diff_stat` (L578), `_build_diff_for_files_likely_touched` (L599),
+  `_git_provenance` (L985), `_resolve_review_base` y sus ramas (L1014, 1040, 1072, 1096
+  segun decision de Fase 0), `_get_current_git_head` (L1444),
+  `_compute_changed_files` y diffs (L1495, 1510, 1525).
+- Cada funcion del grupo llama `_motor_root_or_raise()` internamente; no se pasa
+  `motor_root` como parametro encadenado entre funciones.
+- Confirmar que call sites fuera de scope no se tocan.
 
-### Fase 3: Memoria y filosofia
-- Proponer aprendizajes del dia con el formato de `memory_upload.md`.
-- No escribir memoria hasta aprobacion humana.
-- Revisar si `audit_agent_output.md`, `review_manager.md` y `launch_builder.md`
-  reflejan la regla: evidencia real antes que auto-reporte.
-- Registrar gaps como deuda o ticket follow-up.
+### Fase 2: prepush_check.py y session_closeout.py
+- `prepush_check.py`: migrar `run_git_status_check` (L250 aprox) a motor_root.
+- `session_closeout.py`: migrar `_step_git_clean` (L1524 aprox) a motor_root.
+- En ambos casos, resolver via `runtime.motor_link.resolve_motor_root(project_root)`
+  y usar fallback explicito de warning si no hay link de motor.
+
+### Fase 3: Tests y quality gates
+- `tests/test_motor_root_gates.py` (nuevo):
+  - workspace no-repo (o repo distinto) + motor con commits reales:
+    `check_review_packet_diff_empty` devuelve False.
+  - pre-check no emite CHANGES espurio con motor con commits.
+  - `prepush_check` / `session_closeout` resuelven motor_root.
+  - fallback si no hay link: comportamiento documentado y sin crash.
+  - test de regresion: sin el fix, el caso principal falla.
+- Ruff limpio en todos los archivos tocados.
+- `pip-audit` limpio.
+- `validate --json --project-root <repo_destino>` con 0/0.
 
 ## Files Likely Touched
-- `PLAN_WP-2026-*.md`
-- `AUDIT_WP-2026-*.md`
-- `.agent/collaboration/archive/legacy_motor_root/`
-- `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/PLAN_WT-2026-229a.md`
-- `.agent/collaboration/AUDIT_WT-2026-229a.md`
-- `.agent/collaboration/execution_log.md`
+- `bus/review_bridge.py`
+- `scripts/prepush_check.py`
+- `scripts/session_closeout.py`
+- `tests/test_motor_root_gates.py`
+- `tests/test_manager_review_bridge.py`
 
 ## TP Check
-TP-01: `repo_motor` root queda sin `PLAN_WP-2026-*.md` ni
-`AUDIT_WP-2026-*.md`.
-TP-02: esos artefactos existen en el `repo_destino` bajo
-`.agent/collaboration/archive/legacy_motor_root/`.
-TP-03: no se pierden contenidos; conteo y nombres coinciden antes/despues.
-TP-04: la auditoria de portabilidad clasifica grupos sospechosos con evidencia.
-TP-05: la propuesta de memoria se entrega sin escribir `observations.jsonl`.
-TP-06: la revision CEM cita artefactos reales: `audit_agent_output.md`,
-`memory_upload.md`, `sustainable_engineering.md` y commits/tests del dia.
-TP-07: `repo_motor` no recibe rutas absolutas locales nuevas.
-TP-08: `validate --json` del `repo_destino` queda en 0/0.
+TP-01: `_motor_root_or_raise()` (o equivalente) es el seam unico; no se crean ramas
+  paralelas de resolucion de motor_root en las funciones de evidencia.
+TP-02: con workspace repo y motor repo hermano, `check_review_packet_diff_empty`
+  devuelve False si el motor tiene commits reales.
+TP-03: la decision Manager sobre `_get_untracked_files` esta documentada en
+  `execution_log.md` antes del handoff y el test cubre el caso elegido.
+TP-04: `prepush_check.py` y `session_closeout.py` ejecutan git sobre motor_root.
+TP-05: call sites fuera de scope (repomix, review transport, `_run_script`) sin cambios.
+TP-06: fallback si no hay `motor_destination_link.json`: no crash, comportamiento
+  documentado.
+TP-07: test de regresion demuestra fallo sin el fix via revert parcial seguro.
+TP-08: `ruff` limpio, `validate --json` 0/0.
 
 ## Criterio binario de salida
-- `git status --short` del `repo_motor` muestra solo cambios esperados antes del
-  commit y queda limpio tras commit.
-- `git ls-files "PLAN_WP-2026-*.md" "AUDIT_WP-2026-*.md"` en `repo_motor`
-  devuelve vacio despues de la migracion.
-- `Get-ChildItem .agent/collaboration/archive/legacy_motor_root` en
-  `repo_destino` muestra los 12 archivos migrados.
-- `agent_controller.py --validate --json --project-root <repo_destino>` devuelve
-  0 errores y 0 warnings.
+- `git -C C:\Users\fdl\Proyectos_Python\orquestador_de_agentes log --oneline -3`
+  contiene commit con `WT-2026-215`.
+- `python -m pytest tests/test_motor_root_gates.py -v` -> todos pasan.
+- `python -m pytest tests/test_manager_review_bridge.py -q` -> sin regresiones.
+- `ruff check bus/review_bridge.py scripts/prepush_check.py scripts/session_closeout.py`
+  -> All checks passed.
+- `python ../orquestador_de_agentes/.agent/agent_controller.py --validate --json --project-root .`
+  -> 0 errores, 0 warnings.

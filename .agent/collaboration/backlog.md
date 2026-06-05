@@ -51,7 +51,7 @@
 | Alta | WT-2026-212 | Consumidor durable de CHANGES y requeue garantizado | system/bus-durable-requeue | completed | WT-2026-211 | session-2026-06-02-durable-changes |
 | Alta | WT-2026-214 | Protocolo de forced close: reconciliacion automatica del ticket anterior en preflight | system/preflight-reconcile | completed | WT-2026-210, WT-2026-216 | session-2026-06-02-preflight-reconcile |
 | Alta | WT-2026-216 | Launcher lee el bus en vez de TURN.md para decidir que agente lanzar | system/launcher-bus-read | completed | WT-2026-211 | session-2026-06-02-launcher-bus-read |
-| Alta | WT-2026-215 | Gates Modelo B: operaciones git de tooling resuelven motor_root | system/gates-motor-root | backlog | WT-2026-210 | session-2026-06-02-bridge-diff |
+| Alta | WT-2026-215 | Gates Modelo B: operaciones git de tooling resuelven motor_root | system/gates-motor-root | completed | WT-2026-210 | session-2026-06-02-bridge-diff |
 | Alta | WT-2026-217 | Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES | system/bus-transition | backlog | WT-2026-210 | session-2026-06-02-precheck-transition |
 | Baja | WT-2026-213 | Eliminar el doble STATE_CHANGED de --mark-ready | system/bus-events | backlog | WT-2026-210 | session-2026-06-02-bus-audit |
 | Media | WT-2026-206 | Scope gate y cierres manuales en workspace+motor | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-followup |
@@ -59,6 +59,7 @@
 | Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | active | WT-2026-211 | session-2026-06-02-suite |
 | Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | backlog | WT-2026-211 | session-2026-06-02-terminology |
 | Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
+| Media | TBD | Renombrar en sitio 8 tests historicos del motor a nombres funcionales estables | system/testing-hygiene | backlog | WT-2026-215 | session-2026-06-05-portability |
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
@@ -72,7 +73,24 @@
 | Alta | WT-2026-226a | Unificar evidence seam entre mark-ready y review packet | system/evidence-packaging | completed | WT-2026-221b, WT-2026-225a | session-2026-06-04-evidence-seam |
 | Media | WT-2026-227a | Repomix: estado estructurado y diagnostico verificable en review context | system/review-context | completed | WT-2026-182, WT-2026-226a | session-2026-06-04-repomix-observability |
 | Alta | WT-2026-228a | Pre-handoff bloquea cambios productivos sin commit en repo_motor | system/pre-handoff-evidence | completed | WT-2026-226a, WT-2026-227a | session-2026-06-04-prehandoff-evidence |
-| Alta | WT-2026-229a | Cierre de sesion portable: motor agnostico e historico al destino | system/session-closeout-portability | active | WT-2026-228a | session-2026-06-05-portable-closeout |
+| Alta | WT-2026-229a | Cierre de sesion portable: motor agnostico e historico al destino | system/session-closeout-portability | completed | WT-2026-228a | session-2026-06-05-portable-closeout |
+
+### Deuda TBD - renombre funcional de tests historicos del motor
+
+Objetivo: quitar IDs de ticket del nombre del archivo cuando el test ya valida
+comportamiento estable del producto. Los tests no se mueven ni se archivan; solo
+se renombran en `tests/` y se actualizan sus referencias.
+
+| Actual | Nombre funcional propuesto | Funcion principal cubierta |
+|--------|----------------------------|----------------------------|
+| `tests/test_wt_2026_228a_pre_handoff_motor.py` | `tests/test_pre_handoff_motor_productive_changes.py` | barrera pre-handoff sobre cambios productivos sin commit en `repo_motor` |
+| `tests/test_wt_2026_221b_evidence_gate.py` | `tests/test_review_packet_evidence_gate.py` | gate de evidencia minima antes de review del Manager |
+| `tests/test_wt_2026_221a_relaunch.py` | `tests/test_relaunch_evidence_capsule.py` | capsula evidence-linked y camino valido de relaunch |
+| `tests/test_wt_2026_216_launcher_bus_read.py` | `tests/test_launcher_state_from_bus.py` | decision del launcher derivada del bus y fallback controlado |
+| `tests/test_wt_2026_214_preflight_reconcile.py` | `tests/test_preflight_reconcile_decision.py` | decision de preflight entre aligned / cleanup / reconcile / abort |
+| `tests/test_wt_2026_212_durable_changes.py` | `tests/test_durable_changes_requeue.py` | procesamiento durable de `CHANGES` y requeue garantizado |
+| `tests/test_wt_2026_211_write_path.py` | `tests/test_ticket_projection_write_path.py` | write-path canonico y materializacion de proyecciones |
+| `tests/test_wp_2026_127.py` | `tests/test_approval_state_revision_and_skill_access.py` | OCC de estado, expiracion de approvals y filtrado de skills por rol |
 
 ## Reordenacion 2026-06-02 - auditoria del bus
 

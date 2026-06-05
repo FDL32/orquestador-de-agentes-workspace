@@ -1,6 +1,57 @@
 # Execution Log
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
+
+## WT-2026-215
+- Inicio documental: 2026-06-05.
+- Objetivo: corregir que las operaciones git de evidencia/provenance del tooling de review
+  y gates usen `motor_root` como cwd, no `project_root`. Introducir seam unico en
+  `review_bridge.py` y migrar call sites clasificados en `prepush_check.py` y
+  `session_closeout.py`.
+- Estado operativo: COMPLETADO y APROBADO por Manager (2026-06-05).
+- Evidencia de arranque: `WT-2026-229a` cerrado canonicamente (bus seq 797/798). Causa
+  raiz de 215 verificada en sesion: `_git_diff_stat` (L578), `_build_diff_for_files_likely_touched`
+  (L599) y derivadas usan `cwd=self.project_root`; `_resolve_motor_root` ya usa motor_link
+  pero las funciones git nunca se migraron.
+- Clasificacion de call sites: inventario pre-plan completado en sesion Manager
+  (2026-06-05). En scope: 10 call sites de evidencia/provenance. Fuera de scope: repomix,
+  review transport, `_run_script`.
+
+### Fase 0: Decision sobre _get_untracked_files (Manager, 2026-06-05)
+Funcion verificada en codigo real (bus/review_bridge.py:1081-1115):
+- Ejecuta `git status --porcelain -z` y filtra con `_is_deliverable_path`.
+- `_is_deliverable_path` excluye `.agent/`, `__pycache__`, `.venv/`, etc.
+- Semantica: "archivos de codigo no commiteados que son deliverables reales".
+- Decision: **motor_root**. Los archivos no trackeados relevantes para el review packet
+  son codigo del motor pendiente de commit, no artefactos del workspace. Si en el futuro
+  se necesita informacion de untracked del workspace, se anade como rama separada explicita.
+- Llamada secundaria en `_compute_changed_files` (L1520-1534): tambien usa
+  `cwd=self.project_root` para untracked; aplica la misma decision (motor_root).
+
+### Correccion de handoff tras primer arranque Builder
+- El primer Builder intento editar `repo_destino/.agent/collaboration/execution_log.md`
+  porque el plan le asignaba el registro de la decision de Fase 0. El sandbox rechazo
+  correctamente esa escritura y la implementacion no llego a comenzar.
+- Regla aplicada: Builder escribe producto portable en `repo_motor` (codigo y tests);
+  Manager/supervisor escriben estado operativo en `repo_destino/.agent/collaboration/`.
+- El test nuevo se renombro de `test_wt_2026_215_motor_root_gates.py` a
+  `test_motor_root_gates.py`. Los tests de regresion permanecen en el motor; la
+  trazabilidad del ticket queda en git y en los artefactos del `repo_destino`.
+- Se registro deuda separada para normalizar los nombres historicos `test_wt_*` /
+  `test_wp_*` del motor sin mover ni archivar pruebas ejecutables.
+- Constraint operacional: `.agent/collaboration/*` es external_directory para OpenCode
+  (Builder); el Builder no puede escribir aqui. Las actualizaciones del execution_log
+  durante el ciclo de 215 las hace el Manager (Claude Code).
+- Fuentes canonicas: `bus/review_bridge.py`, `scripts/prepush_check.py`,
+  `scripts/session_closeout.py`, `PLAN_WT-2026-215.md`, `AUDIT_WT-2026-215.md`.
+
+### Cierre Manager (2026-06-05)
+- Commit: `f8cd50d feat(WT-2026-215): git evidence operations resolve motor_root via seam`
+- 10 call sites de evidencia/provenance migrados a `_motor_root_or_raise()`.
+- `prepush_check` y `session_closeout` resuelven `motor_root` via `runtime.motor_link`.
+- Tests: `test_motor_root_gates.py` 10/10, `test_manager_review_bridge.py` 114/114.
+- Barrera de regresion verificada: `test_regression_cwd_project_root_breaks_check` PASSED.
+- Ruff limpio, validate 0/0. Estado: APROBADO por Manager.
 
 ## WT-2026-229a
 - Inicio documental: 2026-06-05.
@@ -467,3 +518,5 @@ Manager approved canonical closeout for WT-2026-228a
 
 
 Scope override: migration in repo_motor commit 2469ca4 + archive in repo_destino. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\AUDIT_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\_archive\plan_audit\PLAN_WT-2026-208.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-147.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-148.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-149.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-150.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-152.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\AUDIT_WP-2026-153.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-147.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-148.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-149.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-150.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-152.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\archive\legacy_motor_root\PLAN_WP-2026-153.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\runtime\relaunch_capsule.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.gitignore, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\AUDIT_WP-2026-*.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\PLAN_WP-2026-*.md, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\checkpoint\review-WT-2026-229a
+
+Manager approved canonical closeout for WT-2026-229a
