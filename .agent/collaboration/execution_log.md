@@ -1,6 +1,79 @@
 # Execution Log
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
+
+## WT-2026-231a
+- Inicio documental: 2026-06-05.
+- Objetivo: hacer que `--pre-handoff` commitee de forma determinista los cambios
+  productivos de `repo_motor` cuando esten dentro de `Files Likely Touched`, y bloquee
+  con evidencia accionable cuando no lo esten.
+- Estado operativo: IN_PROGRESS. Turno entregado a Builder para implementacion.
+- STATE_CHANGED: APPROVED -> IN_PROGRESS (source: Manager bootstrap).
+- Contrato de implementacion:
+  - commit automatico solo en `repo_motor`;
+  - no tag en `repo_destino`;
+  - no relajar `mark-ready`;
+  - paths FLT y git normalizados a `motor-relative` con `/`;
+  - retry controlado si hook/formatter modifica staged files;
+  - Builder no lee ni escribe paths reales bajo `repo_destino`.
+- Files Likely Touched:
+  - `.agent/agent_controller.py`
+  - `tests/test_agent_controller.py`
+  - `tests/test_pre_handoff_guard.py`
+  - `tests/test_pre_handoff_multirepo.py`
+- Blockers:
+  - CRITICO: anadir commit despues de un `return 1` previo del guard de WT-2026-228a.
+  - CRITICO: commitear todo lo sucio sin validar FLT.
+  - CRITICO: normalizacion mala que produzca `files_to_stage=[]`.
+  - CRITICO: relajar `mark-ready`.
+
+## WT-2026-230a
+- Inicio documental: 2026-06-05.
+- Objetivo: provisionar bootstrap de destino con mapa compacto local y arranque guiado
+  desde `motor_root`, sin depender de Repomix/Node/Graphify para el primer arranque.
+- Estado operativo: APPROVED. Turno entregado a Builder para implementacion.
+- Evidencia de arranque: `WT-2026-215` cerrado canonicamente; sistema en reposo
+  con `STATE=IDLE` antes de abrir este ciclo.
+- Contrato de implementacion:
+  - logica ejecutable vive en `repo_motor`;
+  - `repo_destino` solo recibe config, mapa generado y punteros de bootstrap;
+  - Builder no escribe en `.agent/collaboration/`, `.agent/runtime/` ni `backlog.md`;
+  - `install_agent_system.py` integra el provisionado via `install_agent_system()` y
+    `sync_agent_system()` sin sobrescribir `destination_context.json` personalizado.
+- Files Likely Touched:
+  - `scripts/install_agent_system.py`
+  - `scripts/destination_context.py`
+  - `prompts/destination_bootstrap.md`
+  - `prompts/session_bootstrap.md`
+  - `tests/test_install_agent_system.py`
+  - `tests/test_destination_context.py`
+- Blockers reforzados:
+  - ALTO: Builder toca `.agent/collaboration/`, `.agent/runtime/` o `backlog.md`.
+  - CRITICO: copiar `destination_context.py` o wrappers ejecutables al destino.
+  - CRITICO: depender de Graphify, Node o Repomix para el primer arranque.
+
+### Arranque fallido R1 (2026-06-05)
+- Builder intento leer `repo_destino/.agent/config/motor_destination_link.json` durante
+  Fase 0.
+- El sandbox rechazo correctamente la lectura como `external_directory`.
+- Resultado: ciclo en vacio; pre-handoff OK por arbol limpio; mark-ready bloqueo por
+  ausencia de cambios productivos y commit `WT-2026-230a`.
+- Correccion Manager aplicada: Fase 0 queda limitada a `repo_motor`; el shape del link
+  se confirma leyendo `scripts/install_agent_system.py:write_motor_destination_link()`
+  y `runtime/motor_link.py:resolve_motor_root()`. Builder no lee ni escribe paths reales
+  bajo `repo_destino`.
+
+### Cierre canonico (2026-06-05) — Manager
+- Builder R2 implemento sin acceso a `repo_destino`; 62/62 tests, ruff limpio, 22225 bytes mapa.
+- Manager reviso codigo real: APROBADO con 3 NITs no bloqueantes.
+- Manager aplico NITs en 2 commits en `repo_motor`:
+  - `887b0dc feat(WT-2026-230a): destination bootstrap - compact map generator and guided startup`
+  - `cee95e6 refactor(WT-2026-230a): address Manager review nits`
+- NITs cerrados: (1) tautologia en test_destination_context.py L367; (2) EXCLUDED_TREE_DIRS
+  no filtraba rutas con `/`, dividido en EXCLUDED_TREE_DIRS + EXCLUDED_TREE_RELPATHS;
+  (3) parametro `template_root` sin usar eliminado de `copy_destination_bootstrap()`.
+- Tag `checkpoint/review-WT-2026-230a` creado en `repo_motor` @ `cee95e6`.
+- Estado final: COMPLETADO. Entregable en `repo_motor`; `repo_destino` solo lleva estado.
 
 ## WT-2026-215
 - Inicio documental: 2026-06-05.

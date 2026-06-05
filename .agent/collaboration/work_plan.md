@@ -1,136 +1,145 @@
-# Work Ticket - WT-2026-215
+# Work Ticket - WT-2026-231a
 
 ## Metadata
-- **ID:** WT-2026-215
-- **Title:** Gates Modelo B: operaciones git de evidencia/provenance resuelven motor_root
-- **Scope:** system/gates-motor-root
+- **ID:** WT-2026-231a
+- **Title:** Pre-handoff commitea repo_motor en Modelo B con scope FLT
+- **Scope:** system/pre-handoff-commit
 - **Priority:** Alta
-- **Estado:** COMPLETED
+- **Estado:** APPROVED
 - **deliverable_type:** code
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-210 (completado), WT-2026-187 (completado)
+- **Depende de:** WT-2026-228a (completado), WT-2026-215 (completado)
 
 ## Problema
-Varias funciones git de evidencia en `bus/review_bridge.py`, `scripts/prepush_check.py`
-y `scripts/session_closeout.py` corren con `cwd=project_root` (el workspace, repo_destino)
-en vez de `motor_root` (orquestador_de_agentes, donde viven los commits).
+En Modelo B, el codigo productivo vive en `repo_motor`, pero el cierre canonico exige
+un commit visible con el ID del ticket antes de `mark-ready`. El flujo actual ha
+fallado repetidamente porque el Builder puede implementar, pero el harness no genera
+de forma determinista el commit del motor.
 
-Consecuencia real verificada en sesion actual: el review packet del Manager refleja
-artefactos de colaboracion del workspace, no codigo del motor. Cada cierre ha
-necesitado un "Scope override" manual para que el Manager no rechazara por diff vacio.
-
-`_resolve_motor_root` y `_resolve_motor_controller` ya migran a `motor_link` (WT-2026-187),
-pero las funciones git de evidencia quedaron sin migrar. Es deuda quirurgica con causa
-raiz verificada en codigo.
+El guard de WT-2026-228a detecta motor sucio y bloquea, pero no convierte ese estado
+en la decision correcta commit-o-bloquea. El resultado recurrente es `mark-ready`
+bloqueado por `No commit evidence`, incluso cuando hay trabajo productivo real.
 
 ## Objetivo
-Hacer que todas las operaciones git de evidencia/provenance del tooling de review y gates
-resuelvan `motor_root` via `motor_link`, de forma que el review packet refleje el codigo
-real del motor y el Manager no necesite overrides manuales de scope.
+Reestructurar `--pre-handoff` para que, en Modelo B:
+- detecte cambios productivos del `repo_motor`;
+- compare esos cambios contra `Files Likely Touched` con paths normalizados;
+- commitee automaticamente en `repo_motor` si todo esta dentro de scope;
+- bloquee con lista exacta si hay productivo fuera de scope;
+- mantenga el bloqueo de `no implementation evidence` en rondas vacias;
+- cree/refresque `checkpoint/review-<ticket>` en `repo_motor`.
 
-Criterio verificable: `check_review_packet_diff_empty` devuelve `False` cuando el Builder
-commiteo codigo real en el motor; `python -m pytest tests/test_motor_root_gates.py -v`
-pasa; `ruff` limpio; `validate --json` 0/0.
+Este ticket no relaja `mark-ready`: lo alimenta con el commit real que hoy falta.
 
 ## Contrato CEM v0
-- Contrato antes que fix: clasificar cada call site (git-de-codigo vs git-de-estado-workspace)
-  antes de tocar.
-- Evidencia antes que relato: test con repos git reales (no mocks de git).
-- Rigor proporcional: Tier 3 (tooling de review/gates), no Tier 1 (bus core).
-- No-cambio-ciego: el principio no es "reemplazar todos los cwd=self.project_root",
-  sino corregir exactamente la superficie de evidencia/provenance.
+- Contrato antes que fix: `mark-ready` sigue exigiendo commit real; el cambio vive aguas
+  arriba en `pre-handoff`.
+- Evidencia antes que relato: tests con repos git reales en `tmp_path`, no mocks de git.
+- Rigor proporcional: commit automatico solo para cambios productivos dentro de FLT.
+- Root/topologia antes de ejecucion: git de entrega productiva corre en `repo_motor`,
+  no en `repo_destino`.
 
 ## Decision Arquitectonica
-Introducir un helper privado `_motor_root_or_raise()` en `review_bridge.py` que devuelve
-`motor_root` resuelto via `_resolve_motor_root()` o lanza excepcion controlada si no hay
-link. Todos los call sites de evidencia/provenance lo usan. El helper hace la intencion
-explicita y la decision auditable.
+Convertir el guard de motor sucio en una decision determinista:
+- motor sucio dentro de FLT -> `git add` + `git commit` en `repo_motor`;
+- motor sucio fuera de FLT -> bloqueo con paths exactos;
+- sin productivo -> mantiene bloqueo de evidencia.
 
-En `prepush_check.py` y `session_closeout.py`, separar la operacion git del motor como
-check bloqueante (usa `motor_root`) y dejar cualquier informacion del workspace como
-informativa (usa `project_root` si aporta algo, o se elimina si es redundante).
-
-El caso ambiguo `_get_untracked_files` (L1096 `review_bridge.py`) se resuelve
-explicitamente en `PLAN_WT-2026-215.md` antes de tocar: motor_root si es evidencia de
-codigo no commiteado, project_root si son deliverables locales del destino.
+No se crea tag en `repo_destino`. El tag load-bearing es el de `repo_motor`, porque ahi
+vive la entrega revisable. El estado operativo del destino sigue gobernado por bus y
+markdowns canonicos.
 
 ## Non-goals
-- No tocar cwd de repomix (L483), review transport (L1907, 2011, 3222, 3280) ni
-  `_run_script()` de session_closeout.
-- No cambiar el contrato de `_resolve_motor_root()` ni de `motor_link.py`.
-- No modificar bus/state_machine, supervisor, controller ni relaunch.
-- No automatizar la emision de CHANGES ni tocar WT-2026-217.
-- No reescribir historico de git.
-- No refactorizar funciones mas alla de lo necesario para pasar cwd correcto.
+- No crear tag en `repo_destino`.
+- No relajar `mark-ready`.
+- No cambiar el contrato de `Files Likely Touched`.
+- No dar permisos extra al Builder.
+- No cambiar review Manager.
+- No mezclar con `WT-2026-230a`.
 
 ## Fases
 
-### Fase 0: Diagnostico y clasificacion
-- Confirmar los call sites exactos (linea por linea) contra el codigo real del motor
-  en la sesion de implementacion (el codigo puede haber cambiado desde este plan).
-- Confirmar en el codigo real que `_get_untracked_files` mantiene semantica de
-  archivos de codigo no commiteados. La decision ya fue registrada por Manager
-  en `execution_log.md`: usar `motor_root`. Builder no escribe en
-  `.agent/collaboration/`.
-- Verificar que no existe ya un helper equivalente en `review_bridge.py`.
+### Fase 0: Diagnostico en codigo real
+- Confirmar en `.agent/agent_controller.py` el orden actual de:
+  - guard de motor sucio de WT-2026-228a;
+  - logica de commit/pre-handoff;
+  - creacion/refresco de `checkpoint/review-<ticket>`.
+- Confirmar como se leen hoy `Files Likely Touched`.
+- Confirmar como se detectan cambios productivos del motor.
+- Confirmar que la logica actual no debe tocar `repo_destino` para el commit productivo.
 
-### Fase 1: Helper en review_bridge.py
-- Introducir `_motor_root_or_raise()` como metodo privado de `ReviewBridge`
-  (o nombre equivalente si el contexto lo pide).
-- Migrar los call sites de evidencia/provenance clasificados en Fase 0:
-  `_git_diff_stat` (L578), `_build_diff_for_files_likely_touched` (L599),
-  `_git_provenance` (L985), `_resolve_review_base` y sus ramas (L1014, 1040, 1072, 1096
-  segun decision de Fase 0), `_get_current_git_head` (L1444),
-  `_compute_changed_files` y diffs (L1495, 1510, 1525).
-- Cada funcion del grupo llama `_motor_root_or_raise()` internamente; no se pasa
-  `motor_root` como parametro encadenado entre funciones.
-- Confirmar que call sites fuera de scope no se tocan.
+### Fase 1: Commit-o-bloquea en repo_motor
+- Resolver `motor_root`.
+- Obtener cambios productivos del motor.
+- Normalizar FLT y paths git a `motor-relative` con `/`.
+- Si todos los cambios productivos estan dentro de FLT:
+  - hacer `git add <paths>` con `cwd=motor_root`;
+  - hacer `git commit` con mensaje que incluya `WT-2026-231a`;
+  - crear/refrescar `checkpoint/review-<ticket>` en `repo_motor`.
+- Si hay cambios fuera de FLT:
+  - no commitear;
+  - bloquear con lista exacta de paths.
+- Si no hay cambios productivos:
+  - mantener bloqueo de `no implementation evidence`.
 
-### Fase 2: prepush_check.py y session_closeout.py
-- `prepush_check.py`: migrar `run_git_status_check` (L250 aprox) a motor_root.
-- `session_closeout.py`: migrar `_step_git_clean` (L1524 aprox) a motor_root.
-- En ambos casos, resolver via `runtime.motor_link.resolve_motor_root(project_root)`
-  y usar fallback explicito de warning si no hay link de motor.
+### Fase 2: Hooks que modifican staged files
+- Manejar el caso en que un hook/formatter modifica un archivo staged:
+  - intento 1: add + commit;
+  - si falla y quedan cambios dentro de FLT, re-add solo esos paths;
+  - intento 2: commit;
+  - si vuelve a fallar, bloquear con stdout/stderr claro;
+  - nunca re-add fuera de FLT.
 
 ### Fase 3: Tests y quality gates
-- `tests/test_motor_root_gates.py` (nuevo):
-  - workspace no-repo (o repo distinto) + motor con commits reales:
-    `check_review_packet_diff_empty` devuelve False.
-  - pre-check no emite CHANGES espurio con motor con commits.
-  - `prepush_check` / `session_closeout` resuelven motor_root.
-  - fallback si no hay link: comportamiento documentado y sin crash.
-  - test de regresion: sin el fix, el caso principal falla.
-- Ruff limpio en todos los archivos tocados.
-- `pip-audit` limpio.
-- `validate --json --project-root <repo_destino>` con 0/0.
+- Crear o ajustar tests multi-repo con repos git reales.
+- Cubrir normalizacion de paths.
+- Cubrir retry por hook que modifica staged files.
+- Verificar que `mark-ready` no se relaja.
 
 ## Files Likely Touched
-- `bus/review_bridge.py`
-- `scripts/prepush_check.py`
-- `scripts/session_closeout.py`
-- `tests/test_motor_root_gates.py`
-- `tests/test_manager_review_bridge.py`
+- `.agent/agent_controller.py`
+- `tests/test_agent_controller.py`
+- `tests/test_pre_handoff_guard.py`
+- `tests/test_pre_handoff_multirepo.py`
+
+## Builder Access Surface
+
+### Puede leer/escribir
+- `.agent/agent_controller.py`
+- `tests/test_agent_controller.py`
+- `tests/test_pre_handoff_guard.py`
+- `tests/test_pre_handoff_multirepo.py`
+
+### No puede leer/escribir
+- Ningun path real bajo `repo_destino` / `workspace_activo`.
+- `.agent/collaboration/**` del destino.
+- `.agent/runtime/**` del destino.
+- `.agent/config/**` del destino.
+- `backlog.md`.
+
+### Si necesita datos del destino
+- Crear fixtures temporales con `tmp_path`.
+- Leer el codigo del motor que genera esos artefactos.
 
 ## TP Check
-TP-01: `_motor_root_or_raise()` (o equivalente) es el seam unico; no se crean ramas
-  paralelas de resolucion de motor_root en las funciones de evidencia.
-TP-02: con workspace repo y motor repo hermano, `check_review_packet_diff_empty`
-  devuelve False si el motor tiene commits reales.
-TP-03: la decision Manager sobre `_get_untracked_files` esta documentada en
-  `execution_log.md` antes del handoff y el test cubre el caso elegido.
-TP-04: `prepush_check.py` y `session_closeout.py` ejecutan git sobre motor_root.
-TP-05: call sites fuera de scope (repomix, review transport, `_run_script`) sin cambios.
-TP-06: fallback si no hay `motor_destination_link.json`: no crash, comportamiento
-  documentado.
-TP-07: test de regresion demuestra fallo sin el fix via revert parcial seguro.
-TP-08: `ruff` limpio, `validate --json` 0/0.
+TP-01: el guard de motor sucio ya no hace `return 1` antes de evaluar commit-o-bloquea.
+TP-02: cambios productivos dentro de FLT generan commit en `repo_motor` con ID del ticket.
+TP-03: cambios productivos fuera de FLT bloquean con lista exacta y no commitean.
+TP-04: ronda vacia sin productivo mantiene bloqueo de `no implementation evidence`.
+TP-05: `checkpoint/review-<ticket>` apunta al commit de entrega en `repo_motor`.
+TP-06: paths FLT y paths de git se normalizan a `motor-relative` con `/`.
+TP-07: hook/formatter que modifica staged files provoca re-add solo de paths en scope
+  y segundo commit, o bloqueo claro si falla de nuevo.
+TP-08: no se crea tag en `repo_destino`.
+TP-09: `mark-ready` mantiene su gate actual y pasa solo porque existe commit real.
 
 ## Criterio binario de salida
-- `git -C C:\Users\fdl\Proyectos_Python\orquestador_de_agentes log --oneline -3`
-  contiene commit con `WT-2026-215`.
-- `python -m pytest tests/test_motor_root_gates.py -v` -> todos pasan.
-- `python -m pytest tests/test_manager_review_bridge.py -q` -> sin regresiones.
-- `ruff check bus/review_bridge.py scripts/prepush_check.py scripts/session_closeout.py`
-  -> All checks passed.
+- Existe commit en `repo_motor` con `WT-2026-231a`.
+- `python -m pytest tests/test_pre_handoff_multirepo.py -v` -> todos pasan.
+- `python -m pytest tests/test_pre_handoff_guard.py tests/test_agent_controller.py -q`
+  -> sin regresiones.
+- `ruff check .agent/agent_controller.py tests/test_pre_handoff_guard.py tests/test_pre_handoff_multirepo.py`
+  -> limpio.
 - `python ../orquestador_de_agentes/.agent/agent_controller.py --validate --json --project-root .`
+  (Manager gate: ejecutar desde `repo_destino`, no desde `repo_motor`)
   -> 0 errores, 0 warnings.

@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-05 10:19:22
+**Ultima actualizacion:** 2026-06-05 11:20:00
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
-| **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WT-2026-231a |
+| **Tipo** | IMPLEMENT |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WT-2026-215 closed. Create new work_plan.md for next cycle.
+> Implementar WT-2026-231a. Trabaja solo en `repo_motor` y dentro de Files Likely Touched. No leer ni escribir paths reales del `repo_destino`. Objetivo: `--pre-handoff` commitea `repo_motor` dentro de FLT, bloquea fuera de scope y mantiene `mark-ready` sin relajacion.
 
 ---
 
@@ -25,9 +25,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
-*Generado por agent_controller.py v5*
+*Preparado documentalmente para WT-2026-231a*

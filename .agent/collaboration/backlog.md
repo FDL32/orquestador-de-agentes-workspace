@@ -74,6 +74,34 @@
 | Media | WT-2026-227a | Repomix: estado estructurado y diagnostico verificable en review context | system/review-context | completed | WT-2026-182, WT-2026-226a | session-2026-06-04-repomix-observability |
 | Alta | WT-2026-228a | Pre-handoff bloquea cambios productivos sin commit en repo_motor | system/pre-handoff-evidence | completed | WT-2026-226a, WT-2026-227a | session-2026-06-04-prehandoff-evidence |
 | Alta | WT-2026-229a | Cierre de sesion portable: motor agnostico e historico al destino | system/session-closeout-portability | completed | WT-2026-228a | session-2026-06-05-portable-closeout |
+| Alta | WT-2026-230a | Bootstrap de destino: mapa compacto local y arranque guiado desde motor_root | system/destination-bootstrap | completed | WT-2026-184, WT-2026-186, WT-2026-187, WT-2026-215, WT-2026-227a | session-2026-06-05-destination-bootstrap |
+| Alta | WT-2026-231a | Pre-handoff commitea repo_motor en Modelo B con scope FLT | system/pre-handoff-commit | active | WT-2026-228a, WT-2026-215 | session-2026-06-05-builder-commit |
+
+## WT-2026-231a - Pre-handoff commitea repo_motor en Modelo B con scope FLT
+- **Prioridad:** Alta
+- **Scope:** system/pre-handoff-commit
+- **Estado:** active
+- **Problema:** en Modelo B, el codigo productivo vive en `repo_motor`, pero la ruta de
+  commit del pre-handoff todavia asume un unico repo y usa `project_root`/`repo_destino`
+  como `cwd`. El guard de WT-2026-228a detecta motor sucio y bloquea antes de que haya
+  una accion determinista que commitee la entrega. El resultado recurrente es
+  `mark-ready` bloqueado por "No commit evidence" aunque el Builder haya implementado.
+- **Objetivo:** convertir el pre-handoff en una decision determinista commit-o-bloquea:
+  si todos los cambios productivos del `repo_motor` estan dentro de `Files Likely
+  Touched`, el harness hace `git add` + `git commit` en `repo_motor` con el ID del ticket
+  y actualiza `checkpoint/review-<ticket>` en el motor; si hay cambios fuera de scope,
+  bloquea con lista exacta.
+- **Non-goals:** no crear tag en `repo_destino`; no relajar `mark-ready`; no cambiar el
+  contrato de `Files Likely Touched`; no dar permisos extra al Builder; no mezclar con
+  `WT-2026-230a`.
+- **Tests requeridos:** motor sucio dentro de FLT commitea; motor sucio fuera de FLT
+  bloquea; ronda vacia sigue bloqueando por falta de evidencia; checkpoint apunta al
+  commit de entrega; normalizacion de paths motor-relative evita interseccion vacia;
+  hook que modifica archivo staged provoca re-add + segundo commit limpio o bloqueo claro.
+- **Criterio:** el ticket que implemente 231a puede cerrarse sin commit manual del Manager
+  cuando la entrega productiva este dentro de FLT.
+- **Depende de:** WT-2026-228a, WT-2026-215.
+- **Origen:** session-2026-06-05-builder-commit
 
 ### Deuda TBD - renombre funcional de tests historicos del motor
 
