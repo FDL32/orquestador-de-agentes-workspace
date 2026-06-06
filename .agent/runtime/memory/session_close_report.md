@@ -1,27 +1,27 @@
 # Session Close Report
 
-**Generated:** 2026-06-02 13:11:17 UTC
+**Generated:** 2026-06-06 22:46:06 UTC
 **Dry Run:** Yes
 **Skip Slow:** No
 
 ## Session Window
 
-- **Start:** from last report (2026-06-02 13:11:11 UTC)
-- **End:** 2026-06-02 13:11:17 UTC
+- **Start:** from last report (2026-06-06 22:25:40 UTC)
+- **End:** 2026-06-06 22:46:06 UTC
 
 ## Tickets
 
-- WT-2026-205
+- WT-2026-234a
 
 ## Steps
 
 | # | Step | Status | Blocking | Detail |
 |---|------|--------|----------|--------|
-| 1 | resolve_tickets | PASS | No | Source: fallback from work_plan.md active ticket. Tickets: ['WT-2026-205'] |
+| 1 | resolve_tickets | PASS | No | Source: fallback from work_plan.md active ticket. Tickets: ['WT-2026-234a'] |
 | 2 | prepush_check | SKIP | Yes | Skipped in dry-run mode |
 | 3 | local_audit | SKIP | No | Skipped in dry-run mode |
 | 4 | validate_ticket_prose | SKIP | No | Skipped in dry-run mode |
-| 5 | observations:WT-2026-205 | SKIP | No | Skipped in dry-run mode |
+| 5 | observations:WT-2026-234a | SKIP | No | Skipped in dry-run mode |
 | 6 | memory_consolidate | SKIP | No | Skipped in dry-run mode |
 | 7 | cleanup_builder_session | SKIP | No | Skipped in dry-run mode |
 | 8 | archive_collaboration | SKIP | No | Skipped in dry-run mode |
@@ -30,8 +30,9 @@
 | 11 | archive_execution_log | SKIP | No | Skipped in dry-run mode |
 | 12 | archive_event_bus | SKIP | No | Skipped in dry-run mode |
 | 13 | manifest_check | WARN | No | MANIFEST.distribute not found at project root |
-| 14 | portability_paths | WARN | No | Absolute paths found in 1 file(s): README.md:25 |
-| 15 | git_clean | SKIP | No | Skipped in dry-run mode |
+| 14 | portability_paths | WARN | No | Absolute paths found in 1 file(s): README.md:18 |
+| 15 | versioned_filenames | PASS | No | No ticket IDs found in versioned filenames |
+| 16 | git_clean | SKIP | No | Skipped in dry-run mode |
 
 ## Overall: WARN
 

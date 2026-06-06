@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-05 11:20:00
+**Ultima actualizacion:** 2026-06-07 01:05:00
 
 ---
 
@@ -9,15 +9,19 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **BUILDER** |
-| **Plan ID** | WT-2026-231a |
-| **Tipo** | IMPLEMENT |
+| **Plan ID** | WT-2026-235a |
+| **Tipo** | IMPLEMENTATION |
 | **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Implementar WT-2026-231a. Trabaja solo en `repo_motor` y dentro de Files Likely Touched. No leer ni escribir paths reales del `repo_destino`. Objetivo: `--pre-handoff` commitea `repo_motor` dentro de FLT, bloquea fuera de scope y mantiene `mark-ready` sin relajacion.
+> Implementar WT-2026-235a en repo_motor. Lee los artefactos adjuntos
+> `work_plan.md`, `PLAN_WT-2026-235a.md` y `AUDIT_WT-2026-235a.md`.
+> No leas ni escribas paths reales bajo repo_destino. El scope productivo esta
+> limitado a `bus/review_bridge.py` y `tests/test_manager_review_bridge.py`.
+> Al cerrar, ejecuta primero `--pre-handoff` y despues `--mark-ready`.
 
 ---
 
@@ -25,9 +29,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | IN_PROGRESS |
+| work_plan.md | APPROVED |
 | execution_log.md | IN_PROGRESS |
 
 ---
 
-*Preparado documentalmente para WT-2026-231a*
+*Preparado para Builder de WT-2026-235a*

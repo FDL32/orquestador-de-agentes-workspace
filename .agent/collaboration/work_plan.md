@@ -1,145 +1,136 @@
-# Work Ticket - WT-2026-231a
+# Work Ticket - WT-2026-235a
 
 ## Metadata
-- **ID:** WT-2026-231a
-- **Title:** Pre-handoff commitea repo_motor en Modelo B con scope FLT
-- **Scope:** system/pre-handoff-commit
-- **Priority:** Alta
+- **ID:** WT-2026-235a
+- **Title:** Manager review bridge: decisiones autoritativas y CHANGES con blockers
+- **Scope:** system/review-bridge-decision-contract
+- **Priority:** Critica
 - **Estado:** APPROVED
 - **deliverable_type:** code
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-228a (completado), WT-2026-215 (completado)
-
-## Problema
-En Modelo B, el codigo productivo vive en `repo_motor`, pero el cierre canonico exige
-un commit visible con el ID del ticket antes de `mark-ready`. El flujo actual ha
-fallado repetidamente porque el Builder puede implementar, pero el harness no genera
-de forma determinista el commit del motor.
-
-El guard de WT-2026-228a detecta motor sucio y bloquea, pero no convierte ese estado
-en la decision correcta commit-o-bloquea. El resultado recurrente es `mark-ready`
-bloqueado por `No commit evidence`, incluso cuando hay trabajo productivo real.
+- **Depende de:** WT-2026-204, WT-2026-234a
 
 ## Objetivo
-Reestructurar `--pre-handoff` para que, en Modelo B:
-- detecte cambios productivos del `repo_motor`;
-- compare esos cambios contra `Files Likely Touched` con paths normalizados;
-- commitee automaticamente en `repo_motor` si todo esta dentro de scope;
-- bloquee con lista exacta si hay productivo fuera de scope;
-- mantenga el bloqueo de `no implementation evidence` en rondas vacias;
-- cree/refresque `checkpoint/review-<ticket>` en `repo_motor`.
+Evitar que el Manager bridge emita decisiones accionables falsas o incompletas.
+`APPROVE` y `CHANGES` solo pueden salir de una fuente final autoritativa; `CHANGES`
+ademas requiere estructura completa y blockers no vacios. Si la decision no cumple
+ese contrato, el bridge debe degradar a `INSPECT` y no relanzar Builder.
 
-Este ticket no relaja `mark-ready`: lo alimenta con el commit real que hoy falta.
+## Problema
+En `WT-2026-234a`, el Manager automatico emitio en dos rondas
+`REVIEW_DECISION -> changes` con `payload.blockers == ""`. El supervisor hizo lo
+correcto al bloquear el handoff con `HANDOFF_BLOCKED reason=empty_blockers`, pero el
+Builder quedo sin instrucciones accionables y se generaron relaunches ciegos.
 
-## Contrato CEM v0
-- Contrato antes que fix: `mark-ready` sigue exigiendo commit real; el cambio vive aguas
-  arriba en `pre-handoff`.
-- Evidencia antes que relato: tests con repos git reales en `tmp_path`, no mocks de git.
-- Rigor proporcional: commit automatico solo para cambios productivos dentro de FLT.
-- Root/topologia antes de ejecucion: git de entrega productiva corre en `repo_motor`,
-  no en `repo_destino`.
+La auditoria del bus confirma una causa mas grave: el fallback `text_regex` puede
+escanear el transcript completo y capturar literales `DECISION: CHANGES` o
+`DECISION: APPROVE` que aparecen en la propia plantilla del review packet, no en un
+veredicto final real del Manager. Eso puede producir tanto `CHANGES` vacio como un
+falso `APPROVE` silencioso.
+
+## Contrato
+- `APPROVE` solo es valido desde `json_final_answer`.
+- `CHANGES` solo es valido si cumple las condiciones siguientes: procede de
+  `json_final_answer`, contiene `## SUMMARY`, contiene `## BLOCKERS`, contiene
+  `## SUGGESTIONS` y `blockers.strip()` no esta vacio.
+- `json_last_text`, `json_no_decision`, `text_regex` y parse methods ausentes
+  (`None` o cadena vacia) no pueden emitir `APPROVE` ni `CHANGES`; deben degradar
+  a `INSPECT`.
+- Si `CHANGES` no cumple estructura o blockers, degradar a `INSPECT` con
+  `failure_reason=changes_structure_invalid`.
+- El evento `REVIEW_DECISION` debe incluir `parse_method` y `failure_reason` cuando
+  exista degradacion.
+- No tocar la logica de seguridad del supervisor: su `HANDOFF_BLOCKED` por blockers
+  vacios queda como segunda red.
 
 ## Decision Arquitectonica
-Convertir el guard de motor sucio en una decision determinista:
-- motor sucio dentro de FLT -> `git add` + `git commit` en `repo_motor`;
-- motor sucio fuera de FLT -> bloqueo con paths exactos;
-- sin productivo -> mantiene bloqueo de evidencia.
-
-No se crea tag en `repo_destino`. El tag load-bearing es el de `repo_motor`, porque ahi
-vive la entrega revisable. El estado operativo del destino sigue gobernado por bus y
-markdowns canonicos.
+El fix se aplica en `bus/review_bridge.py`, antes de emitir `REVIEW_DECISION`,
+porque ahi se combinan procedencia (`parse_method`) y payload (`blockers`,
+`missing_sections`). El supervisor conserva su guard de `empty_blockers` como red
+de seguridad, pero no debe decidir si el veredicto del Manager es autoritativo.
 
 ## Non-goals
-- No crear tag en `repo_destino`.
-- No relajar `mark-ready`.
-- No cambiar el contrato de `Files Likely Touched`.
-- No dar permisos extra al Builder.
-- No cambiar review Manager.
-- No mezclar con `WT-2026-230a`.
+- No modificar `bus/event_bus.py` ni imponer schema global en esta pasada.
+- No cambiar `bus/supervisor.py` salvo que un test demuestre una dependencia directa
+  inevitable.
+- No cambiar prompts de Manager como sustituto del gate automatico.
+- No introducir analisis semantico complejo ni dependencias nuevas.
 
 ## Fases
 
-### Fase 0: Diagnostico en codigo real
-- Confirmar en `.agent/agent_controller.py` el orden actual de:
-  - guard de motor sucio de WT-2026-228a;
-  - logica de commit/pre-handoff;
-  - creacion/refresco de `checkpoint/review-<ticket>`.
-- Confirmar como se leen hoy `Files Likely Touched`.
-- Confirmar como se detectan cambios productivos del motor.
-- Confirmar que la logica actual no debe tocar `repo_destino` para el commit productivo.
+### Fase 0 - Baseline del bug
+- Reproducir con tests el comportamiento actual:
+  - transcript con plantilla `DECISION: APPROVE/CHANGES` sin veredicto final;
+  - NDJSON que termina en `tool-calls` sin `final_answer`;
+  - `CHANGES` sin bloque `## BLOCKERS` accionable.
+- Confirmar el baseline de estos tres casos: plantilla reflejada produce decision
+  fuerte, NDJSON sin final_answer produce decision fuerte, o `CHANGES` invalido
+  produce `blockers=""`.
 
-### Fase 1: Commit-o-bloquea en repo_motor
-- Resolver `motor_root`.
-- Obtener cambios productivos del motor.
-- Normalizar FLT y paths git a `motor-relative` con `/`.
-- Si todos los cambios productivos estan dentro de FLT:
-  - hacer `git add <paths>` con `cwd=motor_root`;
-  - hacer `git commit` con mensaje que incluya `WT-2026-231a`;
-  - crear/refrescar `checkpoint/review-<ticket>` en `repo_motor`.
-- Si hay cambios fuera de FLT:
-  - no commitear;
-  - bloquear con lista exacta de paths.
-- Si no hay cambios productivos:
-  - mantener bloqueo de `no implementation evidence`.
+### Fase 1 - Procedencia autoritativa
+- Endurecer `bus/review_bridge.py` para que `text_regex` no pueda devolver
+  `APPROVE` ni `CHANGES`.
+- Si `parse_method != "json_final_answer"` para una decision fuerte, devolver
+  `INSPECT`.
+- Conservar trazabilidad mediante `parse_method` en el payload emitido.
 
-### Fase 2: Hooks que modifican staged files
-- Manejar el caso en que un hook/formatter modifica un archivo staged:
-  - intento 1: add + commit;
-  - si falla y quedan cambios dentro de FLT, re-add solo esos paths;
-  - intento 2: commit;
-  - si vuelve a fallar, bloquear con stdout/stderr claro;
-  - nunca re-add fuera de FLT.
+### Fase 2 - Payload de CHANGES
+- Hacer que `_validate_changes_structure()` muerda de verdad.
+- Si `decision == CHANGES` y falta estructura o `blockers.strip()` esta vacio:
+  - degradar a `INSPECT`;
+  - persistir causa en feedback;
+  - emitir `REVIEW_DECISION` con `decision=inspect`,
+    `failure_reason=changes_structure_invalid`, `missing_sections` y `parse_method`;
+  - no dejar payload que active requeue ciego.
 
-### Fase 3: Tests y quality gates
-- Crear o ajustar tests multi-repo con repos git reales.
-- Cubrir normalizacion de paths.
-- Cubrir retry por hook que modifica staged files.
-- Verificar que `mark-ready` no se relaja.
+### Fase 3 - Tests y gates
+- Anadir tests focales en `tests/test_manager_review_bridge.py`.
+- Ejecutar ruff y pytest focal.
+- Ejecutar `agent_controller.py --validate --json --project-root <repo_destino>` como
+  gate Manager, no Builder.
 
 ## Files Likely Touched
-- `.agent/agent_controller.py`
-- `tests/test_agent_controller.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/test_pre_handoff_multirepo.py`
 
-## Builder Access Surface
+### repo_motor - Builder
+- `bus/review_bridge.py`
+- `tests/test_manager_review_bridge.py`
 
-### Puede leer/escribir
-- `.agent/agent_controller.py`
-- `tests/test_agent_controller.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/test_pre_handoff_multirepo.py`
+### repo_destino - Manager only
+- `.agent/collaboration/work_plan.md`
+- `.agent/collaboration/PLAN_WT-2026-235a.md`
+- `.agent/collaboration/AUDIT_WT-2026-235a.md`
+- `.agent/collaboration/execution_log.md`
+- `.agent/collaboration/backlog.md`
+- `.agent/collaboration/STATE.md`
+- `.agent/collaboration/TURN.md`
 
-### No puede leer/escribir
-- Ningun path real bajo `repo_destino` / `workspace_activo`.
-- `.agent/collaboration/**` del destino.
-- `.agent/runtime/**` del destino.
-- `.agent/config/**` del destino.
-- `backlog.md`.
+## Superficies prohibidas para Builder
+- Paths bajo raiz `repo_destino`: `<repo_destino>/**`.
+- `.agent/collaboration/**`
+- `.agent/runtime/**`
+- `bus/supervisor.py`, salvo hallazgo verificado y justificado antes de editar.
+- `bus/event_bus.py`.
 
-### Si necesita datos del destino
-- Crear fixtures temporales con `tmp_path`.
-- Leer el codigo del motor que genera esos artefactos.
+## Criterios de aceptacion
+- `text_regex` no puede producir `APPROVE` ni `CHANGES`.
+- Transcript con plantilla interna `DECISION: APPROVE/CHANGES` pero sin veredicto
+  final autoritativo produce `INSPECT`.
+- NDJSON terminado en `tool-calls` sin `final_answer` produce `INSPECT`.
+- `CHANGES` sin blockers estructurados se degrada a `INSPECT` con
+  `failure_reason=changes_structure_invalid`.
+- `CHANGES` estructurado con blockers no vacios sigue produciendo `CHANGES` y
+  conserva `payload.blockers`.
+- `APPROVE` desde fuente final autoritativa sigue produciendo `APPROVE`.
+- `REVIEW_DECISION` incluye `parse_method`; si hay degradacion incluye
+  `failure_reason`.
+- `pytest tests/test_manager_review_bridge.py -q` pasa.
+- `ruff check bus/review_bridge.py tests/test_manager_review_bridge.py` pasa.
 
 ## TP Check
-TP-01: el guard de motor sucio ya no hace `return 1` antes de evaluar commit-o-bloquea.
-TP-02: cambios productivos dentro de FLT generan commit en `repo_motor` con ID del ticket.
-TP-03: cambios productivos fuera de FLT bloquean con lista exacta y no commitean.
-TP-04: ronda vacia sin productivo mantiene bloqueo de `no implementation evidence`.
-TP-05: `checkpoint/review-<ticket>` apunta al commit de entrega en `repo_motor`.
-TP-06: paths FLT y paths de git se normalizan a `motor-relative` con `/`.
-TP-07: hook/formatter que modifica staged files provoca re-add solo de paths en scope
-  y segundo commit, o bloqueo claro si falla de nuevo.
-TP-08: no se crea tag en `repo_destino`.
-TP-09: `mark-ready` mantiene su gate actual y pasa solo porque existe commit real.
-
-## Criterio binario de salida
-- Existe commit en `repo_motor` con `WT-2026-231a`.
-- `python -m pytest tests/test_pre_handoff_multirepo.py -v` -> todos pasan.
-- `python -m pytest tests/test_pre_handoff_guard.py tests/test_agent_controller.py -q`
-  -> sin regresiones.
-- `ruff check .agent/agent_controller.py tests/test_pre_handoff_guard.py tests/test_pre_handoff_multirepo.py`
-  -> limpio.
-- `python ../orquestador_de_agentes/.agent/agent_controller.py --validate --json --project-root .`
-  (Manager gate: ejecutar desde `repo_destino`, no desde `repo_motor`)
-  -> 0 errores, 0 warnings.
+TP-01: el test reproduce el falso positivo por plantilla reflejada.
+TP-02: `text_regex` queda degradado a `INSPECT` para decisiones fuertes.
+TP-03: `CHANGES` invalido no emite blockers vacios ni dispara requeue ciego.
+TP-04: `CHANGES` valido conserva blockers accionables para el supervisor.
+TP-05: `APPROVE` valido sigue funcionando desde fuente autoritativa.
+TP-06: `REVIEW_DECISION` deja trazabilidad de `parse_method` y degradacion.
+TP-07: no se toca `supervisor.py` ni `event_bus.py` sin evidencia nueva.

@@ -39,7 +39,7 @@
 | Alta | WT-2026-190 | Rotacion segura de review_queue.md y contrato de memoria | system/hygiene | completed | WT-2026-189 | session-2026-06-01-memory |
 | Alta | WT-2026-196 | Manager adaptativo ante blockers repetidos | system/review | completed | WT-2026-190 | session-2026-06-01-review-loop |
 | Alta | WT-2026-191 | Migracion determinista de memoria y bootstrap real | system/memory | completed | WT-2026-196 | session-2026-06-01-memory |
-| Media | TBD | Inventario y estabilizacion de suite global | system/testing | backlog | WT-2026-191 | session-2026-06-01-suite |
+| Media | TBD | Inventario y estabilizacion de suite global | system/testing | absorbed | WT-2026-208 | session-2026-06-01-suite |
 | Media | WT-2026-192 | Claude Memory Mirror local opt-in | system/devx | completed | WT-2026-191 | session-2026-06-01-memory |
 | Media | WT-2026-197 | Supervisor post-restart sin Builder tras CHANGES | system/bus | completed | WT-2026-192 | session-2026-06-01-review-loop |
 | Baja | WT-2026-193 | Redaccion previa en pipeline de memoria persistente | system/security | completed | WT-2026-191 | session-2026-06-01-memory |
@@ -56,9 +56,11 @@
 | Baja | WT-2026-213 | Eliminar el doble STATE_CHANGED de --mark-ready | system/bus-events | backlog | WT-2026-210 | session-2026-06-02-bus-audit |
 | Media | WT-2026-206 | Scope gate y cierres manuales en workspace+motor | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-followup |
 | Media | WT-2026-207 | Gobernanza de collaboration legacy en el motor durante session-close | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-closeout |
-| Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | active | WT-2026-211 | session-2026-06-02-suite |
-| Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | backlog | WT-2026-211 | session-2026-06-02-terminology |
+| Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | completed | WT-2026-211 | session-2026-06-02-suite |
+| Media | TBD | Alinear tests legacy de pre-handoff con auto-commit motor-aware | system/testing-hygiene | absorbed | WT-2026-208 | session-2026-06-06-suite-baseline |
+| Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | absorbed | WT-2026-232a | session-2026-06-02-terminology |
 | Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
+| Media | TBD | Retirar excepcion PYSEC-2026-196 cuando pip 26.1.2 este publicado | system/security-dependencies | backlog | - | session-2026-06-06-wt208-close |
 | Media | TBD | Renombrar en sitio 8 tests historicos del motor a nombres funcionales estables | system/testing-hygiene | backlog | WT-2026-215 | session-2026-06-05-portability |
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
@@ -75,13 +77,90 @@
 | Alta | WT-2026-228a | Pre-handoff bloquea cambios productivos sin commit en repo_motor | system/pre-handoff-evidence | completed | WT-2026-226a, WT-2026-227a | session-2026-06-04-prehandoff-evidence |
 | Alta | WT-2026-229a | Cierre de sesion portable: motor agnostico e historico al destino | system/session-closeout-portability | completed | WT-2026-228a | session-2026-06-05-portable-closeout |
 | Alta | WT-2026-230a | Bootstrap de destino: mapa compacto local y arranque guiado desde motor_root | system/destination-bootstrap | completed | WT-2026-184, WT-2026-186, WT-2026-187, WT-2026-215, WT-2026-227a | session-2026-06-05-destination-bootstrap |
-| Alta | WT-2026-231a | Pre-handoff commitea repo_motor en Modelo B con scope FLT | system/pre-handoff-commit | active | WT-2026-228a, WT-2026-215 | session-2026-06-05-builder-commit |
+| Alta | WT-2026-231a | Pre-handoff commitea repo_motor en topologia motor/destino con scope FLT | system/pre-handoff-commit | completed | WT-2026-228a, WT-2026-215 | session-2026-06-05-builder-commit |
+| Alta | WT-2026-232a | mark-ready motor-aware y protocolo portable de topologia motor/destino | system/mark-ready-motor-aware+terminology-builder-bootstrap | completed | WT-2026-231a, WT-2026-226a, WT-2026-215, WT-2026-209 | session-2026-06-05-mark-ready-motor-aware |
+| Media | WT-2026-233a | Reapertura humana controlada de tickets terminales | system/bus-recovery | completed | WT-2026-232a | session-2026-06-06-terminal-reopen |
+| Media | WT-2026-233b | Idempotencia de Manager tras cierre y reapertura terminal | system/bus-recovery | completed | WT-2026-233a | session-2026-06-06-terminal-reopen-followup |
+| Baja | WT-2026-233c | Coleccion aislada de test_manager_approve | system/testing-hygiene | completed | WT-2026-233b | session-2026-06-06-manager-test-isolation |
+| Media | WT-2026-234a | Cierre de sesion portable y cuarentena de artefactos con IDs de ticket | system/session-closeout-portability | completed | WT-2026-229a, WT-2026-233c | session-2026-06-06-portability-closeout |
+| Critica | WT-2026-235a | Manager review bridge: decisiones autoritativas y CHANGES con blockers | system/review-bridge-decision-contract | active | WT-2026-204, WT-2026-234a | session-2026-06-07-review-bridge |
 
-## WT-2026-231a - Pre-handoff commitea repo_motor en Modelo B con scope FLT
+## WT-2026-233a - Reapertura humana controlada de tickets terminales
+- **Prioridad:** Media
+- **Scope:** system/bus-recovery
+- **Estado:** completed
+- **Problema:** el guard de reentrada bloqueaba correctamente cualquier
+  `COMPLETED -> IN_PROGRESS`, pero no existia una via humana explicita para reparar
+  cierres forzados que no habian pasado por aprobacion canonica del Manager.
+- **Entrega:** `--reopen-terminal-ticket` valida ticket activo y estado derivado
+  `COMPLETED`, y usa `allow_reentry=True` solo en esa ruta controlada.
+- **Evidencia:** commits `1b32205`, `b1ad76a`, `e13bdc5` y `5b3f069`;
+  tests focales, `ruff` y hooks limpios.
+- **Criterio:** la proteccion sigue activa por defecto y solo el flag humano puede
+  reabrir el ticket terminal activo.
+
+## WT-2026-233b - Idempotencia de Manager tras cierre y reapertura terminal
+- **Prioridad:** Media
+- **Scope:** system/bus-recovery
+- **Estado:** completed
+- **Problema:** la auditoria posterior a `WT-2026-233a` detecto que
+  `StateMachine.derive_state_from_events()` no trataba un `SUPERVISOR_CLOSED`
+  aislado como evidencia terminal. Esto rompio la idempotencia historica de
+  `--manager-approve`.
+- **Entrega:** `SUPERVISOR_CLOSED` deriva ahora `COMPLETED`; un
+  `STATE_CHANGED -> IN_PROGRESS` posterior sigue prevaleciendo para la
+  reapertura humana. El fixture saludable de `--validate` incluye el contrato
+  de prosa y auditoria vigente.
+- **Evidencia:** test auditado recuperado, 20 tests focales verdes, `ruff`
+  limpio y suite global `2231 passed, 22 skipped`.
+- **Criterio:** aprobar de nuevo un ticket cerrado es idempotente; aprobar un
+  ticket explicitamente reabierto ejecuta el cierre nuevo; suite global verde.
+
+## WT-2026-233c - Coleccion aislada de test_manager_approve
+- **Prioridad:** Baja
+- **Scope:** system/testing-hygiene
+- **Estado:** completed
+- **Problema:** `tests/unit/test_manager_approve.py` insertaba `.agent` en
+  `sys.path[0]` despues de la configuracion canonica de `tests/conftest.py`.
+  Esto hacia que `.agent/runtime` sombreara `runtime/` del motor y provocaba
+  `ModuleNotFoundError: runtime.project_root` al ejecutar el archivo aislado.
+- **Entrega:** eliminado el bootstrap local redundante; `conftest.py` conserva
+  `repo_motor` antes de `.agent` y expone ambos paquetes.
+- **Evidencia:** test auditado aislado `1 passed`, archivo completo `7 passed`,
+  familia estado/Manager `25 passed`, suite global `2231 passed, 22 skipped`.
+- **Criterio:** `pytest tests/unit/test_manager_approve.py -q` funciona desde
+  `repo_motor` sin depender del orden de otros tests.
+
+## WT-2026-235a - Manager review bridge: decisiones autoritativas y CHANGES con blockers
+- **Prioridad:** Critica
+- **Scope:** system/review-bridge-decision-contract
+- **Estado:** active
+- **Problema:** el fallback `text_regex` de `review_bridge.py` puede capturar
+  `DECISION: APPROVE/CHANGES` desde plantillas reflejadas del transcript, y
+  `CHANGES` puede emitirse con blockers vacios. Eso provoca requeue ciego o,
+  peor, falso cierre por approve fantasma.
+- **Criterio:** `APPROVE` y `CHANGES` solo desde fuente final autoritativa;
+  `CHANGES` requiere estructura completa y blockers no vacios; si no, degradar
+  a `INSPECT` con `failure_reason` y sin requeue.
+- **Depende de:** WT-2026-204, WT-2026-234a.
+
+## WT-2026-234a - Cierre de sesion portable y cuarentena de artefactos con IDs
+- **Prioridad:** Media
+- **Scope:** system/session-closeout-portability
+- **Estado:** completed
+- **Problema:** queda un documento historico versionado con ID de ticket en el
+  nombre y aproximadamente 834 MB de residuos locales ignorados. El cierre debe
+  distinguir producto, historia y temporales antes de actuar.
+- **Criterio:** barrera sobre nombres versionados, documento historico archivado
+  con checksum, limpieza tras human gate, memoria propuesta antes de escribir y
+  session closeout final sin fallos bloqueantes.
+- **Depende de:** WT-2026-229a, WT-2026-233c.
+
+## WT-2026-231a - Pre-handoff commitea repo_motor en topologia motor/destino con scope FLT
 - **Prioridad:** Alta
 - **Scope:** system/pre-handoff-commit
-- **Estado:** active
-- **Problema:** en Modelo B, el codigo productivo vive en `repo_motor`, pero la ruta de
+- **Estado:** completed
+- **Problema:** en la topologia motor/destino, el codigo productivo vive en `repo_motor`, pero la ruta de
   commit del pre-handoff todavia asume un unico repo y usa `project_root`/`repo_destino`
   como `cwd`. El guard de WT-2026-228a detecta motor sucio y bloquea antes de que haya
   una accion determinista que commitee la entrega. El resultado recurrente es
@@ -102,6 +181,9 @@
   cuando la entrega productiva este dentro de FLT.
 - **Depende de:** WT-2026-228a, WT-2026-215.
 - **Origen:** session-2026-06-05-builder-commit
+- **Cierre:** completado en `repo_motor` commit `2a0d784`. Queda follow-up:
+  `mark-ready` sigue resolviendo scope contra `repo_destino` y requiere
+  `--scope-override` legitimo en topologia motor/destino; ver `WT-2026-232a`.
 
 ### Deuda TBD - renombre funcional de tests historicos del motor
 
@@ -209,7 +291,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-215 - Gates Modelo B: operaciones git de tooling resuelven motor_root
 - **Prioridad:** Alta
 - **Scope:** system/gates-motor-root
-- **Estado:** backlog
+- **Estado:** completed
+- **Cierre verificado:** bus con `REVIEW_DECISION=approve`, `CLOSE_CONFIRMED`,
+  `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; entrega productiva en
+  `f8cd50d` y cierre documental en `e3b3823`.
 - **Problema:** varias operaciones git del tooling corren con `cwd=project_root` (el workspace, que NO es repo git) en vez de `motor_root` (`orquestador_de_agentes/`, que SÃ es repo y contiene los commits). El resultado es `git diff` vacÃ­o y decisiones falsas. Sintoma verificado en esta sesion: el pre-check de packaging del review bridge (`check_review_packet_diff_empty`) reporta "empty review diff" y emite `REVIEW_DECISION=CHANGES` automatico aunque el Builder SI haya commiteado codigo real en el motor. Bloqueo dos ciclos seguidos en `WT-2026-214` sin que el Manager llegara a revisar codigo.
 - **Causa raiz (VERIFICADA EN CODIGO):** `bus/review_bridge.py` -> `_git_diff_stat()`, `_resolve_review_base()` y `_build_diff_for_files_likely_touched()` usan `cwd=self.project_root`. `WT-2026-187` ya extrajo `runtime/motor_link.py` (`resolve_motor_root`) y listo `review_bridge.py` como consumidor, pero solo se migro `_resolve_motor_controller`; las funciones git quedaron sin migrar. Mismo patron en las gates diferidas de `WT-2026-205`: `prepush_check.py` y `session_closeout.py`.
 - **Principio unificador:** todas las operaciones git del tooling resuelven `motor_root` via `motor_link` y corren con ese `cwd`. "Las operaciones git siempre corren en motor_root, punto."
@@ -483,7 +568,14 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-208 - Estabilizacion de suite global tras transicion workspace+motor
 - **Prioridad:** Alta
 - **Scope:** system/testing
-- **Estado:** backlog
+- **Estado:** completed
+- **Nota 2026-06-06:** el cierre previo siguio siendo el terminal canonico del bus.
+  La correccion tecnica se entrego en `repo_motor` y la suite global quedo verde.
+  Tras `WT-2026-233a`, se reabre de forma humana y controlada para completar review
+  y cierre canonico por Manager.
+  Cierre completado el 2026-06-06 mediante seq 867-871:
+  `REVIEW_DECISION approve`, `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `COMPLETED`
+  y `SUPERVISOR_CLOSED`.
 - **Problema:** la suite global del motor esta rota de forma amplia tras la transicion a workspace+motor. Verificacion local el 2026-06-02: `46 failed`, `45 errors`, `1742 passed`, `21 skipped` en `uv run pytest orquestador_de_agentes/tests -q`. El informe previo del Builder ya apuntaba el problema, pero el recuento actual muestra que la deuda es mas grande de lo esperado.
 - **Patrones observados:**
   1) tests que asumen cwd o rutas del motor (`test_windows_safe_temp_runtime`, `test_run_llm_evals`);
@@ -495,20 +587,36 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Sketch:** inventariar fallos por familia, distinguir regresiones reales de tests obsoletos, y restaurar una baseline verde compatible con la arquitectura workspace+motor actual. La prioridad es recuperar confianza en la suite antes de seguir acumulando deuda en review/closeout.
 - **Criterio:** la suite global vuelve a una baseline estable o, como minimo, queda segmentada en subconjuntos fiables con backlog explicito para el resto.
 - **Depende de:** WT-2026-210.
+- **Reevaluacion 2026-06-06:** la rotura amplia original ya no existe. El rerun
+  previo encontro `2 failed, 2221 passed, 22 skipped`, ambos en
+  `tests/test_pre_handoff_motor_productive_changes.py` por drift de expectativas
+  frente a WT-2026-231a. La reapertura queda acotada a ese residual.
+- **Cierre tecnico residual 2026-06-06:** archivo focal alineado con el contrato
+  vigente; `python -m pytest tests/test_pre_handoff_motor_productive_changes.py -q`
+  -> `15 passed`; `ruff` limpio; `python -m pytest tests -q` ->
+  `2223 passed, 22 skipped, 9 warnings`.
+- **Limite del sistema detectado:** `--bootstrap-ticket`, `EventBus.emit()` y
+  `--mark-ready` no permiten reabrir un ticket terminal (`COMPLETED`). Si se quiere
+  rehacer un cierre verde de forma 100% canonica, hace falta un ticket hijo para
+  soporte de reopen o un ticket nuevo que absorba este residual.
 
 ## WT-2026-209 - Sustituir nomenclatura Modelo B por estandar workspace+motor
 - **Prioridad:** Baja
 - **Scope:** system/docs
-- **Estado:** backlog
+- **Estado:** absorbed by WT-2026-232a
 - **Problema:** el termino `Modelo B` sigue apareciendo en codigo, tests, changelog, AGENTS y prompts, pero ya no describe una opcion vigente. La arquitectura actual es una sola: workspace activo + motor portable separado. Mantener la terminologia antigua mete ruido conceptual y hace parecer que sigue habiendo modos paralelos.
 - **Sketch:** inventariar referencias a `Modelo B` / `Model B`, decidir redaccion canonica (`workspace+motor`, `workspace activo`, `motor portable`) y actualizar codigo, docs, tests y mensajes de runtime para usar ese lenguaje de forma uniforme.
 - **Criterio:** no quedan referencias activas a `Modelo B` en superficies operativas; la arquitectura se explica con una unica terminologia consistente.
-- **Depende de:** WT-2026-210.
+- **Depende de:** WT-2026-232a.
+- **Nota:** alcance absorbido por `WT-2026-232a`; no queda como ticket diferido.
 
 ## WT-2026-196 - Manager adaptativo ante blockers repetidos
 - **Prioridad:** Alta
 - **Scope:** system/review
-- **Estado:** active
+- **Estado:** completed
+- **Cierre verificado:** bus con aprobacion Manager, `CLOSE_CONFIRMED`,
+  `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; commits productivos
+  `e0f2624`, `719a9e5`, `a84aad6`, `71ccba4`, `1400e89` y `f38724a`.
 - **Problema:** el Manager puede emitir el mismo feedback `CHANGES` durante varios ciclos aunque el Builder no resuelva un blocker concreto. En WT-2026-190 el Manager identifico blockers reales con archivo y linea, pero repitio instrucciones equivalentes sin activar un analisis nuevo del codigo ni proponer una solucion mas concreta. Subir `max_attempts` mitiga el bloqueo operacional, pero no corrige el patron de review repetitiva.
 - **Decision:** mantener `manager_review.max_attempts` finito (`8`) y hacer que el Manager escale cognitivamente cuando detecte blockers repetidos. El objetivo no es aprobar mas facil ni hacer patching automatico, sino convertir feedback repetido en diagnostico accionable.
 - **Sketch:**
@@ -569,7 +677,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## TBD - Inventario y estabilizacion de suite global
 - **Prioridad:** Media
 - **Scope:** system/testing
-- **Estado:** backlog
+- **Estado:** absorbed by WT-2026-208
 - **Problema:** tras cerrar el hotfix del launcher/supervisor, los tests relacionados con los archivos tocados ya pasan (`140 passed`, `ruff` limpio), pero la suite global sigue acumulando decenas de `fails/errors` en modulos no relacionados (`test_audit_rules`, `test_completion_checker`, `test_encoding_integrity`, etc.). Ese frente es independiente del hotfix actual y hoy no esta inventariado de forma util para decidir si bloquea el siguiente ticket o si es deuda preexistente.
 - **Sketch:**
   1) Ejecutar la suite completa con captura de resumen por modulo.
@@ -579,6 +687,8 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   5) Decidir con evidencia si abrir ticket especifico de estabilizacion de suite o si basta con aislar y corregir solo los blockers del flujo actual.
 - **Criterio:** existe un inventario breve, accionable y por modulo de la suite rota; cada grupo de fallos queda clasificado como preexistente o regresion actual; se toma una decision explicita sobre si la estabilizacion global entra antes o despues del siguiente ticket funcional.
 - **Depende de:** WT-2026-191.
+- **Nota:** alcance absorbido por WT-2026-208; la deuda residual actual se
+  mantiene en un TBD focal separado.
 - **Criterio:** memoria canonica valida, L2/L3 pobladas y bootstrap consume loader de forma operativa.
 - **Depende de:** WT-2026-196.
 
@@ -601,13 +711,36 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-197 - Supervisor post-restart sin Builder tras CHANGES
 - **Prioridad:** Media
 - **Scope:** system/bus
-- **Estado:** active
+- **Estado:** completed
+- **Cierre verificado:** bus con aprobacion Manager, `CLOSE_CONFIRMED`,
+  `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; entrega productiva
+  `a1e704c`.
 - **Problema:** cuando el supervisor se cae durante un BUILDER_RELAUNCH_ATTEMPTED, al reiniciar lee el estado proyectado del bus. Si sigue siendo READY_FOR_REVIEW (porque el estado no se resetÃ³ a IN_PROGRESS antes del crash), despacha al Manager directamente sin relanzar Builder. Observado en WT-2026-192: seq 322 BUILDER_RELAUNCH_ATTEMPTED, seq 323 SUPERVISOR_RESTARTED, seq 324 MANAGER_REVIEWING sin Builder intermedio.
 - **Root cause:** el supervisor en startup no distingue entre READY_FOR_REVIEW legÃ­timo (Builder terminÃ³) y READY_FOR_REVIEW espurio (crash durante relaunch post-CHANGES).
 - **Sketch:** al reiniciar, el supervisor comprueba los Ãºltimos N eventos del bus. Si el Ãºltimo REVIEW_DECISION fue CHANGES y no hay BUILDER_EXIT posterior, forzar relaunch de Builder independientemente del estado proyectado. La condiciÃ³n es:  AND .
 - **Tests requeridos:** supervisor reinicia con READY_FOR_REVIEW tras CHANGES sin BUILDER_EXIT â†’ lanza Builder, no Manager; supervisor reinicia con READY_FOR_REVIEW legÃ­timo (BUILDER_EXIT posterior a REVIEW_DECISION) â†’ lanza Manager correctamente; test de regresiÃ³n del doble-requeue (no debe dispararse).
 - **Criterio:** tras reinicio del supervisor, el ciclo CHANGES â†’ Builder â†’ Manager se ejecuta siempre en orden correcto, incluso si el crash ocurriÃ³ entre REVIEW_DECISION y BUILDER_EXIT.
 - **Depende de:** WT-2026-192.
+
+## TBD - Alinear tests legacy de pre-handoff con auto-commit motor-aware
+- **Prioridad:** Media
+- **Scope:** system/testing-hygiene
+- **Estado:** absorbed by WT-2026-208
+- **Problema:** la suite global del motor del 2026-06-06 termina con
+  `2 failed, 2221 passed, 22 skipped`. Ambos fallos viven en
+  `tests/test_pre_handoff_motor_productive_changes.py` y esperan el contrato
+  anterior a WT-2026-231a.
+- **Causa verificada:** `test_pre_handoff_blocks_on_motor_dirty` espera retorno
+  `1`, pero el contrato vigente auto-commitea cambios productivos incluidos en
+  Files Likely Touched y retorna `0`. El caso untracked fuera de scope sigue
+  bloqueando correctamente, pero el test exige el mensaje antiguo
+  `Uncommitted productive changes` en vez del diagnostico vigente
+  `outside Files Likely Touched`.
+- **Criterio:** actualizar los dos tests para gobernar el contrato vigente sin
+  relajar la barrera fuera de scope; ejecutar el archivo focal y la suite global
+  completa hasta obtener baseline verde.
+- **Depende de:** WT-2026-231a.
+- **Nota:** absorbido por la reapertura controlada de WT-2026-208.
 
 ## WT-2026-193 - Redaccion previa en pipeline de memoria persistente
 - **Prioridad:** Baja
@@ -721,6 +854,63 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Sketch:** exponer un comando tipo `--scope-watch` o script focal que resuelva `motor_root`, lea el work_plan activo y reporte cambios fuera de scope con salida clara para Builder/Manager.
 - **Criterio:** un archivo fuera de scope se detecta antes de `READY_FOR_REVIEW` y queda justificado, revertido o separado en ticket propio.
 - **Depende de:** WT-2026-208.
+
+## WT-2026-232a - mark-ready motor-aware y protocolo portable de topologia motor/destino
+- **Prioridad:** Alta
+- **Scope:** system/mark-ready-motor-aware+terminology-builder-bootstrap
+- **Estado:** completed
+- **Problema:** `WT-2026-231a` corrigio `--pre-handoff` para commitear y tagear
+  `repo_motor`, pero `--mark-ready` sigue usando el scope gate historico:
+  `parse_files_likely_touched()` resuelve FLT contra `PROJECT_ROOT` y
+  `get_changed_files()` mira `repo_destino` cuando este tambien es repo git. Resultado:
+  entrega correcta en `repo_motor` commit `2a0d784` necesito `--scope-override` porque
+  el gate no vio los paths motor-relative reales.
+- **Problema adicional absorbido:** `Modelo B` sigue como etiqueta operativa aunque la
+  arquitectura vigente ya es una sola: `repo_motor` portable + `repo_destino`
+  operativo. La deuda de `WT-2026-209` y la antigua deuda de paths portables quedan
+  incorporadas aqui; no se difieren.
+- **Objetivo:** hacer que `--mark-ready` use la misma evidencia motor-aware que
+  `--pre-handoff` para la topologia actual:
+  - leer FLT como paths motor-relative;
+  - comparar contra commit/diff productivo de `repo_motor`;
+  - aceptar una entrega correcta sin `--scope-override`;
+  - seguir bloqueando rondas vacias o cambios fuera de FLT.
+  - normalizar superficies operativas a `topologia motor/destino`;
+  - inyectar `repo_motor_root` efimero al Builder sin persistir rutas absolutas locales.
+- **Referencias historicas incorporadas:**
+  - `WT-2026-206`: scope gate y cierres manuales en workspace+motor.
+  - `WT-2026-215`: operaciones git del tooling resuelven `motor_root`.
+  - `WT-2026-226a`: seam de evidencia comun entre `mark-ready` y review packet.
+  - `WT-2026-228a`: pre-handoff bloquea motor sucio sin commit.
+  - `WT-2026-231a`: pre-handoff ya commitea/taggea `repo_motor`; dejo este falso
+    positivo en `mark-ready` como deuda explicita.
+  - `WT-2026-221c`: scope watch temprano es adyacente, no sustituto.
+  - `WT-2026-209`: nomenclatura `Modelo B` absorbida.
+- **Sketch:**
+  1) Identificar en `.agent/agent_controller.py` el camino exacto de `--mark-ready`:
+     `parse_files_likely_touched`, `get_changed_files`, `check_scope_gate`,
+     `resolve_evidence` y errores `No Files Likely Touched match git changes`.
+  2) Extraer helper motor-aware reutilizable para leer FLT raw y evidencia/diff de
+     `repo_motor`, sin resolver contra `PROJECT_ROOT`.
+  3) Cuando existe evidencia productiva reciente en `repo_motor` para el ticket activo,
+     el scope gate compara `motor-relative` contra `motor-relative`.
+  4) Si no hay evidencia en motor, conservar el comportamiento actual de bloqueo por
+     falta de implementacion.
+  5) Si hay cambios fuera de FLT en motor, bloquear con lista `motor-relative`.
+  6) Mantener `--scope-override` solo como escape auditado, no como camino normal.
+- **Tests requeridos:**
+  - `mark-ready` en topologia motor/destino con commit real en `repo_motor` dentro de
+    FLT pasa sin `--scope-override`.
+  - `mark-ready` con commit motor fuera de FLT bloquea y lista paths motor-relative.
+  - `mark-ready` sin commit/diff productivo sigue bloqueando por no evidence.
+  - `parse_files_likely_touched()` legacy no contamina el path motor-aware.
+  - regresion de `WT-2026-231a`: pre-handoff sigue commiteando/taggeando.
+- **Criterio:** el cierre normal Builder -> pre-handoff -> mark-ready funciona en
+  topologia motor/destino sin scope override cuando la entrega productiva esta dentro
+  de FLT; validate queda 0/0.
+- **Non-goals:** no reescribir historia cerrada completa; no eliminar `--scope-override`.
+- **Depende de:** WT-2026-231a, WT-2026-226a, WT-2026-215.
+- **Origen:** session-2026-06-05-mark-ready-motor-aware
 
 
 ## WT-2026-222 - Higiene de suite: reset determinista del cache de project_root entre tests

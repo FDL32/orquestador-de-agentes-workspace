@@ -2,6 +2,52 @@
 
 **Estado:** IN_PROGRESS
 
+## WT-2026-235a - Inicio canonico (2026-06-07)
+
+- Estado: APPROVED -> IN_PROGRESS documental para Builder.
+- Objetivo: impedir que `review_bridge.py` emita `APPROVE` o `CHANGES` desde
+  procedencia no autoritativa o con payload incompleto.
+- Causa verificada en WT-2026-234a:
+  - `REVIEW_DECISION -> changes` llego con `payload.blockers == ""`.
+  - `supervisor.py` emitio `HANDOFF_BLOCKED reason=empty_blockers`.
+  - El fallback `text_regex` puede escanear el transcript completo y casar
+    literales de la plantilla `DECISION: APPROVE/CHANGES`.
+- Contrato para Builder:
+  - `text_regex` nunca produce `APPROVE` ni `CHANGES`.
+  - `CHANGES` requiere estructura completa y blockers no vacios.
+  - decisiones degradadas pasan a `INSPECT` con `failure_reason`.
+  - no tocar `supervisor.py` ni `event_bus.py` en esta pasada.
+- Files Likely Touched productivos:
+  - `bus/review_bridge.py`
+  - `tests/test_manager_review_bridge.py`
+- STATE_CHANGED -> IN_PROGRESS.
+
+## WT-2026-232a
+- Entrada recuperada y reconstruida el 2026-06-06 desde evidencia canónica del bus,
+  `manager_feedback_WT-2026-232a.md` y artefactos del ciclo. La versión original no
+  quedó preservada en git.
+- Inicio documental: 2026-06-05.
+- Objetivo: hacer `--mark-ready` motor-aware con paths relativos y normalizados para
+  `repo_motor`, consolidando el contexto de arranque del Builder en entorno multi-root.
+- Estado final: COMPLETADO y APROBADO por Manager.
+- Ciclo R1:
+  - Builder alcanzó `READY_FOR_REVIEW`.
+  - Manager emitió `REVIEW_DECISION -> changes`.
+  - El bus reproyectó a `IN_PROGRESS` y quedó evidencia de `HANDOFF_BLOCKED` por
+    `empty_blockers`, seguida de relanzamiento durable.
+- Ciclo R2:
+  - Builder reentregó la implementación y volvió a `READY_FOR_REVIEW`.
+  - Manager aprobó el ticket sin blockers residuales.
+- Evidencia canónica de cierre en bus:
+  - seq 857: `REVIEW_DECISION -> approve`
+  - seq 858: `STATE_CHANGED -> READY_TO_CLOSE`
+  - seq 859: `CLOSE_CONFIRMED`
+  - seq 860: `STATE_CHANGED -> COMPLETED`
+  - seq 861: `SUPERVISOR_CLOSED`
+- Nota operativa: este bloque se conserva como reconstrucción explícita para no perder
+  trazabilidad histórica aunque el `execution_log.md` hubiese quedado truncado durante
+  reconciliaciones posteriores.
+
 ## WT-2026-231a
 - Inicio documental: 2026-06-05.
 - Objetivo: hacer que `--pre-handoff` commitee de forma determinista los cambios
@@ -341,6 +387,39 @@ sin el fix y PASS con el fix restaurado.
 
 ## WT-2026-208
 - Inicio documental: 2026-06-03.
+- Reapertura canonica preparada el 2026-06-06:
+  - el cierre anterior fue `preflight forced close`, no aprobacion del Manager;
+  - `WT-2026-233a` entrega el flag humano `--reopen-terminal-ticket`;
+  - suite global verificada en verde: `2223 passed, 22 skipped`;
+  - objetivo de esta ronda: reabrir, pasar a review y cerrar mediante
+    `--manager-approve`.
+  - seq 862: `STATE_CHANGED COMPLETED -> IN_PROGRESS`, source
+    `reopen-terminal-ticket`.
+  - La primera ejecucion revelo que el sync usaba defaults de `repo_motor`;
+    corregido en `b1ad76a` para pasar runtime/collaboration del destino.
+  - Handoff canonico: seq 864 `BUILDER_EXIT`; seq 865/866
+    `STATE_CHANGED -> READY_FOR_REVIEW`.
+  - Scope override documentado: el archivo
+    `tests/test_pre_handoff_motor_productive_changes.py` pertenece a la superficie
+    `tests/` declarada por el plan, aunque el gate historico no expande directorios.
+  - Revision Manager independiente:
+    - checkpoint `6c2fffc`, un unico test funcional modificado;
+    - suite global: `2227 passed, 22 skipped, 9 warnings`;
+    - `ruff check tests/test_pre_handoff_motor_productive_changes.py`: limpio;
+    - motor git limpio;
+    - `pip-audit`: solo `PYSEC-2026-196` en `pip 26.1.1`;
+    - `pip 26.1.2` no existe en el indice configurado;
+    - auditoria con exclusion unica: `No known vulnerabilities found, 1 ignored`.
+  - Decision Manager: APROBADO. La advisory queda como deuda temporal verificable,
+    no como falso verde ni cambio de lock imposible.
+  - Cierre de la ruta de reapertura endurecido en `e13bdc5`: un
+    `SUPERVISOR_CLOSED` historico solo activa idempotencia si el estado derivado
+    actual sigue siendo `COMPLETED`; `89 passed`, `ruff` y hooks limpios.
+  - Cierre canonico Manager completado: seq 867 `REVIEW_DECISION approve`,
+    seq 868 `READY_TO_CLOSE`, seq 869 `CLOSE_CONFIRMED`, seq 870 `COMPLETED`
+    y seq 871 `SUPERVISOR_CLOSED`.
+  - Proyeccion compacta de `STATE.md` endurecida en `5b3f069`; `78 passed`,
+    `ruff` y hooks limpios.
 - Objetivo: estabilizar la suite global del motor tras la transicion workspace+motor.
 - Baseline real tras cambios iniciales del Builder: 45 failed, 1772 passed, 21 skipped, 43 errors.
 - Pasada 1 - paths/cwd/assets: cambios validos en tests de integration/scope/bus drift/launcher preflight y `scripts/run_llm_evals.py`.
@@ -598,3 +677,112 @@ Manager approved canonical closeout for WT-2026-229a
 Scope override: Modelo B: files live in repo_motor (orquestador_de_agentes), not repo_destino. WT-2026-215 corrects exactly this cwd mis-resolution in git evidence gates.. Affected files: C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\bus\review_bridge.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\prepush_check.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\scripts\session_closeout.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_manager_review_bridge.py, C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\tests\test_motor_root_gates.py
 
 Manager approved canonical closeout for WT-2026-215
+
+
+Terminal reopen requested by human for WT-2026-208
+
+
+Scope override: WT-2026-208 reopened to absorb the documented legacy pre-handoff test update; tests/test_pre_handoff_motor_productive_changes.py is inside the plan's declared tests/ surface.. Affected files: tests/test_pre_handoff_motor_productive_changes.py
+
+
+Manager approved canonical closeout for WT-2026-208
+
+## WT-2026-233b - Verificacion post-cierre (2026-06-06)
+
+- La auditoria posterior a `WT-2026-208` reprodujo una regresion introducida
+  durante `WT-2026-233a`:
+  `test_idempotency_via_bus_supervisor_closed`.
+- Causa verificada: `StateMachine.derive_state_from_events()` ignoraba
+  `SUPERVISOR_CLOSED` cuando no habia un `CLOSE_CONFIRMED` previo en el
+  historial sintetico.
+- Correccion: `SUPERVISOR_CLOSED` deriva `COMPLETED`; una transicion posterior
+  a `IN_PROGRESS` conserva la reapertura explicita.
+- Verificacion focal: `20 passed`; `ruff`: limpio.
+- Verificacion global: `2231 passed, 22 skipped, 9 warnings`.
+- `WT-2026-208` permanece `COMPLETED`; no se reabre ni se altera su cierre
+  canonico.
+
+## WT-2026-233c - Higiene de test aislado (2026-06-06)
+
+- Causa verificada: `test_manager_approve.py` reinsertaba `.agent` en
+  `sys.path[0]` y sombreaba el paquete `runtime` del motor.
+- Correccion: eliminado el ajuste local; se usa el orden canonico de
+  `tests/conftest.py`.
+- Test exacto auditado aislado: `1 passed`.
+- Archivo completo aislado: `7 passed`.
+- Familia `state_machine + manager_approve`: `25 passed`.
+- Suite global: `2231 passed, 22 skipped, 9 warnings`; exit code 0.
+
+## WT-2026-234a - HUMAN_GATE
+
+- Inventario Git: un unico archivo versionado del motor contiene ID en el nombre:
+  `docs/BUS_ARCHITECTURE_WT-2026-210.md`.
+- Clasificacion preliminar: historia operativa completada y sustituida por
+  `WT-2026-211`; candidata a archivo en `repo_destino`.
+- Residuos ignorados: `.agent/backups/` (8621 archivos, ~275 MB) y
+  `tests/sandbox/test_runtime/` (50990 archivos, ~559 MB).
+- `session_closeout.py --dry-run` ejecutado con exit code 0.
+- Memory upload revisado: existe `repo-motor-portable-root`; se propone una
+  extension incremental, sin escribirla hasta confirmacion humana.
+- Estado: APPROVED -> IN_PROGRESS. Plan auditado, aprobado y listo para Builder.
+- Auditoria externa aplicada: regex `[_-]`, ejemplo `test_wt_*`, nueva funcion
+  `_check_versioned_filenames` y gates Manager-only documentados.
+- Scope ampliado por peticion humana: auditoria de markdowns root del `repo_motor`,
+  especialmente familia upgrade/distribucion/cleanup.
+- STATE_CHANGED -> IN_PROGRESS emitido para arranque canonico de Builder.
+- Incidente de review corregido: header FLT normalizado a `## Files Likely Touched`.
+- Implementacion verificada en repo_motor:
+  - `c41e7d4 feat(WT-2026-234a): versioned filename barrier for ticket IDs`
+  - `acec9e3 fix(WT-2026-234a): detect canonical work plan in monitor`
+  - `21081b1 fix(WT-2026-234a): execute closeout filename gate from destination`
+- Gates focales: `pytest tests/test_session_closeout.py tests/test_ticket_activity_monitor.py -q`
+  -> 55 passed; `ruff check scripts/session_closeout.py scripts/ticket_activity_monitor.py
+  tests/test_session_closeout.py tests/test_ticket_activity_monitor.py` -> All checks passed.
+- `session_closeout.py --project-root <repo_destino> --dry-run` ejecuta la barrera:
+  `versioned_filenames` FAIL esperado por `docs/BUS_ARCHITECTURE_WT-2026-210.md`.
+- Pre-handoff: OK, checkpoint `checkpoint/review-WT-2026-234a` alineado con HEAD.
+- Mark-ready: OK, motor scope 4 files within `Files Likely Touched`.
+- Manager automatico volvio a emitir `CHANGES` con blockers vacios; se corta el loop.
+- Estado: HUMAN_GATE para revision humana; no relanzar Builder sin blockers concretos.
+
+
+Scope override: All 4 files (scripts/session_closeout.py, tests/test_session_closeout.py, scripts/ticket_activity_monitor.py, tests/test_ticket_activity_monitor.py) are within FLT per work plan. Parser mismatch: work_plan heading is '## Files / surfaces likely touched' but parser looks for '## Files Likely Touched'. Fase 1b was pre-implemented, only Fase 1 was modified.. Affected files: scripts/session_closeout.py, scripts/ticket_activity_monitor.py, tests/test_session_closeout.py, tests/test_ticket_activity_monitor.py
+
+## WT-2026-234a - Manager review y cierre portable parcial (2026-06-06)
+
+- Revision Manager manual aplicada con `prompts/review_manager.md`.
+- Entrega Builder aprobada:
+  - `c41e7d4 feat(WT-2026-234a): versioned filename barrier for ticket IDs`
+  - `acec9e3 fix(WT-2026-234a): detect canonical work plan in monitor`
+  - `21081b1 fix(WT-2026-234a): execute closeout filename gate from destination`
+- Gates focales verificados previamente: `pytest tests/test_session_closeout.py tests/test_ticket_activity_monitor.py -q` -> 55 passed; `ruff check ...` -> All checks passed.
+- Archivo historico retirado del motor:
+  - origen: `docs/BUS_ARCHITECTURE_WT-2026-210.md`
+  - archivo destino: `.agent/collaboration/_archive/motor_history/WT-2026-234a/BUS_ARCHITECTURE_WT-2026-210.md`
+  - checksum SHA256 origen/destino: `5B675C9B66E128B33A7832D9487608E87274D52ADC59004D0A6559AA3C6CB3AD`
+  - commit motor: `c1a0a37 docs(WT-2026-234a): archive historical bus architecture note`
+- Barrera versioned filenames: `session_closeout.py --project-root <repo_destino> --dry-run` exit code 0; step `versioned_filenames` PASS.
+- Documentacion root auditada:
+  - `UPGRADE_GUIDE.md`: keep, vigente como guia canonica de upgrade.
+  - `DISTRIBUTION_GUIDE.md`: keep, vigente como contrato de distribucion.
+  - `UPGRADE_CLEANUP_GUIDE.md`: update, convertido en nota legacy; ya no recomienda archivar `UPGRADE_GUIDE.md` ni escribir `.session/`.
+  - `README.md`: update, refresca estado y aclara namespace `WT` dogfooding vs `WP` historico.
+  - `QUICKSTART.md`: update, elimina ejemplo local `z_scripts` como canonico y usa `repo_destino` generico.
+- `agent_controller.py --validate --json --project-root <repo_destino>`: 0 errores; warning unico `TP-PROSE-09` por ticket sobredimensionado, aceptado como cosmetico para cierre historico.
+- Pendiente de human gate: no se eliminan `.agent/backups/` ni `tests/sandbox/test_runtime/`; no se escribe memoria upstream hasta confirmacion explicita.
+
+## WT-2026-234a - Human gates resueltos (2026-06-07)
+
+- Memoria aprobada por humano y escrita en repo_motor:
+  - archivo: `.agent/runtime/memory/observations.jsonl`
+  - topic: `portable-ticket-filename-boundary`
+  - wing: `engine`
+  - relacion: refina `repo-motor-portable-root`
+- Limpieza local aprobada por humano, opcion B:
+  - eliminado completo: `tests/sandbox/test_runtime/`
+  - conservado backup mas reciente: `.agent/backups/backup_20260529_223313`
+  - eliminado backup antiguo: `.agent/backups/backup_20260530_003240`
+- Regla aplicada: no se borro ningun archivo versionado; `git ls-files -- .agent/backups tests/sandbox/test_runtime` estaba vacio antes de limpiar.
+
+
+Manager approved canonical closeout for WT-2026-234a
