@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-07 11:15:36
+**Ultima actualizacion:** 2026-06-07 20:05:00
 
 ---
 
@@ -8,16 +8,17 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **BUILDER** |
+| **ROL** | **HUMAN_GATE** |
 | **Plan ID** | WT-2026-236a |
-| **Tipo** | IMPLEMENT |
-| **Accion** | IMPLEMENT |
+| **Tipo** | REVIEW_RECOVERY |
+| **Accion** | AWAIT_HUMAN_DECISION |
 
 ---
 
 ## Instruccion
 
-> Ticket WT-2026-236a reactivado. Continua la implementacion.
+> Ticket WT-2026-236a en HUMAN_GATE. No relanzar Builder.
+> Reautenticar el runner del Manager y relanzar solo la revision/bridge, o tomar decision humana explicita.
 
 ---
 
@@ -27,7 +28,8 @@
 |---------|--------|
 | work_plan.md | IN_PROGRESS |
 | execution_log.md | IN_PROGRESS |
+| bus | HUMAN_GATE |
 
 ---
 
-*Preparado documentalmente para WT-2026-236a*
+*Guard anti-relaunch para WT-2026-236a*
