@@ -24,6 +24,7 @@ NUL
 
 # Codex / editor / runtime local
 .codex/
+.opencode/
 Microsoft/
 graphify-out/
 debug_output.txt
