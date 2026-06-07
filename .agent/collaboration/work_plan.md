@@ -69,6 +69,18 @@ Esta separacion evita un falso verde: si el navegador publico permite investigar
 eso solo demuestra que existe un fallback humano, no que la ruta canonica este
 sana para agentes.
 
+## Memoria aplicable
+- `CL-06 complex-ticket-planning-contract`: este ticket requiere `AUDIT_WT-2026-236a.md`
+  y TP checks verificables porque prueba protocolo y tooling externo.
+- `CL-10 auditor-skeptic-review`: la auditoria debe buscar contraejemplos en
+  artefactos reales, no solo coherencia interna del plan.
+- `CL-15 planning-test-existence-check`: no se declaran tests nuevos; los checks
+  de este ticket son validate y evidencia documental.
+- `CL-18 scope-gate-path-format`: los paths bajo `repo_motor` se listan relativos
+  al root del motor, sin prefijo `orquestador_de_agentes/`.
+- `CL-19 dual-contract-sync`: cualquier ajuste de paths, fases, TPs o criterios
+  debe replicarse en `work_plan.md` y `PLAN_WT-2026-236a.md`.
+
 ## Non-goals
 - No portar codigo de Orca ni crear integraciones Electron/TypeScript.
 - No crear un `SOUL.md` operativo ni reescribir `AGENTS.md`.
@@ -81,9 +93,11 @@ sana para agentes.
 ### Fase 0 - Preflight canonico
 - Verificar `repo_motor`, `repo_destino`, ticket activo y estado del bus.
 - Comprobar existencia/frescura de `.agent/runtime/audit/AUDIT.md`.
-- Si falta AUDIT.md, buscar fallback local equivalente (`scripts/audit_codebase.py`
-  o script del motor) y documentar si el contrato de repo-compare esta roto.
+- Si falta AUDIT.md, inspeccionar `scripts/audit_codebase.py` en `repo_destino` y
+  `scripts/local_audit.py` en `repo_motor`; documentar cual puede generar el
+  snapshot requerido y si el contrato de repo-compare esta roto.
 - Registrar estado de MCP GitHub, `gh auth status`, Repomix y acceso web fallback.
+- Crear `.agent/runtime/compare/` si no existe antes de escribir el reporte.
 
 ### Fase 1 - Filtro rapido Orca
 - Aplicar scoring repo-compare 0-5:
@@ -102,8 +116,10 @@ sana para agentes.
   cuando exista.
 
 ### Fase 3 - Reporte persistido
-- Crear reporte en `.agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md`
-  o con SHA real si se obtiene.
+- Crear el reporte con el filename fijo
+  `.agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md`.
+- Si se obtiene el SHA real de Orca, registrarlo solo en el bloque metadata interno
+  del reporte; no cambiar el filename.
 - Incluir oportunidades con la plantilla repo-compare:
   fuente verificada, valor, si ya existe, dependencias, encaje, plan y decision.
   Objetivo: minimo 3 y maximo 5; si hay menos de 3, justificar cada descarte.
@@ -122,6 +138,10 @@ sana para agentes.
 - `.agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md`
 - `.agent/collaboration/execution_log.md`
 
+### repo_destino - Read/inspect only (fallback documental)
+- `scripts/audit_codebase.py` (fallback si `scripts/local_audit.py` del motor no
+  esta instalado en el destino)
+
 ### repo_destino - Manager only
 - `.agent/collaboration/work_plan.md`
 - `.agent/collaboration/PLAN_WT-2026-236a.md`
@@ -136,7 +156,7 @@ sana para agentes.
 - `skills/repo-compare/references/filter-criteria.md`
 - `prompts/audit_plan.md`
 - `.agent/agent_controller.py`
-- `scripts/local_audit.py` or equivalent, if present
+- `scripts/local_audit.py`
 
 ## Superficies prohibidas para Builder
 - No modificar codigo productivo del `repo_motor` en este ticket.
@@ -144,6 +164,33 @@ sana para agentes.
 - No tocar `privada/`.
 - No instalar paquetes ni ejecutar `gh auth login`.
 - No escribir memoria persistente sin propuesta humana explicita.
+
+## Tests Esperados
+- **Tests nuevos:** ninguno. El deliverable es documentation/research y no debe
+  anadir tests salvo que el humano convierta un hallazgo en ticket de codigo.
+- **Checks de no-regresion:** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`.
+- **Checks manuales/documentales:** existencia del reporte en `.agent/runtime/compare/`,
+  scoring 0-5, estado de AUDIT/MCP/gh/Repomix y seccion "Que Ignorar".
+
+## Quality Gates ejecutables
+```powershell
+C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
+```
+
+No ejecutar `ruff`, `pytest` ni `pip-audit` en este ticket salvo cambio de codigo
+aprobado por humano. Si el Builder toca codigo, debe parar y pedir nuevo alcance.
+
+## Packaging y handoff
+- `execution_log.md` debe registrar comandos ejecutados con exit code o salida
+  resumida.
+- La entrada final del Builder debe combinar el artefacto y el gate documental
+  en la misma linea, por ejemplo: `Reporte .agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
+- `TURN.md` debe seguir apuntando a `WT-2026-236a` y accion `IMPLEMENT`.
+- El reporte final debe ser revisable sin depender de navegador abierto ni de
+  memoria conversacional.
+- El historico previo de `execution_log.md` vive solo en
+  `.agent/collaboration/archive/execution_log_legacy_pre_WT-2026-236a.md`; el log
+  activo no debe duplicarlo.
 
 ## Criterios de aceptacion
 - El reporte repo-compare queda persistido en `.agent/runtime/compare/`.
@@ -156,8 +203,8 @@ sana para agentes.
 - Hay accion inmediata recomendada: adoptar, abrir follow-up, o no invertir mas.
 - Si hay oportunidad `AHORA`/`DESPUES`, el reporte incluye candidate row para
   `CREDITS.md`.
-- `agent_controller.py --validate --json --project-root <repo_destino>` pasa o
-  deja blocker exacto documentado.
+- `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
+  pasa o deja blocker exacto documentado.
 
 ## TP Check
 TP-01: `repo-compare` no se considera sano si AUDIT.md falta y no hay fallback.

@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-07 11:05:00
+**Ultima actualizacion:** 2026-06-07 11:15:36
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
+| **ROL** | **BUILDER** |
 | **Plan ID** | WT-2026-236a |
-| **Tipo** | IMPLEMENTATION |
+| **Tipo** | IMPLEMENT |
 | **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Execute WT-2026-236a. Run repo-compare smoke against stablyai/orca and evaluate SOUL.md as secondary operator-profile reference.
+> Ticket WT-2026-236a reactivado. Continua la implementacion.
 
 ---
 
@@ -30,4 +30,4 @@
 
 ---
 
-*Generado por agent_controller.py v5*
+*Preparado documentalmente para WT-2026-236a*
