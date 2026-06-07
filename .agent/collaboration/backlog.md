@@ -83,7 +83,7 @@
 | Media | WT-2026-233b | Idempotencia de Manager tras cierre y reapertura terminal | system/bus-recovery | completed | WT-2026-233a | session-2026-06-06-terminal-reopen-followup |
 | Baja | WT-2026-233c | Coleccion aislada de test_manager_approve | system/testing-hygiene | completed | WT-2026-233b | session-2026-06-06-manager-test-isolation |
 | Media | WT-2026-234a | Cierre de sesion portable y cuarentena de artefactos con IDs de ticket | system/session-closeout-portability | completed | WT-2026-229a, WT-2026-233c | session-2026-06-06-portability-closeout |
-| Critica | WT-2026-235a | Manager review bridge: decisiones autoritativas y CHANGES con blockers | system/review-bridge-decision-contract | active | WT-2026-204, WT-2026-234a | session-2026-06-07-review-bridge |
+| Critica | WT-2026-235a | Manager review bridge: decisiones autoritativas y CHANGES con blockers | system/review-bridge-decision-contract | completed | WT-2026-204, WT-2026-234a | session-2026-06-07-review-bridge |
 
 ## WT-2026-233a - Reapertura humana controlada de tickets terminales
 - **Prioridad:** Media

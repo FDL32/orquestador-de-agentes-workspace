@@ -5,7 +5,7 @@
 - **Title:** Manager review bridge: decisiones autoritativas y CHANGES con blockers
 - **Scope:** system/review-bridge-decision-contract
 - **Priority:** Critica
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **Asignado a:** BUILDER
 - **Depende de:** WT-2026-204, WT-2026-234a
