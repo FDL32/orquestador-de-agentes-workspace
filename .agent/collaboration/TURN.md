@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-07 10:34:00
+**Ultima actualizacion:** 2026-06-07 11:05:00
 
 ---
 
@@ -9,15 +9,15 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **Plan ID** | WT-2026-236a |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WT-2026-235a closed. Create new work_plan.md for next cycle.
+> Execute WT-2026-236a. Run repo-compare smoke against stablyai/orca and evaluate SOUL.md as secondary operator-profile reference.
 
 ---
 
@@ -25,8 +25,8 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 

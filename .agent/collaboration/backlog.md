@@ -84,6 +84,24 @@
 | Baja | WT-2026-233c | Coleccion aislada de test_manager_approve | system/testing-hygiene | completed | WT-2026-233b | session-2026-06-06-manager-test-isolation |
 | Media | WT-2026-234a | Cierre de sesion portable y cuarentena de artefactos con IDs de ticket | system/session-closeout-portability | completed | WT-2026-229a, WT-2026-233c | session-2026-06-06-portability-closeout |
 | Critica | WT-2026-235a | Manager review bridge: decisiones autoritativas y CHANGES con blockers | system/review-bridge-decision-contract | completed | WT-2026-204, WT-2026-234a | session-2026-06-07-review-bridge |
+| Media | WT-2026-236a | Smoke repo-compare con Orca y SOUL.md para validar flujo externo | system/research-devx | active | WT-2026-182, WT-2026-227a, WT-2026-235a | session-2026-06-07-repo-compare-smoke |
+
+## WT-2026-236a - Smoke repo-compare con Orca y SOUL.md para validar flujo externo
+- **Prioridad:** Media
+- **Scope:** system/research-devx
+- **Estado:** active
+- **Problema:** el protocolo `repo-compare` debe poder comparar un repo externo
+  contra el contexto local, pero el preflight real ya mostro fricciones: MCP
+  GitHub con credenciales invalidas, `gh` CLI sin auth, `.agent/runtime/audit/AUDIT.md`
+  ausente y `scripts/local_audit.py` no instalado en este `repo_destino`.
+- **Objetivo:** usar `stablyai/orca` como target y el post `SOUL.md` como referencia
+  secundaria para producir un reporte evidence-linked que separe oportunidades de
+  producto y diagnostico del tooling.
+- **Criterio:** reporte persistido en `.agent/runtime/compare/`, scoring Orca 0-5,
+  3-5 oportunidades o descarte justificado, seccion "Que Ignorar", estado de
+  AUDIT/MCP/gh/Repomix documentado y validate final o blocker exacto.
+- **Depende de:** WT-2026-182, WT-2026-227a, WT-2026-235a.
+- **Origen:** session-2026-06-07-repo-compare-smoke.
 
 ## WT-2026-233a - Reapertura humana controlada de tickets terminales
 - **Prioridad:** Media
