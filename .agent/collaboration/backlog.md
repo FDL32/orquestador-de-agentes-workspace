@@ -60,7 +60,7 @@
 | Media | TBD | Alinear tests legacy de pre-handoff con auto-commit motor-aware | system/testing-hygiene | absorbed | WT-2026-208 | session-2026-06-06-suite-baseline |
 | Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | absorbed | WT-2026-232a | session-2026-06-02-terminology |
 | Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
-| Media | TBD | Retirar excepcion PYSEC-2026-196 cuando pip 26.1.2 este publicado | system/security-dependencies | backlog | - | session-2026-06-06-wt208-close |
+| Media | TBD | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2 | system/security-dependencies | backlog | - | session-2026-06-07-security-followup |
 | Media | TBD | Renombrar en sitio 8 tests historicos del motor a nombres funcionales estables | system/testing-hygiene | backlog | WT-2026-215 | session-2026-06-05-portability |
 | Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
 | Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
@@ -102,6 +102,20 @@
   AUDIT/MCP/gh/Repomix documentado y validate final o blocker exacto.
 - **Depende de:** WT-2026-182, WT-2026-227a, WT-2026-235a.
 - **Origen:** session-2026-06-07-repo-compare-smoke.
+
+## TBD - Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2
+- **Prioridad:** Media
+- **Scope:** system/security-dependencies
+- **Estado:** backlog
+- **Problema:** `repo_motor` ignora temporalmente `PYSEC-2026-196` en
+  `[tool.pip-audit].ignore-vuln` porque el fix existe en `pip 26.1.2`, pero
+  `uv` aun resolvia `pip 26.1.1` en este entorno al cerrar `WT-2026-235a`.
+- **Criterio:** cuando `uv lock --upgrade-package pip` pueda fijar
+  `pip>=26.1.2`, retirar la excepcion, regenerar lock si aplica y verificar
+  `python scripts/pip_audit_project.py` sin vulnerabilidades ignoradas.
+- **Evidencia:** `repo_motor` commit `3601312` hizo que el wrapper respete
+  `ignore-vuln`; la deuda es retirar la excepcion, no saltarse el gate.
+- **Origen:** session-2026-06-07-security-followup.
 
 ## WT-2026-233a - Reapertura humana controlada de tickets terminales
 - **Prioridad:** Media
