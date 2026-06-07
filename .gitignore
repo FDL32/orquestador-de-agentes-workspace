@@ -62,6 +62,7 @@ temp_output.txt
 
 # Estado efimero de collaboration
 .agent/collaboration/.session_state.json
+.agent/collaboration/manager_feedback_*.md
 .agent/collaboration/archive/
 
 # Link runtime workspace<->motor: se regenera al reubicar
