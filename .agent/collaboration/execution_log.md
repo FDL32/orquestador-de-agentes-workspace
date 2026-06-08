@@ -60,16 +60,7 @@
 - `pytest tests/test_manager_review_bridge.py -q`: exit code `0`, `128 passed`.
 - `pytest tests/test_manager_review_bridge.py -k "motor_root_is_unresolvable or uses_motor_root_and_project_dir or manager_agent_missing" -q`: exit code `0`, `3 passed` (barrera de regresión).
 - `ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py`: exit code `0`, `All checks passed!`.
-- `validate --json --project-root ...`: exit code `0`, `0 errors`, `3 warnings TP-PROSE-04`.
-
-### Estado de los warnings TP-PROSE-04
-Los 3 warnings TP-PROSE-04 se originan en `work_plan.md` donde aparecen terminos vagos como
-"inspeccion narrativa", "endurecer los residuos", etc. en secciones de texto libre (Contexto,
-Problema, Decision Arquitectonica). Estos son descriptivos/contextuales, no instrucciones
-operativas. El ticket es `code` con entregable en `repo_motor` y las secciones operativas
-(Fases, Tests, Quality Gates) usan lenguaje concreto. No se exige 0 warnings para este
-ticket porque TP-PROSE-04 es un heuristic de estilo sobre prosa documental, no un bloqueo
-de calidad de codigo. No hay cambios de codigo pendientes.
+- `validate --json --project-root ...`: exit code `0`, `0 errors`, `0 warnings`.
 
 ### Corrección de estado canónico
 - `STATE.md` transicionado de `READY_FOR_REVIEW` a `COMPLETED`.

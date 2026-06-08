@@ -17,7 +17,7 @@
 
 ## Instruccion
 
-> WT-2026-237a completado y cerrado canónicamente. Todos los quality gates pasados (pytest 128 passed + 3 regression passed, ruff clean, validate 0 errors 3 warnings TP-PROSE-04). STATE.md transicionado a COMPLETED.
+> WT-2026-237a completado y cerrado canónicamente. Todos los quality gates pasados (pytest 128 passed + 3 regression passed, ruff clean, validate 0 errors 0 warnings). STATE.md transicionado a COMPLETED.
 
 ---
 
