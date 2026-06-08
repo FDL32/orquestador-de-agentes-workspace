@@ -1,217 +1,219 @@
-# Work Ticket - WT-2026-236a
+# Work Ticket - WT-2026-237a
 
 ## Metadata
-- **ID:** WT-2026-236a
-- **Title:** Smoke repo-compare con Orca y SOUL.md para validar flujo externo
-- **Scope:** system/research-devx
-- **Priority:** Media
-- **Estado:** APPROVED
-- **deliverable_type:** documentation
+- **ID:** WT-2026-237a
+- **Title:** Formalizar fixes de motor emergentes del smoke repo-compare
+- **Scope:** system/review-closeout-hardening
+- **Priority:** Alta
+- **Estado:** COMPLETED
+- **deliverable_type:** code
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-182, WT-2026-227a, WT-2026-235a
+- **Depende de:** WT-2026-235a, WT-2026-236a
 
 ## Objetivo
-Validar de punta a punta que el protocolo `repo-compare` sigue siendo operable en
-la topologia `repo_motor` + `repo_destino`, usando `stablyai/orca` como repo target
-y el post de `SOUL.md` como referencia secundaria de patrones de operador.
+Absorber de forma canonica los hardenings de `repo_motor` que salieron del smoke
+`WT-2026-236a`, de modo que el siguiente review packet de codigo represente un
+ticket de motor limpio, con scope explicito, quality gates reales y cierre
+reproducible en topologia `repo_motor` + `repo_destino`.
 
-El resultado esperado no es adoptar codigo todavia, sino producir un reporte
-evidence-linked que diga que oportunidades merecen ticket propio, que debe
-ignorarse, y que partes del tooling externo fallan hoy.
+El resultado no es reabrir el smoke documental ni volver a discutir Orca/SOUL.md.
+El entregable es codigo y tests de `repo_motor` que conviertan los fixes de
+sesion y los gaps residuales del review/closeout en una entrega revisable.
 
-## Contexto externo verificado
-- `stablyai/orca`: IDE/orquestador para flotas de agentes CLI en worktrees
-  paralelos. README publico declara soporte para Claude Code, Codex, OpenCode,
-  Goose y otros agentes; features relevantes: worktree-native, terminales
-  multi-agente, source control integrado, GitHub integration, SSH y companion
-  mobile. Repo publico MIT, TypeScript dominante, con tests y CI visibles.
-- Reddit `SOUL.md`: template de identidad operativa para agentes. La idea util no
-  es copiar el texto, sino evaluar si el motor necesita un documento compacto de
-  stance/autonomia/mision que no duplique `AGENTS.md`, memoria ni prompts.
-- Intento MCP GitHub: `mcp__github.get_file_contents(stablyai/orca/README.md)`
-  fallo con `Authentication Failed: Bad credentials`.
-- Intento `gh` CLI: `gh repo view stablyai/orca ...` fallo porque `gh` no esta
-  autenticado (`gh auth login` o `GH_TOKEN` requerido).
-- Preflight local: falta `.agent/runtime/audit/AUDIT.md`; ademas este
-  `repo_destino` no tiene `scripts/local_audit.py`, aunque la skill repo-compare
-  lo espera como primer fallback.
+## Contexto verificado
+- `WT-2026-236a` cerro como smoke/documentation valido, pero el relanzamiento real
+  del Builder/Manager obligo a tocar codigo productivo del `repo_motor`.
+- El Manager devolvio `CHANGES` legitimo cuando esos cambios de motor aparecieron
+  en el review packet de un ticket documental con `Files Likely Touched`
+  incompatibles con codigo.
+- Durante la sesion ya se corrigieron rutas criticas del motor:
+  closeout de non-code tickets, proyecciones de estado, resolucion del agente
+  `manager`, parse NDJSON del bridge y permisos del launcher.
+- Quedan huecos de hardening y, principalmente, falta empaquetar cualquier
+  cambio dentro de un ticket de codigo limpio con evidencias revisables.
 
 ## Problema
-El protocolo `repo-compare` promete comparar un repositorio GitHub contra el
-contexto local usando AUDIT.md, Repomix y MCP GitHub. En esta sesion ya aparecieron
-tres fricciones reales: credenciales MCP invalidas, `gh` CLI sin auth y ausencia
-del AUDIT.md local/fallback `local_audit.py` en el `repo_destino`.
+Si seguimos mezclando fixes de motor con tickets documentales, el review loop hace
+lo correcto al rechazar por scope, packaging o ausencia de gates de codigo.
+Eso deja al sistema en un falso limbo: el hotfix existe en `main`, pero no queda
+explicado ni auditado como entrega canonica del motor.
 
-Si estas fricciones no quedan explicitadas, el equipo puede creer que
-repo-compare esta sano porque el analisis manual con navegador funciona. Este
-ticket debe separar el valor de las ideas externas de la salud real del tooling
-canonico.
+Este ticket debe convertir esa deuda de sesion en trabajo deliberado: declarar
+el scope exacto del `repo_motor`, cerrar los gaps de codigo que sigan abiertos y
+dejar una evidencia de quality gates que el Manager pueda revisar sin arrastrar
+artefactos del smoke.
 
 ## Contrato
-- Ejecutar el protocolo repo-compare con estos pasos concretos: preflight de
-  AUDIT.md, scoring 0-5, exploracion remota acotada, reporte persistido y validate
-  final. No inventar evidencia si una herramienta falla.
-- Si MCP GitHub o `gh` CLI no estan disponibles, documentar el fallo exacto y usar
-  solo fuentes publicas como fallback diagnostico.
-- No escribir `CREDITS.md`; solo emitir candidate row si hay oportunidad `AHORA`
-  o `DESPUES`.
-- No copiar texto largo de Reddit ni incorporar SOUL.md como archivo operativo.
-  Tratarlo como patron conceptual y revisar privacidad/token budget.
-- No introducir dependencias nuevas ni instalar tooling externo sin aprobacion.
+- El ticket es `code`: cualquier cierre debe tener diff productivo en
+  `repo_motor`, commit referenciado con el ticket exacto y gates de codigo reales.
+- El scope principal son review bridge, closeout, proyecciones de estado y
+  launcher portable. No reabrir investigacion repo-compare ni producto Orca.
+- Si algun fix ya esta correcto en `main`, no reimplementar por deporte: solo
+  tocarlo si falta regression coverage, sigue teniendo un gap residual o necesita
+  ajuste minimo para cumplir el contrato final del ticket.
+- `WT-2026-236a` permanece como smoke/documentation ya cerrado; este ticket no
+  debe reescribir su reporte ni su historico, solo referenciarlo.
 
 ## Decision Arquitectonica
-El ticket trata `repo-compare` como protocolo observable, no como simple informe
-manual. Por eso el reporte debe conservar dos canales separados: oportunidades de
-producto inspiradas por Orca/SOUL.md y diagnostico del tooling que deberia haber
-soportado la comparacion (`AUDIT.md`, Repomix, MCP GitHub y `gh` CLI).
+El sistema necesita separar dos planos:
 
-Esta separacion evita un falso verde: si el navegador publico permite investigar,
-eso solo demuestra que existe un fallback humano, no que la ruta canonica este
-sana para agentes.
+- tickets `documentation/research`, donde el gate canonico es artefacto +
+  validate + review de contenido;
+- tickets `code`, donde el gate canonico es diff productivo + tests/gates +
+  review packet revisable.
+
+`WT-2026-237a` existe para restaurar esa separacion. La implementacion no debe
+inventar nuevas capacidades de producto; debe cerrar el contrato operativo que
+permite a Builder, Supervisor y Manager sobrevivir a tickets documentales y de
+codigo sin drift ni falsos negativos de transporte.
 
 ## Memoria aplicable
-- `CL-06 complex-ticket-planning-contract`: este ticket requiere `AUDIT_WT-2026-236a.md`
-  y TP checks verificables porque prueba protocolo y tooling externo.
-- `CL-10 auditor-skeptic-review`: la auditoria debe buscar contraejemplos en
-  artefactos reales, no solo coherencia interna del plan.
-- `CL-15 planning-test-existence-check`: no se declaran tests nuevos; los checks
-  de este ticket son validate y evidencia documental.
+- `CL-10 auditor-skeptic-review`: cada fix debe verificarse en codigo real y con
+  tests que reproduzcan el runtime, no solo por revision de texto.
 - `CL-18 scope-gate-path-format`: los paths bajo `repo_motor` se listan relativos
   al root del motor, sin prefijo `orquestador_de_agentes/`.
 - `CL-19 dual-contract-sync`: cualquier ajuste de paths, fases, TPs o criterios
-  debe replicarse en `work_plan.md` y `PLAN_WT-2026-236a.md`.
+  debe replicarse en `work_plan.md` y `PLAN_WT-2026-237a.md`.
+- `obs-ps1-strictmode-dynamic-props`: scripts PowerShell con `ConvertFrom-Json`
+  requieren test funcional bajo `Set-StrictMode`, no solo parseo.
+- `obs-code-ticket-prehandoff-packaging`: para tickets `code`/`mixed`, el
+  preflight debe cubrir FLT completo, arbol limpio antes de `--pre-handoff`,
+  gates reales y commit evidence con ticket exacto.
+- `review-decision-provenance-contract`: la decision del Manager debe venir de
+  fuente autoritativa y cualquier degradacion de transporte debe quedar trazable.
 
 ## Non-goals
-- No portar codigo de Orca ni crear integraciones Electron/TypeScript.
-- No crear un `SOUL.md` operativo ni reescribir `AGENTS.md`.
-- No corregir autenticacion MCP/`gh` ni ejecutar `gh auth login`.
-- No instalar Repomix, clonar repos remotos ni anadir dependencias.
-- No tocar `CREDITS.md`; solo proponer candidate row si procede.
+- No reabrir `WT-2026-236a` ni modificar su reporte repo-compare.
+- No implementar nueva funcionalidad de producto inspirada por Orca.
+- No redisenar toda la arquitectura del bus ni absorber backlog ajeno como
+  `WT-2026-213` salvo evidencia nueva bloqueante.
+- No introducir dependencias nuevas ni cambiar credenciales/OpenCode auth UX
+  salvo que un test o el runtime actual demuestren un blocker directo.
 
 ## Fases
 
-### Fase 0 - Preflight canonico
-- Verificar `repo_motor`, `repo_destino`, ticket activo y estado del bus.
-- Comprobar existencia/frescura de `.agent/runtime/audit/AUDIT.md`.
-- Si falta AUDIT.md, inspeccionar `scripts/audit_codebase.py` en `repo_destino` y
-  `scripts/local_audit.py` en `repo_motor`; documentar cual puede generar el
-  snapshot requerido y si el contrato de repo-compare esta roto.
-- Registrar estado de MCP GitHub, `gh auth status`, Repomix y acceso web fallback.
-- Crear `.agent/runtime/compare/` si no existe antes de escribir el reporte.
+### Fase 0 - Preflight canonico de ticket code
+- Confirmar que `WT-2026-236a` esta cerrado y que el ticket activo pasa a ser
+  `WT-2026-237a`.
+- Verificar arbol limpio en `repo_motor` antes de Builder y registrar cualquier
+  mutacion runtime esperada de `.opencode/opencode.json`.
+- Leer `PLAN_WT-2026-235a.md`, `PLAN_WT-2026-236a.md` y feedback relevante para
+  delimitar exactamente que gaps ya fueron corregidos y cuales quedan abiertos.
+- Confirmar que `Files Likely Touched` cubre codigo, tests y wrappers esperados.
 
-### Fase 1 - Filtro rapido Orca
-- Aplicar scoring repo-compare 0-5:
-  README claro, tests/CI, mantenimiento, encaje tecnico, claridad estructural.
-- Usar evidencia publica ya verificada y, si el acceso GitHub queda reparado,
-  preferir MCP/`gh` para SHA, LICENSE, workflows y estructura.
-- Si score < 3, cerrar como bajo valor con razon. Si score >= 3, continuar.
+### Fase 1 - Consolidacion del scope real
+- Revisar en `repo_motor` las superficies que la sesion ya toco:
+  `bus/review_bridge.py`, `.agent/agent_controller.py`,
+  `scripts/state_projection_sync.py`, `scripts/state_projection_probe.py`,
+  `scripts/launch_agent_terminals.ps1` y sus tests.
+- Marcar cuales comportamientos ya estan correctos y solo requieren evidencia,
+  y cuales aun necesitan ajuste de codigo para cerrar el contrato completo.
 
-### Fase 2 - Exploracion acotada
-- Leer maximo 8-12 superficies remotas:
-  README, AGENTS.md, package.json, orca.yaml, docs relevantes, CLI, tests,
-  workflows y superficies de worktree/source-control si se localizan.
-- Para SOUL.md, extraer solo patrones: stance, autonomia, accountability,
-  mission map, delegation rules, lookup protocol, escalation.
-- Comparar contra capacidades locales citando rutas del `repo_motor` o AUDIT.md
-  cuando exista.
+### Fase 2 - Hardening residual
+- Implementar solo los gaps que sigan abiertos tras Fase 1, con preferencia por:
+  clasificacion de fallos de transporte/autenticacion,
+  timing de restauracion de `.opencode/opencode.json`,
+  gates de closeout para tickets `documentation`/`research` y
+  tests funcionales de launcher bajo restricciones reales.
+- Si un gap pertenece mejor a otro ticket existente del backlog, documentarlo y
+  dejarlo fuera explicitamente en vez de absorberlo por inercia.
 
-### Fase 3 - Reporte persistido
-- Crear el reporte con el filename fijo
-  `.agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md`.
-- Si se obtiene el SHA real de Orca, registrarlo solo en el bloque metadata interno
-  del reporte; no cambiar el filename.
-- Incluir oportunidades con la plantilla repo-compare:
-  fuente verificada, valor, si ya existe, dependencias, encaje, plan y decision.
-  Objetivo: minimo 3 y maximo 5; si hay menos de 3, justificar cada descarte.
-- Incluir matriz final, "Que Ignorar", "Accion Inmediata" y bloque candidato
-  `CREDITS.md` solo si procede.
+### Fase 3 - Tests y gates
+- Asegurar regression coverage focal para cada cambio nuevo o endurecido.
+- Ejecutar `pytest` focal y `ruff` sobre las superficies del ticket.
+- Registrar evidencia exacta de gates en `execution_log.md` con exit code real.
 
-### Fase 4 - Diagnostico del protocolo
-- Separar hallazgos de producto de hallazgos de tooling.
-- Si el bloqueo principal es autenticacion/ausencia AUDIT.md, proponer follow-up
-  concreto en backlog sin arreglarlo dentro de este ticket salvo que sea un cambio
-  documental minimo.
+### Fase 4 - Packaging y closeout
+- Preparar un review packet donde cada cambio del diff productivo pertenezca al scope de
+  este ticket y no arrastre runtime del smoke.
+- Verificar `--pre-handoff`, `--mark-ready` y `--validate` en la ruta canonica
+  del `repo_motor`.
 
 ## Files Likely Touched
 
-### repo_destino - Builder
-- `.agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md`
-- `.agent/collaboration/execution_log.md`
+### repo_motor - Builder
+- `bus/review_bridge.py`
+- `.agent/agent_controller.py`
+- `scripts/state_projection_sync.py`
+- `scripts/state_projection_probe.py`
+- `scripts/launch_agent_terminals.ps1`
+- `tests/test_manager_review_bridge.py`
+- `tests/test_agent_controller.py`
+- `tests/test_launch_agent_terminals_script.py`
 
-### repo_destino - Read/inspect only (fallback documental)
-- `scripts/audit_codebase.py` (fallback si `scripts/local_audit.py` del motor no
-  esta instalado en el destino)
-
-### repo_destino - Manager only
+### repo_destino - Manager only / estado canonico
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/PLAN_WT-2026-236a.md`
-- `.agent/collaboration/AUDIT_WT-2026-236a.md`
+- `.agent/collaboration/PLAN_WT-2026-237a.md`
+- `.agent/collaboration/AUDIT_WT-2026-237a.md`
 - `.agent/collaboration/backlog.md`
+- `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/STATE.md`
 - `.agent/collaboration/TURN.md`
 
-### repo_motor - Read/inspect only by default
-- `skills/repo-compare/SKILL.md`
-- `skills/repo-compare/references/output-format.md`
-- `skills/repo-compare/references/filter-criteria.md`
-- `prompts/audit_plan.md`
-- `.agent/agent_controller.py`
-- `scripts/local_audit.py`
+### repo_motor - Read/inspect only si no se tocan
+- `.opencode/agents/manager.md`
+- `tests/test_state_projection_probe.py`
+- `tests/test_state_projection_sync.py`
+- `tests/unit/test_closeout_failures.py`
 
 ## Superficies prohibidas para Builder
-- No modificar codigo productivo del `repo_motor` en este ticket.
-- No tocar `CREDITS.md`; emitir solo bloque candidato.
+- No reabrir artefactos de `WT-2026-236a` salvo lectura.
+- No tocar `bus/supervisor.py` ni `bus/event_bus.py` sin evidencia nueva.
 - No tocar `privada/`.
-- No instalar paquetes ni ejecutar `gh auth login`.
+- No introducir dependencias nuevas.
 - No escribir memoria persistente sin propuesta humana explicita.
 
 ## Tests Esperados
-- **Tests nuevos:** ninguno. El deliverable es documentation/research y no debe
-  anadir tests salvo que el humano convierta un hallazgo en ticket de codigo.
-- **Checks de no-regresion:** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`.
-- **Checks manuales/documentales:** existencia del reporte en `.agent/runtime/compare/`,
-  scoring 0-5, estado de AUDIT/MCP/gh/Repomix y seccion "Que Ignorar".
+- **Tests nuevos o reforzados esperados:**
+  - `tests/test_manager_review_bridge.py`
+  - `tests/test_agent_controller.py`
+  - `tests/test_launch_agent_terminals_script.py`
+- **Checks de no-regresion:**
+  - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m pytest tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py -q`
+  - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py`
+  - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
+- **Checks funcionales:** si se toca `scripts/launch_agent_terminals.ps1`, debe
+  existir prueba funcional bajo `Set-StrictMode -Version Latest` con fixture JSON
+  realista.
 
 ## Quality Gates ejecutables
 ```powershell
+C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m pytest tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py -q
+C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py
 C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 ```
 
-No ejecutar `ruff`, `pytest` ni `pip-audit` en este ticket salvo cambio de codigo
-aprobado por humano. Si el Builder toca codigo, debe parar y pedir nuevo alcance.
+Si el ticket termina sin diff productivo en `repo_motor`, no debe cerrarse como
+ticket `code`: hay que documentar el motivo y reencuadrar el alcance.
 
 ## Packaging y handoff
-- `execution_log.md` debe registrar comandos ejecutados con exit code o salida
-  resumida.
-- La entrada final del Builder debe combinar el artefacto y el gate documental
-  en la misma linea, por ejemplo: `Reporte .agent/runtime/compare/stablyai-orca-HEAD-2026-06-07.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
-- `TURN.md` debe seguir apuntando a `WT-2026-236a` y accion `IMPLEMENT`.
-- El reporte final debe ser revisable sin depender de navegador abierto ni de
-  memoria conversacional.
-- El historico previo de `execution_log.md` vive solo en
-  `.agent/collaboration/archive/execution_log_legacy_pre_WT-2026-236a.md`; el log
-  activo no debe duplicarlo.
+- `execution_log.md` debe registrar gates de codigo con exit code real.
+- El commit final debe referenciar exactamente `WT-2026-237a`.
+- `--pre-handoff` debe ver arbol limpio en `repo_motor`, sin drift transitorio de
+  `.opencode/opencode.json` en el momento del closeout.
+- El review packet debe mostrar diff revisable del `repo_motor`, no solo runtime
+  del `repo_destino`.
 
 ## Criterios de aceptacion
-- El reporte repo-compare queda persistido en `.agent/runtime/compare/`.
-- El reporte indica el estado de AUDIT.md, MCP GitHub, `gh` CLI y Repomix.
-- Orca recibe scoring 0-5 con evidencia verificable.
-- Se documentan 3-5 oportunidades o, si no hay suficientes, se explica por que.
-- SOUL.md se evalua como patron conceptual, sin copiar plantilla extensa ni
-  introducir secretos/rutas privadas.
-- Hay seccion explicita "Que Ignorar".
-- Hay accion inmediata recomendada: adoptar, abrir follow-up, o no invertir mas.
-- Si hay oportunidad `AHORA`/`DESPUES`, el reporte incluye candidate row para
-  `CREDITS.md`.
+- Cualquier cambio nuevo del `repo_motor` queda dentro de `Files Likely Touched`.
+- El review/closeout del motor no vuelve a fallar por clasificacion de transporte,
+  proyeccion stale o contrato incorrecto para tickets no-code.
+- Si se toca launcher PowerShell, el comportamiento queda cubierto por test
+  funcional bajo entorno comparable al real.
+- `pytest`, `ruff` y `--validate` pasan con rutas reales del ticket.
+- El review packet ya no mezcla fixes de motor con un ticket documental.
 - `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
-  pasa o deja blocker exacto documentado.
+  pasa sin drift nuevo o deja blocker exacto documentado con evidencia.
 
 ## TP Check
-TP-01: `repo-compare` no se considera sano si AUDIT.md falta y no hay fallback.
-TP-02: fallos MCP/`gh` quedan registrados como diagnostico, no ocultos por web.
-TP-03: cada oportunidad cita fuente externa y estado local.
-TP-04: no se propone portar UI/Electron/Node de Orca al motor Python sin justificar
-  esfuerzo/deps.
-TP-05: SOUL.md no duplica AGENTS.md/memoria; se reduce a patrones accionables.
-TP-06: no se escribe `CREDITS.md` ni memoria.
-TP-07: cierre con validate o blocker verificable.
+TP-01: leer codigo real de `bus/review_bridge.py`, `.agent/agent_controller.py`,
+`scripts/state_projection_sync.py`, `scripts/state_projection_probe.py` y
+`scripts/launch_agent_terminals.ps1` antes de proponer cambios adicionales.
+TP-02: `Files Likely Touched` cubre codigo, tests y wrappers que Builder tocara.
+TP-03: cualquier gap residual se demuestra con test o con evidencia directa de
+runtime, no solo con narrativa de sesion.
+TP-04: el cierre registra `pytest`, `ruff` y `validate` con exit code real.
+TP-05: el commit final referencia `WT-2026-237a` exacto.
+TP-06: `WT-2026-236a` no se reabre ni se contamina con nuevos cambios de motor.
+TP-07: el ticket termina con review packet revisable o con blocker exacto de
+closeout.
