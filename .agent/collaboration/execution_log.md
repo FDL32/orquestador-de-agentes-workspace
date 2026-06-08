@@ -1,6 +1,6 @@
 # Execution Log WT-2026-239a
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** BLOCKED
 
 ## Comandos Canonicos
 - Pre-handoff: `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --pre-handoff --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
