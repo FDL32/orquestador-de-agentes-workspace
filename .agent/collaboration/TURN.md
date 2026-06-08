@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-08 07:41:40
+**Ultima actualizacion:** 2026-06-08 12:10
 
 ---
 
@@ -9,15 +9,17 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **MANAGER** |
-| **Plan ID** | WT-2026-238a |
-| **Tipo** | CLOSEOUT |
-| **Accion** | CLOSE_TICKET |
+| **Plan ID** | WT-2026-239a |
+| **Tipo** | REVIEW |
+| **Accion** | REVIEW_CHANGES |
 
 ---
 
 ## Instruccion
 
-> WT-2026-238a completado y cerrado canonicamente. Handoff de sesion registrado, sin nuevas promociones de memoria y validate sin errores.
+> WT-2026-239a revisado: CHANGES. Ticket no aprobado como COMPLETED.
+> El cierre queda documentado en MANAGER_REVIEW_WT-2026-239a.md.
+> No hay ticket siguiente activo todavia.
 
 ---
 
@@ -25,9 +27,11 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | APPROVED |
+| execution_log.md | BLOCKED |
+| MANAGER_REVIEW_WT-2026-239a.md | CHANGES |
+| STATE.md | CHANGES_REQUIRED |
 
 ---
 
-*Cierre documental aplicado para WT-2026-238a*
+*Cierre de revision aplicado para WT-2026-239a*
