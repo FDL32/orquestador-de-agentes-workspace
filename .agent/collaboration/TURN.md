@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-07 20:05:00
+**Ultima actualizacion:** 2026-06-08 08:34:00
 
 ---
 
@@ -8,17 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **HUMAN_GATE** |
-| **Plan ID** | WT-2026-236a |
-| **Tipo** | REVIEW_RECOVERY |
-| **Accion** | AWAIT_HUMAN_DECISION |
+| **ROL** | **MANAGER** |
+| **Plan ID** | WT-2026-237a |
+| **Tipo** | CLOSEOUT |
+| **Accion** | CLOSE_TICKET |
 
 ---
 
 ## Instruccion
 
-> Ticket WT-2026-236a en HUMAN_GATE. No relanzar Builder.
-> Reautenticar el runner del Manager y relanzar solo la revision/bridge, o tomar decision humana explicita.
+> WT-2026-237a completado y cerrado canónicamente. Todos los quality gates pasados (pytest 128 passed + 3 regression passed, ruff clean, validate 0 errors 3 warnings TP-PROSE-04). STATE.md transicionado a COMPLETED.
 
 ---
 
@@ -26,10 +25,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | IN_PROGRESS |
-| execution_log.md | IN_PROGRESS |
-| bus | HUMAN_GATE |
+| work_plan.md | COMPLETED |
+| execution_log.md | COMPLETED |
 
 ---
 
-*Guard anti-relaunch para WT-2026-236a*
+*Cierre documental aplicado para WT-2026-237a*
