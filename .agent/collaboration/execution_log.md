@@ -1,6 +1,6 @@
 # Execution Log WT-2026-242a
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 **Commit final:** `a76a28b` - `feat(WT-2026-242a): harden review bridge JSON try-first fallback`
 
 ## Comandos Canonicos
@@ -60,3 +60,6 @@
 ## Ficheros modificados
 - `bus/review_bridge.py` - ruta try-first con `--format json` usando `manager_executable` real
 - `tests/test_review_bridge.py` - 4 tests gobernantes + correccion RUF059
+
+
+Manager approved canonical closeout for WT-2026-242a
