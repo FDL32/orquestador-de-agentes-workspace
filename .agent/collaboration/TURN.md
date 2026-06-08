@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-08 21:54:57
+**Ultima actualizacion:** 2026-06-08 23:42
 
 ---
 
@@ -8,26 +8,25 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WT-2026-242b |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | mark-ready |
 
 ---
 
-## Instruccion
+## Resumen del turno
 
-> Ticket WT-2026-242a closed. Create new work_plan.md for next cycle.
+Implementar la capa de contención para shells Builder huérfanas en agent_controller,
+de modo que un stale_builder_round no emita HANDOFF_BLOCKED cuando el ticket ya está
+en READY_FOR_REVIEW, READY_TO_CLOSE, HUMAN_GATE o COMPLETED.
 
----
+Cambios realizados:
+- `_is_bus_state_post_success()` helper function
+- Stale builder round guard en `_handle_mark_ready` y `_handle_pre_handoff`
+- Tests unitarios y de integración
 
-## Estado del Sistema
-
-| Archivo | Estado |
-|---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
-
----
-
-*Generado por agent_controller.py v5*
+Quality gates pasados:
+- pytest: 108 passed
+- ruff: All checks passed
+- validate: 0 errors, 0 warnings

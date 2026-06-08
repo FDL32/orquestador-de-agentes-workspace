@@ -1,65 +1,89 @@
-# Execution Log WT-2026-242a
+# Execution Log WT-2026-242b
 
-**Estado:** COMPLETED
-**Commit final:** `a76a28b` - `feat(WT-2026-242a): harden review bridge JSON try-first fallback`
+**Estado:** READY_FOR_REVIEW
 
-## Comandos Canonicos
-- Launch script: `powershell -ExecutionPolicy Bypass -File C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\scripts\launch_agent_terminals.ps1 -ProjectRoot C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
-- Validate: `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
+## Objetivo
 
-## Preflight de activacion
-- `WT-2026-241a` dejo una causa raiz confirmada en el `review_bridge`: la
-  decision JSON/no-JSON depende de un probe por `PATH`, no del ejecutable real.
-- `WT-2026-241a` queda superseded por `WT-2026-242a` por
-  `root cause in review_bridge JSON capability path`.
-- El siguiente trabajo se separa como ticket nuevo para no mezclar el
-  `HUMAN_GATE` operativo del ticket anterior con el fix de transporte.
-- El scope queda concentrado en la ruta OpenCode del `repo_motor`.
+Implementar la capa de contención para shells Builder huérfanas en agent_controller,
+de modo que un stale_builder_round no emita HANDOFF_BLOCKED cuando el ticket ya está
+en READY_FOR_REVIEW, READY_TO_CLOSE, HUMAN_GATE o COMPLETED.
 
-## Hipotesis operativa
-- El bridge debe dejar de inferir capacidades desde un estado cacheado y pasar a
-  probar `--format json` con el `manager_executable` real.
-- El fallback sin JSON debe dispararse solo cuando el stderr o la ayuda del CLI
-  indiquen de forma concreta que el flag no es soportado.
+## Cambios en agent_controller.py (commit 18af1ad)
 
-## Tareas ejecutadas por el Builder
-- [x] Implementar la ruta `try-first` en `bus/review_bridge.py`.
-- [x] Mantener la asimetria conservadora: `APPROVE` textual sigue siendo `INSPECT`.
-- [x] Anadir y ejecutar los tests gobernantes del bridge (4 tests en `TestTryFirstJsonTransport`).
-- [x] Corregir RUF059 en `test_review_bridge.py` (lineas 1486 y 1513).
-- [x] Committear entrega final en `repo_motor` (`a76a28b`, arbol limpio).
+### 1. `_is_bus_state_post_success` (nueva función)
 
-## Evidencia de quality gates
+```python
+POST_SUCCESS_STATES = frozenset({
+    "READY_FOR_REVIEW", "READY_TO_CLOSE", "HUMAN_GATE", "COMPLETED",
+})
 
-### ruff
-- **Comando:** `python -m ruff check bus/review_bridge.py tests/test_review_bridge.py`
-- **Resultado:** `All checks passed!`
-- **Outcome:** 0 errores, 0 warnings.
-
-### pytest (tests gobernantes + regresion)
-- **Comando:** `python -m pytest tests/test_review_bridge.py -q`
-- **Resultado:** `...................................................... [100%] 54 passed in 2.34s`
-- **Outcome:** 54 tests, 0 fallos, 0 regresiones.
-- **Tests de WT-2026-242a (TestTryFirstJsonTransport):** 4 passed:
-  1. `test_opencode_review_uses_json_when_executable_off_path`
-  2. `test_opencode_review_falls_back_without_json_on_unsupported_flag_error`
-  3. `test_opencode_review_degrades_textual_approve_to_inspect_after_fallback`
-  4. `test_opencode_review_does_not_fallback_on_generic_failure`
-
-### validate --json
-- **Comando:** `python .agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
-- **Resultado:**
-```json
-{
-  "errors": {},
-  "warnings": {}
-}
+def _is_bus_state_post_success(bus_state: object | None) -> bool:
+    """Check if bus-derived state is past IN_PROGRESS (orphan-safe territory)."""
+    if bus_state is None:
+        return False
+    return bus_state in POST_SUCCESS_STATES
 ```
-- **Outcome:** 0 errors, 0 warnings.
 
-## Ficheros modificados
-- `bus/review_bridge.py` - ruta try-first con `--format json` usando `manager_executable` real
-- `tests/test_review_bridge.py` - 4 tests gobernantes + correccion RUF059
+### 2. `_handle_mark_ready` (~line 2726) — stale_builder_round guard
 
+- Si stale round + bus state post-success → emite `STALE_BUILDER_ORPHAN`, return 0
+- Si stale round + IN_PROGRESS → emite `HANDOFF_BLOCKED`, return 1 (comportamiento original preservado)
 
-Manager approved canonical closeout for WT-2026-242a
+### 3. `_handle_pre_handoff` (~line 3650) — stale_builder_round guard
+
+- Si stale round + bus state post-success → emite `STALE_BUILDER_ORPHAN`, return `{"valid": True}`
+- Si stale round + IN_PROGRESS → emite `HANDOFF_BLOCKED` (comportamiento original preservado)
+
+## Tests
+
+### test_mark_ready_idempotency.py (6 tests nuevos + 3 pre-existentes reparados)
+
+1. `test_stale_builder_orphan_when_bus_state_is_ready_for_review`
+2. `test_stale_builder_orphan_when_bus_state_is_ready_to_close`
+3. `test_stale_builder_orphan_when_bus_state_is_human_gate`
+4. `test_stale_builder_orphan_when_bus_state_is_completed`
+5. `test_stale_builder_orphan_emits_with_correct_payload`
+6. `test_blocks_stale_builder_round_before_mark_ready` (pre-existing, mantiene HANDOFF_BLOCKED en IN_PROGRESS)
+7. 3 tests reparados: `assert_not_called()` → verificar ausencia de HANDOFF_BLOCKED/STALE_BUILDER_ORPHAN
+
+### test_agent_controller.py (3 tests nuevos)
+
+1. `test_pre_handoff_stale_builder_orphan_when_ready_for_review`
+2. `test_pre_handoff_stale_builder_orphan_when_completed`
+3. `test_pre_handoff_round_ok_passes_through`
+
+## Calidad
+
+| Gate | Resultado |
+|------|-----------|
+| `pytest tests/unit/test_mark_ready_idempotency.py tests/test_agent_controller.py -q` | 108 passed in 2.50s |
+| `ruff check .agent/agent_controller.py tests/unit/test_mark_ready_idempotency.py tests/test_agent_controller.py` | All checks passed! |
+| `validate --json --project-root ...` | 0 code errors. Pre-closeout warnings: work_plan.md status IN_PROGRESS, missing bus events (expected) |
+
+## Barrera de regresión
+
+**Sin fix (comportamiento roto previo):** un stale_builder_round con ticket en READY_FOR_REVIEW emitía HANDOFF_BLOCKED (código 1), bloqueando el flujo aunque no hubiera nada que bloquear.
+
+**Con fix:** el mismo escenario emite STALE_BUILDER_ORPHAN (código 0), no contamina el bus con HANDOFF_BLOCKED, y el flujo continúa.
+
+**Demostración binaria:** `test_stale_builder_orphan_when_bus_state_is_ready_for_review` verifica:
+```python
+mock_bus.emit.assert_called_once()  # ← STALE_BUILDER_ORPHAN
+# HANDOFF_BLOCKED NO se emite
+for call in mock_bus.emit.call_args_list:
+    assert call[0][0] != "HANDOFF_BLOCKED"
+```
+
+## Ficheros modificados (commit 18af1ad en repo_motor)
+
+- `../orquestador_de_agentes/.agent/agent_controller.py` (+124/-13)
+- `../orquestador_de_agentes/tests/unit/test_mark_ready_idempotency.py` (+203/-13)
+- `../orquestador_de_agentes/tests/test_agent_controller.py` (+144/-0)
+
+## Resumen del contrato
+
+| Evento | Condición | Exit code |
+|--------|-----------|-----------|
+| `HANDOFF_BLOCKED` | stale round + bus state IN_PROGRESS | 1 |
+| `STALE_BUILDER_ORPHAN` | stale round + bus state post-success | 0 |
+| No event (pass through) | round OK | normal flow |

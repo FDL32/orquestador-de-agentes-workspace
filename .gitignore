@@ -24,6 +24,7 @@ NUL
 
 # Codex / editor / runtime local
 .codex/
+.continue/
 .opencode/
 Microsoft/
 graphify-out/
