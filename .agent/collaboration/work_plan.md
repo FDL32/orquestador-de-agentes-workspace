@@ -5,7 +5,7 @@
 - **Title:** Contención para shells Builder huérfanas en stale_builder_round
 - **Scope:** system/stale-builder-orphan-containment
 - **Priority:** Alta
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **Asignado a:** BUILDER
 - **Depende de:** WT-2026-242a
