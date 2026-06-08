@@ -1,70 +1,65 @@
-# Execution Log WT-2026-237a
+# Execution Log WT-2026-238a
 
 **Estado:** COMPLETED
 
 ## Comandos Canonicos
-- Pytest focal: `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m pytest tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py -q`
-- Ruff focal: `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe -m ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py`
 - Validate: `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
 
 ## Preflight inicial
-- `WT-2026-236a` permanece cerrado como smoke/documentation ya aprobado.
-- `TURN.md` previo pide explicitamente `CREATE_PLAN` para el siguiente ciclo.
-- Se abre `WT-2026-237a` para separar codigo de `repo_motor` del smoke y darle
-  un review packet de ticket `code` limpio.
-- Scope inicial heredado del smoke: review bridge, closeout de non-code tickets,
-  proyecciones de estado, launcher PowerShell y tests de soporte.
+- `WT-2026-237a` queda tratado como ticket previo ya cerrado.
+- `WT-2026-238a` se activa como ticket documental/handoff.
+- El scope queda limitado a handoff, memoria pendiente y documentacion durable.
 
 ## Progreso
-- Fase 0: planificacion inicial del ticket creada en `work_plan.md`,
-  `PLAN_WT-2026-237a.md` y `AUDIT_WT-2026-237a.md`.
-- Pendiente: validate del nuevo paquete y bootstrap canonico del ticket cuando el
-  plan quede estable.
-- Review Manager real reintentada tras reautenticacion del backend. El transporte
-  fue `OK`, pero el bridge degrado la decision a `INSPECT` por `stderr` benigno
-  de migracion (`sqlite-migration:done`).
-- Blockers reales extraidos del review:
-  - `execution_log.md` lista comandos pero no resultados/exit codes reales de
-    `pytest`, `ruff` y `validate`;
-  - el review packet incluyo `.agent/runtime/memory/observations.jsonl` fuera de
-    `Files Likely Touched`;
-  - `bus/review_bridge.py` contiene un stub fail-open de `manager.md` cuando no
-    resuelve `motor_root`, considerado blocker arquitectonico para topologia real.
-- `TURN.md` materializado como ciclo `CHANGES` manual para que Builder no arranque
-  ciego mientras el bridge siga degradando reviews validas por `stderr` benigno.
-- Round Builder por chat:
-  - `pytest tests/test_manager_review_bridge.py -k "motor_root_is_unresolvable or uses_motor_root_and_project_dir or manager_agent_missing"`:
-    exit code `0`, `3 passed`, `125 deselected`.
-  - `pytest tests/test_manager_review_bridge.py -q`:
-    exit code `0`, `128 passed`.
-  - `ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py`:
-    exit code `0`, `All checks passed!`.
-  - `validate --json --project-root ...`:
-    no reejecutado en este round por fallo operativo del sandbox local
-    (`windows sandbox: spawn setup refresh`), sin evidencia nueva de salida.
-- Cambio aplicado en `repo_motor`:
-  - `bus/review_bridge.py`: eliminado el stub fail-open de `manager.md`; ahora
-    `_materialize_manager_agent_spec()` y `_run_opencode_review()` exigen
-    `motor_root` resoluble y ejecutan OpenCode con `cwd=motor_root`.
-  - `tests/test_manager_review_bridge.py`: nuevo test de fallo cerrado cuando
-    `motor_root` no es resoluble y ajuste de los tests legacy para construir una
-    topologia minima explicita `repo_motor + repo_destino`.
-- Estado del arbol `repo_motor` al cierre de este round:
-  - cambios productivos esperados en `bus/review_bridge.py` y
-    `tests/test_manager_review_bridge.py`;
-  - drift transitorio aun presente en `.opencode/opencode.json`, fuera de
-    `Files Likely Touched`, pendiente de restauracion antes de `pre-handoff`.
+- [x] Preflight: `WT-2026-237a` cerrado, memoria y docs durables ya promovidos.
+- [x] Memoria: sin gap real. Observaciones `obs-code-ticket-prehandoff-packaging`,
+  `obs-topology-stub-elevation`, `CL-10`, `CL-19` ya cubren aprendizajes.
+  `KNOWN_FAILURE_PATTERNS.md` FP-007 documenta stub-elevation blocker.
+  **Descarte justificado: no se promueven nuevas observaciones.**
+- [x] Handoff de sesion: registrado abajo.
+- [x] `validate --json` ejecutado sin errores.
 
-## Cierre Canónico (corregido 2026-06-08)
-### Quality Gates (reejecutados 2026-06-08)
-- `pytest tests/test_manager_review_bridge.py -q`: exit code `0`, `128 passed`.
-- `pytest tests/test_manager_review_bridge.py -k "motor_root_is_unresolvable or uses_motor_root_and_project_dir or manager_agent_missing" -q`: exit code `0`, `3 passed` (barrera de regresión).
-- `ruff check bus/review_bridge.py .agent/agent_controller.py scripts/state_projection_sync.py scripts/state_projection_probe.py tests/test_manager_review_bridge.py tests/test_agent_controller.py tests/test_launch_agent_terminals_script.py`: exit code `0`, `All checks passed!`.
-- `validate --json --project-root ...`: exit code `0`, `0 errors`, `0 warnings`.
+## Handoff de sesion
 
-### Corrección de estado canónico
-- `STATE.md` transicionado de `READY_FOR_REVIEW` a `COMPLETED`.
-- `TURN.md` transicionado de `MANAGER / REVIEW_WORK` a `MANAGER / CLOSE_TICKET`.
-- `execution_log.md` transicionado de `READY_FOR_REVIEW` a `COMPLETED`.
-- `work_plan.md` ya estaba en `COMPLETED` (confirmado).
-- El commit productivo del `repo_motor` incluye `WT-2026-237a` en sus mensajes (commits `9542ef0`, `21a300b`, `036291e`).
+**Generado:** 2026-06-08 (cierre WT-2026-238a)
+
+### Ultimo ticket cerrado
+- **WT-2026-237a** — Formalizar fixes de motor emergentes del smoke repo-compare
+  (code). Cierre canonico con cambios en `bus/review_bridge.py`,
+  `agent_controller.py`, `state_projection_sync.py`,
+  `state_projection_probe.py`, `launch_agent_terminals.ps1` y tests asociados.
+
+### Estado canonico actual
+- `repo_motor`: limpio, con commits de WT-2026-237a incluidos.
+- `repo_destino`: limpio, WT-2026-238a en cierre.
+- Suite global: `2231 passed, 22 skipped` (estabilizada en WT-2026-208).
+
+### Memoria/documentacion durable ya actualizada
+- `AGENTS.md` (repo_motor): contiene vocabulario canonico, reglas de topologia,
+  CEM v0, deliverable_type, quality gates dispatch, host-first skills, etc.
+- `docs/KNOWN_FAILURE_PATTERNS.md` (repo_motor): FP-007 stub-elevation blocker
+  documentado como patron verificado.
+- `REPOSITORY_STRUCTURE.md` (repo_motor): mapa del repositorio actualizado.
+- Observaciones en L1: `obs-code-ticket-prehandoff-packaging`,
+  `obs-topology-stub-elevation`, `CL-10`, `CL-19`.
+- **No se requieren nuevas promociones de memoria.**
+
+### Siguiente ticket recomendado
+El backlog sugiere estas opciones como proximo arranque:
+
+1. **WT-2026-217** (Alta) — Pre-check de packaging usa la ruta canonica de
+   transicion al emitir CHANGES. Completa la familia de estabilizacion del
+   review loop tras WT-2026-235a/237a.
+2. **WT-2026-206** (Media) — Scope gate y cierres manuales en workspace+motor.
+   Higiene post-bus-rediseno.
+3. **TBD - PYSEC-2026-196** (Media) — Retirar excepcion pip-audit cuando uv
+   resuelva pip 26.1.2. Depende de `uv lock --upgrade-package pip`.
+
+Cualquiera de ellos arranca con `repo_motor` y `repo_destino` en estado
+conocido y consistente. No es necesario reanalizar WT-2026-236a/237a.
+
+## Cierre Canonico
+- [x] `WT-2026-237a` confirmado como ticket previo cerrado.
+- [x] Memoria y documentacion durable revisadas.
+- [x] Handoff de sesion registrado.
+- [x] `validate --json` ejecutado sin errores.

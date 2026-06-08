@@ -4,6 +4,22 @@ Historial de este `repo_destino`. Entradas anteriores a 2026-06-03 corresponden
 al periodo en que este repo era parte de `z_scripts` (topologia anterior);
 se conservan como referencia historica.
 
+## 2026-06-08 - WT-2026-238a session closeout and WT-2026-239a follow-up
+
+### Changed
+
+- `WT-2026-238a` consolida el cierre documental y el handoff posterior a
+  `WT-2026-237a`.
+- Se registra explicitamente que no hacen falta nuevas promociones de memoria
+  al cierre de esta sesion.
+
+### Follow-up
+
+- `WT-2026-239a` queda registrado como siguiente trabajo para separar el
+  protocolo de cierre de tickets `documentation` frente a tickets `code`,
+  empezando por el bypass condicional de checkpoint/commit gates cuando el
+  deliverable no es codigo.
+
 ## 2026-06-03 - Migracion a topologia repo_motor / repo_destino
 
 ### Changed
@@ -1064,5 +1080,4 @@ Final closeout for `WP-2026-020` after verifying the stabilized `orquestacion_ag
 - Removed redundant `.session` snapshots and intermediate logs.
 - Archived closeout details in `.session/ARCHIVE_2026_04_29.md`.
 - Cleared runtime/cache debris from `orquestacion_agentes/` to keep the template copy-paste ready.
-
 

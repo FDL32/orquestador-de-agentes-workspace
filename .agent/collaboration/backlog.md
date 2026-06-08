@@ -84,12 +84,15 @@
 | Baja | WT-2026-233c | Coleccion aislada de test_manager_approve | system/testing-hygiene | completed | WT-2026-233b | session-2026-06-06-manager-test-isolation |
 | Media | WT-2026-234a | Cierre de sesion portable y cuarentena de artefactos con IDs de ticket | system/session-closeout-portability | completed | WT-2026-229a, WT-2026-233c | session-2026-06-06-portability-closeout |
 | Critica | WT-2026-235a | Manager review bridge: decisiones autoritativas y CHANGES con blockers | system/review-bridge-decision-contract | completed | WT-2026-204, WT-2026-234a | session-2026-06-07-review-bridge |
-| Media | WT-2026-236a | Smoke repo-compare con Orca y SOUL.md para validar flujo externo | system/research-devx | active | WT-2026-182, WT-2026-227a, WT-2026-235a | session-2026-06-07-repo-compare-smoke |
+| Media | WT-2026-236a | Smoke repo-compare con Orca y SOUL.md para validar flujo externo | system/research-devx | completed | WT-2026-182, WT-2026-227a, WT-2026-235a | session-2026-06-07-repo-compare-smoke |
+| Alta | WT-2026-237a | Formalizar fixes de motor emergentes del smoke repo-compare | system/review-closeout-hardening | completed | WT-2026-235a, WT-2026-236a | session-2026-06-07-repo-compare-followup |
+| Media | WT-2026-238a | Cierre de sesion y handoff documental post WT-2026-237a | system/session-closeout-hygiene | completed | WT-2026-237a | session-2026-06-08-handoff |
+| Alta | WT-2026-239a | Separar protocolo de cierre para tickets documentation vs code | system/documentation-closeout-protocol | backlog | WT-2026-238a | session-2026-06-08-doc-closeout-followup |
 
 ## WT-2026-236a - Smoke repo-compare con Orca y SOUL.md para validar flujo externo
 - **Prioridad:** Media
 - **Scope:** system/research-devx
-- **Estado:** active
+- **Estado:** completed
 - **Problema:** el protocolo `repo-compare` debe poder comparar un repo externo
   contra el contexto local, pero el preflight real ya mostro fricciones: MCP
   GitHub con credenciales invalidas, `gh` CLI sin auth, `.agent/runtime/audit/AUDIT.md`
@@ -102,6 +105,84 @@
   AUDIT/MCP/gh/Repomix documentado y validate final o blocker exacto.
 - **Depende de:** WT-2026-182, WT-2026-227a, WT-2026-235a.
 - **Origen:** session-2026-06-07-repo-compare-smoke.
+
+## WT-2026-237a - Formalizar fixes de motor emergentes del smoke repo-compare
+- **Prioridad:** Alta
+- **Scope:** system/review-closeout-hardening
+- **Estado:** active
+- **Problema:** `WT-2026-236a` era un ticket `documentation/research`, pero durante
+  el relanzamiento real del Builder/Manager obligo a tocar codigo productivo del
+  `repo_motor` para reparar flujo y observabilidad: proyecciones de estado,
+  closeout, bridge de review, resolucion del agente `manager` y clasificacion de
+  transporte NDJSON. El Manager ya reviso el trabajo y devolvio `CHANGES` legitimo
+  porque esos cambios de motor quedaron fuera de `Files Likely Touched` del smoke.
+- **Objetivo:** abrir un ticket de codigo limpio que absorba formalmente los fixes
+  de motor ya introducidos y cierre la deuda de alcance detectada por el review loop.
+  El ticket debe convertir un hotfix de sesion en entrega canonica evidence-linked,
+  con quality gates de codigo y review packet coherente.
+
+## WT-2026-238a - Cierre de sesion y handoff documental post WT-2026-237a
+- **Prioridad:** Media
+- **Scope:** system/session-closeout-hygiene
+- **Estado:** backlog
+- **Problema:** `WT-2026-237a` ya deja el sistema tecnico estabilizado, pero la
+  sesion acumulo aprendizajes repartidos entre memoria, documentacion durable,
+  prompts de auditoria y estado de handoff. Sin un cierre deliberado, el
+  siguiente chat arrancara con contexto util pero disperso.
+- **Objetivo:** consolidar el cierre de la sesion en un paquete ligero y
+  revisable: memoria ya promovida o descartada explicitamente, documentacion
+  durable alineada, y una nota de handoff que deje claro que sigue pendiente y
+  que ya quedo resuelto.
+- **Criterio:** el ticket debe terminar con:
+  - decision explicita sobre memoria pendiente (si hay nuevas observaciones o
+    si no hace falta promover nada mas);
+  - documentacion durable minima actualizada o descartes justificados;
+  - handoff corto y canonico para arrancar el siguiente chat sin reabrir
+    `WT-2026-237a`;
+  - `validate --json` del `repo_destino` sin errores.
+- **Depende de:** WT-2026-237a.
+- **Origen:** session-2026-06-08-handoff.
+
+## WT-2026-239a - Separar protocolo de cierre para tickets documentation vs code
+- **Prioridad:** Alta
+- **Scope:** system/documentation-closeout-protocol
+- **Estado:** backlog
+- **Problema:** el motor sigue cerrando tickets `documentation` con un protocolo
+  demasiado heredado de tickets `code`, lo que provoca `HANDOFF_BLOCKED` por
+  checkpoint, commit gates o pre-handoff no adecuados al deliverable real.
+- **Objetivo:** introducir una rama de cierre documental para que Builder,
+  Manager y Supervisor completen el ciclo sin exigir gates de codigo cuando
+  `deliverable_type=documentation`, empezando por un bypass condicional dentro
+  del pre-handoff existente.
+- **Criterio:** cierre completo Builder -> Manager -> Supervisor para un ticket
+  `documentation`, con tests de ciclo real y sin checkpoint/commit manual.
+- **Depende de:** WT-2026-238a.
+- **Origen:** session-2026-06-08-doc-closeout-followup.
+- **Entregas esperadas:**
+  - consolidar en el paquete del ticket los fixes ya hechos en `repo_motor` sobre
+    `bus/review_bridge.py`, `.agent/agent_controller.py`,
+    `scripts/state_projection_sync.py`, `scripts/state_projection_probe.py`,
+    `scripts/launch_agent_terminals.ps1` y tests asociados;
+  - registrar evidencia de `ruff` + `pytest` para los cambios de motor;
+  - documentar que `WT-2026-236a` queda como smoke/documentation con salida a
+    `HUMAN_GATE`, y que el codigo se formaliza aqui;
+  - decidir si el ticket debe incluir tambien el endurecimiento restante del bridge
+    cuando OpenCode emite `stderr` benigno de migracion antes de una `DECISION`
+    valida, o dejarlo como follow-up separado si no bloquea.
+- **Criterio:** el ticket queda listo cuando el review packet del Manager ya no
+  mezcle fixes de motor con un ticket documental; los cambios de `repo_motor`
+  estan cubiertos por `Files Likely Touched`, tienen evidencia de quality gates y
+  el closeout/review bridge pasan por la ruta canonica sin `transport_failed`
+  espurios ni dependencias ocultas del entorno.
+- **Dependencias:** WT-2026-235a, WT-2026-236a.
+- **Origen:** session-2026-06-07-repo-compare-followup.
+- **Notas de alcance inicial:**
+  - `state_projection_sync()` con rutas explicitas y formato canonico;
+  - `mark-ready` / `validate` sin drift cuando el supervisor no materializa;
+  - `non_code_ticket` sin exigir checkpoint de motor imposible por contrato;
+  - `_fail_closeout()` en todos los caminos de fallo relevantes;
+  - materializacion runtime de `.opencode/agents/manager.md` en `repo_destino`;
+  - clasificador de transporte que no confunda NDJSON del review con `auth_failed`.
 
 ## TBD - Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2
 - **Prioridad:** Media
