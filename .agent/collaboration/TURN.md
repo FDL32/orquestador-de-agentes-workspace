@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-08 12:10
+**Ultima actualizacion:** 2026-06-08 10:40:21
 
 ---
 
@@ -9,17 +9,15 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **MANAGER** |
-| **Plan ID** | WT-2026-239a |
-| **Tipo** | REVIEW |
-| **Accion** | REVIEW_CHANGES |
+| **Plan ID** | WT-2026-240a |
+| **Tipo** | IMPLEMENT |
+| **Accion** | REVIEW_WORK |
 
 ---
 
 ## Instruccion
 
-> WT-2026-239a revisado: CHANGES. Ticket no aprobado como COMPLETED.
-> El cierre queda documentado en MANAGER_REVIEW_WT-2026-239a.md.
-> No hay ticket siguiente activo todavia.
+> Builder completo WT-2026-240a. Revisa el trabajo.
 
 ---
 
@@ -28,10 +26,8 @@
 | Archivo | Estado |
 |---------|--------|
 | work_plan.md | APPROVED |
-| execution_log.md | BLOCKED |
-| MANAGER_REVIEW_WT-2026-239a.md | CHANGES |
-| STATE.md | CHANGES_REQUIRED |
+| execution_log.md | READY_FOR_REVIEW |
 
 ---
 
-*Cierre de revision aplicado para WT-2026-239a*
+*Preparado documentalmente para WT-2026-240a*
