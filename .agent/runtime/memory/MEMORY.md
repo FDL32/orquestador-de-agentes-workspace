@@ -1,8 +1,8 @@
 # MEMORY
 
-Regenerated: 2026-06-01T00:00:00Z
+Regenerated: 2026-06-09T00:00:00Z
 
-Total observations: 19
+Total observations: 20
 
 - Audit-Skeptical-Review (1 observations)
 - Audit-Closeout (1 observations)
@@ -22,6 +22,7 @@ Total observations: 19
 - Plan-Test-Path-Verification (1 observations)
 - Recovery-Idempotency (1 observations)
 - Runtime-Proof-For-Concurrency-Fixes (1 observations)
+- Session-Bootstrap-Audit-Snapshot (1 observations)
 - Scope-Gate-Path-Format (1 observations)
 
 ## audit-closeout
@@ -78,6 +79,9 @@ Total observations: 19
 ## runtime-proof-for-concurrency-fixes
 - For concurrency and cross-process fixes, green tests are necessary but not sufficient; confirm at least one real runtime cycle with bus evidence because scheduler timing can invalidate conclusions drawn from mocks alone.
 
+## session-bootstrap-audit-snapshot
+- In this repo_destino, a fresh `.agent/runtime/audit/AUDIT.md` is worth keeping after canonical closeout because the local session bootstrap can trust that snapshot first instead of reconstructing context from scattered collaboration files on every restart.
+
 ## scope-gate-path-format
 - Files Likely Touched must use the same path strings returned by git diff --name-only. Prefixing them with orquestador_de_agentes/ breaks the scope gate even when the correct file changed.
 
@@ -87,4 +91,4 @@ Total observations: 19
 
 No archive files yet.
 
-Stats: kept=19, deduped=0, dropped=0, archived=0
+Stats: kept=20, deduped=0, dropped=0, archived=0

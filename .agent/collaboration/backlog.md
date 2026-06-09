@@ -88,6 +88,7 @@
 | Alta | WT-2026-237a | Formalizar fixes de motor emergentes del smoke repo-compare | system/review-closeout-hardening | completed | WT-2026-235a, WT-2026-236a | session-2026-06-07-repo-compare-followup |
 | Media | WT-2026-238a | Cierre de sesion y handoff documental post WT-2026-237a | system/session-closeout-hygiene | completed | WT-2026-237a | session-2026-06-08-handoff |
 | Alta | WT-2026-239a | Separar protocolo de cierre para tickets documentation vs code | system/documentation-closeout-protocol | backlog | WT-2026-238a | session-2026-06-08-doc-closeout-followup |
+| Media | WT-2026-243a | Cierre de sesion documental, snapshot local y memoria de arranque | system/session-closeout-hygiene | backlog | WT-2026-242c | session-2026-06-09-closeout |
 
 ## WT-2026-236a - Smoke repo-compare con Orca y SOUL.md para validar flujo externo
 - **Prioridad:** Media
@@ -1035,3 +1036,24 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Sketch inicial:** identificar el cache compartido en untime.project_root, anadir fixture o helper de reset reutilizable para la familia afectada, y rerun de la suite para demostrar que 	est_project_root_resolution.py deja de variar por orden.
 - **Criterio:** 	ests/unit/test_project_root_resolution.py pasa tanto aislado como dentro de la suite global; la clasificacion como "contaminacion de suite" deja de ser necesaria.
 - **Depende de:** WT-2026-208.
+
+## WT-2026-243a - Cierre de sesion documental, snapshot local y memoria de arranque
+- **Prioridad:** Media
+- **Scope:** system/session-closeout-hygiene
+- **Estado:** backlog
+- **Problema:** tras el cierre tecnico de `WT-2026-242a/b/c`, el siguiente chat
+  todavia depende de leer artefactos dispersos para reconstruir contexto:
+  `PROJECT.md` estaba en placeholders, faltaba un `.agent/runtime/audit/AUDIT.md`
+  local y la memoria de `repo_destino` no registraba explicitamente el valor de
+  ese snapshot para arranques rapidos.
+- **Objetivo:** consolidar un paquete ligero de cierre de sesion en
+  `repo_destino`: documentacion durable actualizada, snapshot de auditoria
+  local, revision de versiones/SHAs recientes y mejora de memoria solo en wing
+  `project`.
+- **Criterio:**
+  - `PROJECT.md` y `CHANGELOG.md` actualizados con estado real;
+  - `.agent/runtime/audit/AUDIT.md` presente y fresco;
+  - memoria local con decision explicita y sin promover nada a `repo_motor`;
+  - `validate --json` del `repo_destino` sin errores ni warnings.
+- **Depende de:** WT-2026-242c.
+- **Origen:** session-2026-06-09-closeout.

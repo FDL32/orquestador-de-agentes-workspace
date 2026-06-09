@@ -4,6 +4,37 @@ Historial de este `repo_destino`. Entradas anteriores a 2026-06-03 corresponden
 al periodo en que este repo era parte de `z_scripts` (topologia anterior);
 se conservan como referencia historica.
 
+## 2026-06-09 - WT-2026-242x canonical closeout and session-close preparation
+
+### Changed
+
+- `WT-2026-242a`, `WT-2026-242b` y `WT-2026-242c` quedan consolidados en el
+  `repo_destino` con cierres documentales canonicos, `validate --json` limpio y
+  evidencia cruzada entre `repo_motor` y `repo_destino`.
+- `PROJECT.md` deja de estar en modo placeholder y pasa a describir el stack y
+  las reglas reales del dogfooding actual.
+- Se crea `.agent/runtime/audit/AUDIT.md` como snapshot local de arranque
+  rapido para futuros reinicios de sesion.
+
+### Reviewed
+
+- `repo_destino` HEAD de cierre: `ef4d476`
+- `repo_motor` HEAD funcional del ultimo ticket revisado:
+  `2308c2b` sobre la serie `8724013` + `10aef01`
+- No se requiere bump de version de distribucion en este `repo_destino`; la
+  sesion cierra cambios operativos/documentales, no una release de plantilla.
+
+### Memory
+
+- Se anade memoria local para recordar que este `repo_destino` debe mantener un
+  `AUDIT.md` fresco tras cierres canonicos, porque el bootstrap rapido de la
+  siguiente sesion depende de ese snapshot.
+
+### Follow-up
+
+- `WT-2026-243a` queda preparado en backlog como ticket documental de higiene
+  de cierre de sesion, memoria y handoff del siguiente ciclo.
+
 ## 2026-06-08 - WT-2026-238a session closeout and WT-2026-239a follow-up
 
 ### Changed
@@ -1080,4 +1111,3 @@ Final closeout for `WP-2026-020` after verifying the stabilized `orquestacion_ag
 - Removed redundant `.session` snapshots and intermediate logs.
 - Archived closeout details in `.session/ARCHIVE_2026_04_29.md`.
 - Cleared runtime/cache debris from `orquestacion_agentes/` to keep the template copy-paste ready.
-
