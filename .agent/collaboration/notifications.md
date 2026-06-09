@@ -2,13 +2,6 @@
 
 ---
 
-### MANAGER_REVIEW - 2026-06-06 14:46:25
-- **Plan ID:** WT-2026-234a
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
 ### MANAGER_REVIEW - 2026-06-07 00:47:32
 - **Plan ID:** WT-2026-234a
 - **Decision:** CHANGES
@@ -142,9 +135,9 @@
 
 ---
 
----
-
 ### MANAGER_REVIEW - 2026-06-08 17:37:49
 - **Plan ID:** WT-2026-242a
 - **Decision:** INSPECT
 - **Source:** manager backend exec review
+
+---
