@@ -30,6 +30,9 @@ activo.
 
 TP-04: `validate --json` del `repo_destino` queda sin errores.
 
+TP-05: el fix no introduce reconciliacion agresiva en `IN_PROGRESS` y mantiene
+el diagnostico anclado al gap confirmado.
+
 ## Veredicto Previo
 
 `APPROVED`

@@ -13,8 +13,28 @@ se conservan como referencia historica.
   evidencia cruzada entre `repo_motor` y `repo_destino`.
 - `PROJECT.md` deja de estar en modo placeholder y pasa a describir el stack y
   las reglas reales del dogfooding actual.
+- Se documenta el contrato operativo de tickets: todo plan nace en un ticket
+  `...a`; los tickets `...b`, `...c`, `...d` se reservan para particion de
+  planes largos o fixes posteriores al cierre del `...a`.
+- Se fija la regla de recovery: cuando el bus no cierra un ticket lanzado por
+  shell, primero se investiga la causa raiz, luego se cierra el `...a` por chat
+  y los fixes del bus/launcher se formalizan en tickets derivados tambien por
+  chat.
 - Se crea `.agent/runtime/audit/AUDIT.md` como snapshot local de arranque
   rapido para futuros reinicios de sesion.
+- Se reconcilia `.agent/collaboration/backlog.md` para que la tabla rapida y
+  las fichas largas no contradigan cierres ya registrados en este changelog.
+- Se retiran del backlog activo varios follow-ups historicos dejandolos como
+  `absorbed` y se da por completado `WT-2026-243a`, con criterio explicito de
+  reabrir solo si aparece evidencia fresca.
+- `WT-2026-213` y la idea `BUILDER_STARTED liveness` tambien se retiran del
+  backlog activo: el primero queda clasificado como ruido semantico sin impacto
+  operativo confirmado, y la segunda como idea ya cubierta por tickets de
+  liveness/relaunch posteriores.
+- La tabla rapida del backlog tambien se sanea para retirar `WT-2026-198` y
+  `WT-2026-200` como trabajo activo: el primero queda absorbido por cierres
+  posteriores del frente de instalacion, y el segundo por el hardening ya
+  consolidado en `WT-2026-201`.
 
 ### Reviewed
 
@@ -29,6 +49,8 @@ se conservan como referencia historica.
 - Se anade memoria local para recordar que este `repo_destino` debe mantener un
   `AUDIT.md` fresco tras cierres canonicos, porque el bootstrap rapido de la
   siguiente sesion depende de ese snapshot.
+- Se consolida como regla durable que no conviene arreglar un bus averiado a
+  traves del propio bus; la remediacion estable sale a tickets derivados.
 
 ### Follow-up
 

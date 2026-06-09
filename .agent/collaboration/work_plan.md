@@ -1,74 +1,103 @@
-# Work Ticket - WT-2026-242c
+# Work Ticket - WT-2026-244a
 
 ## Metadata
-- **ID:** WT-2026-242c
-- **Title:** Diagnosticar gap real de detección de Builders huérfanas y endurecer contrato de identidad
-- **Scope:** system/orphan-builder-detection
+- **ID:** WT-2026-244a
+- **Title:** Formalizar policy de mergeabilidad y review inspirada por FrontierCode
+- **Scope:** system/review-quality-policy
 - **Priority:** Alta
-- **Estado:** COMPLETED
-- **deliverable_type:** code
+- **Estado:** APPROVED
+- **deliverable_type:** documentation
 - **Asignado a:** BUILDER
-- **Depende de:** WT-2026-242a, WT-2026-242b
+- **Depende de:** WT-2026-243a
 
 ## Objetivo
-Diagnosticar el gap real de detección de Builders huérfanas en launcher y endurecer el contrato de identidad solo con evidencia confirmada.
-El objetivo se considera cumplido cuando:
-- `python -m pytest tests/unit/test_launcher_powershell_syntax.py -q` termina en verde.
-- `python -m ruff check scripts/diagnose_builder_orphans.py tests/unit/test_launcher_powershell_syntax.py` termina sin errores.
-- `python .agent/agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` devuelve `errors: {}`.
+Convertir `AUDIT_FRONTIERCODE_LEARNINGS.md` en politica operativa local para
+Builder y Manager, sin introducir un gate nuevo ni tocar codigo productivo. El
+ticket se considera cumplido cuando:
+- `PROJECT.md` anade una seccion durable que dice explicitamente que
+  `APROBADO` exige `validate --json` con `0 errors` y `0 warnings
+  estructurales`, y que la implementacion correcta es `allowlist ->
+  endurecer gate`.
+- `AGENTS.md` anade una regla builder-facing con la etiqueta literal
+  `[NON-REVERSE-CLASSICAL: <razon breve>]` para tests de contrato o cobertura
+  cuando no aplique reverse-classical.
+- `PROJECT.md` o `AGENTS.md` definen `BLOCKERS` con al menos estos casos:
+  errores en `validate --json`, bugfix sin evidencia suficiente del bug o sin
+  etiqueta `[NON-REVERSE-CLASSICAL: ...]`, y `scope creep`. Tambien definen
+  `NITS` con al menos estos casos: legibilidad, refactors no necesarios y
+  mejoras de estilo no bloqueantes.
+- `PROJECT.md` o `AGENTS.md` reconocen explicitamente `Files Likely Touched`,
+  `non-goals` y la regla "seguir patrones existentes del codebase o justificar
+  cualquier patron nuevo" como parte del criterio de mergeabilidad.
+- El diff queda limitado a `PROJECT.md`, `AGENTS.md` y
+  `.agent/collaboration/AUDIT_FRONTIERCODE_LEARNINGS.md`.
+- `validate --json` del `repo_destino` termina con `errors: {}`.
 
 ## Contexto verificado
-- `Stop-ProjectBuilderProcesses` usa `Win32_Process.CommandLine` con patrones
-  `AGENT_BUILDER_TICKET` y `AGENT_BUILDER_ROUND` que son dead code: las env
-  vars nunca aparecen en CommandLine.
-- WT-2026-242b implemento `STALE_BUILDER_ORPHAN` en `agent_controller.py` para
-  contener shells huérfanas en la ruta mark-ready/pre-handoff.
-- Este ticket trabaja en el launcher (launcher-side), no en el controller.
+- `AUDIT_FRONTIERCODE_LEARNINGS.md` ya consolida los aprendizajes de
+  FrontierCode y rondas sucesivas de auditoria esceptica.
+- El riesgo principal no es "falta de benchmark", sino dejar la politica en
+  terminos abstractos o duplicar gates ya existentes.
+- El sistema ya tiene barreras parciales equivalentes a `scope discipline`
+  (`Files Likely Touched`, `non-goals`, review de diff) que deben reconocerse y
+  mantenerse como barreras auditables, no reemplazarse.
 
 ## Contrato
-- Gap confirmado con evidencia reproducible.
-- Limpieza de código muerto en `Stop-ProjectBuilderProcesses`.
-- Identidad enriquecida en `builder_lock.txt`: `pid + round + ticket_id + project_root + started_at`.
-- Script de diagnóstico `scripts/diagnose_builder_orphans.py`.
-- Tests que fijan el contrato de limpieza y diagnóstico.
+- Ticket documental puro: no tocar codigo productivo ni schemas del bus.
+- Convertir en regla explicita el gate de cierre existente (`validate --json`
+  con `0 errors` y `0 warnings estructurales`); no inventar un "mergeability
+  gate" nuevo.
+- Reverse-classical solo para bugfixes; tests de contrato o cobertura nueva
+  requieren justificacion trazable.
+- La politica debe distinguir `BLOCKERS` de `NITS`.
+- La politica debe dejar claro que la implementacion correcta es:
+  `allowlist de warnings no bloqueantes -> gate 0 warnings estructurales`.
+- La politica debe vivir unicamente en `PROJECT.md`, `AGENTS.md` y, si hace
+  falta, ajustes menores del audit consolidado.
 
 ## Files Likely Touched
-- `scripts/launch_agent_terminals.ps1`
-- `scripts/diagnose_builder_orphans.py`
-- `tests/unit/test_launcher_powershell_syntax.py`
+- `PROJECT.md`
+- `AGENTS.md`
 
 ## Non-goals
-- No tocar `.agent/agent_controller.py` (WT-2026-242b ya lo modifico).
-- No cambiar la lógica de `STALE_BUILDER_ORPHAN` (eso es de WT-2026-242b).
-- No añadir kills nuevos en caliente sin confirmar el gap.
+- No cambiar `validate --json` en este ticket.
+- No tocar `agent_controller.py`, `review_bridge.py` ni tests del motor.
+- No introducir severidades complejas si una allowlist corta basta.
+- No acortar `work_plan.md` por decreto.
 
 ## Quality Gates
 ```powershell
-python -m pytest tests/unit/test_launcher_powershell_syntax.py -q
-python -m ruff check scripts/diagnose_builder_orphans.py tests/unit/test_launcher_powershell_syntax.py
-python .agent/agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
+C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.venv\Scripts\python.exe C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\agent_controller.py --validate --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 ```
 
 ## Decision Arquitectonica
 
-**Problema:** `Stop-ProjectBuilderProcesses` usaba patrones `AGENT_BUILDER_TICKET` y
-`AGENT_BUILDER_ROUND` contra `Win32_Process.CommandLine`. Las env vars nunca aparecen
-en CommandLine, por lo que esos patrones eran dead code.
+**Problema:** El audit sobre FrontierCode ya destilo una politica plausible,
+pero todavia vive como analisis, no como contrato operativo builder-facing.
 
-**Decision:** Eliminar los patrones env-var y confiar exclusivamente en patrones CLI-arg
-(`opencode.*run.*--agent\s+builder`). Para compensar la perdida de senyal de identidad,
-enriquecer `builder_lock.txt` con `pid + round + ticket_id + project_root + started_at`
-como contrato de correlacion entre procesos y tickets.
+**Decision:** Formalizar primero la politica en documentacion local del
+`repo_destino`, usando `PROJECT.md` y `AGENTS.md` como superficies durables.
+La politica debe endurecer lo existente (`validate --json`, review packet,
+scope discipline) sin crear un gate paralelo.
 
-**Alternativa descartada:** Inyectar env vars en el proceso hijo via `Start-Process -Environment`.
-Se descarto porque el PID del lock ya permite correlacion via WMI sin contaminar el
-CommandLine, y porque modificar el entorno de lanzamiento tendria efectos secundarios
-en la sesion del agente.
+**Alternativa descartada:** implementar de inmediato un cambio de codigo en
+`validate --json` o un sistema de severidades completo. Se descarta porque el
+audit concluye que primero hace falta fijar la politica, la allowlist y la
+distincion entre warnings estructurales y advisories.
 
-**Impacto:** El script `diagnose_builder_orphans.py` usa el lock enriquecido para
-detectar gaps (PID en lock pero sin proceso vivo), y `Read-BuilderLockState` en el
-launcher parsea el JSON enriquecido manteniendo compatibilidad con formato legacy.
-- `tests/unit/test_launcher_powershell_syntax.py`: tests concretos para fijar la limpieza del codigo muerto en `Stop-ProjectBuilderProcesses`, la identidad enriquecida del lock y el contrato del launcher bajo `Set-StrictMode`.
-- `scripts/diagnose_builder_orphans.py`: script ejecutable y verificable que materializa el diagnostico del gap `CommandLine` vs env vars con salida reproducible.
-- `validate --json`: comprobacion final de que el ajuste documental y operativo no introduce errores estructurales en `repo_destino`.
+**Impacto:** Builder y Manager tendran una regla explicita y auditable sobre:
+- cuando `validate --json` bloquea el cierre;
+- cuando reverse-classical aplica y cuando debe dejarse la etiqueta
+  `[NON-REVERSE-CLASSICAL: ...]`;
+- como se separan `BLOCKERS` y `NITS`;
+- como `Files Likely Touched`, `non-goals` y convenciones del codebase cuentan
+  como mergeabilidad.
 
+## Nota de artefactos
+
+- `AUDIT_FRONTIERCODE_LEARNINGS.md` vive en `repo_destino` y actua como
+  referencia argumental, no como entregable principal del diff del
+  `repo_motor`.
+- Builder puede citarlo o ajustarlo si hace falta para coherencia documental,
+  pero el entregable gobernante del ticket es la policy formalizada en
+  `PROJECT.md` y `AGENTS.md`.

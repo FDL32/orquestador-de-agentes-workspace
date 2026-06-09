@@ -3,6 +3,15 @@
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
 > Al arrancar un item, se convierte en `work_plan.md`; al cerrarlo, pasa a `CHANGELOG.md`.
+> Auditoria 2026-06-09: la tabla "Vista rapida" y las fichas largas se
+> reconciliaron contra `CHANGELOG.md`; las fichas conservan contexto historico,
+> pero su campo `Estado` no debe contradecir el resumen.
+> En esta pasada, `absorbed` tambien cubre follow-ups retirados del backlog
+> activo por limpieza documental: no estan pendientes y solo deben reabrirse si
+> aparece evidencia nueva.
+> Cuando una fila historica no tiene ficha larga propia y un ticket posterior ya
+> absorbio su alcance, la tabla rapida se toma como autoridad suficiente para
+> cerrarla documentalmente.
 
 ## Politica
 - **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` â€” repo destino real que sirve para desarrollar el motor.
@@ -20,18 +29,18 @@
 | Media | WP-2026-178 | L2/L3 memory rules + memory_loader.py | system/meta | completed | WP-2026-177 | memory-design |
 | Media | WP-2026-179 | Namespaces wing + instalador scope-aware | system/meta | completed | WP-2026-178 | memory-design |
 | Media | WP-2026-180 | Persistencia sesion Builder --session OpenCode | system | completed | WP-2026-178 | session-2026-05-30 |
-| Baja | TBD | guard_paths: proteger archivos de estado del workspace | system | backlog | WT-2026-182 | session-2026-05-30 |
-| Baja | TBD | BUILDER_STARTED liveness | system | idea | - | session-2026-05-29 |
-| Baja | TBD | Flag manual --reset-circuit-breaker | system | backlog | - | CB-RESET-01 |
+| Baja | TBD | guard_paths: proteger archivos de estado del workspace | system | absorbed | WT-2026-182 | session-2026-05-30 |
+| Baja | TBD | BUILDER_STARTED liveness | system | absorbed | - | session-2026-05-29 |
+| Baja | TBD | Flag manual --reset-circuit-breaker | system | absorbed | - | CB-RESET-01 |
 | Media | WT-2026-182 | Integracion Repomix para Contexto y Repo-Compare | system/skills | completed | - | session-2026-05-30 |
 | Alta | WT-2026-183 | Resiliencia ante Supervisor muerto en CHANGES | system/bus | completed | WT-2026-182 | session-2026-05-30 |
 | Baja | WT-2026-181 | Migracion nomenclatura WP->WT + Plan como epica | system/meta | completed | WP-2026-179 | session-2026-05-30 |
 | Media | WT-2026-184 | Scaffold de PROJECT.md para repositorios destino | system/templates | completed | WT-2026-183 | session-2026-05-30 |
 | Media | WT-2026-185 | Knowledge Layer: Glosario + Microagent + skill_resolver | system/knowledge | completed | WT-2026-184 | session-2026-05-31 |
 | Alta | WT-2026-186 | Idempotencia del instalador y contrato de rutas gestionadas | system/install | completed | WT-2026-185 | session-2026-05-31-audit |
-| Alta | WT-2026-198 | Idempotencia del instalador y contrato de rutas gestionadas | system/install | active | WT-2026-185 | session-2026-06-01-reopen |
+| Alta | WT-2026-198 | Idempotencia del instalador y contrato de rutas gestionadas | system/install | absorbed | WT-2026-185 | session-2026-06-01-reopen |
 | Critica | WT-2026-199 | Claim atomico de requeue y verificacion de Builder vivo | system/supervisor | completed | WT-2026-198 | session-2026-06-01-hotfix |
-| Alta | WT-2026-200 | Launcher/supervisor: resume sin supervisor fresco | system/launcher | paused | WT-2026-199 | session-2026-06-01-followup |
+| Alta | WT-2026-200 | Launcher/supervisor: resume sin supervisor fresco | system/launcher | absorbed | WT-2026-199 | session-2026-06-01-followup |
 | Media | WT-2026-201 | Hardening runtime del launcher tras WT-2026-200 | system/launcher | completed | WT-2026-200 | session-2026-06-01-followup |
 | Alta | WT-2026-187 | Portabilidad Modelo B y limpieza legacy | system/portability | completed | WT-2026-186 | session-2026-05-31-audit |
 | Media | WT-2026-188 | Modularizacion progresiva de agent_controller.py | system/architecture | completed | WT-2026-187 | session-2026-05-31-audit |
@@ -52,24 +61,24 @@
 | Alta | WT-2026-214 | Protocolo de forced close: reconciliacion automatica del ticket anterior en preflight | system/preflight-reconcile | completed | WT-2026-210, WT-2026-216 | session-2026-06-02-preflight-reconcile |
 | Alta | WT-2026-216 | Launcher lee el bus en vez de TURN.md para decidir que agente lanzar | system/launcher-bus-read | completed | WT-2026-211 | session-2026-06-02-launcher-bus-read |
 | Alta | WT-2026-215 | Gates Modelo B: operaciones git de tooling resuelven motor_root | system/gates-motor-root | completed | WT-2026-210 | session-2026-06-02-bridge-diff |
-| Alta | WT-2026-217 | Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES | system/bus-transition | backlog | WT-2026-210 | session-2026-06-02-precheck-transition |
-| Baja | WT-2026-213 | Eliminar el doble STATE_CHANGED de --mark-ready | system/bus-events | backlog | WT-2026-210 | session-2026-06-02-bus-audit |
-| Media | WT-2026-206 | Scope gate y cierres manuales en workspace+motor | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-followup |
-| Media | WT-2026-207 | Gobernanza de collaboration legacy en el motor durante session-close | system/hygiene | backlog | WT-2026-211 | session-2026-06-02-closeout |
+| Alta | WT-2026-217 | Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES | system/bus-transition | absorbed | WT-2026-210 | session-2026-06-02-precheck-transition |
+| Baja | WT-2026-213 | Eliminar el doble STATE_CHANGED de --mark-ready | system/bus-events | absorbed | WT-2026-210 | session-2026-06-02-bus-audit |
+| Media | WT-2026-206 | Scope gate y cierres manuales en workspace+motor | system/hygiene | absorbed | WT-2026-211 | session-2026-06-02-followup |
+| Media | WT-2026-207 | Gobernanza de collaboration legacy en el motor durante session-close | system/hygiene | absorbed | WT-2026-211 | session-2026-06-02-closeout |
 | Alta | WT-2026-208 | Estabilizacion de suite global tras transicion workspace+motor | system/testing | completed | WT-2026-211 | session-2026-06-02-suite |
 | Media | TBD | Alinear tests legacy de pre-handoff con auto-commit motor-aware | system/testing-hygiene | absorbed | WT-2026-208 | session-2026-06-06-suite-baseline |
 | Baja | WT-2026-209 | Sustituir nomenclatura Modelo B por estandar workspace+motor | system/docs | absorbed | WT-2026-232a | session-2026-06-02-terminology |
-| Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | backlog | WT-2026-182 | session-2026-05-31 |
-| Media | TBD | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2 | system/security-dependencies | backlog | - | session-2026-06-07-security-followup |
-| Media | TBD | Renombrar en sitio 8 tests historicos del motor a nombres funcionales estables | system/testing-hygiene | backlog | WT-2026-215 | session-2026-06-05-portability |
-| Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | backlog | - | session-2026-06-02-memory-bootstrap |
-| Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | backlog | WT-2026-218 | session-2026-06-02-memory-bootstrap |
-| Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | backlog | WT-2026-219 | session-2026-06-02-memory-bootstrap |
+| Baja | TBD | Repomix falla en Windows por permisos Node.js/globby | system/devx | absorbed | WT-2026-182 | session-2026-05-31 |
+| Media | TBD | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2 | system/security-dependencies | absorbed | - | session-2026-06-07-security-followup |
+| Media | TBD | Renombrar en sitio 8 tests historicos del motor a nombres funcionales estables | system/testing-hygiene | absorbed | WT-2026-215 | session-2026-06-05-portability |
+| Media | WT-2026-218 | Regenerar y commitear memory_rules.md en el motor | system/memory | absorbed | - | session-2026-06-02-memory-bootstrap |
+| Media | WT-2026-219 | Bootstrap de memoria garantizado en destinos nuevos | system/memory | absorbed | WT-2026-218 | session-2026-06-02-memory-bootstrap |
+| Media | WT-2026-220 | Flujo de promocion upstream de memoria para dogfooding | system/memory | absorbed | WT-2026-219 | session-2026-06-02-memory-bootstrap |
 | Alta | WT-2026-221a | Relaunch CEM: root verificado y capsula evidence-linked para Builder | system/agent-launch | completed | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Alta | WT-2026-221b | Manager evidence gate: rechazar review sin bus activo y evidencia minima | system/review-gates | completed | WT-2026-208 | session-2026-06-03-builder-autonomy |
-| Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | backlog | WT-2026-208 | session-2026-06-03-builder-autonomy |
+| Media | WT-2026-221c | Scope watch temprano contra Files Likely Touched | system/scope-gate | absorbed | WT-2026-208 | session-2026-06-03-builder-autonomy |
 | Media | WT-2026-222 | Higiene de suite: reset determinista del cache de project_root entre tests | system/testing-hygiene | completed | WT-2026-208 | session-2026-06-03-suite-hygiene |
-| Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | backlog | WT-2026-221a | session-2026-06-04-plan-grammar |
+| Alta | WT-2026-223a | Parser central de ticket IDs y contrato de nomenclatura | system/ticket-naming | absorbed | WT-2026-221a | session-2026-06-04-plan-grammar |
 | Alta | WT-2026-224a | Supervisor relaunch guard: no spawnear round nuevo con Builder vivo | system/supervisor-relaunch | completed | WT-2026-221a, WT-2026-221b | session-2026-06-04-overlap-guard |
 | Alta | WT-2026-225a | Durable projection catch-up cuando el bus va por delante | system/projection-reconcile | completed | WT-2026-214, WT-2026-216, WT-2026-224a | session-2026-06-04-projection-catchup |
 | Alta | WT-2026-226a | Unificar evidence seam entre mark-ready y review packet | system/evidence-packaging | completed | WT-2026-221b, WT-2026-225a | session-2026-06-04-evidence-seam |
@@ -87,8 +96,9 @@
 | Media | WT-2026-236a | Smoke repo-compare con Orca y SOUL.md para validar flujo externo | system/research-devx | completed | WT-2026-182, WT-2026-227a, WT-2026-235a | session-2026-06-07-repo-compare-smoke |
 | Alta | WT-2026-237a | Formalizar fixes de motor emergentes del smoke repo-compare | system/review-closeout-hardening | completed | WT-2026-235a, WT-2026-236a | session-2026-06-07-repo-compare-followup |
 | Media | WT-2026-238a | Cierre de sesion y handoff documental post WT-2026-237a | system/session-closeout-hygiene | completed | WT-2026-237a | session-2026-06-08-handoff |
-| Alta | WT-2026-239a | Separar protocolo de cierre para tickets documentation vs code | system/documentation-closeout-protocol | backlog | WT-2026-238a | session-2026-06-08-doc-closeout-followup |
-| Media | WT-2026-243a | Cierre de sesion documental, snapshot local y memoria de arranque | system/session-closeout-hygiene | backlog | WT-2026-242c | session-2026-06-09-closeout |
+| Alta | WT-2026-239a | Separar protocolo de cierre para tickets documentation vs code | system/documentation-closeout-protocol | absorbed | WT-2026-238a | session-2026-06-08-doc-closeout-followup |
+| Media | WT-2026-243a | Cierre de sesion documental, snapshot local y memoria de arranque | system/session-closeout-hygiene | completed | WT-2026-242c | session-2026-06-09-closeout |
+| Alta | WT-2026-244a | Formalizar policy de mergeabilidad y review inspirada por FrontierCode | system/review-quality-policy | active | WT-2026-243a | session-2026-06-09-frontiercode |
 
 ## WT-2026-236a - Smoke repo-compare con Orca y SOUL.md para validar flujo externo
 - **Prioridad:** Media
@@ -110,7 +120,7 @@
 ## WT-2026-237a - Formalizar fixes de motor emergentes del smoke repo-compare
 - **Prioridad:** Alta
 - **Scope:** system/review-closeout-hardening
-- **Estado:** active
+- **Estado:** completed
 - **Problema:** `WT-2026-236a` era un ticket `documentation/research`, pero durante
   el relanzamiento real del Builder/Manager obligo a tocar codigo productivo del
   `repo_motor` para reparar flujo y observabilidad: proyecciones de estado,
@@ -125,7 +135,7 @@
 ## WT-2026-238a - Cierre de sesion y handoff documental post WT-2026-237a
 - **Prioridad:** Media
 - **Scope:** system/session-closeout-hygiene
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** `WT-2026-237a` ya deja el sistema tecnico estabilizado, pero la
   sesion acumulo aprendizajes repartidos entre memoria, documentacion durable,
   prompts de auditoria y estado de handoff. Sin un cierre deliberado, el
@@ -147,7 +157,10 @@
 ## WT-2026-239a - Separar protocolo de cierre para tickets documentation vs code
 - **Prioridad:** Alta
 - **Scope:** system/documentation-closeout-protocol
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo en
+  `repo_destino`. Reabrir solo si reaparece evidencia fresca de que el cierre
+  documental sigue rompiendo el ciclo canonico.
 - **Problema:** el motor sigue cerrando tickets `documentation` con un protocolo
   demasiado heredado de tickets `code`, lo que provoca `HANDOFF_BLOCKED` por
   checkpoint, commit gates o pre-handoff no adecuados al deliverable real.
@@ -188,7 +201,10 @@
 ## TBD - Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip 26.1.2
 - **Prioridad:** Media
 - **Scope:** system/security-dependencies
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** deuda retirada del backlog activo de
+  `repo_destino`; si vuelve a ser prioritaria, debe reaparecer con evidencia
+  nueva desde `repo_motor` y el resolver real de `uv`.
 - **Problema:** `repo_motor` ignora temporalmente `PYSEC-2026-196` en
   `[tool.pip-audit].ignore-vuln` porque el fix existe en `pip 26.1.2`, pero
   `uv` aun resolvia `pip 26.1.1` en este entorno al cerrar `WT-2026-235a`.
@@ -248,7 +264,7 @@
 ## WT-2026-235a - Manager review bridge: decisiones autoritativas y CHANGES con blockers
 - **Prioridad:** Critica
 - **Scope:** system/review-bridge-decision-contract
-- **Estado:** active
+- **Estado:** completed
 - **Problema:** el fallback `text_regex` de `review_bridge.py` puede capturar
   `DECISION: APPROVE/CHANGES` desde plantillas reflejadas del transcript, y
   `CHANGES` puede emitirse con blockers vacios. Eso provoca requeue ciego o,
@@ -425,7 +441,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-217 - Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES
 - **Prioridad:** Alta
 - **Scope:** system/bus-transition
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo tras la
+  estabilizacion posterior del bus; reabrir solo con reproduccion nueva.
 - **Problema:** cuando el pre-check de packaging del review bridge rechaza un paquete (diff vacio), emite `REVIEW_DECISION=CHANGES` pero NO completa la transicion canonica de estado: no emite `STATE_CHANGED -> IN_PROGRESS`. El ticket queda en `READY_FOR_REVIEW` en el bus con un CHANGES colgante, y el supervisor no puede reencolar (READY_FOR_REVIEW esta en `RELAUNCH_BLOCKED_STATES`). Resultado: sistema atascado que requiere cirugia manual del bus. Verificado en esta sesion (`WT-2026-214`): hubo que emitir `STATE_CHANGED -> IN_PROGRESS` a mano y reiniciar el supervisor para destrabar.
 - **Distincion respecto a WT-2026-215:** son bugs independientes. `WT-2026-215` ataca la *causa* del rechazo falso (git en `cwd` equivocado -> diff vacio falso). Este ataca el *hazard de stall*: aunque el diff vacio sea legitimo (Builder que de verdad no commitea), el camino CHANGES del pre-check deja el supervisor colgado. Arreglar `WT-2026-215` reduce la frecuencia del trigger; este elimina el stall cuando el trigger es legitimo.
 - **Causa raiz:** el camino CHANGES del pre-check se salta la ruta canonica de transicion. El CHANGES normal del Manager llama a `--request-changes`, que emite `STATE_CHANGED -> IN_PROGRESS` (o HUMAN_GATE) y luego `_ensure_durable_changes_consumer` (`WT-2026-212`). El pre-check emite el `REVIEW_DECISION` directamente sin pasar por esa maquinaria.
@@ -437,7 +455,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-223a - Parser central de ticket IDs y contrato de nomenclatura
 - **Prioridad:** Alta
 - **Scope:** system/ticket-naming
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo; la
+  deuda solo vuelve si aparece otro incidente real de parsing o autoridad de
+  ticket.
 - **Problema:** la nomenclatura de tickets y planes sigue repartida en regex locales y comparadores ad hoc. El incidente real de `WT-2026-221a` lo hizo visible: `_ticket_sort_key()` no interpretaba bien sufijos alfanumericos y permitia que un ticket historico menor ganara autoridad en el relaunch. Si el sistema adopta tickets nuevos con sufijo obligatorio (`...a`, `...b`, `...c`), mantener regex dispersas volvera a abrir puntos ciegos en controller, supervisor, session tracking y tests.
 - **Decision de contrato:** todo ticket nuevo usa sufijo alfabetico obligatorio y empieza en `a`; el plan usa `PLAN-YYYY-NNN` sin sufijo. Ejemplos canonicos: `PLAN-2026-223`, `WT-2026-223a`, `WT-2026-223b`.
 - **Compatibilidad:** lectura legacy permisiva para historico existente sin sufijo (`WT-2026-208`), pero escritura/estado activo en modo estricto para tickets nuevos.
@@ -463,13 +484,31 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-213 - Eliminar el doble STATE_CHANGED de --mark-ready
 - **Prioridad:** Baja
 - **Scope:** system/bus-events
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** retirado del backlog activo porque el doble
+  `STATE_CHANGED` quedo como ruido semantico sin impacto operativo confirmado.
+  Reabrir solo si aparece evidencia nueva de que rompe consumidores del bus o
+  complica un flujo canonico real.
 - **Problema:** `--mark-ready` emite dos eventos `STATE_CHANGED` consecutivos para la misma transicion a `READY_FOR_REVIEW`. Es idempotente en efecto practico (el estado derivado es el mismo), pero ensucia el bus y complica auditorias y cualquier consumidor que asuma unicidad de eventos de transicion.
 - **Impacto:** ruido semantico, no fallo operativo. Ningun stall ni drift conocido atribuible a esto. Por eso Baja.
 - **Sketch:** identificar los dos emisores en el camino de `--mark-ready` (controller + sync de targets) y dejar una sola emision canonica. Verificar contra `bus/state_machine.py` que no se rompa la derivacion.
 - **Tests requeridos:** `--mark-ready` emite exactamente un `STATE_CHANGED -> READY_FOR_REVIEW`; estado derivado intacto; idempotencia de re-ejecucion preservada.
 - **Criterio:** una sola transicion canonica por `--mark-ready`; bus sin evento duplicado.
 - **Depende de:** WT-2026-210.
+
+## TBD - BUILDER_STARTED liveness
+- **Prioridad:** Baja
+- **Scope:** system
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** idea retirada del backlog activo. La liveness
+  relevante quedo cubierta por tickets posteriores sobre claim atomico,
+  verificacion de Builder vivo, relaunch guard y supervisor liveness
+  (`WT-2026-199`, `WT-2026-205`, `WT-2026-221a`, `WT-2026-224a`).
+- **Problema historico:** se barajo introducir una senal explicita tipo
+  `BUILDER_STARTED` para reforzar la observabilidad de arranque.
+- **Decision documental:** no abrir trabajo nuevo solo por esta idea mientras no
+  exista una reproduccion actual donde las senales ya existentes resulten
+  insuficientes.
 
 ## WP-2026-176 - Implantar Modelo B workspace/code-only
 - **Prioridad:** Alta
@@ -511,7 +550,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## TBD - guard_paths: proteger archivos de estado del workspace
 - **Prioridad:** Baja
 - **Scope:** system
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** deuda retirada del backlog activo por higiene
+  documental; reabrir solo si reaparece riesgo operativo real en guardado.
 - **Problema:** `guard_paths.py` usa patrones de seguridad (privada, .env) pero no protege archivos de estado del workspace (work_plan.md, execution_log.md). En Modelo B, si el cwd es el motor, el guard no "ve" el workspace â€” work_plan.md puede sobreescribirse accidentalmente. Incidente: WP-2026-178 pisÃ³ WT-2026-182 en sesiÃ³n 2026-05-30.
 - **Sketch:** aÃ±adir a `guard_paths.py` una lista de archivos de estado sagrados del workspace resueltos vÃ­a `AGENT_PROJECT_ROOT`; cualquier write a esos paths requiere confirmaciÃ³n explÃ­cita.
 - **Criterio:** intentar editar `z_scripts/.agent/collaboration/work_plan.md` desde Claude Code muestra alerta de guard y requiere confirmaciÃ³n.
@@ -520,7 +561,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-182 - Integracion Repomix para Context Bootstrapping y Repo-Compare
 - **Prioridad:** Media
 - **Scope:** system/skills
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** En el arranque, los agentes exploran "a ciegas" perdiendo turnos; ademÃ¡s, las herramientas de repo-compare son lentas fichero a fichero.
 - **Sketch:** 
   1) `repomix-context`: generar `.agent/context/repomix.xml` (con `--compress`) del workspace en arranque y pasarlo como `-f` a los agentes para inyecciÃ³n de contexto Cero-Turno.
@@ -541,7 +582,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-186 - Idempotencia del instalador y contrato de rutas gestionadas
 - **Prioridad:** Alta
 - **Scope:** system/install
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** `scripts/install_agent_system.py --sync` puede podar `.agent/glossary.md` y `.agent/microagents/` en la segunda sincronizacion estricta. Esas rutas se depositan desde `agent_system/templates/`, no existen en `.agent/` fuente y no estan cubiertas por `LOCAL_DIRS`.
 - **Decision de semantica:** `glossary.md` y `microagents/` son plantilla-una-vez: el instalador los crea si faltan, luego pertenecen al workspace destino. `--sync` no los sobrescribe, pero tampoco debe podarlos.
 - **Sketch:**
@@ -556,7 +597,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-187 - Portabilidad Modelo B y limpieza legacy
 - **Prioridad:** Alta
 - **Scope:** system/portability
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** varias rutas y comandos todavia asumen codigo local en el workspace o nombres fijos del motor. Esto debilita Modelo B y deja deuda legacy visible tras la auditoria de cierre.
 - **Sketch:**
   1) Extraer `runtime/motor_link.py`: API `resolve_motor_root(project_root)`, `resolve_motor_controller(project_root)`, `resolve_motor_script(project_root, script_name)`. Lee `motor_destination_link.json`. Consumidores: `review_bridge.py`, `prepush_check.py`, `session_closeout.py`.
@@ -592,7 +633,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## TBD - Repomix falla en Windows por permisos Node.js/globby
 - **Prioridad:** Baja
 - **Scope:** system/devx
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** issue retirado del backlog activo porque no
+  bloquea el flujo canonico del `repo_destino`; reabrir solo si vuelve a ser
+  limitante.
 - **Problema:** `npx repomix` falla con `Permission denied while scanning directory` en `z_scripts` y `orquestador_de_agentes` en Windows. El error ocurre en globby antes de aplicar filtros de include/exclude. PowerShell accede sin problemas; el bloqueo es especÃ­fico de Node.js (posiblemente antivirus o Windows Search). Repomix es best-effort y no bloquea el arranque.
 - **Sketch:** investigar ACLs con `icacls`, probar desactivar indexaciÃ³n de Windows Search en la carpeta, probar versiÃ³n mÃ¡s reciente de repomix, o como alternativa usar `--working-dir` apuntando a un subdirectorio accesible.
 - **Criterio:** `npx repomix --compress` genera `.agent/context/repomix.xml` sin errores en el siguiente arranque del launcher.
@@ -633,7 +677,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-201 - Hardening runtime del launcher tras WT-2026-200
 - **Prioridad:** Media
 - **Scope:** system/launcher
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** WT-2026-200 corrigio el bug real de precedencia `-OnlyBuilder` / `-ResumeBuilder`, pero aun quedan mejoras de robustez que conviene aislar para no reabrir un ticket ya cerrable: falta una prueba mas cercana al runtime real desde `bus/supervisor.py:_relaunch_builder()`, algunos tests dependen de asserts textuales sobre el `.ps1`, y el invariante de precedencia vive en codigo/tests pero no en una nota durable cercana al launcher.
 - **Sketch:**
   1) AÃ±adir un test o eval de integracion ligera que ejerza la invocacion real desde `_relaunch_builder()` hasta `launch_agent_terminals.ps1`.
@@ -655,7 +699,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-210 - Auditoria integral y rediseno del bus multi-agente
 - **Prioridad:** Critica
 - **Scope:** system/bus-architecture
-- **Estado:** approved
+- **Estado:** completed
 - **Problema:** los ultimos tickets revelaron deuda estructural en el contrato entre bus, Supervisor, Manager, Builder, controller, bridge, hooks, gates y closeout. Se estan acumulando hotfixes sin mapa completo de fuente canonica, proyecciones, liveness y requeue durable.
 - **Sketch:** auditar eventos, actores, writers, transiciones, locks, gates Modelo B y surfaces legacy; separar hechos verificados de inferencias; proponer arquitectura objetivo minima y tickets hijos pequenos.
 - **Criterio:** existe mapa de actores/writers, tabla de eventos, invariantes rotas/objetivo, frontera canonico/proyeccion/cache/legacy y backlog hijo para liveness, requeue durable, gates Modelo B y closeout.
@@ -664,7 +708,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-206 - Scope gate y cierres manuales en workspace+motor
 - **Prioridad:** Media
 - **Scope:** system/hygiene
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo tras la
+  evolucion posterior del cierre motor-aware; reabrir solo con evidencia nueva.
 - **Problema:** los cierres manuales en Modelo B siguen chocando con el scope gate porque el workspace `z_scripts` no es repo git y las rutas reales del motor viven en `orquestador_de_agentes/`. Esto obliga a `--scope-override` y `--force` en operaciones que deberian ser mas mecanicas.
 - **Sketch:** resolver de raiz la relacion entre `Files Likely Touched`, motor subdir y proyecto raiz; reducir o eliminar la necesidad de overrides manuales en `--mark-ready` y `--manager-approve` bajo Modelo B.
 - **Criterio:** los cierres manuales canonicos en Modelo B pueden completarse sin friccion estructural recurrente del scope gate.
@@ -673,7 +719,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-207 - Gobernanza de collaboration legacy en el motor durante session-close
 - **Prioridad:** Media
 - **Scope:** system/hygiene
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo; la
+  ambiguedad residual solo debe volver con evidencia fresca de confusion entre
+  collaboration canonica y legacy.
 - **Problema:** hoy existen dos superficies de collaboration: la activa en `z_scripts/.agent/collaboration` y una copia legacy/stale en `orquestador_de_agentes/.agent/collaboration`. El `session_closeout` solo opera sobre el workspace activo, por lo que la copia del motor acumula `manager_feedback_*`, `review_queue.md`, `work_plan.md`, `TURN.md` y `execution_log.md` obsoletos sin una politica explicita.
 - **Sketch:** decidir y automatizar una de estas dos semanticas: (a) tratar la collaboration del motor como superficie legacy congelada y excluirla del lifecycle operativo; o (b) archivarla/limpiarla explicitamente durante `session-close` cuando `project_root != motor_root`. En ambos casos, dejarlo documentado y testeado para que no vuelva a parecer estado canonico.
 - **Criterio:** tras un cierre de sesion, no queda ambiguedad sobre cual collaboration es canonica y la copia del motor no arrastra estado operativo engaÃ±oso.
@@ -761,7 +810,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-191 - Migracion determinista de memoria y bootstrap real
 - **Prioridad:** Alta
 - **Scope:** system/memory
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** `observations.jsonl` tiene schema mixto; `memory_rules.md` y `memory_profile.md` no existen; `session_bootstrap.md` describe L1/L2/L3 en prosa pero no ejecuta el loader.
 - **Decision:** migrar a schema canonico usando solo dominios de `VALID_DOMAINS`; mantener compatibilidad legacy defensiva, pero el estado migrado debe validar limpio.
 - **Mapping exacto:**
@@ -859,7 +908,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-193 - Redaccion previa en pipeline de memoria persistente
 - **Prioridad:** Baja
 - **Scope:** system/security
-- **Estado:** backlog
+- **Estado:** completed
 - **Problema:** `bus/redact.py` (redacta JWT, auth headers, API keys, emails, usernames de Windows) solo lo invoca `bus/event_bus.py`. El pipeline de memoria persistente NO redacta antes de escribir `observations.jsonl`, asi que un secreto en un output de tool o una ruta de usuario puede quedar persistido en memoria.
 - **Origen:** evaluacion de patrones de `supermemoryai/opencode-supermemory` (tag `<private>`). Decision: no inventar mecanismo nuevo; cablear el `redact.py` existente. Ver [[reference-memory-tools-evaluated]].
 - **Writers verificados a cubrir:**
@@ -875,7 +924,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-218 - Regenerar y commitear memory_rules.md en el motor
 - **Prioridad:** Media
 - **Scope:** system/memory
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** deuda retirada del backlog activo de
+  `repo_destino`; cualquier trabajo futuro sobre reglas de memoria debe
+  relanzarse desde evidencia actual del `repo_motor`.
 - **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino â€” pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
 - **Causa raiz:** `memory_rules.md` es un artefacto derivado deterministamente de `observations.jsonl` via `memory_consolidate.py`. El motor tiene `observations.jsonl` vivo (35 KB, schema canonico) pero nunca se corrio la consolidacion para generar `memory_rules.md` y commitearlo.
 - **Contexto clave (leer antes de ejecutar):**
@@ -899,7 +951,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-219 - Bootstrap de memoria garantizado en destinos nuevos
 - **Prioridad:** Media
 - **Scope:** system/memory
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo; si
+  vuelve, debe abrirse con un caso reproducible sobre un destino nuevo.
 - **Problema:** `install_agent_system.py --install/--sync` no garantiza que el directorio `runtime/memory/` del destino tenga los archivos minimos. `sync_memory_rules()` hace `mkdir` pero solo si va a escribir `memory_rules.md`; si el motor no tiene ese archivo (situacion pre-WT-2026-218), ni siquiera crea el directorio. `observations.jsonl` y `MEMORY.md` no se crean en ninguna ruta del instalador.
 - **Contexto clave:**
   - `memory_consolidate.py` asume que `MEMORY_DIR` y `OBS` ya existen; si se llama sobre un destino virgen, puede fallar o crear archivos en el motor en vez del destino (usa `get_agent_dir()` que resuelve segun contexto de ejecucion).
@@ -921,7 +975,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-220 - Flujo de promocion upstream de memoria para dogfooding
 - **Prioridad:** Media
 - **Scope:** system/memory
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo; la
+  promocion upstream solo se reabre si vuelve a bloquear el dogfooding real.
 - **Problema:** el flujo normal de memoria es downstream (motor -> destino via sync). Pero este workspace es dogfooding: sus tickets mejoran el motor, por lo que genera aprendizajes de wing engine/meta que deberian propagarse al motor, no quedarse solo en el workspace. `memory_upload.md` (prompt canonico en `orquestador_de_agentes/prompts/`) describe inspeccion y propuesta de memoria, pero solo contempla dos destinos: memoria del proyecto y memoria personal de Claude. No menciona promocion al repo motor externo.
 - **Contexto clave:**
   - El modelo de wings ya hace la separacion conceptual: `engine`/`meta` = portables al motor; `project` = locales al destino.
@@ -951,7 +1007,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-221b - Manager evidence gate: rechazar review sin bus activo y evidencia minima
 - **Prioridad:** Alta
 - **Scope:** system/review-gates
-- **Estado:** active
+- **Estado:** completed
 - **Problema:** aunque el Builder trabaje correctamente, hoy puede llegar a review con un packet que no contiene evidencia productiva visible del ticket activo. En `WT-2026-221a`, el Manager rechazo `seq 602`, `seq 606` y `seq 617` porque el diff visible solo contenia docs/collaboration y no cambios reales del `repo_motor`.
 - **Objetivo:** hacer que el Manager rechace o bloquee `READY_FOR_REVIEW` si faltan evidencias minimas del ciclo operativo y del diff/commit del `repo_motor`.
 - **Sketch:** en la ruta de review, exigir bus/estado activo del ticket, review packet del ticket correcto, diff/commit productivo del `repo_motor`, tests asociados y clasificacion de docs-only/collaboration-only. Si falta algo, emitir `CHANGES` o bloqueo con razon estructurada.
@@ -962,7 +1018,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-221c - Scope watch temprano contra Files Likely Touched
 - **Prioridad:** Media
 - **Scope:** system/scope-gate
-- **Estado:** backlog
+- **Estado:** absorbed
+- **Nota de cierre 2026-06-09:** follow-up retirado del backlog activo porque
+  no hay evidencia reciente de que siga siendo la siguiente deuda prioritaria.
 - **Problema:** el scope gate llega tarde, normalmente en `--mark-ready`. Cambios out-of-scope como `scripts/discover_skills.py` pueden vivir durante horas sin alerta.
 - **Objetivo:** crear un check barato que compare `git diff --name-only` contra `Files / surfaces likely touched` durante el trabajo, no solo al cierre.
 - **Sketch:** exponer un comando tipo `--scope-watch` o script focal que resuelva `motor_root`, lea el work_plan activo y reporte cambios fuera de scope con salida clara para Builder/Manager.
@@ -1040,7 +1098,10 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-243a - Cierre de sesion documental, snapshot local y memoria de arranque
 - **Prioridad:** Media
 - **Scope:** system/session-closeout-hygiene
-- **Estado:** backlog
+- **Estado:** completed
+- **Nota de cierre 2026-06-09:** completado documentalmente con actualizacion
+  de `PROJECT.md`, `CHANGELOG.md`, `MEMORY.md`, `AUDIT.md` y reconciliacion del
+  backlog local.
 - **Problema:** tras el cierre tecnico de `WT-2026-242a/b/c`, el siguiente chat
   todavia depende de leer artefactos dispersos para reconstruir contexto:
   `PROJECT.md` estaba en placeholders, faltaba un `.agent/runtime/audit/AUDIT.md`
@@ -1053,7 +1114,28 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Criterio:**
   - `PROJECT.md` y `CHANGELOG.md` actualizados con estado real;
   - `.agent/runtime/audit/AUDIT.md` presente y fresco;
-  - memoria local con decision explicita y sin promover nada a `repo_motor`;
-  - `validate --json` del `repo_destino` sin errores ni warnings.
+- memoria local con decision explicita y sin promover nada a `repo_motor`;
+- `validate --json` del `repo_destino` sin errores ni warnings.
 - **Depende de:** WT-2026-242c.
 - **Origen:** session-2026-06-09-closeout.
+
+## WT-2026-244a - Formalizar policy de mergeabilidad y review inspirada por FrontierCode
+- **Prioridad:** Alta
+- **Scope:** system/review-quality-policy
+- **Estado:** active
+- **Problema:** `AUDIT_FRONTIERCODE_LEARNINGS.md` ya destila una policy concreta
+  a partir de FrontierCode, pero todavia no esta convertida en contrato
+  builder-facing. Si se deja solo como audit, el siguiente ciclo puede volver a
+  discutir el principio sin aterrizarlo en reglas operativas.
+- **Objetivo:** documentar en superficies durables del `repo_destino` una
+  policy minima de mergeabilidad: `validate --json` como gate de cierre
+  existente con `0 warnings estructurales`, secuencia `allowlist -> gate`,
+  reverse-classical solo para bugfixes con etiqueta
+  `[NON-REVERSE-CLASSICAL: ...]`, separacion `BLOCKERS`/`NITS`, y
+  reconocimiento explicito de `scope discipline` y `code quality /
+  conventions`.
+- **Criterio:** `PROJECT.md` y `AGENTS.md` reflejan la policy sin crear un gate
+  nuevo; el audit consolidado sigue siendo la referencia argumental; el ticket
+  cierra con `validate --json` limpio en `repo_destino`.
+- **Depende de:** WT-2026-243a.
+- **Origen:** session-2026-06-09-frontiercode.

@@ -2,7 +2,7 @@
 
 Regenerated: 2026-06-09T00:00:00Z
 
-Total observations: 20
+Total observations: 21
 
 - Audit-Skeptical-Review (1 observations)
 - Audit-Closeout (1 observations)
@@ -23,6 +23,7 @@ Total observations: 20
 - Recovery-Idempotency (1 observations)
 - Runtime-Proof-For-Concurrency-Fixes (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
+- Ticket-Letter-Recovery-Rule (1 observations)
 - Scope-Gate-Path-Format (1 observations)
 
 ## audit-closeout
@@ -82,6 +83,9 @@ Total observations: 20
 ## session-bootstrap-audit-snapshot
 - In this repo_destino, a fresh `.agent/runtime/audit/AUDIT.md` is worth keeping after canonical closeout because the local session bootstrap can trust that snapshot first instead of reconstructing context from scattered collaboration files on every restart.
 
+## ticket-letter-recovery-rule
+- Every plan starts from a completed `...a` ticket. Tickets `...b`, `...c`, `...d` and later letters are for planned splits or for fixes discovered after the `...a` closeout. And when a shell-launched Builder leaves the bus short of canonical termination, the durable path is root-cause analysis first, then chat closeout of the `...a`, then remediation through derived tickets instead of trying to repair the bus through the live bus itself.
+
 ## scope-gate-path-format
 - Files Likely Touched must use the same path strings returned by git diff --name-only. Prefixing them with orquestador_de_agentes/ breaks the scope gate even when the correct file changed.
 
@@ -91,4 +95,4 @@ Total observations: 20
 
 No archive files yet.
 
-Stats: kept=20, deduped=0, dropped=0, archived=0
+Stats: kept=21, deduped=0, dropped=0, archived=0

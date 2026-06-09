@@ -33,6 +33,9 @@ TP-03: `stale_builder_round` en `IN_PROGRESS` mantiene el bloqueo actual.
 
 TP-04: `validate --json` del `repo_destino` queda sin errores.
 
+TP-05: los tests verifican que el bus ya no recibe `HANDOFF_BLOCKED` en
+`READY_FOR_REVIEW+` y que el evento nuevo deja contrato trazable.
+
 ## Veredicto Previo
 
 `APPROVED`
