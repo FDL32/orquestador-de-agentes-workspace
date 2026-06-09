@@ -59,6 +59,45 @@ Ticket prefix: WT
   propio ticket trate exactamente del mecanismo de recovery y la evidencia lo
   justifique.
 
+## Politica de Cierre y Review
+
+### Gate de cierre: `validate --json`
+
+El unico gate de cierre operativo es `validate --json` del `repo_motor`. Un
+ticket se considera `APROBADO` solo cuando `validate --json` produce `0 errors`
+y `0 warnings estructurales`.
+
+La secuencia correcta de endurecimiento es:
+
+1. **Allowlist** — documentar en el ticket que warnings especificos son no
+   bloqueantes (advisories externos, warnings no estructurales).
+2. **Gate** — una vez acordada la allowlist, el gate exige
+   `0 warnings estructurales` sin excepcion.
+
+Los warnings documentados en la allowlist se consideran `NITS` (ver seccion
+siguiente). Cualquier otro warning estructural es bloqueante.
+
+### BLOCKERS vs NITS
+
+| Categoria | Criterio | Ejemplos |
+|-----------|----------|----------|
+| **BLOCKER** | Impide el cierre. Requiere correccion o justificacion trazable antes de aprobar. | Errores en `validate --json`; tests que no pasan; bugfix sin evidencia suficiente del bug o sin etiqueta `[NON-REVERSE-CLASSICAL: ...]`; `scope creep`; evidencia insuficiente del cambio productivo. |
+| **NIT** | No bloquea el cierre. Se documenta pero no detiene la aprobacion. | Legibilidad; refactors no necesarios; estilo o claridad que no rompe gates; warnings documentados en la allowlist del ticket. |
+
+### Criterio de mergeabilidad
+
+Ademas del gate tecnico, el revisor evalua:
+
+- **Scope discipline:** el diff respeta `Files Likely Touched` y `non-goals`
+  declarados en el plan. Cualquier archivo fuera de esa lista requiere
+  justificacion explicita.
+- **Code quality / conventions:** el codigo nuevo sigue los patrones existentes
+  del codebase. Si introduce un patron nuevo, debe justificarlo en el plan o en
+  un comentario en el codigo.
+
+Estos criterios no son un gate autonomo, sino la formalizacion de practicas que
+ya existen en el flujo de trabajo actual.
+
 ## CHANGELOG.md
 
 Companero de este manifiesto. Registra decisiones arquitectonicas, cierres de

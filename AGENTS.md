@@ -63,6 +63,20 @@ Este repo es `repo_destino` de dogfooding del motor. No usar "workspace" a secas
   `monkeypatch.setattr(..., raising=False)`. Sin ese flag, `monkeypatch` puede lanzar
   `AttributeError` en CI aunque el atributo sea un stub intencional.
 
+### Regla de tests: reverse-classical
+
+Reverse-classical (escribir primero el test, despues el codigo minimo) aplica
+exclusivamente a tickets que corrigen un bug identificado. Para tests de
+contrato o cobertura nueva donde reverse-classical no tiene sentido, el Builder
+debe etiquetar el test o el commit con:
+
+```
+[NON-REVERSE-CLASSICAL: <razon breve>]
+```
+
+Ejemplos de razones validas: "test de evento de bus", "test de fixture
+ausente", "cobertura de rama condicional", "test de integracion existente".
+
 ## Memoria por proyecto
 
 - `.agent/runtime/memory/observations.jsonl`: observaciones persistentes de este destino (wing `project`).
