@@ -12,6 +12,18 @@ Eliminar inline `(?:WP|WT)-` patterns dispersos en 8 modulos del motor.
 Extender bus/ticket_id.py para soportar prefijos de 3 letras (WOT, CTL, etc.).
 Asegurar int() safety en NUMERIC_SUFFIX_PATTERN y NEXT_TICKET_PATTERN.
 
+## Decision Arquitectonica
+`bus/ticket_id.py` es la unica autoridad para reconocer y construir IDs de
+ticket. Los consumidores importan sus patrones y helpers en lugar de mantener
+regex locales, de modo que ampliar el prefijo a 2-3 letras preserve una sola
+semantica y una unica barrera de regresion.
+
+## Non-goals
+- No migrar el prefijo operativo del `repo_destino`; corresponde a
+  `WT-2026-251b`.
+- No cambiar el formato de ano, bloque numerico ni sufijo alfabetico.
+- No modificar estados del bus ni semantica de cierre de tickets.
+
 ## Criterios de Exito
 - [x] bus/ticket_id.py: NUMERIC_SUFFIX_PATTERN y NEXT_TICKET_PATTERN extended to 3-letter
 - [x] 8 consumidores migrados a imports canonicos

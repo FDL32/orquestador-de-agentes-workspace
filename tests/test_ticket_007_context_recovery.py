@@ -1,4 +1,4 @@
-﻿"""Tests para TICKET-007: Selective Context Recovery Lite."""
+"""Tests para TICKET-007: Selective Context Recovery Lite."""
 
 import sys
 import tempfile
@@ -331,8 +331,4 @@ Implement context recovery with memory and keywords
 
         # Debería generar sección vacía pero no fallar
         assert "## Memoria relevante" in memory_section
-        assert (
-            "No se encontraron observaciones relevantes"
-            in memory_section
-        )
-
+        assert "No se encontraron observaciones relevantes" in memory_section

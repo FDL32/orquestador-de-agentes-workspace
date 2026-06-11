@@ -1,0 +1,12 @@
+# Config ruff del repo_destino.
+# agent_system/, scripts/ y skills/ son copias instaladas del motor
+# (fuente de verdad: repo_motor); no se lintean localmente para no
+# divergir de su origen.
+extend-exclude = [
+    "agent_system",
+    "scripts",
+    "skills",
+    "hooks",
+    "_legacy",
+    ".agent/runtime",
+]
