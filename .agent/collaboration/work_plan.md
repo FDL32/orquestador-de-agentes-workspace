@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WT-2026-251a
-- **Estado:** READY_FOR_REVIEW
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **Titulo:** Centralizar ticket-ID regex y extender a prefijos de 2-3 letras
 - **Asignado a:** Builder

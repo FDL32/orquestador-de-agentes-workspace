@@ -2,20 +2,6 @@
 
 ---
 
-### MANAGER_REVIEW - 2026-06-07 01:47:40
-- **Plan ID:** WT-2026-235a
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
-### MANAGER_REVIEW - 2026-06-07 01:49:50
-- **Plan ID:** WT-2026-235a
-- **Decision:** CHANGES
-- **Source:** manager backend exec review
-
----
-
 ### MANAGER_REVIEW - 2026-06-07 19:14:03
 - **Plan ID:** WT-2026-236a
 - **Decision:** CHANGES
@@ -142,8 +128,6 @@
 
 ---
 
----
-
 ### MANAGER_REVIEW - 2026-06-10 11:54:24
 - **Plan ID:** WT-2026-246a
 - **Decision:** TRANSPORT_FAILED
@@ -155,3 +139,5 @@
 - **Plan ID:** WT-2026-249b
 - **Decision:** INSPECT
 - **Source:** manager backend exec review
+
+---
