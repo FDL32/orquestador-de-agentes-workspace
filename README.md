@@ -15,7 +15,7 @@ El estado operacional (tickets, planes, memoria) vive en `.agent/`:
 ## Topologia
 
 ```
-C:\Users\fdl\Proyectos_Python\
+<directorio_de_proyectos>\
 ├── orquestador_de_agentes\          ← repo_motor (fuente canonica, repo git propio)
 └── orquestador_de_agentes_workspace\ ← repo_destino / este repo (repo git propio)
 ```
