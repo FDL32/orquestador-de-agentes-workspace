@@ -10,7 +10,7 @@ tickets, stack y reglas locales.
 - **Proposito:** repo destino de dogfooding para validar en ciclo real el
   motor `orquestador_de_agentes`, sus tickets, su bus y su protocolo de
   cierre multiagente.
-Ticket prefix: WT
+Ticket prefix: WOT
 
 ## Stack Tecnologico
 
