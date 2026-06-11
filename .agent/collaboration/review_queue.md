@@ -1,42 +1,7 @@
-﻿# review_queue.md - Cola de Revisiones del Manager
+# review_queue.md - Cola de Revisiones del Manager
 
-## Estado Actual
-**Estado:** APPROVED
-**Fecha:** 2026-04-29
-**Revisor Asignado:** MANAGER
-
-## Instrucciones para Manager
-RevisiÃ³n completada. Veredicto documentado abajo.
-
-## Revisiones Pendientes
-- [ ] REV-WP-2026-021: Council Broker MVP
-
-## Revisiones Completadas
-### ðŸ” REV-WP-2026-020: RevisiÃ³n de VerificaciÃ³n Final y ConsolidaciÃ³n
-- **Fecha:** 2026-04-29 14:30
-- **Revisor:** Manager
-- **Veredicto:** APPROVED
-- **Estado:** âœ… RESOLVED
-
-**Resumen:**
-La suite `orquestacion_agentes/tests` estÃ¡ verde, el health check del repo pasa y el alcance tocado quedÃ³ limpio bajo `ruff`. La normalizaciÃ³n documental y tÃ©cnica de `WP-2026-020` queda aprobada.
-
-**Quality Gates:**
-- [x] Ruff: PASSED en alcance tocado
-- [x] Pytest: PASSED (`327 passed`)
-- [x] Seguridad: VERIFIED
-
-**Archivos revisados:**
-- `orquestacion_agentes/scripts/doctor_agent_system.py` - OK
-- `orquestacion_agentes/tests/conftest.py` - OK
-- `orquestacion_agentes/tests/test_project_paths.py` - OK
-- `.session/work_plan.md` - OK
-- `.session/execution_log.md` - OK
-- `PROJECT.md` - OK
-- `CHANGELOG.md` - OK
-
-**Notas:**
-Sin hallazgos bloqueantes. La revisiÃ³n formal aprueba el cierre final y deja listo el siguiente ciclo de trabajo.
+> Entradas antiguas archivadas en .agent/collaboration/archive/review_queue_2026-06-11.md
+> Solo se conservan las 10 revisiones mas recientes.
 
 ---
 
