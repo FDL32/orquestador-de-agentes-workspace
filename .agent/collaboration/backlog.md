@@ -14,8 +14,8 @@
 > cerrarla documentalmente.
 
 ## Politica
-- **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` â€” repo destino real que sirve para desarrollar el motor.
-- **Motor (fuente canonica):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes` â€” repo portable con `.git` propio.
+- **Workspace (dogfooding):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â repo destino real que sirve para desarrollar el motor.
+- **Motor (fuente canonica):** `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â repo portable con `.git` propio.
 - **Contrato:** mejoras que nacen en el workspace y deben ser globales se portan explicitamente al motor; nunca se asume sincronizacion implicita.
 - **Escritura:** humano o Manager; Builder solo lo toca si el plan lo pide explicitamente.
 - **Destino:** cada proyecto destino tendra su propio `.agent/collaboration/backlog.md`.
@@ -98,7 +98,17 @@
 | Media | WT-2026-238a | Cierre de sesion y handoff documental post WT-2026-237a | system/session-closeout-hygiene | completed | WT-2026-237a | session-2026-06-08-handoff |
 | Alta | WT-2026-239a | Separar protocolo de cierre para tickets documentation vs code | system/documentation-closeout-protocol | absorbed | WT-2026-238a | session-2026-06-08-doc-closeout-followup |
 | Media | WT-2026-243a | Cierre de sesion documental, snapshot local y memoria de arranque | system/session-closeout-hygiene | completed | WT-2026-242c | session-2026-06-09-closeout |
-| Alta | WT-2026-244a | Formalizar policy de mergeabilidad y review inspirada por FrontierCode | system/review-quality-policy | active | WT-2026-243a | session-2026-06-09-frontiercode |
+| Alta | WT-2026-244a | Formalizar policy de mergeabilidad y review inspirada por FrontierCode | system/review-quality-policy | completed | WT-2026-243a | session-2026-06-09-frontiercode |
+| Alta | WT-2026-245a | Cerrar gaps residuales de prefijos de tres letras en bus y review bridge | system/ticket-prefix-compatibility | completed | - | session-2026-06-09-prefix-compat |
+| Alta | WT-2026-245b | Corregir checkpoint M3 en topologia Model B entre pre-handoff y mark-ready | system/model-b-checkpoint-topology | completed | WT-2026-245a | session-2026-06-09-model-b-checkpoint |
+| Alta | WT-2026-245c | Centralizar el patron canonico de ticket ID en Python y PowerShell | system/ticket-id-pattern-centralization | completed | WT-2026-245b | session-2026-06-09-ticket-id-centralization |
+| Alta | WT-2026-246a | Endurecer guard M3 y clarificar recuperacion del Builder | system/mark-ready-m3-hardening | completed | WT-2026-245c | session-2026-06-10-m3-hardening |
+| Alta | WT-2026-246b | Idempotencia del closeout del launcher y guard autoritativo post-success | system/launcher-closeout-idempotency | completed | WT-2026-246a | session-2026-06-10-launcher-closeout |
+| Media | WT-2026-247a | Higiene de suite: aislamiento de tests y bugs de regex/mock/lock | system/testing-hygiene | completed | WT-2026-245c | session-2026-06-10-preexisting-failures |
+| Media | WT-2026-248a | Estabilizar .opencode/opencode.json: restauracion exacta del launcher y guard de integridad en pre-handoff | system/opencode-config-stability | completed | WT-2026-246b | session-2026-06-10-opencode-stability |
+| Media | WT-2026-249a | Hardening minimo del contrato CLI: stderr vs returncode | system/cli-output-contract | completed | WT-2026-248a | session-2026-06-10-cli-contract-hardening |
+| Media | WT-2026-249b | Excluir BUILDER_BRIEF_ del guard de superficies vivas del workspace | system/pre-handoff-live-surfaces | completed | WT-2026-249a | session-2026-06-11-builder-brief-followup |
+| Alta | WT-2026-249c | Review bridge: normalizar parseo de CHANGES y evitar degradacion espuria a INSPECT | system/review-bridge-parser | active | WT-2026-249b | session-2026-06-11-review-bridge-parser |
 
 ## WT-2026-236a - Smoke repo-compare con Orca y SOUL.md para validar flujo externo
 - **Prioridad:** Media
@@ -385,24 +395,24 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Alta
 - **Scope:** system/bus-durable-requeue
 - **Estado:** completed
-- **Problema:** `REVIEW_DECISION=CHANGES` puede quedar sin consumidor durable si el supervisor reactivo anterior ya no esta vivo. Eso deja tickets huÃ©rfanos en `READY_FOR_REVIEW` hasta intervenciÃ³n manual o bootstrap tardÃ­o.
+- **Problema:** `REVIEW_DECISION=CHANGES` puede quedar sin consumidor durable si el supervisor reactivo anterior ya no esta vivo. Eso deja tickets huÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rfanos en `READY_FOR_REVIEW` hasta intervenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n manual o bootstrap tardÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­o.
 - **Objetivo:** garantizar que cada `CHANGES` tenga procesamiento durable y produzca relanzamiento o requeue sin depender de que el supervisor anterior siga vivo.
-- **Sketch inicial:** reforzar el consumidor de `CHANGES` con una ruta durable y verificable; puede ser supervisor persistente, bootstrap watchdog explÃ­cito o disparo controlado de `ticket_supervisor.py --once`, pero debe quedar una sola autoridad observable en el bus.
-- **Criterio:** un `REVIEW_DECISION=CHANGES` pendiente se procesa dentro de una ventana acotada sin intervenciÃ³n manual y sin tickets huÃ©rfanos.
+- **Sketch inicial:** reforzar el consumidor de `CHANGES` con una ruta durable y verificable; puede ser supervisor persistente, bootstrap watchdog explÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­cito o disparo controlado de `ticket_supervisor.py --once`, pero debe quedar una sola autoridad observable en el bus.
+- **Criterio:** un `REVIEW_DECISION=CHANGES` pendiente se procesa dentro de una ventana acotada sin intervenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n manual y sin tickets huÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rfanos.
 - **Depende de:** WT-2026-211.
-- **Cierre:** la ruta canÃ³nica queda en `bus/review_bridge.py`: `REVIEW_DECISION=CHANGES` -> `--request-changes` -> `_ensure_durable_changes_consumer(...)` -> `bootstrap()+run_once()` del supervisor. Tests focales y regresiÃ³n de bridge aprobados.
+- **Cierre:** la ruta canÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nica queda en `bus/review_bridge.py`: `REVIEW_DECISION=CHANGES` -> `--request-changes` -> `_ensure_durable_changes_consumer(...)` -> `bootstrap()+run_once()` del supervisor. Tests focales y regresiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de bridge aprobados.
 
 ## WT-2026-214 - Protocolo de forced close en preflight para ticket anterior y runtime stale
 - **Prioridad:** Alta
 - **Scope:** system/preflight-reconcile
 - **Estado:** completed
-- **Problema:** el launcher ya lee el bus como autoridad primaria para elegir agente, pero el preflight todavÃ­a no distingue formalmente entre limpiar runtime stale y reconciliar historia en el bus. Eso deja abierta la misma familia de drift que originÃ³ `WT-2026-205`.
-- **Objetivo:** integrar una decisiÃ³n de preflight con tres casos explÃ­citos:
+- **Problema:** el launcher ya lee el bus como autoridad primaria para elegir agente, pero el preflight todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no distingue formalmente entre limpiar runtime stale y reconciliar historia en el bus. Eso deja abierta la misma familia de drift que originÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ `WT-2026-205`.
+- **Objetivo:** integrar una decisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de preflight con tres casos explÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­citos:
   - ticket previo terminal -> cleanup local;
-  - ticket previo no terminal -> reconciliaciÃ³n canÃ³nica;
+  - ticket previo no terminal -> reconciliaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n canÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nica;
   - bus ilegible o contradictorio -> aborto.
-- **Sketch inicial:** insertar la decisiÃ³n entre `Assert-StartupAlignment` / `Repair-StartupSupervisorState` y `Remove-StaleRuntimeArtifacts`, reutilizando el bus como autoridad canÃ³nica e invocando `scripts/reconcile_ticket.py` solo cuando el drift no terminal estÃ© confirmado.
-- **Criterio:** abrir WT-N+1 con runtime stale de WT-N no mezcla historias: limpia si WT-N ya cerrÃ³, reconcilia si WT-N quedÃ³ colgado y aborta si no puede decidir con seguridad.
+- **Sketch inicial:** insertar la decisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n entre `Assert-StartupAlignment` / `Repair-StartupSupervisorState` y `Remove-StaleRuntimeArtifacts`, reutilizando el bus como autoridad canÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nica e invocando `scripts/reconcile_ticket.py` solo cuando el drift no terminal estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© confirmado.
+- **Criterio:** abrir WT-N+1 con runtime stale de WT-N no mezcla historias: limpia si WT-N ya cerrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³, reconcilia si WT-N quedÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ colgado y aborta si no puede decidir con seguridad.
 - **Depende de:** WT-2026-210, WT-2026-216.
 - **Cierre:** implementacion aprobada y commiteada; cierre canonico emitido en el bus con `scripts/reconcile_ticket.py`; runtime stale de `WT-2026-214` limpiado antes de la migracion fisica del workspace.
 
@@ -410,13 +420,13 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Alta
 - **Scope:** system/launcher-bus-read
 - **Estado:** completed
-- **Problema:** el launcher sigue tomando su decisiÃ³n operativa principal desde `TURN.md`. Si esa proyecciÃ³n queda stale aunque el bus refleje el estado correcto, puede relanzar el agente equivocado o no relanzar ninguno.
-- **Objetivo:** mover la decisiÃ³n de arranque a lectura del bus o de un helper canÃ³nico basado en el bus, dejando `TURN.md` como proyecciÃ³n operativa secundaria.
-- **Sketch inicial:** introducir una ruta de decisiÃ³n bus-read en `launch_agent_terminals.ps1`, con fallback explÃ­cito y acotado solo si el bus no puede leerse; cubrir el caso de `TURN.md` stale con tests focales.
+- **Problema:** el launcher sigue tomando su decisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n operativa principal desde `TURN.md`. Si esa proyecciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n queda stale aunque el bus refleje el estado correcto, puede relanzar el agente equivocado o no relanzar ninguno.
+- **Objetivo:** mover la decisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de arranque a lectura del bus o de un helper canÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nico basado en el bus, dejando `TURN.md` como proyecciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n operativa secundaria.
+- **Sketch inicial:** introducir una ruta de decisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n bus-read en `launch_agent_terminals.ps1`, con fallback explÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­cito y acotado solo si el bus no puede leerse; cubrir el caso de `TURN.md` stale con tests focales.
 - **Criterio:** con bus correcto y `TURN.md` stale, el launcher sigue eligiendo el agente correcto; el rescate durable de `WT-2026-212` pasa a ser fallback excepcional y no camino normal.
 - **Depende de:** WT-2026-211.
-- **Cierre:** `launch_agent_terminals.ps1` consulta `scripts/get_launcher_state.py` antes de leer `TURN.md`; el helper deriva estado vÃ­a `StateMachine.derive_state_from_events()` y los tests focales del launcher pasan.
-- **Nota residual:** el mapeo `TicketState -> (role, action)` estÃ¡ duplicado entre `scripts/get_launcher_state.py` y `bus/supervisor.py`; candidata a ticket de limpieza posterior, no bloqueante.
+- **Cierre:** `launch_agent_terminals.ps1` consulta `scripts/get_launcher_state.py` antes de leer `TURN.md`; el helper deriva estado vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a `StateMachine.derive_state_from_events()` y los tests focales del launcher pasan.
+- **Nota residual:** el mapeo `TicketState -> (role, action)` estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ duplicado entre `scripts/get_launcher_state.py` y `bus/supervisor.py`; candidata a ticket de limpieza posterior, no bloqueante.
 
 ## WT-2026-215 - Gates Modelo B: operaciones git de tooling resuelven motor_root
 - **Prioridad:** Alta
@@ -425,7 +435,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Cierre verificado:** bus con `REVIEW_DECISION=approve`, `CLOSE_CONFIRMED`,
   `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; entrega productiva en
   `f8cd50d` y cierre documental en `e3b3823`.
-- **Problema:** varias operaciones git del tooling corren con `cwd=project_root` (el workspace, que NO es repo git) en vez de `motor_root` (`orquestador_de_agentes/`, que SÃ es repo y contiene los commits). El resultado es `git diff` vacÃ­o y decisiones falsas. Sintoma verificado en esta sesion: el pre-check de packaging del review bridge (`check_review_packet_diff_empty`) reporta "empty review diff" y emite `REVIEW_DECISION=CHANGES` automatico aunque el Builder SI haya commiteado codigo real en el motor. Bloqueo dos ciclos seguidos en `WT-2026-214` sin que el Manager llegara a revisar codigo.
+- **Problema:** varias operaciones git del tooling corren con `cwd=project_root` (el workspace, que NO es repo git) en vez de `motor_root` (`orquestador_de_agentes/`, que SÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â es repo y contiene los commits). El resultado es `git diff` vacÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­o y decisiones falsas. Sintoma verificado en esta sesion: el pre-check de packaging del review bridge (`check_review_packet_diff_empty`) reporta "empty review diff" y emite `REVIEW_DECISION=CHANGES` automatico aunque el Builder SI haya commiteado codigo real en el motor. Bloqueo dos ciclos seguidos en `WT-2026-214` sin que el Manager llegara a revisar codigo.
 - **Causa raiz (VERIFICADA EN CODIGO):** `bus/review_bridge.py` -> `_git_diff_stat()`, `_resolve_review_base()` y `_build_diff_for_files_likely_touched()` usan `cwd=self.project_root`. `WT-2026-187` ya extrajo `runtime/motor_link.py` (`resolve_motor_root`) y listo `review_bridge.py` como consumidor, pero solo se migro `_resolve_motor_controller`; las funciones git quedaron sin migrar. Mismo patron en las gates diferidas de `WT-2026-205`: `prepush_check.py` y `session_closeout.py`.
 - **Principio unificador:** todas las operaciones git del tooling resuelven `motor_root` via `motor_link` y corren con ese `cwd`. "Las operaciones git siempre corren en motor_root, punto."
 - **Superficies a cubrir:**
@@ -436,7 +446,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Tests requeridos:** con workspace no-repo + motor con commits reales, `check_review_packet_diff_empty` devuelve False (diff visible); el pre-check no emite CHANGES espurio; `prepush_check`/`session_closeout` resuelven el repo del motor; fallback si no hay repo.
 - **Criterio:** un Builder que commitea codigo real en el motor pasa el pre-check de packaging del bridge y el Manager revisa codigo de verdad; las gates de cierre operan sobre el repo del motor sin overrides manuales.
 - **Depende de:** WT-2026-210. Relacionado: WT-2026-187 (motor_link), WT-2026-203 (introdujo el diff check), WT-2026-206 (scope gate, superficie adyacente).
-- **Nota de simplificacion:** si el motor pasa a ser carpeta hermana del workspace (decision en curso), el principio se vuelve trivial de razonar: no hay repo anidado, el `cwd` de git es siempre el repo del motor sin ambiguedad. La migracion fisica no arregla este bug por si sola â€” el codigo sigue viviendo en el repo del motor â€” pero elimina la confusion conceptual.
+- **Nota de simplificacion:** si el motor pasa a ser carpeta hermana del workspace (decision en curso), el principio se vuelve trivial de razonar: no hay repo anidado, el `cwd` de git es siempre el repo del motor sin ambiguedad. La migracion fisica no arregla este bug por si sola ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â el codigo sigue viviendo en el repo del motor ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â pero elimina la confusion conceptual.
 
 ## WT-2026-217 - Pre-check de packaging usa la ruta canonica de transicion al emitir CHANGES
 - **Prioridad:** Alta
@@ -471,7 +481,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Non-goals iniciales:**
   - no automatizar aun la transicion autonoma entre subtickets (`a -> b`);
   - no reescribir `events.jsonl` historicos para forzar sufijos;
-  - no convertir este ticket en un rediseño completo del supervisor por planes.
+  - no convertir este ticket en un rediseÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±o completo del supervisor por planes.
 - **Tests requeridos:**
   - IDs validos e invalidos;
   - modo legacy permisivo sin romper historico;
@@ -553,31 +563,31 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Estado:** absorbed
 - **Nota de cierre 2026-06-09:** deuda retirada del backlog activo por higiene
   documental; reabrir solo si reaparece riesgo operativo real en guardado.
-- **Problema:** `guard_paths.py` usa patrones de seguridad (privada, .env) pero no protege archivos de estado del workspace (work_plan.md, execution_log.md). En Modelo B, si el cwd es el motor, el guard no "ve" el workspace â€” work_plan.md puede sobreescribirse accidentalmente. Incidente: WP-2026-178 pisÃ³ WT-2026-182 en sesiÃ³n 2026-05-30.
-- **Sketch:** aÃ±adir a `guard_paths.py` una lista de archivos de estado sagrados del workspace resueltos vÃ­a `AGENT_PROJECT_ROOT`; cualquier write a esos paths requiere confirmaciÃ³n explÃ­cita.
-- **Criterio:** intentar editar `z_scripts/.agent/collaboration/work_plan.md` desde Claude Code muestra alerta de guard y requiere confirmaciÃ³n.
+- **Problema:** `guard_paths.py` usa patrones de seguridad (privada, .env) pero no protege archivos de estado del workspace (work_plan.md, execution_log.md). En Modelo B, si el cwd es el motor, el guard no "ve" el workspace ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â work_plan.md puede sobreescribirse accidentalmente. Incidente: WP-2026-178 pisÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ WT-2026-182 en sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n 2026-05-30.
+- **Sketch:** aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±adir a `guard_paths.py` una lista de archivos de estado sagrados del workspace resueltos vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a `AGENT_PROJECT_ROOT`; cualquier write a esos paths requiere confirmaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n explÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­cita.
+- **Criterio:** intentar editar `z_scripts/.agent/collaboration/work_plan.md` desde Claude Code muestra alerta de guard y requiere confirmaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.
 - **Depende de:** WT-2026-182 (completado).
 
 ## WT-2026-182 - Integracion Repomix para Context Bootstrapping y Repo-Compare
 - **Prioridad:** Media
 - **Scope:** system/skills
 - **Estado:** completed
-- **Problema:** En el arranque, los agentes exploran "a ciegas" perdiendo turnos; ademÃ¡s, las herramientas de repo-compare son lentas fichero a fichero.
+- **Problema:** En el arranque, los agentes exploran "a ciegas" perdiendo turnos; ademÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s, las herramientas de repo-compare son lentas fichero a fichero.
 - **Sketch:** 
-  1) `repomix-context`: generar `.agent/context/repomix.xml` (con `--compress`) del workspace en arranque y pasarlo como `-f` a los agentes para inyecciÃ³n de contexto Cero-Turno.
+  1) `repomix-context`: generar `.agent/context/repomix.xml` (con `--compress`) del workspace en arranque y pasarlo como `-f` a los agentes para inyecciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de contexto Cero-Turno.
   2) `repo-compare`: usar repomix para empaquetar origen + destino en XMLs comprimidos para que el agente reciba ambos de golpe detectando gaps inmediatamente.
-- **Criterio:** El agente arranca recibiendo todo el contexto comprimido automÃ¡ticamente (sin overhead notable en repos pequeÃ±os), y la herramienta de repo-compare empaqueta y compara vÃ­a Repomix.
-- **Notas:** Depende de Node.js (que ya estÃ¡ instalado por OpenCode). Ideal usar opciÃ³n `--compress` nativa de Tree-sitter.
+- **Criterio:** El agente arranca recibiendo todo el contexto comprimido automÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ticamente (sin overhead notable en repos pequeÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±os), y la herramienta de repo-compare empaqueta y compara vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Repomix.
+- **Notas:** Depende de Node.js (que ya estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ instalado por OpenCode). Ideal usar opciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n `--compress` nativa de Tree-sitter.
 
 ## WT-2026-185 - Knowledge Layer: Glosario + Microagent + skill_resolver
 - **Prioridad:** Media
 - **Scope:** system/knowledge
 - **Estado:** completed
-- **Problema:** Los agentes carecÃ­an de marco canÃ³nico de terminologÃ­a y onboarding; el skill_resolver fallaba silenciosamente ante catÃ¡logos vacÃ­os.
-- **Sketch:** actualizar `EmptySkillCatalogError` para mencionar `.agent/microagents/`; crear `agent_system/templates/glossary.md` (14 tÃ©rminos); crear `templates/microagents/onboarding.md` con triggers y heurÃ­sticas de tech stack; integrar en instalador con guard `if not exists`; test unitario del mensaje.
-- **Criterio:** excepciÃ³n guÃ­a al usuario; instalador deposita knowledge docs; `--validate` no emite warning `host-project` tras install.
+- **Problema:** Los agentes carecÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­an de marco canÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nico de terminologÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a y onboarding; el skill_resolver fallaba silenciosamente ante catÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡logos vacÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­os.
+- **Sketch:** actualizar `EmptySkillCatalogError` para mencionar `.agent/microagents/`; crear `agent_system/templates/glossary.md` (14 tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rminos); crear `templates/microagents/onboarding.md` con triggers y heurÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­sticas de tech stack; integrar en instalador con guard `if not exists`; test unitario del mensaje.
+- **Criterio:** excepciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n guÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a al usuario; instalador deposita knowledge docs; `--validate` no emite warning `host-project` tras install.
 - **Depende de:** WT-2026-184.
-- **Nota post-cierre:** los knowledge docs depositados en `.agent/` raÃ­z son vulnerables al prune de `--sync` â†’ corregido en WT-2026-186.
+- **Nota post-cierre:** los knowledge docs depositados en `.agent/` raÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­z son vulnerables al prune de `--sync` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ corregido en WT-2026-186.
 
 ## WT-2026-186 - Idempotencia del instalador y contrato de rutas gestionadas
 - **Prioridad:** Alta
@@ -586,9 +596,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Problema:** `scripts/install_agent_system.py --sync` puede podar `.agent/glossary.md` y `.agent/microagents/` en la segunda sincronizacion estricta. Esas rutas se depositan desde `agent_system/templates/`, no existen en `.agent/` fuente y no estan cubiertas por `LOCAL_DIRS`.
 - **Decision de semantica:** `glossary.md` y `microagents/` son plantilla-una-vez: el instalador los crea si faltan, luego pertenecen al workspace destino. `--sync` no los sobrescribe, pero tampoco debe podarlos.
 - **Sketch:**
-  1) Introducir `INSTALLER_MANAGED_PATHS = {"glossary.md", "microagents"}` â€” constante separada de `LOCAL_DIRS` con semÃ¡ntica distinta: estas rutas se depositan una vez y luego pertenecen al destino; `--sync` no las poda pero tampoco las sobrescribe. NO usar `is_preserved()` (footgun: bloquearÃ­a sync si algÃºn dÃ­a se aÃ±aden a la fuente).
+  1) Introducir `INSTALLER_MANAGED_PATHS = {"glossary.md", "microagents"}` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â constante separada de `LOCAL_DIRS` con semÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntica distinta: estas rutas se depositan una vez y luego pertenecen al destino; `--sync` no las poda pero tampoco las sobrescribe. NO usar `is_preserved()` (footgun: bloquearÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a sync si algÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a se aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±aden a la fuente).
   2) Modificar `detect_destination_residues()` para excluir las rutas de `INSTALLER_MANAGED_PATHS` antes de podar.
-  3) `copy_tree()`: corregir comportamiento â€” el allowlist se valida por archivo, no solo por directorio raÃ­z; `shutil.copytree` sobre un dir parcialmente allowlisted puede meter archivos no permitidos. Alinear docstring con comportamiento real (hoy promete `RuntimeError`, hace `SKIP`+continue).
+  3) `copy_tree()`: corregir comportamiento ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â el allowlist se valida por archivo, no solo por directorio raÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­z; `shutil.copytree` sobre un dir parcialmente allowlisted puede meter archivos no permitidos. Alinear docstring con comportamiento real (hoy promete `RuntimeError`, hace `SKIP`+continue).
   4) Eliminar entrada fantasma `BACKUP_VERIFIED.md` de `MANIFEST.workspace` (no existe en fuente ni destino).
 - **Tests requeridos:** `install && sync && sync` preserva knowledge docs; sync preserva glosario modificado por usuario; residuo real se poda; archivo no-allowlisted dentro de dir permitido no se copia; dry-run no escribe ni borra pero reporta correctamente; glosario y microagents existentes no se sobrescriben.
 - **Criterio:** `--install && --sync && --sync` deja vivos y personalizados los knowledge docs de WT-2026-185, mientras los residuos reales siguen siendo podados.
@@ -601,15 +611,15 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Problema:** varias rutas y comandos todavia asumen codigo local en el workspace o nombres fijos del motor. Esto debilita Modelo B y deja deuda legacy visible tras la auditoria de cierre.
 - **Sketch:**
   1) Extraer `runtime/motor_link.py`: API `resolve_motor_root(project_root)`, `resolve_motor_controller(project_root)`, `resolve_motor_script(project_root, script_name)`. Lee `motor_destination_link.json`. Consumidores: `review_bridge.py`, `prepush_check.py`, `session_closeout.py`.
-  2) Portabilidad: corregir `TEMPLATE_ROOT = Path(__file__).resolve().parent.parent` (bug activo: falla si motor se renombra); corregir log de Ã©xito en install (usa `PROJECT_AGENT` global, deberÃ­a usar `project_agent` local).
-  3) Portabilidad Modelo B: `prepush_check.py` usa `.agent/agent_controller.py` relativo â€” rompe en destino puro; resolver vÃ­a `motor_link`; mismo problema en `session_closeout.py` (invoca 6+ scripts desde `project_root/scripts/`).
-  4) Ampliar `_check_portability()` en `session_closeout.py` â€” hoy solo escanea `docs/markdowns/skills/.agent/rules` en `*.md`; no ve `scripts/`, `bus/`, `*.py`, `*.ps1` (los hardcodes de esta auditorÃ­a habrÃ­an sido invisibles).
-  5) `.git` check frÃ¡gil: `pre_handoff_guard.py` devuelve `valid=True` silenciosamente si `.git` no existe en `project_root` (bypass de todos los checks). Decidir: "sin .git â†’ skip con warning" vs `git -C <path> rev-parse --is-inside-work-tree`.
+  2) Portabilidad: corregir `TEMPLATE_ROOT = Path(__file__).resolve().parent.parent` (bug activo: falla si motor se renombra); corregir log de ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©xito en install (usa `PROJECT_AGENT` global, deberÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a usar `project_agent` local).
+  3) Portabilidad Modelo B: `prepush_check.py` usa `.agent/agent_controller.py` relativo ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â rompe en destino puro; resolver vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a `motor_link`; mismo problema en `session_closeout.py` (invoca 6+ scripts desde `project_root/scripts/`).
+  4) Ampliar `_check_portability()` en `session_closeout.py` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â hoy solo escanea `docs/markdowns/skills/.agent/rules` en `*.md`; no ve `scripts/`, `bus/`, `*.py`, `*.ps1` (los hardcodes de esta auditorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a habrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­an sido invisibles).
+  5) `.git` check frÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡gil: `pre_handoff_guard.py` devuelve `valid=True` silenciosamente si `.git` no existe en `project_root` (bypass de todos los checks). Decidir: "sin .git ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ skip con warning" vs `git -C <path> rev-parse --is-inside-work-tree`.
   6) Limpieza legacy: eliminar `sync_agent_core.py` (deprecado v9.4.1, nadie lo importa, 35 occ mojibake); `strict_sync` no-op en `sync_agent_system()`; `import shutil` redundante en `copy_knowledge_docs()`.
-  7) Mensaje `EmptySkillCatalogError` engaÃ±oso (dice "add microagents" pero resolver no las conoce); test superficial de WT-2026-185 â€” reemplazar por test que ejerce ruta real de catÃ¡logo vacÃ­o.
-  8) DecisiÃ³n explÃ­cita: `orquestador.py` usa rutas cwd (`Path(".agent/logs")`, allowlist/denylist) sin migrar a `runtime.project_root` + 9 occ mojibake. Â¿Legacy o migrar?
-  9) Comandos en `AGENTS.md` listan `python .agent/agent_controller.py` sin `--project-root` â€” contradice la arquitectura Modelo B documentada en el mismo archivo.
-- **Criterio:** los comandos de cierre/calidad funcionan desde workspace destino Modelo B puro; chequeo de portabilidad detecta hardcodes en cÃ³digo fuente; no hay bypasses silenciosos en guards de higiene.
+  7) Mensaje `EmptySkillCatalogError` engaÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±oso (dice "add microagents" pero resolver no las conoce); test superficial de WT-2026-185 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â reemplazar por test que ejerce ruta real de catÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡logo vacÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­o.
+  8) DecisiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n explÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­cita: `orquestador.py` usa rutas cwd (`Path(".agent/logs")`, allowlist/denylist) sin migrar a `runtime.project_root` + 9 occ mojibake. ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿Legacy o migrar?
+  9) Comandos en `AGENTS.md` listan `python .agent/agent_controller.py` sin `--project-root` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â contradice la arquitectura Modelo B documentada en el mismo archivo.
+- **Criterio:** los comandos de cierre/calidad funcionan desde workspace destino Modelo B puro; chequeo de portabilidad detecta hardcodes en cÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³digo fuente; no hay bypasses silenciosos en guards de higiene.
 - **Depende de:** WT-2026-186.
 
 ## WT-2026-188 - Modularizacion progresiva de agent_controller.py
@@ -617,7 +627,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Scope:** system/architecture
 - **Estado:** completed
 - **Problema:** `.agent/agent_controller.py` concentra CLI, validacion, materializacion de estado y orquestacion. Es mantenible hoy, pero su tamano y centralidad elevan el coste de cambio.
-- **Non-goal:** no crear codigo bajo `.agent/validators/` â€” viola Modelo B (`.agent/` es estado, no codigo del motor). Namespace del motor: `bus/validators/`, `runtime/validators/` o similar segun dependencias reales.
+- **Non-goal:** no crear codigo bajo `.agent/validators/` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â viola Modelo B (`.agent/` es estado, no codigo del motor). Namespace del motor: `bus/validators/`, `runtime/validators/` o similar segun dependencias reales.
 - **Sketch:** mapear responsabilidades internas (CLI dispatch, validacion, materializacion de estado, orquestacion) antes de mover nada; extraer solo funciones puras con tests previos; mantener `agent_controller.py` como fachada CLI estable; un modulo por responsabilidad; evitar refactors masivos sin cobertura previa.
 - **Criterio:** cada extraccion conserva comportamiento, reduce complejidad local y mantiene compatibilidad de CLI.
 - **Depende de:** WT-2026-187.
@@ -637,8 +647,8 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Nota de cierre 2026-06-09:** issue retirado del backlog activo porque no
   bloquea el flujo canonico del `repo_destino`; reabrir solo si vuelve a ser
   limitante.
-- **Problema:** `npx repomix` falla con `Permission denied while scanning directory` en `z_scripts` y `orquestador_de_agentes` en Windows. El error ocurre en globby antes de aplicar filtros de include/exclude. PowerShell accede sin problemas; el bloqueo es especÃ­fico de Node.js (posiblemente antivirus o Windows Search). Repomix es best-effort y no bloquea el arranque.
-- **Sketch:** investigar ACLs con `icacls`, probar desactivar indexaciÃ³n de Windows Search en la carpeta, probar versiÃ³n mÃ¡s reciente de repomix, o como alternativa usar `--working-dir` apuntando a un subdirectorio accesible.
+- **Problema:** `npx repomix` falla con `Permission denied while scanning directory` en `z_scripts` y `orquestador_de_agentes` en Windows. El error ocurre en globby antes de aplicar filtros de include/exclude. PowerShell accede sin problemas; el bloqueo es especÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fico de Node.js (posiblemente antivirus o Windows Search). Repomix es best-effort y no bloquea el arranque.
+- **Sketch:** investigar ACLs con `icacls`, probar desactivar indexaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de Windows Search en la carpeta, probar versiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s reciente de repomix, o como alternativa usar `--working-dir` apuntando a un subdirectorio accesible.
 - **Criterio:** `npx repomix --compress` genera `.agent/context/repomix.xml` sin errores en el siguiente arranque del launcher.
 - **Depende de:** WT-2026-182.
 
@@ -680,7 +690,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Estado:** completed
 - **Problema:** WT-2026-200 corrigio el bug real de precedencia `-OnlyBuilder` / `-ResumeBuilder`, pero aun quedan mejoras de robustez que conviene aislar para no reabrir un ticket ya cerrable: falta una prueba mas cercana al runtime real desde `bus/supervisor.py:_relaunch_builder()`, algunos tests dependen de asserts textuales sobre el `.ps1`, y el invariante de precedencia vive en codigo/tests pero no en una nota durable cercana al launcher.
 - **Sketch:**
-  1) AÃ±adir un test o eval de integracion ligera que ejerza la invocacion real desde `_relaunch_builder()` hasta `launch_agent_terminals.ps1`.
+  1) AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±adir un test o eval de integracion ligera que ejerza la invocacion real desde `_relaunch_builder()` hasta `launch_agent_terminals.ps1`.
   2) Reducir dependencia de asserts sobre texto literal del script PowerShell, favoreciendo verificaciones de comportamiento.
   3) Documentar cerca del launcher/supervisor que `-OnlyBuilder` tiene precedencia sobre `-ResumeBuilder` para la decision de lanzar supervisor.
 - **Criterio:** una refactorizacion cosmetica del `.ps1` no rompe tests validos, el camino real supervisor -> launcher queda cubierto por al menos una prueba, y la precedencia de flags queda documentada junto al codigo que la implementa.
@@ -725,7 +735,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   collaboration canonica y legacy.
 - **Problema:** hoy existen dos superficies de collaboration: la activa en `z_scripts/.agent/collaboration` y una copia legacy/stale en `orquestador_de_agentes/.agent/collaboration`. El `session_closeout` solo opera sobre el workspace activo, por lo que la copia del motor acumula `manager_feedback_*`, `review_queue.md`, `work_plan.md`, `TURN.md` y `execution_log.md` obsoletos sin una politica explicita.
 - **Sketch:** decidir y automatizar una de estas dos semanticas: (a) tratar la collaboration del motor como superficie legacy congelada y excluirla del lifecycle operativo; o (b) archivarla/limpiarla explicitamente durante `session-close` cuando `project_root != motor_root`. En ambos casos, dejarlo documentado y testeado para que no vuelva a parecer estado canonico.
-- **Criterio:** tras un cierre de sesion, no queda ambiguedad sobre cual collaboration es canonica y la copia del motor no arrastra estado operativo engaÃ±oso.
+- **Criterio:** tras un cierre de sesion, no queda ambiguedad sobre cual collaboration es canonica y la copia del motor no arrastra estado operativo engaÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±oso.
 - **Depende de:** WT-2026-210.
 
 ## WT-2026-208 - Estabilizacion de suite global tras transicion workspace+motor
@@ -878,11 +888,11 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Cierre verificado:** bus con aprobacion Manager, `CLOSE_CONFIRMED`,
   `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`; entrega productiva
   `a1e704c`.
-- **Problema:** cuando el supervisor se cae durante un BUILDER_RELAUNCH_ATTEMPTED, al reiniciar lee el estado proyectado del bus. Si sigue siendo READY_FOR_REVIEW (porque el estado no se resetÃ³ a IN_PROGRESS antes del crash), despacha al Manager directamente sin relanzar Builder. Observado en WT-2026-192: seq 322 BUILDER_RELAUNCH_ATTEMPTED, seq 323 SUPERVISOR_RESTARTED, seq 324 MANAGER_REVIEWING sin Builder intermedio.
-- **Root cause:** el supervisor en startup no distingue entre READY_FOR_REVIEW legÃ­timo (Builder terminÃ³) y READY_FOR_REVIEW espurio (crash durante relaunch post-CHANGES).
-- **Sketch:** al reiniciar, el supervisor comprueba los Ãºltimos N eventos del bus. Si el Ãºltimo REVIEW_DECISION fue CHANGES y no hay BUILDER_EXIT posterior, forzar relaunch de Builder independientemente del estado proyectado. La condiciÃ³n es:  AND .
-- **Tests requeridos:** supervisor reinicia con READY_FOR_REVIEW tras CHANGES sin BUILDER_EXIT â†’ lanza Builder, no Manager; supervisor reinicia con READY_FOR_REVIEW legÃ­timo (BUILDER_EXIT posterior a REVIEW_DECISION) â†’ lanza Manager correctamente; test de regresiÃ³n del doble-requeue (no debe dispararse).
-- **Criterio:** tras reinicio del supervisor, el ciclo CHANGES â†’ Builder â†’ Manager se ejecuta siempre en orden correcto, incluso si el crash ocurriÃ³ entre REVIEW_DECISION y BUILDER_EXIT.
+- **Problema:** cuando el supervisor se cae durante un BUILDER_RELAUNCH_ATTEMPTED, al reiniciar lee el estado proyectado del bus. Si sigue siendo READY_FOR_REVIEW (porque el estado no se resetÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ a IN_PROGRESS antes del crash), despacha al Manager directamente sin relanzar Builder. Observado en WT-2026-192: seq 322 BUILDER_RELAUNCH_ATTEMPTED, seq 323 SUPERVISOR_RESTARTED, seq 324 MANAGER_REVIEWING sin Builder intermedio.
+- **Root cause:** el supervisor en startup no distingue entre READY_FOR_REVIEW legÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­timo (Builder terminÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³) y READY_FOR_REVIEW espurio (crash durante relaunch post-CHANGES).
+- **Sketch:** al reiniciar, el supervisor comprueba los ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltimos N eventos del bus. Si el ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltimo REVIEW_DECISION fue CHANGES y no hay BUILDER_EXIT posterior, forzar relaunch de Builder independientemente del estado proyectado. La condiciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n es:  AND .
+- **Tests requeridos:** supervisor reinicia con READY_FOR_REVIEW tras CHANGES sin BUILDER_EXIT ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ lanza Builder, no Manager; supervisor reinicia con READY_FOR_REVIEW legÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­timo (BUILDER_EXIT posterior a REVIEW_DECISION) ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ lanza Manager correctamente; test de regresiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n del doble-requeue (no debe dispararse).
+- **Criterio:** tras reinicio del supervisor, el ciclo CHANGES ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Builder ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Manager se ejecuta siempre en orden correcto, incluso si el crash ocurriÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ entre REVIEW_DECISION y BUILDER_EXIT.
 - **Depende de:** WT-2026-192.
 
 ## TBD - Alinear tests legacy de pre-handoff con auto-commit motor-aware
@@ -928,7 +938,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Nota de cierre 2026-06-09:** deuda retirada del backlog activo de
   `repo_destino`; cualquier trabajo futuro sobre reglas de memoria debe
   relanzarse desde evidencia actual del `repo_motor`.
-- **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino â€” pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
+- **Problema:** el motor no tiene `memory_rules.md`. `install_agent_system.py` ya implementa `sync_memory_rules()` que fusiona wings engine/meta del motor al destino preservando el wing project del destino ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â pero si el motor no tiene `memory_rules.md`, el sync es un no-op y los destinos no reciben reglas portables. Verificado: `git log --oneline -- .agent/runtime/memory/memory_rules.md` devuelve vacio; el archivo no esta en history ni gitignoreado.
 - **Causa raiz:** `memory_rules.md` es un artefacto derivado deterministamente de `observations.jsonl` via `memory_consolidate.py`. El motor tiene `observations.jsonl` vivo (35 KB, schema canonico) pero nunca se corrio la consolidacion para generar `memory_rules.md` y commitearlo.
 - **Contexto clave (leer antes de ejecutar):**
   - `memory_consolidate.py` tiene flags `--apply` (default dry-run) y modifica `observations.jsonl` (dedupe+filter+archive). NO correr `--apply` sobre el motor sin revisar el dry-run primero.
@@ -936,9 +946,9 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   - `memory_rules.md` generado contendra wings engine/meta/project derivados de las observaciones del motor. Revisar que las reglas son coherentes antes de commitear.
   - Una vez commiteado en el motor, el siguiente `--sync` en cualquier destino propagara automaticamente las wings engine/meta.
 - **Sketch:**
-  1) `git -C motor diff .agent/runtime/memory/observations.jsonl` â€” entender que cambio.
-  2) `python scripts/memory_consolidate.py` (dry-run) desde el motor â€” ver que generaria.
-  3) `python scripts/memory_consolidate.py --apply` â€” generar `memory_rules.md`, `MEMORY.md`, `memory_profile.md`.
+  1) `git -C motor diff .agent/runtime/memory/observations.jsonl` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â entender que cambio.
+  2) `python scripts/memory_consolidate.py` (dry-run) desde el motor ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ver que generaria.
+  3) `python scripts/memory_consolidate.py --apply` ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â generar `memory_rules.md`, `MEMORY.md`, `memory_profile.md`.
   4) Revisar `memory_rules.md` generado: debe tener wings coherentes y reglas derivadas de tickets reales.
   5) Commitear en el motor: `memory_rules.md` (nuevo) + `observations.jsonl` (si cambio) + `MEMORY.md` (si cambio).
   6) Verificar que el motor tiene `memory_rules.md` en git y que `.gitignore` del motor NO lo ignora.
@@ -983,7 +993,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   - El modelo de wings ya hace la separacion conceptual: `engine`/`meta` = portables al motor; `project` = locales al destino.
   - La promocion debe ser MANUAL con propuesta asistida. No automatica en cierre de ticket (riesgo de contaminar el motor con aprendizajes a medio cocer).
   - La ruta fisica de promocion es: escribir observacion en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl` + reconsolidar motor (o dejar para siguiente sesion de consolidacion).
-  - `memory_upload.md` ya tiene la estructura correcta ("no escribas todavia; primero propÃ³n"). Solo necesita un tercer destino posible.
+  - `memory_upload.md` ya tiene la estructura correcta ("no escribas todavia; primero propÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n"). Solo necesita un tercer destino posible.
 - **Sketch:**
   1) Extender `memory_upload.md` con una seccion "Destinos posibles" que incluya explicitamente: (a) memoria del proyecto destino (`wing: project`), (b) motor externo (`wing: engine` o `meta`, escribe en `orquestador_de_agentes/.agent/runtime/memory/observations.jsonl`), (c) memoria personal de Claude (habitos transversales del usuario).
   2) La propuesta debe incluir el campo `wing` sugerido y el destino recomendado como parte del formato existente.
@@ -1089,9 +1099,11 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 - **Prioridad:** Media
 - **Scope:** system/testing-hygiene
 - **Estado:** completed
-- **Problema:** 	ests/unit/test_project_root_resolution.py pasa aislado pero falla dentro de la suite global por contaminacion de orden/cache en la resolucion de untime.project_root. Mientras esto siga asi, la suite global no vuelve a ser una senal fiable y WT-2026-208 queda solo parcialmente estabilizado.
+- **Problema:** 	ests/unit/test_project_root_resolution.py pasa aislado pero falla dentro de la suite global por contaminacion de orden/cache en la resolucion de 
+untime.project_root. Mientras esto siga asi, la suite global no vuelve a ser una senal fiable y WT-2026-208 queda solo parcialmente estabilizado.
 - **Objetivo:** hacer que la resolucion de project_root sea determinista entre tests, ya sea limpiando cache global en fixture/teardown o endureciendo el contrato del modulo para que no fugue estado entre casos.
-- **Sketch inicial:** identificar el cache compartido en untime.project_root, anadir fixture o helper de reset reutilizable para la familia afectada, y rerun de la suite para demostrar que 	est_project_root_resolution.py deja de variar por orden.
+- **Sketch inicial:** identificar el cache compartido en 
+untime.project_root, anadir fixture o helper de reset reutilizable para la familia afectada, y rerun de la suite para demostrar que 	est_project_root_resolution.py deja de variar por orden.
 - **Criterio:** 	ests/unit/test_project_root_resolution.py pasa tanto aislado como dentro de la suite global; la clasificacion como "contaminacion de suite" deja de ser necesaria.
 - **Depende de:** WT-2026-208.
 
@@ -1122,7 +1134,7 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
 ## WT-2026-244a - Formalizar policy de mergeabilidad y review inspirada por FrontierCode
 - **Prioridad:** Alta
 - **Scope:** system/review-quality-policy
-- **Estado:** active
+- **Estado:** pending
 - **Problema:** `AUDIT_FRONTIERCODE_LEARNINGS.md` ya destila una policy concreta
   a partir de FrontierCode, pero todavia no esta convertida en contrato
   builder-facing. Si se deja solo como audit, el siguiente ciclo puede volver a
@@ -1139,3 +1151,175 @@ Esta seccion ordena la deuda viva antes de abrir mas parches. La regla es: todo 
   cierra con `validate --json` limpio en `repo_destino`.
 - **Depende de:** WT-2026-243a.
 - **Origen:** session-2026-06-09-frontiercode.
+
+
+
+## WT-2026-246a - Endurecer guard M3 y clarificar recuperacion del Builder
+- **Prioridad:** Alta
+- **Scope:** system/mark-ready-m3-hardening
+- **Estado:** completed
+- **Problema:** el guard de `--mark-ready` aceptaba checkpoints M3 que todavia
+  eran ancestros de `HEAD` pero ya no anclaban el commit actual del `repo_motor`.
+  Eso dejaba pasar un handoff con tag obsoleto. Ademas, las instrucciones del
+  Builder no eran totalmente consistentes sobre como recuperarse cuando el
+  checkpoint estaba stale.
+- **Objetivo:** exigir que `checkpoint/review-<ticket>` coincida con el `HEAD`
+  actual del `repo_motor`, cubrir la regresion con tests y alinear prompts/skills
+  del Builder para que la recuperacion correcta sea relanzar
+  `--pre-handoff --json --force`, no usar `--scope-override`.
+- **Contexto clave:**
+  - la implementacion ya esta precompletada en el arbol de trabajo del motor;
+  - `WT-2026-245c` ya esta cerrado y sus superficies de colaboracion no deben
+    contaminar el commit productivo de `246a`;
+  - si `STATE.md`, `TURN.md` o `execution_log.md` siguen sucios en el motor, el
+    scope gate puede bloquear `--mark-ready` aunque la entrega tecnica sea valida.
+- **Criterio:** `--mark-ready` bloquea un M3 stale; tests focales verdes;
+  `validate --json` limpio; commit visible de `WT-2026-246a`; instrucciones del
+  Builder alineadas con la recuperacion canonica.
+- **Depende de:** WT-2026-245c.
+- **Origen:** session-2026-06-10-m3-hardening.
+
+## WT-2026-246b - Idempotencia del closeout del launcher y guard autoritativo post-success
+- **Prioridad:** Alta
+- **Scope:** system/launcher-closeout-idempotency
+- **Estado:** completed
+- **Problema:** el ciclo de `WT-2026-246a` mostro que el Builder puede cerrar
+  correctamente (`BUILDER_EXIT` + `STATE_CHANGED -> READY_FOR_REVIEW`) y aun asi
+  el launcher volver a ejecutar `--pre-handoff` y `--mark-ready` desde su bloque
+  `finally`. El controller contiene el segundo intento como `STALE_BUILDER_ORPHAN`,
+  pero el ruido sigue llegando al bus y complica el diagnostico operativo.
+- **Objetivo:** hacer idempotente el closeout del launcher para que, antes de
+  lanzar `pre-handoff/mark-ready`, consulte el estado autoritativo del ticket y
+  salte el closeout si el ticket ya esta en `READY_FOR_REVIEW`, `READY_TO_CLOSE`,
+  `HUMAN_GATE` o `COMPLETED`.
+- **Contexto clave:**
+  - el stale guard del controller funciona y no debe debilitarse;
+  - el problema esta en origen: el launcher no sabe que el closeout ya ocurrio;
+  - `.opencode/opencode.json` puede quedar modificado por drift de restauracion
+    del launcher y `nul` aparece como artefacto untracked del runtime Windows;
+  - no existe todavia un flag CLI explicito para consultar el estado autoritativo
+    del ticket desde el launcher.
+- **Entregables esperados:**
+  - exponer un flag CLI explicito en `agent_controller.py` para estado autoritativo
+    del ticket (p. ej. `--json-state`);
+  - usar ese estado en `Add-BuilderCloseout` para saltar closeout post-success;
+  - loggear el skip con `ticket_id`, `round` y `bus_state`;
+  - restaurar `.opencode/opencode.json` de forma exacta al finalizar el launcher;
+  - limpiar/contener el artefacto `nul` sin mezclarlo con el ticket activo;
+  - test de integracion que pruebe doble closeout sin ruido extra de bus.
+- **Criterio:** tras un `mark-ready` exitoso, una segunda pasada del `finally`
+  no emite `HANDOFF_BLOCKED`, `STALE_BUILDER_ORPHAN` ni un segundo `BUILDER_EXIT`;
+  el launcher registra un skip limpio; `.opencode/opencode.json` no queda dirty;
+  `nul` no reaparece como untracked; `validate --json` final sin errores.
+- **Non-goals:**
+  - no tocar la semantica del stale guard del controller;
+  - no mover `_release_builder_lock()` fuera del controller;
+  - no mezclar este ticket con el problema de autenticacion del Manager.
+- **Depende de:** WT-2026-246a.
+- **Origen:** session-2026-06-10-launcher-closeout.
+
+## WT-2026-247a - Higiene de suite: aislamiento de tests y bugs de regex/mock/lock
+- **Prioridad:** Media
+- **Scope:** system/testing-hygiene
+- **Estado:** completed
+- **Problema:** 7 tests de la suite fallan por dos causas distintas:
+  - **Grupo A - Contaminacion de estado real (3 tests):** tests que leen archivos
+    reales del workspace (builder_lock.txt con PID de WT-2026-240a,
+    execution_log.md con datos de sesion activa). No aislan su entorno.
+    - `tests/test_builder_lock.py::test_lock_schema_does_not_contain_pid`
+    - `tests/test_review_packet_evidence_gate.py::test_evidence_gate_passes_with_motor_evidence`
+    - `tests/test_review_packet_evidence_gate.py::test_integration_gate_passes_with_motor_evidence`
+  - **Grupo B - Bugs en el propio test (4 tests):**
+    - `tests/test_builder_lock.py::test_lock_schema_contains_required_fields`: regex
+      WP-\d{4}-\d+ no matchea prefijo WT-; debe actualizarse al patron canonico.
+    - `tests/test_builder_lock.py::test_launcher_does_not_write_pid`: el launcher
+      PowerShell todavia escribe campo pid; verificar si es bug real o expectativa
+      incorrecta del test antes de corregir.
+    - `tests/test_motor_root_gates.py::test_regression_cwd_project_root_breaks_check`:
+      mock drift ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â los metodos monkeypatched no tienen efecto en la funcion real.
+    - `tests/test_scope_gate.py::test_mark_ready_blocks_on_zero_overlap`:
+      `_release_builder_lock` se llama cuando el test espera que no se llame;
+      probable bug en el orden de guards.
+- **Criterio:** los 7 tests pasan; tests del Grupo A usan tmp_path o fixtures
+  aislados; tests del Grupo B con bugs corregidos en logica o expectativa segun
+  corresponda; ruff limpio; validate sin errores.
+- **Nota:** para el launcher/pid (Grupo B), verificar antes si es un bug real del
+  launcher o un cambio de contrato no documentado.
+- **Depende de:** WT-2026-245c.
+- **Origen:** session-2026-06-10-preexisting-failures.
+
+## WT-2026-248a - Stabilize .opencode/opencode.json: exact launcher restore and integrity guard in pre-handoff
+- **Prioridad:** Media
+- **Scope:** system/opencode-config-stability
+- **Estado:** completed
+- **Problema:** el launcher inyecta permisos runtime en `.opencode/opencode.json` y al
+  restaurarlo usa escritura PowerShell 5.1 que introduce BOM o drift de serializacion sobre un
+  archivo trackeado del `repo_motor`. Ese residuo ensucia git y bloquea `--pre-handoff` en
+  tickets no relacionados. El ruido ya aparecio en `WT-2026-246a`, `WT-2026-246b` y
+  `WT-2026-247a`.
+- **Causa raiz verificada:**
+  - `git diff HEAD -- .opencode/opencode.json` muestra un drift minimo tipo `-{` / `+BOM{`.
+  - El `finally` interno del launcher restaura con escritura PS5.1 y no garantiza bytes identicos a `HEAD`.
+  - El archivo versionado no debe persistir permisos runtime del `repo_destino`.
+- **Objetivo:** que al terminar el ciclo del Builder, `.opencode/opencode.json` quede identico
+  a `HEAD` sin intervencion manual, tanto en camino feliz como en camino de fallo, sin borrar
+  cambios legitimos de configuracion.
+- **Alcance:**
+  - Paso 1 - Fix raiz en launcher: restauracion byte-exact del archivo original, o un mecanismo equivalente que garantice diff vacio al salir del `finally`.
+  - Paso 2 - Guard de integridad en `--pre-handoff`: si `.opencode/opencode.json` sigue dirty y no esta en `Files Likely Touched`, solo autocorregir cuando el diff coincide exactamente con el residuo BOM permitido; si hay cualquier cambio semantico adicional, bloquear.
+  - Paso 3 - Tests de regresion y evidencia operativa: cubrir ciclo normal, ciclo abortado/fallido, prueba negativa y visibilidad del stderr de autocorreccion.
+- **Files Likely Touched:**
+  - `scripts/launch_agent_terminals.ps1`
+  - `.agent/agent_controller.py`
+  - `tests/test_opencode_config_stability.py`
+- **Criterio:** despues de un ciclo completo del launcher, `git diff HEAD -- .opencode/opencode.json` devuelve output vacio en camino feliz y en camino de fallo. `--pre-handoff` deja de bloquear por el drift exacto del launcher, pero sigue bloqueando cambios semanticos no declarados en FLT. Ruff limpio. Tests verdes.
+- **Depende de:** WT-2026-246b.
+
+## WT-2026-249a - Hardening minimo del contrato CLI: stderr vs returncode
+- **Prioridad:** Media
+- **Scope:** system/cli-output-contract
+- **Estado:** completed
+- **Problema:** algunos consumers externos estan tratando cualquier contenido
+  en `stderr` como fallo, pero el controlador mezcla rutas de error fatal
+  (`returncode 1`) con rutas de warning no fatal (`returncode 0`) escritas
+  tambien a `stderr`. Eso contamina email, CI o wrappers con falsos positivos.
+- **Objetivo:** aplicar un hardening minimo del contrato observable:
+  - eliminar `stderr + returncode 0` en la rama `stale_builder_orphan`;
+  - clasificar el wrapper de `session close` por `returncode`, no por parseo
+    textual;
+  - cubrir ambos casos con tests focales y validar que `tests/test_agent_controller.py`
+    completo sigue verde.
+- **Criterio:** stale orphan retorna `0` sin `stderr` ni eventos al bus; session
+  close exitoso no propaga `stderr`; session close fallido si lo propaga;
+  tests focales, `ruff` y `validate` verdes; commit visible de `WT-2026-249a`.
+- **Depende de:** WT-2026-248a.
+- **Origen:** session-2026-06-10-cli-contract-hardening.
+
+## WT-2026-249b - Excluir BUILDER_BRIEF_ del guard de superficies vivas del workspace
+- **Prioridad:** Media
+- **Scope:** system/pre-handoff-live-surfaces
+- **Estado:** pending
+- **Problema:** durante `WT-2026-249a`, el guard de `--pre-handoff` trato
+  `.agent/collaboration/BUILDER_BRIEF_WT-2026-249a.md` como drift fuera de
+  scope y genero `HANDOFF_BLOCKED` espurio. El mismo incidente tambien incluyo
+  `UPSTREAM_LEARNINGS.md`, pero ambos artefactos no deben resolverse igual.
+- **Objetivo:** reconocer `BUILDER_BRIEF_` como superficie viva/no bloqueante
+  del workspace, con cobertura de regresion, sin ampliar exclusiones a memoria
+  ni tocar `UPSTREAM_LEARNINGS.md`.
+- **Criterio:** existe una exclusion unica
+  `".agent/collaboration/BUILDER_BRIEF_"`; `BUILDER_BRIEF_WT-*` deja de
+  bloquear `--pre-handoff`; `UPSTREAM_LEARNINGS.md` sigue fuera de exclusiones;
+  tests focales + `tests/test_agent_controller.py` completos verdes.
+- **Depende de:** WT-2026-249a.
+- **Origen:** session-2026-06-11-builder-brief-followup.
+
+## WT-2026-249c - Review bridge: normalizar parseo de CHANGES y evitar degradacion espuria a INSPECT
+- **Prioridad:** Alta
+- **Scope:** system/review-bridge-parser
+- **Estado:** pending
+- **Problema:** WT-2026-249b llego correctamente a READY_FOR_REVIEW, pero la decision del Manager acabo materializada como INSPECT y el bus cayo en HUMAN_GATE. La evidencia apunta a un bug de parser en us/review_bridge.py: el extractor de json_last_text guarda la primera decision del stream en vez de la ultima, y ademas existe una degradacion deliberada de json_last_text -> INSPECT que puede convertir una review valida en escalado humano.
+- **Objetivo:** aislar el fix minimo del parser para que una review valida DECISION: CHANGES no termine como INSPECT por errores de interpretacion del stream NDJSON.
+- **Criterio:** verificar primero si el Manager real emite phase:"final_answer" en el caso de 249b; si no lo hace de forma autoritativa, corregir Bug #1 (first-vs-last) y Bug #2 (degradacion de json_last_text) con tests de barrera sobre NDJSON realista. Sin tocar payload estructurado, gent_controller.py, supervisor.py ni reglas de HUMAN_GATE.
+- **Depende de:** WT-2026-249b.
+- **Origen:** session-2026-06-11-review-bridge-parser.
+

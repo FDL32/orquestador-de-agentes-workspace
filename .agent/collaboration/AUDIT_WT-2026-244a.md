@@ -34,3 +34,31 @@ TP-05: `validate --json` del `repo_destino` queda sin errores. Verificacion: el 
 ## Veredicto Previo
 
 `APPROVED`
+
+## Addendum - Auditoria Bus y Recuperacion
+
+### Checklist complementario del framework
+
+- `§6 CHANGES`: no aplica en esta incidencia concreta, porque el ciclo termino en
+  `INSPECT` y escalo a `HUMAN_GATE`; no hubo una transicion canonica
+  `REVIEW_DECISION=CHANGES` que auditar en este ticket.
+- `Idle timeout`: no es calculable de forma estricta por la inversion temporal
+  observada entre `seq 1052` y eventos posteriores, pero las senales
+  indirectas apuntan a idle timeout probable:
+  - `supervisor_lock.txt` ausente tras el ciclo;
+  - no hay `SUPERVISOR_RESTARTED` entre `seq 1052` y `seq 1072`;
+  - la transicion a `READY_FOR_REVIEW` usa `source=mark-ready`.
+- `Requeue claims`: no existe claim activo para `WT-2026-244a`, pero el
+  directorio `.agent/runtime/requeue_claims/` conserva claims stale de tickets
+  anteriores (`WT-2026-193`, `WT-2026-198`, `WT-2026-203`, `WT-2026-205`,
+  `WT-2026-221b`, `WT-2026-224a`, `WT-2026-225a`, `WT-2026-232a`,
+  `WT-2026-234a`, `WT-2026-235a`, `WT-2026-236a`). No bloquearon este ciclo,
+  pero conviene tratarlos como deuda operativa porque podrian interferir en
+  supresiones de requeue futuras si el consumo durable vuelve a degradarse.
+
+### Lectura consolidada
+
+La recuperacion del ticket sigue siendo `RECUPERABLE` con confianza `ALTA`. La
+parte no resuelta no es drift del bus, sino cierre operativo incompleto del
+ciclo `INSPECT -> HUMAN_GATE`, mas la deuda lateral de claims stale que el
+framework recomienda vigilar aunque no pertenezcan al ticket activo.
