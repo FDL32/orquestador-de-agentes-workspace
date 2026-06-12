@@ -92,3 +92,6 @@ El siguiente paso canonico ya no es reabrir `WT-2026-251a`, sino ejecutar
   - lean globals del controller en tiempo de llamada;
   - mantengan patch-targets en `agent_controller.*`;
   - no introduzcan imports desde `.agent/scope_gate.py` de vuelta al controller.
+
+
+Manager approved canonical closeout for WT-2026-251a
