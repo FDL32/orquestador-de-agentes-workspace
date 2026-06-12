@@ -1,4 +1,4 @@
-﻿---
+---
 name: scaffold-python-project
 version: 1.0.0
 description: Crear estructura completa de proyecto Python nuevo con seguridad integrada

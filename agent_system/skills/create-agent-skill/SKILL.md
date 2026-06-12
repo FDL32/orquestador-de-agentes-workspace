@@ -1,4 +1,4 @@
-﻿---
+---
 name: create-agent-skill
 version: 1.0.0
 description: Meta-skill para crear nuevas micro-skills siguiendo el estÃ¡ndar Agent Skills

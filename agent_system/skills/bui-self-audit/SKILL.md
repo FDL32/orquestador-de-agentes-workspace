@@ -1,4 +1,4 @@
-﻿---
+---
 name: bui-self-audit
 version: 1.0.0
 description: AuditorÃ­a obligatoria que el Builder ejecuta antes de reportar cualquier tarea como completada. Valida tipo de archivo, completitud multi-archivo, regresiÃ³n y gates globales.

@@ -1,7 +1,9 @@
-﻿---
-name: Graphify
+---
+name: graphify
 version: 1.0.0
 description: Construir grafo de conocimiento persistente del codebase para exploraciÃ³n eficiente con mÃ­nimo consumo de tokens
+author: agent-system
+tags: [graphify, knowledge-graph, exploration]
 triggers: [/graphify, graph, map]
 ---
 
@@ -155,4 +157,3 @@ El Builder ejecuta graphify al inicio de la fase IMPLEMENT cuando el corpus es g
 
 - `references/graph-query-patterns.md` - Patrones de consulta sobre NetworkX
 - `references/ast-extraction.md` - ExtracciÃ³n AST sin LLM para cÃ³digo Python
-

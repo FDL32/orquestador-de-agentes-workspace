@@ -1,7 +1,9 @@
-﻿---
-name: Implement Feature
+---
+name: bui-implement-from-plan
 version: 1.0.0
 description: Implementar nueva funcionalidad basado en especificaciÃ³n
+author: agent-system
+tags: [builder, legacy, skill]
 triggers: [/implement, implement, /code]
 ---
 
@@ -191,4 +193,3 @@ Si todas las tareas de la fase estÃ¡n `[x]`:
 - **NO** usar `os.path` (usar `pathlib`)
 - **SIEMPRE** documentar hallazgos (2-Action Rule)
 - **SIEMPRE** escalar si se superan intentos segÃºn riesgo
-

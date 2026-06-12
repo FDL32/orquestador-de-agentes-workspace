@@ -1,7 +1,9 @@
-﻿---
-name: Create Work Plan
+---
+name: man-create-work-plan
 version: 1.0.0
 description: Skill para que el Manager cree planes de implementaciÃ³n estructurados con fases, tareas y criterios de aceptaciÃ³n
+author: agent-system
+tags: [manager, legacy, skill]
 triggers: [/plan, create-plan, /schedule]
 ---
 
@@ -201,4 +203,3 @@ El plan debe generar:
 - **NO** omitir Fase 0 si hay archivos privados
 - **SIEMPRE** incluir criterios de aceptaciÃ³n medibles
 - **SIEMPRE** asignar nivel de riesgo a cada tarea
-

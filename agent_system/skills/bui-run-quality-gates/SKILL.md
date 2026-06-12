@@ -1,4 +1,4 @@
-﻿---
+---
 name: bui-run-quality-gates
 version: 1.0.0
 description: Skill para que el Builder ejecute validaciÃ³n completa de cÃ³digo con ruff, pytest y verificaciÃ³n de seguridad

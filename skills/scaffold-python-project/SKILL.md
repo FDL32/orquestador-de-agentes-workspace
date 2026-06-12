@@ -1,7 +1,9 @@
-﻿---
-name: Scaffold Python Project
+---
+name: scaffold-python-project
 version: 1.0.0
 description: Crear estructura completa de proyecto Python nuevo con seguridad integrada
+author: agent-system
+tags: [python, scaffold, template]
 triggers: [/scaffold, new-project, /setup]
 ---
 
@@ -145,4 +147,3 @@ Proyecto listo para:
 - **SIEMPRE** usar `uv` (no pip/requirements.txt)
 - **SIEMPRE** crear archivos `.example`
 - **SIEMPRE** usar `pathlib` en config.py
-

@@ -1,7 +1,9 @@
-﻿---
-name: Secure Existing Project
+---
+name: secure-existing-project
 version: 1.0.0
 description: Aplicar arquitectura de seguridad privada/publica a proyecto Python existente
+author: agent-system
+tags: [security, architecture, migration]
 triggers: [/secure, security, /audit]
 ---
 
@@ -120,4 +122,3 @@ ls -la publica/repo/.env.example
 - **NO** mover archivos de `privada/` automÃ¡ticamente (usuario lo hace)
 - **NO** dejar secrets en cÃ³digo despuÃ©s de la migraciÃ³n
 - **SIEMPRE** crear archivos `.example`
-

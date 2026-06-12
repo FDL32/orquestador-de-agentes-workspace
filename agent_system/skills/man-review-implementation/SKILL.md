@@ -1,4 +1,4 @@
-﻿---
+---
 name: man-review-implementation
 version: 1.0.0
 description: Skill para que el Manager revise la implementaciÃ³n del Builder, verifique Quality Gates y genere veredicto

@@ -1,4 +1,4 @@
-﻿---
+---
 name: project-finalize
 version: 1.0.0
 description: Cierre profesional de un proyecto con auditoria, limpieza, documentacion, versionado y verificacion final sin romper el flujo Manager -> Builder

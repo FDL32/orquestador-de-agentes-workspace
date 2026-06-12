@@ -1,7 +1,9 @@
-﻿---
-name: Version Changelog
+---
+name: version-changelog
 version: 1.0.0
 description: GestiÃ³n de versiones semÃ¡nticas y CHANGELOG.md siguiendo Keep a Changelog y SemVer 2.0
+author: agent-system
+tags: [versioning, semver, changelog]
 triggers: [/changelog, version, /release]
 ---
 
@@ -183,4 +185,3 @@ Ver `references/changelog-template.md`.
 
 - `references/changelog-template.md` - Plantilla CHANGELOG.md inicial
 - `references/semver-decision-guide.md` - GuÃ­a de decisiÃ³n PATCH/MINOR/MAJOR
-

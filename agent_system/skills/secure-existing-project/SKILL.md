@@ -1,4 +1,4 @@
-﻿---
+---
 name: secure-existing-project
 version: 1.0.0
 description: Aplicar arquitectura de seguridad privada/publica a proyecto Python existente

@@ -1,7 +1,9 @@
-﻿---
-name: Run Quality Gates
+---
+name: bui-run-quality-gates
 version: 1.0.0
 description: Skill para que el Builder ejecute validaciÃ³n completa de cÃ³digo con ruff, pytest y verificaciÃ³n de seguridad
+author: agent-system
+tags: [builder, legacy, skill]
 triggers: [/gates, quality-gates, /check]
 ---
 
@@ -167,4 +169,3 @@ Hay errores que corregir:
 - **NO** ignorar errores de linting
 - **NO** dejar secrets hardcodeados
 - **SIEMPRE** ejecutar antes de `READY_FOR_REVIEW`
-

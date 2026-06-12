@@ -1,7 +1,9 @@
-﻿---
-name: Resolve Escalation
+---
+name: man-resolve-escalation
 version: 1.0.0
 description: Skill para que el Manager resuelva bloqueos y escalaciones del Builder con decisiones documentadas
+author: agent-system
+tags: [manager, legacy, skill]
 triggers: [/escalate, escalation, /resolve]
 ---
 
@@ -150,4 +152,3 @@ El Builder debe escalar cuando:
 - **SIEMPRE** explicar razonamiento
 - **NO** cambiar scope del plan sin documentar
 - **NO** asignar nuevas tareas sin actualizar work_plan.md
-

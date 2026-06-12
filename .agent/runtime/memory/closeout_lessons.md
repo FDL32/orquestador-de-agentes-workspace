@@ -182,3 +182,31 @@ dos verdades diferentes y suele forzar otra ronda de review.
 **Regla:** cuando una revision cambie paths, firmas de funciones, tests o
 alcance, aplicar la correccion a `work_plan.md` y a `PLAN_WT-*` en la misma
 edicion.
+
+### CL-20 - UTF-8 con BOM rompe validadores ligeros y degrada diagnosticos (bom-breaks-lightweight-validators)
+Cuando un validador usa heuristicas simples (`^---` para frontmatter, lectura
+por `cp1252` en subprocess, regex al principio de archivo), un BOM UTF-8 o una
+codificacion heredada puede hacer que el contenido "parezca" sano al ojo humano
+pero falle como si faltara por completo. El resultado es doble ruido:
+falsos negativos de validacion y mojibake en mensajes de error.
+**Regla:** en superficies operativas y artefactos parseados por heuristicas,
+escribir UTF-8 sin BOM y forzar UTF-8 explicito en subprocesses que leen texto.
+
+### CL-21 - El recovery Manager-Builder por chat ya es un patron validado (chat-manager-builder-recovery)
+Cuando el cambio productivo ya existe o el bus queda a medio cerrar, el camino
+estable no es insistir sobre el mismo flujo roto sino cerrar el `...a` por chat
+con evidencia, reparar la trazabilidad minima y sacar los arreglos de
+infraestructura a tickets derivados. Varias sesiones intensas confirmaron que
+este patron reduce ruido y evita mezclar diagnostico con remediacion del bus.
+**Regla:** si el bus o el `session-close` deriva pero la implementacion esta
+verificada, usar cierre por chat del ticket base y mover la reparacion del flujo
+automatico a follow-ups explicitamente trazados.
+
+### CL-22 - El propio Manager es superficie corregible del sistema (manager-is-fix-surface)
+Cuando el problema vive en el contrato del review, en un prompt o en una
+expectativa de parser, tratar al Manager como "fuente intocable" prolonga el
+fallo. La correccion del propio Manager forma parte normal del hardening del
+sistema y debe documentarse igual que cualquier otra capa.
+**Regla:** si una sesion demuestra que el error esta en instrucciones,
+criterios o artefactos del Manager, corregir esa superficie de frente y dejar
+la leccion curada en memoria en lugar de esconderla como incidente puntual.

@@ -1,4 +1,4 @@
-﻿---
+---
 name: man-resolve-escalation
 version: 1.0.0
 description: Skill para que el Manager resuelva bloqueos y escalaciones del Builder con decisiones documentadas

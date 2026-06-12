@@ -1,7 +1,9 @@
-﻿---
-name: Self Audit
+---
+name: bui-self-audit
 version: 1.0.0
 description: AuditorÃ­a obligatoria que el Builder ejecuta antes de reportar cualquier tarea como completada. Valida tipo de archivo, completitud multi-archivo, regresiÃ³n y gates globales.
+author: agent-system
+tags: [builder, legacy, skill]
 triggers: [/self-audit, audit, /inspect]
 ---
 
@@ -145,4 +147,3 @@ Solo si los pasos 1-5 pasaron sin errores, escribe en `execution_log.md` el outp
 ```
 
 **Sin output real de comandos = el Manager pedirÃ¡ evidencia antes de revisar.**
-

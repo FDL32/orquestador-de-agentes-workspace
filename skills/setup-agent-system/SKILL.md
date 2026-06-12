@@ -1,7 +1,9 @@
-﻿---
-name: Setup Agent System
+---
+name: setup-agent-system
 version: 1.0.0
 description: Instalar y configurar el sistema de agentes con flujo oficial por etapas y compatibilidad legacy Manager+Builder en un proyecto existente
+author: agent-system
+tags: [setup, multi-agent, installation]
 triggers: [/setup, agent-setup, /init]
 ---
 
@@ -102,4 +104,3 @@ Sistema listo con:
 - **SIEMPRE** copiar reglas a los agentes
 - **SIEMPRE** crear carpeta `privada/`
 - **SIEMPRE** verificar con `agent_controller.py`
-

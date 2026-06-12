@@ -1,7 +1,9 @@
-﻿---
-name: Create Agent Skill
+---
+name: create-agent-skill
 version: 1.0.0
 description: Meta-skill para crear nuevas micro-skills siguiendo el estÃ¡ndar Agent Skills
+author: agent-system
+tags: [meta, skill-creation, template]
 triggers: [/create-skill, skill-create, /new]
 ---
 
@@ -148,4 +150,3 @@ skills/[nombre-skill]/
 - **MÃXIMO** 80 lÃ­neas por reference
 - **SIEMPRE** validar con `validate_all.py`
 - **USAR** prefijos man-/bui- segÃºn corresponda
-

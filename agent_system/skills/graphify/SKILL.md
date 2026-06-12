@@ -1,4 +1,4 @@
-﻿---
+---
 name: graphify
 version: 1.0.0
 description: Construir grafo de conocimiento persistente del codebase para exploraciÃ³n eficiente con mÃ­nimo consumo de tokens

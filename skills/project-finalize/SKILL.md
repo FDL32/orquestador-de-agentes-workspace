@@ -1,7 +1,9 @@
-﻿---
-name: Project Finalize
+---
+name: project-finalize
 version: 1.0.0
 description: Cierre profesional de un proyecto con auditoria, limpieza, documentacion, versionado y verificacion final sin romper el flujo Manager -> Builder
+author: agent-system
+tags: [closeout, cleanup, documentation]
 triggers: [/finalize, close, /finish]
 ---
 
@@ -167,4 +169,3 @@ Si el proyecto termina o cambia de manos, dejar explicito:
 - **SIEMPRE** dejar explicito el estado de mantenimiento al cerrar
 - **SIEMPRE** pedir aprobacion humana para bump, tag, release o archivado
 - **SIEMPRE** verificar que la documentacion describe el estado real del repo
-

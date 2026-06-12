@@ -4,6 +4,38 @@ Historial de este `repo_destino`. Entradas anteriores a 2026-06-03 corresponden
 al periodo en que este repo era parte de `z_scripts` (topologia anterior);
 se conservan como referencia historica.
 
+## 2026-06-12 - Documentary closeout after intensive chat recovery
+
+### Changed
+
+- Se sanean las copias locales de `skills/` y `agent_system/skills/` para que
+  sus `SKILL.md` vuelvan a ser validables por heuristicas ligeras: frontmatter
+  normalizado, UTF-8 sin BOM y huecos estructurales (`_shared`,
+  `refactor-manager/references`) cerrados en el `repo_destino`.
+- Se consolida el patron de recovery por chat: cuando la implementacion ya esta
+  verificada y el bus o el `session-close` quedan a medio camino, el `...a` se
+  cierra documentalmente y la remediacion del flujo automatico se mueve a
+  follow-ups trazables.
+- El mini-backlog `WOT-2026-001x` queda resuelto formalmente: `001a` absorbido
+  por el hardening prompt/pipeline ya entregado, `001d` satisfecho de facto por
+  tamano del bridge, y `001b`/`001c` cerrados como deuda documental en este
+  propio closeout.
+
+### Memory
+
+- Queda curada una leccion nueva sobre el dano operativo del BOM UTF-8 en
+  validadores ligeros y en subprocesses que decodifican texto con defaults
+  heredados de Windows.
+- Se registra explicitamente que el patron Manager-Builder por chat ya esta
+  validado como recovery de bajo ruido para sesiones intensas.
+- Se anade como regla durable que el propio Manager (prompts, criterios,
+  parser expectations) es una superficie corregible del sistema.
+
+### Follow-up
+
+- El cierre canonico con `--session-close` debe ejecutarse sobre arbol limpio
+  una vez empaquetadas estas curas documentales del `repo_destino`.
+
 ## 2026-06-09 - WT-2026-242x canonical closeout and session-close preparation
 
 ### Changed

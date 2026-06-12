@@ -40,6 +40,17 @@
 
 > Nota: para historial previo ver `CHANGELOG.md` del motor (git conserva todo).
 
+## WOT-2026-001x - Resolucion formal en closeout 2026-06-12
+
+| Ticket | Estado | Resolucion formal |
+|--------|--------|-------------------|
+| WOT-2026-001a | absorbed | Absorbido por el endurecimiento ya entregado en pipeline + prompt (`WT-2026-248b` y contrato canonico derivado). |
+| WOT-2026-001b | completed | Cerrado documentalmente en este closeout: el patron Manager -> Builder por chat queda validado y registrado como recovery canonico en memoria/changelog. |
+| WOT-2026-001c | completed | Cerrado documentalmente en este closeout: se consolida la leccion de mojibake/BOM recurrente y la correccion del propio Manager como superficie legitima. |
+| WOT-2026-001d | completed | Cumplido de facto: `review_bridge.py` ya esta por debajo del umbral (`2618 < 2700`). |
+
+> Serie 001x resuelta sin abrir trabajo activo nuevo en `repo_destino`.
+
 ---
 
 ## WT-2026-250c - Poda documental de backlog y saneo de mojibake en superficies vivas

@@ -1,4 +1,4 @@
-﻿---
+---
 name: bui-implement-from-plan
 version: 1.0.0
 description: Skill para que el Builder ejecute un plan de trabajo aprobado, aplicando reglas de cÃ³digo y la Regla de 2 Acciones

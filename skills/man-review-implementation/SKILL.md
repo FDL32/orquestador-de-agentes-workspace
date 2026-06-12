@@ -1,7 +1,9 @@
-﻿---
-name: Code Review
+---
+name: man-review-implementation
 version: 1.0.0
 description: Revisar cambios de cÃ³digo contra arquitectura del proyecto
+author: agent-system
+tags: [manager, legacy, skill]
 triggers: [/review, code-review, /approve]
 ---
 
@@ -184,4 +186,3 @@ Si hay problemas graves (seguridad, arquitectura incorrecta):
 - **NO** escribir en `execution_log.md` (solo lectura)
 - **NO** aprobar sin verificar Quality Gates
 - **SIEMPRE** documentar decisiÃ³n en `review_queue.md`
-
