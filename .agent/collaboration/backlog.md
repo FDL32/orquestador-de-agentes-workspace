@@ -17,15 +17,15 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen |
 |-----------|--------|--------|-------|--------|------------|--------|
 | Media | WT-2026-250c | Poda documental de backlog y saneo de mojibake en superficies vivas | system/collab-hygiene | active | - | session-2026-06-11-system-audit |
-| Alta | WT-2026-251b | Migrar el dogfooding al prefijo WOT como validacion viva | system/ticket-prefix-portability | pending | WT-2026-251a, WT-2026-250a | session-2026-06-11-system-audit |
-| Alta | WT-2026-252a | Decision-artifact estructurado del Manager con fallback a parser NDJSON | system/review-decision-contract | pending | WT-2026-248b | session-2026-06-11-system-audit |
-| Media | WT-2026-253a | Reescribir skill code-audit sobre CLIs directas | system/skills-product | pending | - | session-2026-06-11-system-audit |
-| Media | WT-2026-253b | Des-localizar repo-compare y graphify del entorno del autor | system/skills-product | pending | - | session-2026-06-11-system-audit |
-| Media | WT-2026-253c | local_audit veraz y AUDIT.md autogenerado en el launcher | system/bootstrap-observability | pending | - | session-2026-06-11-system-audit |
-| Media | WT-2026-254a | Deprecacion formal Goose/Claw fase 1 (docs y tests) | system/legacy-deprecation | pending | - | session-2026-06-11-system-audit |
-| Media | WT-2026-254b | Regenerar .claude/rules del destino desde el estado real | system/docs-coherence | pending | WT-2026-254a | session-2026-06-11-system-audit |
-| Media | WT-2026-255a | Extraer parser de decisiones de review_bridge a modulo propio | system/seam-extraction | pending | WT-2026-252a | session-2026-06-11-system-audit |
-| Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | pending | - | session-2026-06-11-security-followup |
+| Alta | WT-2026-251b | Migrar el dogfooding al prefijo WOT como validacion viva | system/ticket-prefix-portability | done | WT-2026-251a, WT-2026-250a | session-2026-06-11-system-audit |  <!-- verificado: absorbido: backfill 9d97df7 + pipeline canonico 961f210 -->
+| Alta | WT-2026-252a | Decision-artifact estructurado del Manager con fallback a parser NDJSON | system/review-decision-contract | done | WT-2026-248b | session-2026-06-11-system-audit |  <!-- verificado: 2dda386 + 886652b (decision artifact canal primario) -->
+| Media | WT-2026-253a | Reescribir skill code-audit sobre CLIs directas | system/skills-product | done | - | session-2026-06-11-system-audit |  <!-- verificado: 02fdf81 -->
+| Media | WT-2026-253b | Des-localizar repo-compare y graphify del entorno del autor | system/skills-product | done | - | session-2026-06-11-system-audit |  <!-- verificado: d19ff6b -->
+| Media | WT-2026-253c | local_audit veraz y AUDIT.md autogenerado en el launcher | system/bootstrap-observability | done | - | session-2026-06-11-system-audit |  <!-- verificado: bd3f3a0 -->
+| Media | WT-2026-254a | Deprecacion formal Goose/Claw fase 1 (docs y tests) | system/legacy-deprecation | done | - | session-2026-06-11-system-audit |  <!-- verificado: 3f6aad3 -->
+| Media | WT-2026-254b | Regenerar .claude/rules del destino desde el estado real | system/docs-coherence | done | WT-2026-254a | session-2026-06-11-system-audit |  <!-- verificado: 3f6aad3 -->
+| Media | WT-2026-255a | Extraer parser de decisiones de review_bridge a modulo propio | system/seam-extraction | done | WT-2026-252a | session-2026-06-11-system-audit |  <!-- verificado: 2dda386 + 886652b (decision artifact canal primario) -->
+| Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked-external | - | session-2026-06-11-security-followup |  <!-- 2026-06-12: uv sigue resolviendo pip<=26.1.1; excepcion legitima -->
 
 ## Completados en sesion 2026-06-11 (audit integral)
 
@@ -168,3 +168,13 @@
 - **Evidencia de origen:** commit `3601312` en repo_motor introdujo el wrapper.
 - **Depende de:** -.
 - **Origen:** session-2026-06-07-security-followup (reintroducida 2026-06-11).
+
+## Nota de colision de IDs (2026-06-12)
+
+Los tickets de chat de los giros 9-12 se asignaron manualmente como
+WT-2026-256a..259a y COLISIONAN con WT-2026-256a (PYSEC-2026-196) de esta
+tabla. Los IDs de los commits 8d385df (giro 9), 4970529 (giro 10),
+827f96c (giro 11) y 929ca09 (giro 12) se refieren a los giros de
+descomposicion, NO al ticket PYSEC. Leccion ya conocida: derivar IDs del
+estado real del backlog antes de asignar. El ticket PYSEC conserva el ID
+WT-2026-256a en esta tabla.

@@ -49,3 +49,46 @@
 El siguiente paso canonico ya no es reabrir `WT-2026-251a`, sino ejecutar
 `--session-close` sobre arbol limpio para archivar este estado del
 `repo_destino` sin mezclarlo con mas cambios de producto.
+
+## WT-2026-259a - Fase 0 Scope Gate Mapping
+
+- Fecha: 2026-06-12
+- Ticket: `WT-2026-259a`
+- Superficie productiva prevista en `repo_motor`:
+  - `.agent/agent_controller.py`
+  - `.agent/scope_gate.py` (nuevo)
+
+### Patch-targets confirmados antes de editar
+
+- `tests/unit/test_scope_gate.py`
+  - importa desde `agent_controller`:
+    - `PROJECT_ROOT`
+    - `_exclude_files`
+    - `_handle_mark_ready`
+    - `_scope_gate_allows_close`
+    - `check_scope_gate`
+    - `get_changed_files`
+    - `parse_files_likely_touched`
+  - parchea:
+    - `agent_controller.PROJECT_ROOT`
+    - `agent_controller.get_changed_files`
+- `tests/unit/test_mark_ready_idempotency.py`
+  - parchea `agent_controller._scope_gate_allows_close`
+- `tests/test_agent_controller.py`
+  - parchea:
+    - `agent_controller.parse_files_likely_touched`
+    - `agent_controller.get_changed_files`
+  - asume lectura de globals del controller en tiempo de llamada
+- `tests/evals/test_eval_scope_gate.py`
+  - importa desde `agent_controller`:
+    - `parse_files_likely_touched`
+    - `check_scope_gate`
+
+### Hallazgo operativo
+
+- Los seams que no se pueden romper son los nombres exportados por
+  `agent_controller`, no solo la logica interna. La extraccion debe dejar
+  wrappers finos que:
+  - lean globals del controller en tiempo de llamada;
+  - mantengan patch-targets en `agent_controller.*`;
+  - no introduzcan imports desde `.agent/scope_gate.py` de vuelta al controller.
