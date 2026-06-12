@@ -178,3 +178,13 @@ tabla. Los IDs de los commits 8d385df (giro 9), 4970529 (giro 10),
 descomposicion, NO al ticket PYSEC. Leccion ya conocida: derivar IDs del
 estado real del backlog antes de asignar. El ticket PYSEC conserva el ID
 WT-2026-256a en esta tabla.
+
+## Hallazgo 2026-06-12: suite canonica es allowlist parcial
+
+`scripts/run_pytest_safe.py` ejecuta una lista explicita de 28 archivos
+(DEFAULT_PYTEST_ARGS), no descubrimiento sobre `tests/`: 119 de 147
+archivos de test del motor NO corren en la suite "canonica" (los "642
+passed" de los gates son una fraccion). Detectado al observar que un
+test nuevo no alteraba el conteo. CEM clase D (gate que no cubre lo que
+dice cubrir). Medicion del estado real en curso; candidato a ticket:
+migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
