@@ -1,95 +1,173 @@
+# Memory Rules (L2)
+
+Total rules: 24
+
+Rules derived deterministically from observations.jsonl. Each rule carries an ID (R-XXX), domain, wing, source ticket, and signal text.
+
 ## Wing: engine
 
-### Domain: ap-nn-cross-cutting-architecture
+### Domain: bus-architecture
 
-#### R-002: AP-NN numbering system established as cross-cutting convention linking 3 artifac
+#### R-006: For operational launch, resume, and recovery decisions, derive ticket state from
 
-AP-NN numbering system established as cross-cutting convention linking 3 artifacts: skills/_shared/anti-patterns.md (canonical source of IDs + names), bui-implement-from-plan/references/code-rules.md (Builder preventive rules, detailed examples), man-review-implementation/references/review-checklist.md (Manager BLOCKER checklist). Adding a new AP requires touching all 3. observations.jsonl can carry anti_pattern_id field to link findings to AP-NN. AP-01..AP-08 active. Origin: session 2026-05-25.
+For operational launch, resume, and recovery decisions, derive ticket state from the event bus first and treat TURN.md/STATE.md as fallback or documentary projections only. WT-2026-216 established this as the canonical read path by routing launcher decisions through StateMachine.derive_state_from_events() before consulting TURN.md.
 
-*Source: session-2026-05-25*
+*Source: WT-2026-216*
+
+#### R-007: Local runtime cleanup and bus reconciliation are different recovery classes. If
+
+Local runtime cleanup and bus reconciliation are different recovery classes. If the previous ticket is already terminal in the bus, clean stale local runtime only; if it is non-terminal with confirmed drift, reconcile explicitly in the bus; if the bus is unreadable or contradictory, abort without closing anything. This is the preflight contract for WT-2026-214.
+
+*Source: WT-2026-214*
+
+#### R-008: Recovery paths must be idempotent against the primary mechanism. Before emitting
+
+Recovery paths must be idempotent against the primary mechanism. Before emitting a corrective event or relaunching an agent, check whether the target event already exists in the bus for the same ticket and decision.
+
+*Source: WT-2026-191*
+
+#### R-009: When a critical bus trigger outlives its main consumer, the durable fix is to en
+
+When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_bridge force a real supervisor tick after REVIEW_DECISION=CHANGES instead of relaunching Builder directly.
+
+*Source: WT-2026-212*
+
 
 ## Wing: meta
 
-### Domain: manager-review-rubric
+### Domain: delivery-hygiene
 
-#### R-011: AP-08 candidate: Test coverage drift. The Builder runs the existing suite, sees
+#### R-013: This system starts every plan with a base `...a` ticket; `...b` and later letter
 
-AP-08 candidate: Test coverage drift. The Builder runs the existing suite, sees it pass, and declares quality gates satisfied — but the new functions introduced in the diff have no direct tests. The suite passing is not evidence of coverage when the new code is never called by any test. Manager rule: when the diff introduces new functions (def, method, classmethod), verify that at least one test in test_*.py calls each new function directly. Absence of direct test coverage for new functions = BLOCKER, even if the full suite passes. Origin: WP-2026-139 audit — 3 new methods (_parse_canonical_anti_patterns, _load_canonical_anti_patterns, _render_canonical_anti_pattern_inventory) had zero tests; Manager approved without noticing.
+This system starts every plan with a base `...a` ticket; `...b` and later letters are for plan splits or post-close fixes. When a shell-launched Builder leaves the bus short of canonical termination, analyze the root cause first, close the `...a` by chat, and move remediation to derived tickets instead of trying to fix the bus through the live bus path.
 
-#### R-012: BLOCKER pattern: Boolean truthiness regression in changed return contracts. When
+*Source: WT-2026-243a*
 
-BLOCKER pattern: Boolean truthiness regression in changed return contracts. When a method changes from returning implicit None to returning explicit bool, all callers must be updated from generic truthiness guards (if not x, if x, while x) to identity checks (is False, is True). Mixing None/False/True under a falsy guard silently breaks when the method is monkeypatched to return None (common in tests) or called from a legacy path that predates the type change. Manager must grep all callers in the diff and verify no if not / if pattern remains. Any surviving generic guard = CHANGES. Origin: WP-2026-137 bug audit.
+#### R-014: Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
 
-#### R-013: BLOCKER pattern: Exclusive resource acquisition without reentrancy guard. When a
+Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a prefijos de 2-3 letras (deliverable_type=code)
 
-BLOCKER pattern: Exclusive resource acquisition without reentrancy guard. When a method acquires an exclusive resource (O_CREAT|O_EXCL, flock, Lock.acquire, lock-file creation) AND can be reached from more than one call site or called twice on the same instance (e.g. standalone call + internal call from a wrapper), there must be an explicit instance-level reentrancy guard. Without it, the second call hits the exclusion check with its own PID alive and returns False, silently aborting the caller. Manager should grep all call sites of the method in the diff and repo. No reentrancy guard = CHANGES. Origin: WP-2026-137 bug audit.
-
-#### R-014: Validator evidence gate: when a work_plan explicitly declares a validator as a q
-
-Validator evidence gate: when a work_plan explicitly declares a validator as a quality gate (skills/validate_all.py, agent_controller --validate, ruff, pytest), the Manager must find explicit output from that validator showing a clean result in execution_log.md. Declared validator + absent evidence = BLOCKER. This applies especially to scaffolding and documentation tickets where standard code gates do not run automatically. Origin: WP-2026-133 audit.
-
-#### R-015: deliverable_type classification for scaffolding tickets: when Files Likely Touch
-
-deliverable_type classification for scaffolding tickets: when Files Likely Touched contains only structural non-Python files (.gitkeep, empty dirs, placeholders, config stubs) with no logic, the correct deliverable_type is documentation, not code. Using code triggers ruff+pytest rubric which produces false noise on files with no logic. Manager should flag code classification for pure-scaffolding tickets as a planning error (SUGGESTIONS). Origin: WP-2026-133 audit.
-
-
-### Domain: return_type_falsy_guard
-
-#### R-018: WP-2026-137: Changing a method return type from None->bool (bootstrap) requires
-
-WP-2026-137: Changing a method return type from None->bool (bootstrap) requires updating callers from "if not method():" to "if method() is False:". The falsy guard caused a test regression: existing test monkeypatched bootstrap to "lambda: None", so "if not None" was True and run_reactive exited immediately. Rule: when a method previously returned None and is refactored to return bool, always use "is False" guards in callers to avoid false-positive exits on None-returning mocks or legacy callers.
+*Source: WT-2026-251a*
 
 
 ### Domain: review-quality
 
-#### R-019: AP-12: WP-2026-157: the review packet built from git diff HEAD hid brand-new unt
+#### R-016: Any regex, import path, literal string, or code snippet inside a plan acts as ex
 
-AP-12: WP-2026-157: the review packet built from git diff HEAD hid brand-new untracked files, so the Manager saw an incomplete/partial diff while the real deliverables lived outside the tracked set. Rule: review packets must include new untracked deliverables explicitly, not only tracked-file diffs.
+Any regex, import path, literal string, or code snippet inside a plan acts as executable specification because Builder tends to copy it verbatim. Validate those snippets before launch; a bad escape sequence or malformed literal turns the contract itself into the source of a failing test.
 
+*Source: WT-2026-201*
 
-### Domain: silent_subprocess_failure_pattern
+#### R-017: Before closing a technical plan, verify proposed test file paths against the fil
 
-#### R-022: subprocess.run with capture_output=True silently discards stderr/stdout unless r
+Before closing a technical plan, verify proposed test file paths against the filesystem. Wrong test paths have caused repeated planning drift and can make Builder create tests in the wrong location.
 
-subprocess.run with capture_output=True silently discards stderr/stdout unless returncode is checked. Pattern: always store subprocess result and log stderr to sys.stderr on rc != 0, especially for state-transition subprocesses where silent failure breaks re-engagement chains.
+*Source: WT-2026-191*
 
+#### R-018: Before freezing 'Tests Esperados' in a plan or audit, verify whether each named
 
-### Domain: ticket-structure-risk-heuristic
+Before freezing 'Tests Esperados' in a plan or audit, verify whether each named test already exists in the suite. Existing tests are non-regression checks, not new Builder deliverables; listing them as new can cause duplicated tests or scope confusion.
 
-#### R-027: Structural complexity predicts regression risk better than file count. Tickets t
+*Source: WT-2026-201*
 
-Structural complexity predicts regression risk better than file count. Tickets that apply the same atomic operation N times (e.g. create .gitkeep in 7 dirs) carry near-zero regression risk regardless of file count — majority-scaffolding scope = light review. Tickets that change behavior across multiple call sites or layers carry high risk even with few files — cross-layer behavior changes = deep review. Use as context signal when calibrating review depth, not as a hard blocker criterion. Origin: WP-2026-133 vs WP-2026-137 contrast.
+#### R-019: For concurrency or cross-process coordination fixes, passing tests is necessary
+
+For concurrency or cross-process coordination fixes, passing tests is necessary but not sufficient. Confirm at least one runtime cycle with real bus evidence, because scheduler timing and process races can stay invisible to unit tests even when the code and mocks look correct.
+
+*Source: WT-2026-199*
+
+#### R-020: For one-line fixes with high regression risk, the minimum useful contract is sma
+
+For one-line fixes with high regression risk, the minimum useful contract is small and exact: name the symbol or line that changes as old -> new, name the test that breaks by design, and name the symmetric anti-regressions on both sides of the change. Beyond that, contract detail tends to have diminishing returns.
+
+*Source: WT-2026-200*
+
+#### R-021: The Manager is not an untouchable narrator layer. If the fault lives in review i
+
+The Manager is not an untouchable narrator layer. If the fault lives in review instructions, prompt contracts, or parser expectations, correcting the Manager itself is part of normal system hardening and should be documented as such.
+
+*Source: WOT-2026-001c*
+
+#### R-022: The strongest review role is an auditor who searches for counterexamples in the
+
+The strongest review role is an auditor who searches for counterexamples in the real codebase and test suite, not a second pass that only judges whether the contract sounds plausible. That role catches failure modes the Manager can miss when the contract is internally consistent but still wrong.
+
+*Source: WT-2026-199*
+
+#### R-023: When a planning correction lands during review, apply it to both `work_plan.md`
+
+When a planning correction lands during review, apply it to both `work_plan.md` and `PLAN_WT-*`. They are not redundant copies: `work_plan.md` drives validation and canonical state, while `PLAN_WT-*` is the technical contract Builder reads. In WT-2026-193, fixing paths in only one file and the function name in only the other caused two extra review rounds.
+
+*Source: WT-2026-193*
+
 
 ## Wing: project
 
 ### Domain: builder-contract
 
-#### R-001: When Builder can declare ready without implementation evidence, Manager spends r
+#### R-001: Cross-process requeue authority should be a real atomic claim keyed by (ticket_i
+
+Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent supervisor/subprocess races. trigger_seq must be mandatory; None should fail closed.
+
+*Source: WT-2026-199*
+
+#### R-002: Files Likely Touched must use paths relative to the motor git repo, in the same
+
+Files Likely Touched must use paths relative to the motor git repo, in the same string format returned by `git diff --name-only`. Example correct: `bus/redact.py`. Example incorrect: `orquestador_de_agentes/bus/redact.py`. The scope gate intersects those strings directly; the prefixed form yields an empty intersection and blocks `--mark-ready`. Observed again in WT-2026-193 after the same trap already appeared in WT-2026-198.
+
+*Source: WT-2026-193*
+
+#### R-003: When Builder can declare ready without implementation evidence, Manager spends r
 
 When Builder can declare ready without implementation evidence, Manager spends review cycles detecting an obvious no-op. The durable defense is a --mark-ready evidence gate that checks real file changes and non-boilerplate execution_log evidence, not longer prompt instructions.
 
 *Source: WT-2026-191*
 
+#### R-004: When the implementation is already committed, Builder's job is not to reimplemen
+
+When the implementation is already committed, Builder's job is not to reimplement it but to verify it systematically against the AUDIT, TP checks, tests, and closure gates. In that situation the highest-value Builder work is evidence gathering, gap detection, and clean canonical closeout.
+
+*Source: WT-2026-199*
+
+#### R-005: When the implementation is already verified but the bus or session-close path dr
+
+When the implementation is already verified but the bus or session-close path drifts, the low-noise recovery is to close the base `...a` by chat with evidence and move infra fixes to derived tickets. Several intensive sessions validated this as a durable operating pattern.
+
+*Source: WOT-2026-001b*
+
 
 ### Domain: delivery-hygiene
 
-#### R-003: Closed the installer idempotency audit. Key invariant: detect_destination_residu
-
-Closed the installer idempotency audit. Key invariant: detect_destination_residues() must not rely only on source-vs-dest comparison; INSTALLER_MANAGED_PATHS separates once-deposited destination-owned paths (glossary.md, microagents/) from true residues. is_preserved() means never sync from motor, not exclude-from-prune. Follow-up tickets WT-2026-187 and WT-2026-188 remain in backlog.
-
-*Source: WT-2026-186*
-
-#### R-004: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
+#### R-010: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
 
 El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descriptivo. Patron observado: WT-2026-186 commiteado como WP-2026-176, WT-2026-189 sin commit hasta cierre manual, WT-2026-187 con mensajes pre-handoff checkpoint. El Builder cierra el trabajo tecnico correctamente pero el packaging del commit falla sistematicamente.
 
 *Source: WT-2026-189*
 
+#### R-011: If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different roun
+
+If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different rounds, requeue_ticket() ran twice for the same decision. And when outcome=success appears in older bus history, it only proves launcher exit 0, not Builder liveness; the new taxonomy must distinguish builder_started_verified from builder_launch_unverified.
+
+*Source: WT-2026-199*
+
+#### R-012: In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after cano
+
+In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after canonical closeout shortens safe restarts because the next session can trust one local snapshot first instead of reconstructing context from scattered collaboration files.
+
+*Source: WT-2026-242c*
+
+#### R-015: UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
+
+UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics, write UTF-8 without BOM and force UTF-8 decoding in subprocesses.
+
+*Source: WOT-2026-001c*
+
 
 ### Domain: testing
 
-#### R-006: For validators with multiple failure modes, keep tests orthogonal: each test sho
+#### R-024: For validators with multiple failure modes, keep tests orthogonal: each test sho
 
 For validators with multiple failure modes, keep tests orthogonal: each test should exercise exactly one failure mode while all other fields remain valid. Avoid using one dramatic invalid fixture to cover multiple checks, because it hides which rule failed and can leave validators under-specified.
 
 *Source: WT-2026-191*
+
