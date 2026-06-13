@@ -16,7 +16,7 @@
 
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen |
 |-----------|--------|--------|-------|--------|------------|--------|
-| Media | WT-2026-250c | Poda documental de backlog y saneo de mojibake en superficies vivas | system/collab-hygiene | active | - | session-2026-06-11-system-audit |
+| Media | WT-2026-250c | Poda documental de backlog y saneo de mojibake en superficies vivas | system/collab-hygiene | deferred | - | session-2026-06-11-system-audit |
 | Alta | WT-2026-251b | Migrar el dogfooding al prefijo WOT como validacion viva | system/ticket-prefix-portability | done | WT-2026-251a, WT-2026-250a | session-2026-06-11-system-audit |  <!-- verificado: absorbido: backfill 9d97df7 + pipeline canonico 961f210 -->
 | Alta | WT-2026-252a | Decision-artifact estructurado del Manager con fallback a parser NDJSON | system/review-decision-contract | done | WT-2026-248b | session-2026-06-11-system-audit |  <!-- verificado: 2dda386 + 886652b (decision artifact canal primario) -->
 | Media | WT-2026-253a | Reescribir skill code-audit sobre CLIs directas | system/skills-product | done | - | session-2026-06-11-system-audit |  <!-- verificado: 02fdf81 -->
@@ -28,11 +28,11 @@
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked-external | - | session-2026-06-11-security-followup |  <!-- 2026-06-12: uv sigue resolviendo pip<=26.1.1; excepcion legitima -->
 | - | WOT-AUDIT-A2a | Contrato de precedencia host-extends/motor-provides | system/host-extends | completed | - | session-2026-06-13-host-extends |  <!-- verificado: 6240dc0 + 26afa33 -->
 | - | WOT-AUDIT-A2b | Manifiesto de triage por ruta del destino | system/host-extends | completed | WOT-AUDIT-A2a | session-2026-06-13-host-extends |  <!-- verificado: 4452e6f + bec8468 -->
-| Alta | WOT-AUDIT-CI | CI del destino portable bajo host-extends | system/ci-portability | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
-| Media | WOT-AUDIT-A2c | Demo de clone limpio + install --sync sin copias legacy | system/host-extends | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
-| Media | WOT-AUDIT-ORPHANS | Decision promover-vs-archivar de los 10 huerfanos | system/host-extends | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
-| Alta | WOT-AUDIT-A2d | Eliminar copias motor-provides + ejecutar decisiones de huerfanos | system/host-extends | pending | WOT-AUDIT-CI, WOT-AUDIT-A2c, WOT-AUDIT-ORPHANS | session-2026-06-13-host-extends |
-| Baja | WOT-LOG-COMPACT | Compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
+| Alta | WOT-AUDIT-CI | CI del destino portable bajo host-extends | system/ci-portability | completed | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
+| Media | WOT-2026-002a | A2c: demo de clone limpio + install --sync sin copias legacy | system/host-extends | pending | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |
+| Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | pending | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |
+| Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | pending | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |
+| Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
 
 ## Completados en sesion 2026-06-11 (audit integral)
 
@@ -61,22 +61,34 @@
 ## Cadena WOT-AUDIT-A2 - Migracion host-extends / motor-provides (sesion 2026-06-13)
 
 > Origen: auditoria host-extends. A2a (contrato de precedencia) y A2b (manifiesto
-> de triage) ya cerrados y publicados. Autoridad de clasificacion:
-> `.agent/docs/triage_manifest.md`. Estos tickets ejecutan el manifiesto.
-> Orden de ejecucion por dependencias: CI -> A2c -> ORPHANS (paralelizables tras
-> A2b) -> A2d (requiere los tres). WOT-LOG-COMPACT es independiente.
+> de triage) ya cerrados y publicados. CI portable tambien esta cerrado y
+> publicado. Autoridad de clasificacion: `.agent/docs/triage_manifest.md`.
+> Estos tickets ejecutan el manifiesto.
+>
+> Nota de arranque 2026-06-13: el motor ya incluye el fix M3
+> `bae1906`/`d21f6cc` publicado en `origin/main`. El ultimo `WOT-2026` emitido
+> en el destino es `WOT-2026-001d`; los tickets nuevos usan IDs canonicos
+> consecutivos `WOT-2026-002x` para que `manager-approve` valide commits sin
+> `--force`; los IDs historicos `WOT-AUDIT-*` quedan como alias de auditoria.
+>
+> Orden de ejecucion por dependencias: WOT-2026-002a y WOT-2026-002b
+> (paralelizables tras A2b+CI) -> WOT-2026-002c. WOT-2026-002d es independiente
+> y de baja prioridad.
 
 ### Completados de la cadena
 | Ticket | Titulo | Commit(s) |
 |--------|--------|-----------|
 | WOT-AUDIT-A2a | Contrato de precedencia + correccion STOP#1 | 6240dc0, 26afa33 |
 | WOT-AUDIT-A2b | Manifiesto de triage por ruta | 4452e6f, bec8468 |
+| WOT-AUDIT-CI | CI portable del destino via checkout publico del motor | 6b2cfc3, d2aac16, 53241cd |
 
 ## WOT-AUDIT-CI - CI del destino portable bajo host-extends
 - **Prioridad:** Alta
 - **Scope:** system/ci-portability
-- **Estado:** pending
+- **Estado:** completed
+- **Cierre real:** completed (publicado). Mantener seccion como evidencia historica; no relanzar.
 - **deliverable_type:** code
+- **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
 - **Problema:** `.github/workflows/quality-gates.yml` ejecuta `compileall scripts tests`
   y `discover_skills.py` sobre copias locales. GitHub Actions hace checkout SOLO del
@@ -99,12 +111,14 @@
 - **Depende de:** WOT-AUDIT-A2b.
 - **Origen:** session-2026-06-13-host-extends.
 
-## WOT-AUDIT-A2c - Demo de clone limpio + install --sync sin copias legacy
+## WOT-2026-002a - A2c: demo de clone limpio + install --sync sin copias legacy
 - **Prioridad:** Media
 - **Scope:** system/host-extends
 - **Estado:** pending
 - **deliverable_type:** mixed
+- **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
+- **Alias historico:** WOT-AUDIT-A2c
 - **Objetivo:** demostrar, sobre un clone limpio del destino en `tmp_path`, que
   `install_agent_system.py --sync` regenera `motor_destination_link.json`, que las
   skills/prompts/scripts del motor quedan accesibles via el motor externo, y que el
@@ -117,15 +131,17 @@
 - **STOP:** si install --sync requiere las copias legacy para regenerar el link,
   documentarlo: cambia el alcance de A2d (algunas copias serian dependencia del
   instalador, no vestigios).
-- **Depende de:** WOT-AUDIT-A2b.
+- **Depende de:** WOT-AUDIT-A2b, WOT-AUDIT-CI.
 - **Origen:** session-2026-06-13-host-extends.
 
-## WOT-AUDIT-ORPHANS - Decision promover-vs-archivar de los 10 huerfanos
+## WOT-2026-002b - ORPHANS: decision promover-vs-archivar de los 10 huerfanos
 - **Prioridad:** Media
 - **Scope:** system/host-extends
 - **Estado:** pending
 - **deliverable_type:** analysis
+- **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
+- **Alias historico:** WOT-AUDIT-ORPHANS
 - **Objetivo:** para cada ruta del bucket `huerfano-needs-decision` del
   `triage_manifest.md` (5 scripts del cluster audit/upgrade, `test_ticket_007`,
   `.agent/hooks/pre_compact_hook.py`, `.agent/microagents/onboarding.md`,
@@ -139,39 +155,43 @@
 - **STOP:** si alguno resulta ser dominio real del destino (p.ej. `test_ticket_007`
   como experimento vivo), marcar destino-keep y NO archivar; cambia la conclusion
   "dominio vacio" del manifiesto.
-- **Depende de:** WOT-AUDIT-A2b.
+- **Depende de:** WOT-AUDIT-A2b, WOT-AUDIT-CI.
 - **Origen:** session-2026-06-13-host-extends.
 
-## WOT-AUDIT-A2d - Eliminar copias motor-provides + ejecutar decisiones de huerfanos
+## WOT-2026-002c - A2d: eliminar copias motor-provides + ejecutar decisiones
 - **Prioridad:** Alta
 - **Scope:** system/host-extends
 - **Estado:** pending
 - **deliverable_type:** code
+- **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
+- **Alias historico:** WOT-AUDIT-A2d
 - **Severidad:** Alta | **Riesgo:** Alto (blast radius ~166 archivos + estado CI).
 - **Objetivo:** retirar del destino las copias `motor-provides` (`agent_system/` 113,
   `skills/` ~41, `tests/` 1, `scripts/` 7, `.agent/README.md`) via `git mv` a
-  `_legacy/` o borrado, y ejecutar las decisiones de WOT-AUDIT-ORPHANS. El destino
+  `_legacy/` o borrado, y ejecutar las decisiones de WOT-2026-002b. El destino
   queda con su `.agent/` de estado + integracion + docs de identidad (coherente con
   MANIFEST.workspace).
 - **Files Likely Touched:** `scripts/`, `skills/`, `agent_system/`, `tests/`,
   `.agent/README.md`, `_legacy/`, `.gitignore` del destino.
 - **Criterio:** 0 copias motor-provides trackeadas; `git ls-files` sin
   `agent_system/`/`skills/`/los 7 scripts comunes; CI verde (gracias a WOT-AUDIT-CI);
-  clone limpio sigue operando (WOT-AUDIT-A2c); validate 0/0; ningun flujo vivo roto.
+  clone limpio sigue operando (WOT-2026-002a); validate 0/0; ningun flujo vivo roto.
 - **STOP / barrera obligatoria:** NO eliminar ninguna copia `stale-diverged` sin
   reconciliar antes que la version del motor cubre el uso del destino (diff hasta
   601 lineas en `run_pytest_safe`); NO borrar por basename. Si una copia tiene
   invocacion viva sin equivalente funcional confirmado, parar y escalar.
-- **Depende de:** WOT-AUDIT-CI, WOT-AUDIT-A2c, WOT-AUDIT-ORPHANS.
+- **Depende de:** WOT-2026-002a, WOT-2026-002b.
 - **Origen:** session-2026-06-13-host-extends.
 
-## WOT-LOG-COMPACT - Compactar historico A2a en execution_log
+## WOT-2026-002d - LOG-COMPACT: compactar historico A2a en execution_log
 - **Prioridad:** Baja
 - **Scope:** system/collab-hygiene
 - **Estado:** pending
 - **deliverable_type:** documentation
+- **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
+- **Alias historico:** WOT-LOG-COMPACT
 - **Problema:** `execution_log.md` arrastra el historico completo de A2a (sugerencia
   no bloqueante del Manager en review de A2b): dificulta leer el packet activo.
 - **Objetivo:** dejar una cabecera corta del ticket activo y mover el historico A2a a
@@ -187,7 +207,7 @@
 ## WT-2026-250c - Poda documental de backlog y saneo de mojibake en superficies vivas
 - **Prioridad:** Media
 - **Scope:** system/collab-hygiene
-- **Estado:** active
+- **Estado:** deferred
 - **deliverable_type:** documentation
 - **Criterio:** backlog <200 lineas; 0 mojibake en superficies vivas; PYSEC-196 tiene ficha con criterio de salida; validate 0/0.
 - **Depende de:** -.
@@ -196,7 +216,7 @@
 ## WT-2026-251b - Migrar el dogfooding al prefijo WOT como validacion viva
 - **Prioridad:** Alta
 - **Scope:** system/ticket-prefix-portability
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** mixed
 - **Objetivo:** correr el proximo ticket bajo prefijo `WOT-`. Actualizar `PROJECT.md` del destino con `Ticket prefix: WOT`.
 - **Criterio:** un ticket `WOT-2026-001a` completa el ciclo bus con validate 0/0 y archivado correcto.
@@ -207,7 +227,7 @@
 ## WT-2026-252a - Decision-artifact estructurado del Manager con fallback a parser NDJSON
 - **Prioridad:** Alta
 - **Scope:** system/review-decision-contract
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** code
 - **Objetivo:** el prompt/skill de review instruye al Manager a escribir `.agent/runtime/reviews/decision_<ticket>.json`; el bridge lo lee como canal primario; el parser NDJSON queda como fallback.
 - **Files Likely Touched:** `prompts/review_manager.md`, `skills/man-review-implementation/SKILL.md`, `bus/review_bridge.py`, tests (repo_motor).
@@ -219,7 +239,7 @@
 ## WT-2026-253a - Reescribir skill code-audit sobre CLIs directas
 - **Prioridad:** Media
 - **Scope:** system/skills-product
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** documentation
 - **Problema:** `skills/code-audit/SKILL.md` instruye ejecutar `python scripts/audit_codebase.py`, que no existe. La skill es inejecutable.
 - **Objetivo:** reescribir el Workflow a `uv run vulture`, `uv run deadcode`, `ruff check --select C90,ERA,SIM`; corregir version.
@@ -232,7 +252,7 @@
 ## WT-2026-253b - Des-localizar repo-compare y graphify del entorno del autor
 - **Prioridad:** Media
 - **Scope:** system/skills-product
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** documentation
 - **Problema:** `skills/repo-compare/SKILL.md` define el proyecto local como `z_scripts/`; `skills/graphify/SKILL.md` usa bash en runtime Windows.
 - **Objetivo:** parametrizar proyecto local en repo-compare; pasos agnosticos de shell en graphify; declarar o reescribir networkx.
@@ -243,7 +263,7 @@
 ## WT-2026-253c - local_audit veraz y AUDIT.md autogenerado en el launcher
 - **Prioridad:** Media
 - **Scope:** system/bootstrap-observability
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** code
 - **Problema:** `scripts/local_audit.py:44` busca `- Version:` pero `PROJECT.md:2` usa `**Version:**`, reportando Unknown. El launcher nunca invoca `local_audit.py`.
 - **Objetivo:** alinear parsers; invocar `local_audit.py` en el launcher con timeout best-effort.
@@ -254,7 +274,7 @@
 ## WT-2026-254a - Deprecacion formal Goose/Claw fase 1 (docs y tests)
 - **Prioridad:** Media
 - **Scope:** system/legacy-deprecation
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** mixed
 - **Objetivo:** fase 1 sin borrar codigo: marcar DEPRECATED en docs, mover `test_goose_*.py` fuera de `scripts/`.
 - **Files Likely Touched:** `AGENTS.md`, `README.md`, `QUICKSTART.md`, `.goosehints`, scripts de test (repo_motor).
@@ -266,7 +286,7 @@
 ## WT-2026-254b - Regenerar .claude/rules del destino desde el estado real
 - **Prioridad:** Media
 - **Scope:** system/docs-coherence
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** documentation
 - **Problema:** las reglas del destino son plantilla sin adaptar: rutas erroneas (`src/`, `orquestacion_agentes/`, `z_scripts`, `publica/`), `work_plan.md` en `.session/` (el canonico es `.agent/collaboration/`).
 - **Objetivo:** reglas regeneradas desde el estado real del destino y del motor.
@@ -277,7 +297,7 @@
 ## WT-2026-255a - Extraer parser de decisiones de review_bridge a modulo propio
 - **Prioridad:** Media
 - **Scope:** system/seam-extraction
-- **Estado:** pending
+- **Estado:** done
 - **deliverable_type:** code
 - **Problema:** `bus/review_bridge.py` (3266 lineas) mezcla transporte, parseo y requeue. El parseo tiene mayor churn.
 - **Objetivo:** extraer parseo NDJSON + decision-artifact a `bus/review_decision.py`; `review_bridge.py` queda como orquestacion. Sin cambios de comportamiento.
@@ -290,7 +310,7 @@
 ## WT-2026-256a - Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2
 - **Prioridad:** Baja
 - **Scope:** system/security-dependencies
-- **Estado:** pending
+- **Estado:** blocked-external
 - **deliverable_type:** code
 - **Problema:** `repo_motor` ignora temporalmente `PYSEC-2026-196` en `[tool.pip-audit].ignore-vuln`. La excepcion no tiene propietario ni caducidad.
 - **Objetivo:** cuando `uv lock --upgrade-package pip` fije `pip>=26.1.2`, retirar la excepcion y verificar `python scripts/pip_audit_project.py` sin vulnerabilidades ignoradas.

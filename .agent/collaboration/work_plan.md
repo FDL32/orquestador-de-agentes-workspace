@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-AUDIT-CI
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **Titulo:** Redefinir el CI del destino para que no dependa de copias locales del motor
 - **Asignado a:** Builder
