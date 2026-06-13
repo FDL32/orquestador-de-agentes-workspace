@@ -1,108 +1,103 @@
-# Work Plan: WOT-2026-002b - ORPHANS decision promover-vs-conservar-vs-archivar
+# Work Plan: WOT-2026-002c - A2d retirar copias motor-provides + ejecutar decisiones
 
 ## Metadata
-- **ID:** WOT-2026-002b
-- **Estado:** COMPLETED
-- **deliverable_type:** analysis
+- **ID:** WOT-2026-002c
+- **Estado:** APPROVED
+- **deliverable_type:** code
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
-- **Alias historico:** WOT-AUDIT-ORPHANS
-- **Titulo:** Decidir con evidencia el destino de los 10 huerfanos del triage_manifest
+- **Alias historico:** WOT-AUDIT-A2d
+- **Titulo:** Retirar del destino las copias motor-provides y ejecutar las decisiones de huerfanos
 - **Asignado a:** Builder
-- **Severidad:** Media | **Riesgo:** Bajo (analisis read-only + doc; no mueve ni borra nada)
-- **Origen:** WOT-AUDIT-A2 / triage_manifest.md (bucket huerfano-needs-decision)
-
-## Objetivo
-Para cada una de las 10 rutas del bucket `huerfano-needs-decision` del
-`.agent/docs/triage_manifest.md`, emitir una decision con evidencia:
-promover-al-motor, conservar-como-host-specific (destino-keep), o archivar-legacy.
-El entregable es un doc de decisiones; NO mueve ni borra nada (eso es A2d /
-WOT-2026-002c). Reduce a 0 los huerfanos sin resolver para que A2d ejecute.
+- **Severidad:** Alta | **Riesgo:** Alto (blast radius ~168 archivos). Reversible via git.
+- **Origen:** WOT-AUDIT-A2 / triage_manifest.md + decisiones WOT-2026-002b
 
 ## Decision Arquitectonica
-El entregable es un doc de decisiones NUEVO (`orphans_decision_WOT-2026-002b.md`) que
-cruza referencia al `triage_manifest.md`, en lugar de mutar el manifiesto: el
-manifiesto es un deliverable de analisis ya cerrado (A2b) y debe permanecer como
-inventario congelado; las decisiones son una capa posterior. La decision por huerfano
-se ancla en evidencia FUNCIONAL (grep de invocacion viva en motor + destino), nunca en
-basename ni ubicacion, para no archivar un flujo vivo ni promover ruido. El ticket es
-analysis puro: separa decidir (aqui) de ejecutar (A2d / WOT-2026-002c).
+El destino deja de vendorizar el tooling del motor: lo referencia externamente
+(host-extends, probado en WOT-2026-002a). La retirada es por BUCKETS en COMMITS
+SEPARADOS para reducir blast radius y permitir revert granular. Lo muerto-pero-unico
+se ARCHIVA a `_legacy/`; lo motor-provides se hace `git rm` (el motor tiene la copia
+canonica). Toda la operacion es `git rm`/`git mv` + commit: recuperable.
 
-## Rubrica de decision (congelada, del triage_manifest)
-Eje: desarrollo/creacion del sistema -> motor; estado operativo / integracion /
-host config / overrides del host / funcionalidad de dominio -> destino. "Particular
-por dominio" cuenta como destino-keep SOLO si implementa comportamiento del
-repo_destino, no por ser tooling del sistema que casualmente solo existe en el
-destino. Equivalencia juzgada FUNCIONALMENTE (diff/behavior), nunca por basename.
+## Inventario por bucket
+### Bucket 1 - motor-provides -> git rm (163) [FASE 2 HECHA: bf451f2]
+- `agent_system/` (113), `skills/` (41), 7 scripts (run_pytest_safe, discover_skills,
+  upgrade_agent_system, detect_agent_system_version, test_refactoring_impact,
+  test_refactor_kit_portable, test_refactor_kit_performance),
+  `tests/test_event_bus_hygiene.py` (1).
+- `.agent/README.md`: STOP#3 -> CUSTOMIZADO vs motor -> destino-keep, NO retirado.
 
-Mapa de decisiones:
-- **promote-to-motor:** es tooling de desarrollo/creacion del sistema, util y vivo
-  o reutilizable, sin equivalente funcional en el motor -> pertenece al motor.
-- **destino-keep:** implementa dominio/integracion/config real del repo_destino.
-- **archive-legacy:** muerto (sin invocacion viva, superado por otra superficie, o
-  deprecado) -> archivar, no promover.
+### Bucket 2 - archive-legacy -> git mv a _legacy/ (7) [FASE 1 HECHA: 1a2d700]
+- 5 scripts del cluster + `tests/test_ticket_007_context_recovery.py` + `.goosehints`.
 
-## Los 10 huerfanos a decidir
-1. `scripts/artifact_graph.py`
-2. `scripts/audit_codebase.py`
-3. `scripts/rollback_agent_system.py`
-4. `scripts/state_drift.py`
-5. `scripts/test_refactor_manager_skill.py`
-6. `tests/test_ticket_007_context_recovery.py`
-7. `.agent/hooks/pre_compact_hook.py`
-8. `.agent/microagents/onboarding.md`
-9. `.agent/glossary.md`
-10. `.goosehints`
-
-## Evidencia requerida por huerfano
-- Invocacion viva: grep del basename / entrypoint en el MOTOR y en el DESTINO
-  (scripts, hooks, CI, prompts, skills, configs). Citar archivo:linea o "sin hits".
-- Equivalente funcional en el motor: confirmar ausencia/presencia (no por basename).
-- Dominio: determinar si implementa comportamiento del repo_destino o es tooling.
-- Para deprecados conocidos (`.goosehints` -> WT-2026-254a), citar la deprecacion.
+### Bucket 3 - installer-managed (3) [FASE 3 DIFERIDA -> ver STOP#7]
+- `.agent/hooks/pre_compact_hook.py`, `.agent/microagents/onboarding.md`,
+  `.agent/glossary.md`. DIFERIDOS a follow-up: el mecanismo de re-sync previsto
+  (`install --sync`) re-vendoriza el bundle COMPLETO en el destino (re-crea
+  agent_system/ + caches), contradiciendo A2d. Se conservan como destino-keep hasta
+  un install host-extends-aware (follow-up de motor).
 
 ## Files Likely Touched
-- `.agent/docs/orphans_decision_WOT-2026-002b.md`
+- `agent_system/`
+- `skills/`
+- `scripts/`
+- `tests/`
+- `_legacy/`
+- `orchestrator_pipeline/reports/closeout_WOT-2026-002c.md`
 - `.agent/collaboration/execution_log.md`
 
 ## Superficies
-- **Builder (crea/modifica):** `.agent/docs/orphans_decision_WOT-2026-002b.md`;
-  `execution_log.md`.
-- **Read/inspect only:** `.agent/docs/triage_manifest.md`, el arbol del motor y del
-  destino para grep de invocaciones. NO mover ni borrar ningun huerfano.
-- **Manager-only:** review de que cada decision tiene evidencia real (grep citado).
+- **Builder (modifica):** Buckets 1 y 2; `_legacy/`; reporte y `execution_log.md`.
+- **Read/inspect only:** `triage_manifest.md`, `orphans_decision_WOT-2026-002b.md`,
+  arbol del motor para paridad. NO editar el motor.
+- **Manager-only:** doble review adversarial; verificacion de que ningun flujo vivo
+  se rompe y de que el destino sigue operando via motor externo.
 
 ## Non-goals
-- NO mover, borrar ni `git mv` ningun huerfano (eso es WOT-2026-002c / A2d).
-- NO tocar el motor.
-- NO promover a memoria estable un huerfano "dudoso" sin evidencia.
+- NO tocar el motor (read-only).
+- NO retirar destino-keep (.agent/collaboration|runtime|config|audits|docs, .claude,
+  docs de identidad de raiz, `.agent/README.md` customizado).
+- NO usar `install --sync` para re-provisionar (re-vendoriza el bundle completo).
 
-## Criterios binarios de cierre
-- [ ] Los 10 huerfanos tienen una decision (promote-to-motor / destino-keep /
-      archive-legacy); 0 sin resolver.
-- [ ] Cada decision cita evidencia concreta: grep con archivo:linea o "sin hits
-      en motor ni destino", y la determinacion de dominio.
-- [ ] Doc `orphans_decision_WOT-2026-002b.md` creado, cruzando referencia al
-      triage_manifest.
+## Criterios binarios de cierre (alcance: FASE 1 + FASE 2)
+- [x] `git ls-files` sin `agent_system/`, `skills/`, los 7 scripts motor-provides,
+      `tests/test_event_bus_hygiene.py` (Bucket 1, bf451f2).
+- [x] Bucket 2 (7) en `_legacy/` (1a2d700).
 - [ ] `agent_controller --validate --project-root .` = 0/0.
+- [ ] Clone limpio + motor externo opera SIN las copias retiradas (exit codes reales).
+- [ ] Workflow CI no referencia copias retiradas (grep vacio).
+- [ ] Bucket 3 diferido y documentado como follow-up de motor (install host-extends-aware).
+- [ ] Follow-up de motor (gates-dispatch sin tests locales) creado en backlog.
 
-## STOP / escalado
-1. Si un huerfano resulta ser dominio real del destino (p.ej. `test_ticket_007`
-   como experimento vivo con invocacion o intencion documentada): marcar
-   destino-keep y NO archivar; anotar que corrige la conclusion "dominio vacio"
-   del triage_manifest. Esto es un hallazgo, no un fallo.
-2. Si un huerfano tiene invocacion viva en el destino sin equivalente en el motor:
-   no archivar; promover o keep segun la rubrica, y marcarlo como barrera para A2d.
-3. Si la evidencia es ambigua para un huerfano concreto: marcar `dudoso` con la
-   evidencia parcial y la decision conservadora (no archivar), no forzar.
+## STOP / escalado (activados durante la ejecucion)
+- **STOP#3 ACTIVADO:** `.agent/README.md` customizado vs motor -> destino-keep, NO retirado.
+- **STOP#7 (nuevo, FASE 3):** `install --sync` re-vendoriza el bundle completo
+  (re-crea `agent_system/` + caches en el destino) y borro deliverables destino-keep
+  en el working tree durante el re-provision. Es la herramienta EQUIVOCADA para
+  host-extends. FASE 3 (installer-managed) se DIFIERE: los 3 archivos se conservan como
+  destino-keep hasta que el motor ofrezca un install host-extends-aware. Recuperado el
+  estado limpio post-FASE-2 via git restore (sin tocar 1a2d700/bf451f2).
+- STOP#1/#2: 0 invocadores vivos / paridad de skills OK (FASE 0 limpia).
 
-## Gates (deliverable_type: analysis)
-- Existencia del deliverable `.agent/docs/orphans_decision_WOT-2026-002b.md`.
-- `agent_controller --validate --project-root .` 0/0 (gate de estado).
-- Encoding guard UTF-8 limpio sobre el doc.
-- ruff/pytest: N/A (analisis; no se toca Python). Salto auditable.
+## Gates (deliverable_type: code; ticket de retirada)
+- `agent_controller --validate --project-root .` 0/0.
+- Clone limpio + motor externo (install --sync, discover, validate) con exit codes
+  reales SIN las copias (host-extends post-retirada).
+- Workflow CI: grep sin refs a copias retiradas.
+- ruff/pytest-safe contra el destino: N/A (retirada via git rm/mv; sin Python editado;
+  tests/ motor-provides retirado -> pytest-local no aplica). Gate de codigo = clone-demo.
+- Integridad motor: `check_motor_pristine --check` vs snapshot.
+
+## Riesgos
+- Alto blast radius (~163 retirados) pero reversible via git. Mitigacion: commits por
+  bucket, FASE 0 de reconciliacion, STOPs duros, verificacion por clone-demo.
+- FASE 3 diferida limpiamente (install --sync inadecuado); sin perdida (los 3 archivos
+  permanecen).
 
 ## Entregables
-- `.agent/docs/orphans_decision_WOT-2026-002b.md`: tabla de 10 decisiones con
-  evidencia (grep citado, dominio, decision), lista de barreras para A2d, y
-  cualquier correccion a la conclusion "dominio vacio" del triage_manifest.
+- Destino sin Bucket 1 (163 motor-provides); `_legacy/` con Bucket 2 (7).
+- Bucket 3 conservado (destino-keep) + follow-up de motor documentado.
+- `orchestrator_pipeline/reports/closeout_WOT-2026-002c.md` con git ls-files
+  antes/despues, clone-demo, el incidente install --sync y los follow-ups.
+- Entradas de backlog (scope motor): install host-extends-aware + gates-dispatch sin
+  tests locales.

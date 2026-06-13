@@ -85,6 +85,41 @@
 
 ---
 
-## FASE 1 - archive-legacy [EN PROGRESO]
+## FASE 1 - archive-legacy [HECHA: commit 1a2d700]
 
-Bucket 2 (7 archivos): artifact_graph, audit_codebase, rollback_agent_system, state_drift, test_refactor_manager_skill -> _legacy/scripts/; test_ticket_007_context_recovery -> _legacy/tests/; .goosehints -> _legacy/
+Bucket 2 (7 archivos): artifact_graph, audit_codebase, rollback_agent_system, state_drift, test_refactor_manager_skill -> _legacy/scripts/; test_ticket_007_context_recovery -> _legacy/tests/; .goosehints -> _legacy/. git mv reversible.
+
+## FASE 2 - motor-provides [HECHA: commit bf451f2]
+
+`git rm -r agent_system/` (113) + `git rm -r skills/` (41, paridad OK) + 7 scripts
+motor-provides + `tests/test_event_bus_hygiene.py`. `.agent/README.md` NO retirado
+(STOP#3: customizado). 163 retirados. Reversible via historial; el motor tiene las copias.
+
+## FASE 3 - installer-managed [DIFERIDA - incidente install --sync]
+
+**Incidente:** la accion prevista (git rm de los 3 installer-managed + `install --sync`
+para re-provisionar onboarding/glossary) fallo: `install_agent_system.py --sync`
+**re-vendoriza el bundle COMPLETO** en el destino (re-creo `agent_system/` con caches
+.ruff_cache/.pytest_cache/__pycache__ + runtime) y borro en el working tree
+deliverables destino-keep (`resource_precedence.md`, `triage_manifest.md`,
+`orphans_decision_WOT-2026-002b.md`). install --sync es la herramienta EQUIVOCADA para
+host-extends: su contrato es provisionar el bundle, no retirarlo.
+
+**Alerta de seguridad (FALSO POSITIVO de atribucion):** el detector marco que el
+subagente "anadio" a `.claude/settings.json` reglas wildcard de Bash (`python3:*`,
+`for f:*`) y un dominio WebFetch `paperclip.ing`. Verificado por git: ese contenido
+**ya estaba en el commit inicial `468844d`** (pre-existente en el repo destino, no
+introducido por esta sesion; `git diff HEAD .claude/settings.json` = vacio). Es config
+pre-existente del destino para revision del humano, no daño de esta sesion.
+
+**Recuperacion (sin tocar 1a2d700/bf451f2):** `git restore` de los deliverables
+destino-keep borrados, de los 3 installer-managed (undo del git rm de FASE 3), y de las
+modificaciones de install --sync (version_manifest, memory_rules, STATE/TURN). `rm -rf`
+del `agent_system/` untracked (solo caches + runtime de install --sync, no el bundle).
+Estado recuperado = post-FASE-2 limpio. Los 3 installer-managed permanecen como
+destino-keep.
+
+**Decision:** FASE 3 DIFERIDA. Los 3 installer-managed se conservan hasta un install
+host-extends-aware (follow-up de motor). A2d cierra con alcance FASE 1 + FASE 2: 163
+motor-provides retirados + 7 legacy archivados. Pendiente: verificacion (validate,
+clone-demo, CI) + follow-ups de motor en backlog.
