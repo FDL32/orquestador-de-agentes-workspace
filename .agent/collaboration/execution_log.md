@@ -22,11 +22,14 @@
 
 ## Hallazgos divergentes registrados como STOP para A2b
 
-- `scripts/test_refactor_kit_performance.py`: existe como copia local en el
-  destino pero NO tiene equivalente en el motor -> escalar (gap de capacidad o
-  reclasificar como extension del host).
+- `scripts/test_refactor_kit_performance.py`: copia local en el destino.
+  CORRECCION 2026-06-13: NO es STOP. El motor SI tiene el test en
+  `tests/test_refactor_kit_performance.py` (lo corre la suite `run_pytest_safe`);
+  la afirmacion inicial "sin equivalente" solo miro `scripts/`. A2b retira la
+  copia stale + allowlist; cobertura preservada por la suite del motor.
 - `agent_system/refactor-kit/install_refactor_kit.py`: entrada allowlist stale
   (ruta hyphen inexistente; el motor lo tiene bajo `refactor_kit/` underscore).
+  Limpieza en A2b, no bloqueante.
 
 ## Pendiente (Builder)
 

@@ -51,7 +51,7 @@ Fuente: `.claude/settings.local.json`. Verificado por `git ls-files` (destino) y
 | `python scripts/run_pytest_safe.py` | TRACKED | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `cwd=<repo_destino>` + `python <repo_motor>/scripts/run_pytest_safe.py` (sin `--project-root`) |
 | `python scripts/discover_skills.py --json` | TRACKED | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `cwd=<repo_destino>` + `python <repo_motor>/scripts/discover_skills.py --json` (host-first depende de `cwd`; sin `--project-root`) |
 | `python scripts/local_audit.py --quick` | AUSENTE (no es copia) | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `python <repo_motor>/scripts/local_audit.py --json --quick` (sin `--project-root`; no hay copia que archivar) |
-| `python scripts/test_refactor_kit_performance.py` | TRACKED | **NO** | **SIN EQUIVALENTE** -> ver STOP/escalado #1 |
+| `python scripts/test_refactor_kit_performance.py` | TRACKED | **SI** (motor `tests/test_refactor_kit_performance.py`, lo corre la suite) | CORRECCION 2026-06-13: la afirmacion original "sin equivalente" fue gap de verificacion (solo se miro `scripts/`). La copia del destino es el mismo test (diff solo en BOM, una linea `# ruff: noqa: PERF203` y el newline final); no hay gap de capacidad. A2b retira la copia stale + entrada de allowlist; la suite del motor preserva cobertura. NO es STOP. |
 | `agent_system/refactor-kit/install_refactor_kit.py` | AUSENTE (ruta hyphen inexistente) | motor tiene `agent_system/refactor_kit/` (underscore) | entrada allowlist **stale/muerta** -> ver STOP/escalado #2 |
 
 ## Superficies (contrato documentation por tipo)
@@ -70,13 +70,16 @@ Fuente: `.claude/settings.local.json`. Verificado por `git ls-files` (destino) y
 - No `git mv` ni borrado de ninguna copia legacy (eso es A2d).
 - No tocar `.claude/settings.local.json` (eso es A2b).
 - No editar prompts/skills/scripts del motor.
-- No resolver el gap de `test_refactor_kit_performance.py` (solo documentarlo y escalarlo).
+- No reapuntar ni limpiar `test_refactor_kit_performance.py` ni su entrada de
+  allowlist (eso es A2b); A2a solo documenta el hallazgo (ya corregido: no es
+  un gap de capacidad del motor).
 
 ## Criterios binarios de cierre
 - [ ] Existe `repo_destino/.agent/docs/resource_precedence.md` con: regla de
       precedencia de 3 niveles + tabla de mapeo completa (5 comandos).
-- [ ] El doc declara explicitamente los 2 hallazgos divergentes como STOP para A2b
-      (sin equivalente / entrada stale).
+- [ ] El doc declara explicitamente los hallazgos para A2b: la correccion del
+      falso STOP del perf-test (el motor SI tiene el test en `tests/`) y la
+      entrada stale de allowlist (`refactor-kit` hyphen). Ninguno bloquea A2b.
 - [ ] El doc registra fecha y HEADs de verificacion (destino `13ee7e1`, motor `704939f`).
 - [ ] `execution_log.md` cierra con una linea que combina artefacto + gate final,
       p.ej.: `Doc .agent/docs/resource_precedence.md creado. Validate: exit 0, 0 errors, 0 warnings.`
@@ -84,10 +87,12 @@ Fuente: `.claude/settings.local.json`. Verificado por `git ls-files` (destino) y
       regresion por el work_plan/log nuevos). Exit real (last-run/json), no pipe.
 
 ## STOP / escalado
-1. **`test_refactor_kit_performance.py` sin equivalente en el motor.** No existe
-   `scripts/test_refactor_kit_performance.py` en el motor. A2b NO puede reapuntar
-   este comando: o se promueve la capacidad al motor, o se reclasifica como
-   extension legitima del host. **Documentar y escalar; no resolver en A2a.**
+1. ~~**`test_refactor_kit_performance.py` sin equivalente en el motor.**~~
+   RESUELTO / NO ES STOP (corregido 2026-06-13): el motor SI tiene el test en
+   `tests/test_refactor_kit_performance.py`, ejecutado por la suite
+   (`run_pytest_safe.py`). La verificacion original solo miro `scripts/`. A2b
+   retira la copia stale del destino y su entrada de allowlist; no requiere
+   decision de capacidad del motor.
 2. **Entrada allowlist stale `agent_system/refactor-kit/install_refactor_kit.py`.**
    La ruta con hyphen no existe en el destino; el motor lo tiene bajo
    `agent_system/refactor_kit/` (underscore). Es una entrada muerta de allowlist.
@@ -102,8 +107,9 @@ Fuente: `.claude/settings.local.json`. Verificado por `git ls-files` (destino) y
 
 ## Riesgos
 - Bajo. Solo crea un doc nuevo + actualiza superficies de colaboracion.
-- Riesgo diferido (no de A2a): el gap del STOP #1 puede bloquear A2b; por eso se
-  escala aqui en vez de arrastrarlo silenciosamente.
+- A2b no tiene bloqueos de capacidad: el supuesto STOP del perf-test era un gap
+  de verificacion (el motor SI tiene el test en `tests/`). Los dos hallazgos
+  para A2b son limpieza (retirar copia stale + arreglar entrada de allowlist).
 
 ## Entregables
 - `repo_destino/.agent/docs/resource_precedence.md` (doc canonico de precedencia + mapeo).

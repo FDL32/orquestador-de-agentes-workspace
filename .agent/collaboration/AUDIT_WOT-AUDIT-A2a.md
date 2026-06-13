@@ -51,8 +51,11 @@ y tabla completa de 5 comandos. VERIFICADO.
 TP-02: la forma invocable documentada coincide con la interfaz real del motor
 (`AGENT_PROJECT_ROOT`, sin `--project-root`). VERIFICADO contra el codigo.
 
-TP-03: los 2 STOP de A2b (gap `test_refactor_kit_performance.py`; allowlist
-muerta `refactor-kit` hyphen) quedan explicitos y accionables. VERIFICADO.
+TP-03: los STOP de A2b quedan explicitos y accionables. VERIFICADO, con
+CORRECCION posterior (2026-06-13): el supuesto STOP del
+`test_refactor_kit_performance.py` era un gap de verificacion; el motor SI tiene
+el test en `tests/` (lo corre la suite). Solo queda como limpieza la allowlist
+muerta `refactor-kit` hyphen. Ningun STOP real bloquea A2b.
 
 TP-04: A2a no movio, borro ni reapunto archivos ni toco
 `.claude/settings.local.json` ni el motor. VERIFICADO por git status + scope.

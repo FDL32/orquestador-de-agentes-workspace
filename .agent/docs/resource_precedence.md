@@ -54,13 +54,17 @@ Evidence source:
 | `python scripts/run_pytest_safe.py` | Local legacy copy exists in destination | Motor script exists | `Set-Location <repo_destino>` + `AGENT_PROJECT_ROOT=<repo_destino>` + `python <repo_motor>/scripts/run_pytest_safe.py --status` verified. The script does not expose `--project-root`; root resolution comes from env var. |
 | `python scripts/discover_skills.py --json` | Local legacy copy exists in destination | Motor script exists | `Set-Location <repo_destino>` + `AGENT_PROJECT_ROOT=<repo_destino>` + `python <repo_motor>/scripts/discover_skills.py --json` verified. Host-first discovery depends on `cwd` for `.agent/skills`; no `--project-root` CLI exists. |
 | `python scripts/local_audit.py --quick` | No local copy in destination | Motor script exists | `Set-Location <repo_destino>` + `AGENT_PROJECT_ROOT=<repo_destino>` + `python <repo_motor>/scripts/local_audit.py --json --quick` verified. The script does not accept `--project-root`; root resolution comes from env var. |
-| `python scripts/test_refactor_kit_performance.py` | Local legacy copy exists in destination | No equivalent motor script found | No valid external-motor replacement exists today. This is a real STOP for A2b until the capability is promoted to the motor or reclassified as a host-only extension. |
+| `python scripts/test_refactor_kit_performance.py` | Local legacy copy exists in destination | Motor equivalent exists at `tests/test_refactor_kit_performance.py` (run by the pytest suite via `run_pytest_safe.py`) | CORRECTION (2026-06-13): the original A2a claim "no equivalent" was a verification gap (only `scripts/` was checked). The destino copy is the same test as the motor's, differing only in a BOM, a `# ruff: noqa: PERF203` line, and the trailing newline -- a functionally corresponding test exists in the motor, so there is no capability gap. No motor promotion or host reclassification is needed: A2b drops the stale destino copy and its allowlist entry; coverage is preserved by the motor suite. Not a real STOP. |
 | `python agent_system/refactor-kit/install_refactor_kit.py /tmp/test_refactor_project` | Referenced path is stale: `refactor-kit` with hyphen is absent in destination | Motor has `agent_system/refactor_kit/install_refactor_kit.py` with underscore | Current allowlist entry is dead and must be cleaned in A2b. The external equivalent must use the underscore path, not the hyphen path. |
 
 ## STOP Conditions for A2b
 
-1. `scripts/test_refactor_kit_performance.py` has no motor equivalent. A2b
-   cannot repoint this command safely without a motor capability decision.
+1. ~~`scripts/test_refactor_kit_performance.py` has no motor equivalent.~~
+   RESOLVED / NOT A STOP (corrected 2026-06-13): the motor has the equivalent
+   test at `tests/test_refactor_kit_performance.py`, exercised by the pytest
+   suite (`run_pytest_safe.py`). The original "no equivalent" finding only
+   inspected `scripts/`. A2b simply drops the stale destino copy and its
+   allowlist entry; no motor capability decision is required.
 2. `agent_system/refactor-kit/install_refactor_kit.py` is a stale allowlist
    entry. A2b must clean or replace it explicitly; it cannot be treated as a
    valid command path.
