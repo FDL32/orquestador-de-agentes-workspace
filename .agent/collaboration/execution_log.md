@@ -1,65 +1,60 @@
-# Execution Log WOT-AUDIT-CI
+# Execution Log WOT-2026-002a
 
-**Estado:** COMPLETED
+**Estado:** READY_FOR_REVIEW
 
 ## Metadata
 
-- **ID:** WOT-AUDIT-CI
-- **deliverable_type:** code
-- **Rol activo:** MANAGER
-- **Accion:** CREATE_PLAN
+- **ID:** WOT-2026-002a
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_destino
+- **Alias historico:** WOT-AUDIT-A2c
+- **Rol activo:** BUILDER
+- **Accion:** IMPLEMENTATION + READY_FOR_REVIEW
 
 ## Resumen
 
 - Pipeline (FALLBACK_SIN_TASK_TOOL). Manager redacto `work_plan.md`,
-  `PLAN_WOT-AUDIT-CI.md` y `AUDIT_WOT-AUDIT-CI.md` (TP Check) para WOT-AUDIT-CI.
-- Objetivo: redefinir `.github/workflows/quality-gates.yml` para validar estado
-  `.agent/` del destino via checkout del motor PUBLICO, sin copias locales.
-- Evidencia previa: motor `FDL32/orquestador-de-agentes` es PUBLIC (checkout sin
-  secretos). Es el bucket ci-portability-blocker del triage_manifest.
-- Historico de tickets previos (A2a/A2b) vive en git; no se arrastra aqui.
+  `PLAN_WOT-2026-002a.md` y `AUDIT_WOT-2026-002a.md` (TP Check) para WOT-2026-002a.
+- ID canonico asignado por la regla 0.d: ultimo WOT-2026 real = `WOT-2026-001d`;
+  siguiente bloque = `WOT-2026-002a`. `WOT-AUDIT-A2c` queda como alias historico.
+- Objetivo: demo sobre clone limpio del destino, despojado de copias motor-provides,
+  operando via motor externo (install --sync + discover/pytest/validate con
+  AGENT_PROJECT_ROOT). Entregable: reporte con exit codes reales.
+- Motor snapshot pre-ticket: HEAD `687d5b9`, limpio
+  (`orchestrator_pipeline/session_close/motor_before_WOT-2026-002a.json`).
+- Historico de tickets previos (A2a/A2b/CI) vive en git/backlog; no se arrastra aqui.
 
-## Builder - implementacion
+## Ejecucion Builder (2026-06-13)
 
-- Reescrito `.github/workflows/quality-gates.yml`: checkout destino + checkout
-  motor publico (`FDL32/orquestador-de-agentes` en `_motor/`) + setup-python 3.10
-  + `python _motor/.agent/agent_controller.py --validate --json --project-root .`
-  (`AGENT_PROJECT_ROOT=github.workspace`) + Workflow reference check (conservado).
-  Retirados `compileall scripts tests` y la validacion de discovery sobre copias
-  locales. `paths:` del trigger ya no depende de `scripts/**`.
-- Gates locales: YAML `yaml.safe_load` OK; ASCII-clean no-BOM; sin refs a copias
-  locales (`grep` vacio); `agent_controller --validate --project-root .` 0/0.
-## Evidencia de run real (criterio de cierre)
+### Fase 0 - Diagnostico baseline
+- git status destino real: solo .agent/collaboration/ + AUDIT/PLAN nuevos sin commitear.
+- install_agent_system.py --help: flag `--dest` para apuntar al clone; exit=0.
 
-- Commit `6b2cfc3` pusheado a main. Run Quality Gates id `27468765122`:
-  `conclusion=success`. Step "Validate destination .agent state (engine
-  controller)" = success; salida en CI: `validate errors=0 warnings=1` (el gate
-  falla solo en errors -> pass; warning advisory por checkout shallow). Security
-  Audit en `6b2cfc3` = success.
-- Integridad motor: `check_motor_pristine --check` limpio; motor HEAD `704939f`
-  sin cambios. Reporte: orchestrator_pipeline/session_close/motor_after_WOT-AUDIT-CI.json.
+### Clone temporal
+- TMP_CLONE: /tmp/tmp.4AIQ5bFvDB/clone_002a
+- git clone exit=0. Copias legacy confirmadas: scripts/, skills/, agent_system/, tests/, .agent/README.md.
 
-## Manager review (doble pasada, FALLBACK single-agent)
+### Stripping del clone (post-A2d simulado)
+- Retirado a <clone>/_stripped/: scripts/, skills/, agent_system/, tests/, .agent/README.md.
+- .agent/collaboration/, .agent/runtime/, .agent/config/ preservados.
 
-- Rev1 (verificacion): TP-01 sin refs locales (grep vacio); TP-02 checkout motor
-  + validate (diff + steps); TP-03 YAML ok; TP-04 run real success (gh
-  27468765122); TP-05 motor intacto, sin secretos nuevos.
-- Rev2 (adversarial/counterexample): el run NO pasa vacuo (el step validate
-  ejecuto y emitio `errors=0`); retirar compileall no baja cobertura util (las
-  copias compiladas se eliminan en A2d; el activo real del destino es el estado
-  `.agent/`, ahora cubierto por validate). Residual no bloqueante: 1 warning en
-  CI vs 0 local por entorno de checkout.
-- Decision: APROBADO. Artifact: .agent/runtime/reviews/decision_WOT-AUDIT-CI.json
+### Demo motor externo vs clone stripped
+- install --sync --dest <clone>: exit=0. motor_destination_link.json regenerado (v9.17.0).
+- discover_skills.py (AGENT_PROJECT_ROOT=<clone>): exit=0. 28 skills, paths en MOTOR.
+- run_pytest_safe.py (cwd=<clone>, AGENT_PROJECT_ROOT=<clone>): exit=4.
+  "ERROR: file or directory not found: tests". 0 tests ran. DEPENDENCIA DETECTADA.
+- agent_controller --validate --project-root <clone>: exit=1. 2 invariant errors WOT-AUDIT-CI
+  (estado heredado del clone, bus gitignored, NO causado por stripping).
+- agent_controller --validate --project-root <destino_real>: exit=0. 0 errors, 0 warnings.
 
-## Gate final
+### Gates deliverable
+- Deliverable closeout_WOT-2026-002a.md: creado en orchestrator_pipeline/reports/. exit=0.
+- ruff: N/A (no Python productivo tocado). Salto auditable.
+- Motor intacto: pendiente check_motor_pristine en cierre.
+- Encoding guard: pendiente en cierre.
 
-Workflow `.github/workflows/quality-gates.yml` redefinido (ASCII-clean, YAML ok).
-CI Quality Gates run `27468765122` passed (conclusion=success); todos los steps
-passed incluyendo el validate del motor. ruff/pytest N/A (no se toco Python;
-politica condicional -> salto auditable). Validate local: exit 0, 0 errors.
-All checks passed for WOT-AUDIT-CI.
-
-
-Scope override: WOT-AUDIT-CI checkpoint includes collaboration evidence docs and live bus projections committed after the workflow delivery; productive CI file is covered by FLT. Affected files: .agent/collaboration/AUDIT_WOT-AUDIT-CI.md, .agent/collaboration/PLAN_WOT-AUDIT-CI.md, .agent/collaboration/STATE.md, .agent/collaboration/TURN.md, .agent/collaboration/execution_log.md, .agent/collaboration/work_plan.md
-
-Manager approved canonical closeout for WOT-AUDIT-CI
+### Decision
+A2d PARCIALMENTE DES-RIESGADO:
+- install + discover: operan sin copias motor-provides (VERDE).
+- run_pytest_safe: DEPENDENCIA VIVA en tests/ (STOP#2 activado; input para A2d).
+- validate clone: errores pre-existentes (no del stripping); destino real 0/0 (VERDE).

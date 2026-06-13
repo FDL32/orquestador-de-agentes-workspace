@@ -1,0 +1,17 @@
+{
+  "event": "MOTOR_PRISTINE_OK",
+  "motor_root": "C:\\Users\\fdl\\Proyectos_Python\\orquestador_de_agentes",
+  "motor_head_before": "687d5b925d06b0d6ebbd9276ad5fc5d32904d01d",
+  "motor_head_before_short": "687d5b9",
+  "motor_head_after": "687d5b925d06b0d6ebbd9276ad5fc5d32904d01d",
+  "motor_head_after_short": "687d5b9",
+  "motor_head_changed": false,
+  "pre_existing_dirty": [],
+  "motor_status_new": [],
+  "motor_status_resolved": [],
+  "motor_dirty_after": false,
+  "motor_status_after": [],
+  "motor_diff_stat_after": [],
+  "motor_cached_diff_stat_after": [],
+  "checked_at": "2026-06-13T17:58:33.680477+00:00"
+}
