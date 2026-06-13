@@ -54,4 +54,7 @@
 ## Gate final
 
 Workflow `.github/workflows/quality-gates.yml` redefinido (ASCII-clean, YAML ok).
-CI run real success (gh 27468765122). Validate local: exit 0, 0 errors, 0 warnings.
+CI Quality Gates run `27468765122` passed (conclusion=success); todos los steps
+passed incluyendo el validate del motor. ruff/pytest N/A (no se toco Python;
+politica condicional -> salto auditable). Validate local: exit 0, 0 errors.
+All checks passed for WOT-AUDIT-CI.
