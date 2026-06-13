@@ -62,6 +62,9 @@ temp_output.txt
 .session/
 .refactor/
 
+# Reportes generados por la auditoria de publicacion Git (classify_publication.py)
+orchestrator_pipeline/
+
 # Estado efimero de collaboration
 .agent/collaboration/.session_state.json
 .agent/collaboration/manager_feedback_*.md
