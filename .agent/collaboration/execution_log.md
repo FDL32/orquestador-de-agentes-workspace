@@ -1,90 +1,90 @@
-# Execution Log WOT-2026-002b
+# Execution Log WOT-2026-002c
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Metadata
 
-- **ID:** WOT-2026-002b
-- **deliverable_type:** analysis
+- **ID:** WOT-2026-002c
+- **deliverable_type:** code
 - **delivery_authority:** repo_destino
-- **Alias historico:** WOT-AUDIT-ORPHANS
+- **Alias historico:** WOT-AUDIT-A2d
 - **Rol activo:** BUILDER
-- **Accion:** IMPLEMENTATION_COMPLETE
+- **Accion:** EXECUTE
 
 ## Resumen
 
-- Pipeline. Manager redacto `work_plan.md`, `PLAN_WOT-2026-002b.md` y
-  `AUDIT_WOT-2026-002b.md` para WOT-2026-002b.
-- ID canonico por regla 0.d: sigue a WOT-2026-002a (cerrado: cca3540 + 5c2580f).
-  `WOT-AUDIT-ORPHANS` queda como alias historico.
-- Objetivo: decidir promote/keep/archive para los 10 huerfanos del triage_manifest,
-  con evidencia de grep (motor + destino). Deliverable: doc de decisiones. No mueve
-  ni borra nada (eso es A2d / WOT-2026-002c).
-- analysis: salta M3 checkpoint; gate = existencia del deliverable + validate 0/0.
+- Pipeline. Manager redacto `work_plan.md`, `PLAN_WOT-2026-002c.md` y
+  `AUDIT_WOT-2026-002c.md` para WOT-2026-002c (A2d).
+- ID canonico por regla 0.d: sigue a WOT-2026-002b (cerrado: 48754f8 + a9e5f38).
+  `WOT-AUDIT-A2d` queda como alias historico. 002d absorbed (premisa obsoleta).
+- Objetivo: retirar las copias motor-provides (~163 git rm), archivar el set muerto a
+  `_legacy/` (7), retirar los 3 installer-managed con re-sync. Por buckets, commits
+  separados, reversible via git. Barreras 002a (pytest/tests) y 002b (installer-managed)
+  incorporadas.
+- Decisiones del usuario: ejecutar A2d ahora (staged + barreras); retirar tests/ +
+  follow-up de motor para el gates-dispatch sin tests locales.
+- code + delivery_authority=repo_destino: M3 en el destino. Doble review adversarial (sec.6).
 
-## Ejecucion - Builder
+## FASE 0 - Reconciliacion (read-only) [COMPLETADA]
 
-### 10 Decisiones con Evidencia (2026-06-13)
+**Baseline pre-retirada (git ls-files --cached):**
+- Total tracked: 335
+- agent_system/: 113
+- skills/: 41
+- scripts/ motor-provides (7): run_pytest_safe, discover_skills, upgrade_agent_system, detect_agent_system_version, test_refactoring_impact, test_refactor_kit_portable, test_refactor_kit_performance
+- tests/test_event_bus_hygiene.py: 1
+- .agent/README.md: 1
+- Bucket 2 legacy cluster (7): artifact_graph, audit_codebase, rollback_agent_system, state_drift, test_refactor_manager_skill, test_ticket_007_context_recovery, .goosehints
+- Bucket 3 installer-managed (3): pre_compact_hook.py, onboarding.md, glossary.md
 
-Metodo: `git grep -n` en motor y destino para cada huerfano; lectura del archivo;
-clasificacion por rubrica congelada. Ninguna modificacion al arbol (analysis puro).
+**Invocadores vivos por pieza:**
 
-| # | Huerfano | Decision | Evidencia clave |
-|---|----------|----------|-----------------|
-| 1 | `scripts/artifact_graph.py` | archive-legacy | Solo invocado en ruff focus list de `audit_codebase.py:81` (cluster muerto). Sin hits en motor. Sin caller vivo externo. |
-| 2 | `scripts/audit_codebase.py` | archive-legacy | Solo en CHANGELOG (historico) y cluster interno. Backlog:255 confirma que el skill code-audit que lo llama es inejecutable. Sin motor equivalent. |
-| 3 | `scripts/rollback_agent_system.py` | archive-legacy | Motor CHANGELOG:816: "Exact duplicate of canonical scripts/rollback.py". Equivalente funcional en motor = `scripts/rollback.py`. Invocacion en upgrade_agent_system es solo string de mensaje, no subprocess call. |
-| 4 | `scripts/state_drift.py` | archive-legacy | Solo callers: cluster muerto (audit_codebase). Lee `.session/` que ya no existe (canonico es `.agent/collaboration/`). Rol superado por `agent_controller --validate`. |
-| 5 | `scripts/test_refactor_manager_skill.py` | archive-legacy | CHANGELOG:693 evidencia historica. Sin CI, runner, o hook que lo invoque hoy. Sin equivalente en motor. |
-| 6 | `tests/test_ticket_007_context_recovery.py` | archive-legacy | No recolectado por ningun runner vivo. Motor tiene cobertura canonica en `tests/unit/test_pre_compact_hook.py`. Superado por motor tests. |
-| 7 | `.agent/hooks/pre_compact_hook.py` | archive-legacy (barrera A2d) | Motor tiene `.agent/hooks/pre_compact_hook.py` v2 (350 lineas, con bus.memory_loader). Destino = copia TICKET-007 divergida (357 lineas, sin memory_loader). Motor settings.json:31 ya wirear PreCompact a esta ruta. A2d debe verificar resolucion de ruta antes de eliminar. |
-| 8 | `.agent/microagents/onboarding.md` | archive-legacy (barrera A2d) | Motor `agent_system/templates/microagents/onboarding.md` = contenido identico. INSTALLER_MANAGED_PATHS (motor scripts/install_agent_system.py:52) lo gestiona. A2d debe re-sync antes de eliminar. |
-| 9 | `.agent/glossary.md` | archive-legacy (barrera A2d) | Motor `agent_system/templates/glossary.md` = contenido identico. INSTALLER_MANAGED_PATHS (motor scripts/install_agent_system.py:52). Tests motor:391-438 confirman gestion por installer. A2d debe re-sync. |
-| 10 | `.goosehints` | archive-legacy | Deprecado WT-2026-254a. `.claude/rules/02-multi-agent-system.md:14` y `AGENTS.md:7` confirman deprecacion. Motor también lo tiene marcado con header `[DEPRECATED - WT-2026-254a]`. Sin consumidor vivo. |
+### run_pytest_safe.py
+- Referencias encontradas en: skills/ (motor-provides, se elimina), AGENTS.md y CHANGELOG.md (docs), .agent/collaboration/ (plan/log docs), .agent/docs/ (analisis docs), scripts/detect_agent_system_version.py (motor-provides, se elimina), scripts/test_refactoring_impact.py (motor-provides, se elimina), .claude/rules/ (documentacion, no ejecutable), .claude/settings.local.json (gitignored/personal, excluido)
+- CI .github/workflows/quality-gates.yml: redeseniado (WOT-AUDIT-CI) - NO referencia run_pytest_safe. Confirmado: el workflow usa _motor agent_controller --validate solamente.
+- **Invocadores vivos trackeados fuera de zonas excluidas: 0. CLEAR.**
 
-### Entregable generado
+### discover_skills.py
+- Referencias en: _legacy/ (gitignored/gittracked - se archivara en FASE 1), skills/ (motor-provides), CHANGELOG.md (doc), .agent/collaboration/ (docs), CI workflow (redeseniado, NO llama discover_skills localmente)
+- .claude/rules/03-skills-discovery.md: documentacion (no ejecutable)
+- **Invocadores vivos trackeados fuera de zonas excluidas: 0. CLEAR.**
 
-- `.agent/docs/orphans_decision_WOT-2026-002b.md`: creado con tabla de 10 decisiones,
-  evidencia por grep (archivo:linea), lista de barreras A2d, correccion al triage sobre
-  existencia del hook en motor.
+### upgrade_agent_system.py, detect_agent_system_version.py
+- Referencias en: work_plan docs, triage, CHANGELOG (historico), .claude/rules/ (doc)
+- scripts/upgrade_agent_system.py se refiere a si mismo (siendo eliminado)
+- **Invocadores vivos trackeados: 0. CLEAR.**
 
-### Hallazgo notable
+### test_refactoring_impact.py, test_refactor_kit_portable.py, test_refactor_kit_performance.py
+- Referencias solo en: work_plan docs, triage, CHANGELOG (historico), .agent/docs/ (analisis)
+- .claude/settings.local.json (gitignored/personal): test_refactor_kit_performance.py listado pero excluido
+- **Invocadores vivos trackeados: 0. CLEAR.**
 
-El triage_manifest decia que el motor NO tenia `.agent/hooks/pre_compact_hook.py`.
-Esta es incorrecta: el motor SI lo tiene (v2, 350 lineas, confirmado via
-`git -C motor ls-files .agent/hooks/`). La copia del destino es una version divergida
-anterior. Documentado en la seccion "Corrections to triage_manifest.md" del deliverable.
+### test_event_bus_hygiene.py
+- Solo en work_plan y triage_manifest (docs)
+- **Invocadores vivos trackeados: 0. CLEAR.**
 
-### Gates (deliverable_type: analysis)
+### .agent/README.md
+- `diff .agent/README.md <motor>/.agent/README.md` -> DIFIEREN (titulo diferente, contenido customizado para destino, rutas absolutas del destino, texto de higiene personalizado)
+- **STOP#3 ACTIVADO: .agent/README.md CUSTOMIZADO vs motor. NO se retira. KEEP.**
 
-- Deliverable `.agent/docs/orphans_decision_WOT-2026-002b.md`: CREADO
-- validate 0/0: ver log de cierre
-- encoding guard: ver log de cierre
-- ruff/pytest: N/A (analysis; no se toco Python). Salto auditable.
+### Skills paridad
+- Destino tiene 16 skill dirs/archivos bajo skills/ (15 dirs + validate_all.py + README.md + _shared)
+- Todos existen en el motor: `git ls-files skills/ | cut -d'/' -f1-2 | sort -u` del destino vs motor -> 0 diferencias
+- **Paridad OK. No STOP#2.**
 
-## Manager review (analysis, una pasada + spot-check adversarial) - 2026-06-13
+### pre_compact_hook wiring
+- Destino .claude/settings.json: solo tiene PreToolUse (guard_paths). NO tiene PreCompact hook.
+- El pre_compact_hook.py del destino NO esta actualmente cableado en PreCompact del destino.
+- Motor .claude/settings.json: tiene PreCompact con candidatos [root/orquestador_de_agentes/.agent/hooks/pre_compact_hook.py, root/.agent/hooks/pre_compact_hook.py, root/agent_system/.agent/hooks/pre_compact_hook.py]
+- Accion FASE 3: agregar PreCompact hook al destino .claude/settings.json apuntando a candidato del motor; luego git rm .agent/hooks/pre_compact_hook.py.
+- **Wiring resuelto antes de rm: safe to proceed.**
 
-- **Verificacion:** 10 decisiones con grep citado; 0 sin resolver. git status destino
-  sin renames/deletes de huerfanos (analysis respetado). Motor intacto (687d5b9).
-  Correccion del triage verificada: motor SI tiene .agent/hooks/pre_compact_hook.py.
-- **Spot-check adversarial (claim de mayor impacto):** "dead cluster audit" CONFIRMADO
-  -- ninguna skill code-audit del destino invoca audit_codebase.py (un ticket cerrado
-  lo reescribio a vulture/deadcode/ruff); ningun entrypoint Python vivo importa
-  artifact_graph/audit_codebase/state_drift. archive-legacy solido para 1-6 y 10.
-- **Refinacion de Manager (label para A2d):** huerfanos #7/#8/#9 (pre_compact_hook,
-  onboarding, glossary) son funcionalmente MOTOR-PROVIDES (installer-managed), no
-  archive-legacy muerto. Accion A2d = retirar copia del destino + re-sync desde motor
-  (o verificar wiring para #7), NO archivar-a-tumba. Corregido via addendum en el
-  deliverable y propagado al backlog de WOT-2026-002c.
-- **Decision:** APROBADO. Artifact: .agent/runtime/reviews/decision_WOT-2026-002b.json
+**Snapshot del motor:** orchestrator_pipeline/session_close/motor_before_WOT-2026-002c.json (existia pre-FASE 0).
 
-## Gate final
+**FASE 0 resultado: CLEAR para Fases 1, 2, 3. STOP#3 activo: .agent/README.md permanece.**
 
-Analysis: 10 huerfanos decididos con evidencia (grep motor+destino citado). 7
-archive-legacy solidos (1-6,10), 3 reclasificados a motor-provides para A2d (7-9).
-0 huerfanos sin resolver. Ningun archivo movido/borrado (analysis). Deliverable
-.agent/docs/orphans_decision_WOT-2026-002b.md creado + addendum de Manager. Encoding
-guard OK, validate destino 0/0 (ver cierre). All checks passed for WOT-2026-002b.
+---
 
+## FASE 1 - archive-legacy [EN PROGRESO]
 
-Manager approved canonical closeout for WOT-2026-002b
+Bucket 2 (7 archivos): artifact_graph, audit_codebase, rollback_agent_system, state_drift, test_refactor_manager_skill -> _legacy/scripts/; test_ticket_007_context_recovery -> _legacy/tests/; .goosehints -> _legacy/
