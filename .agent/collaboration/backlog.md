@@ -31,7 +31,8 @@
 | Alta | WOT-AUDIT-CI | CI del destino portable bajo host-extends | system/ci-portability | completed | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
 | Media | WOT-2026-002a | A2c: demo de clone limpio + install --sync sin copias legacy | system/host-extends | completed | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- verificado: cca3540 -->
 
-| Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | pending | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |
+| Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | completed | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- verificado: 48754f8 -->
+
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | pending | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |
 | Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
 
@@ -143,7 +144,13 @@
 ## WOT-2026-002b - ORPHANS: decision promover-vs-archivar de los 10 huerfanos
 - **Prioridad:** Media
 - **Scope:** system/host-extends
-- **Estado:** pending
+- **Estado:** completed (48754f8; deliverable .agent/docs/orphans_decision_WOT-2026-002b.md)
+- **Resultado:** 10/10 decididos. 7 archive-legacy solidos (artifact_graph,
+  audit_codebase, rollback_agent_system, state_drift, test_refactor_manager_skill,
+  test_ticket_007, .goosehints). 3 RECLASIFICADOS a motor-provides installer-managed
+  (pre_compact_hook, microagents/onboarding, glossary): A2d = remove + re-sync desde
+  motor, NO archive-a-tumba. Correccion verificada al triage: el motor SI tiene
+  .agent/hooks/pre_compact_hook.py (v2).
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
@@ -192,6 +199,17 @@
   decidir la estrategia: apuntar el pytest del destino a `<MOTOR>/tests`, conservar un
   `tests/` minimo propio del destino, o ensenar al gates-dispatch a manejar 'sin tests
   locales'. El CI ya pivoto a validate-state (WOT-AUDIT-CI), pero el dispatch local no.
+- **Input de WOT-2026-002b (ORPHANS):** decisiones de los 10 huerfanos
+  (`.agent/docs/orphans_decision_WOT-2026-002b.md`):
+  - archive-legacy (mover a `_legacy/`/`_archive/`, no re-proveer): `scripts/artifact_graph.py`,
+    `scripts/audit_codebase.py`, `scripts/rollback_agent_system.py`, `scripts/state_drift.py`,
+    `scripts/test_refactor_manager_skill.py`, `tests/test_ticket_007_context_recovery.py`,
+    `.goosehints`.
+  - motor-provides installer-managed (retirar copia del destino + RE-SYNC desde motor,
+    NO archivar-a-tumba): `.agent/hooks/pre_compact_hook.py`, `.agent/microagents/onboarding.md`,
+    `.agent/glossary.md`. Barreras: para `pre_compact_hook` verificar/actualizar el wiring
+    de `.claude/settings.json` (PreCompact) para que resuelva al hook del motor antes de
+    retirar; para onboarding/glossary correr `install --sync` tras retirar.
 - **Depende de:** WOT-2026-002a, WOT-2026-002b.
 - **Origen:** session-2026-06-13-host-extends.
 
