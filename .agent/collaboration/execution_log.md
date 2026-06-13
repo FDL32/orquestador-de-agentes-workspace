@@ -120,6 +120,30 @@ Estado recuperado = post-FASE-2 limpio. Los 3 installer-managed permanecen como
 destino-keep.
 
 **Decision:** FASE 3 DIFERIDA. Los 3 installer-managed se conservan hasta un install
-host-extends-aware (follow-up de motor). A2d cierra con alcance FASE 1 + FASE 2: 163
+host-extends-aware (follow-up de motor). A2d cierra con alcance FASE 1 + FASE 2: 162
 motor-provides retirados + 7 legacy archivados. Pendiente: verificacion (validate,
 clone-demo, CI) + follow-ups de motor en backlog.
+
+## Manager review (doble pasada, §6) - 2026-06-14
+
+- **Rev1 (verificacion):** FASE 2 (bf451f2) retiro SOLO motor-provides (162; git
+  diff-filter=D sin rutas fuera de los buckets); `.agent/README.md` conservado (STOP#3);
+  destino-keep intacto (collaboration 105/runtime 8/config 3/.claude 11); validate 0/0;
+  motor pristine (687d5b9); CI sin refs a copias retiradas.
+- **Rev2 (adversarial):** clone-demo -> el destino SIN agent_system/skills opera via
+  motor (discover_skills exit 0, validate clone 0 errors) = host-extends real; FASE 0
+  confirmo 0 invocadores vivos; el incidente install --sync se recupero sin tocar los
+  commits legitimos; la alerta de seguridad es falso positivo (settings.json
+  pre-existente en 468844d). No se pudo refutar el cierre parcial.
+- **Decision:** APROBADO_PARCIAL. Artifact: .agent/runtime/reviews/decision_WOT-2026-002c.json
+- **Follow-ups (motor):** MOTOR-FU-001 (install host-extends-aware -> desbloquea FASE 3),
+  MOTOR-FU-002 (gates-dispatch sin tests locales).
+
+## Gate final
+
+A2d parcial: FASE 1 (1a2d700, 7 legacy a _legacy/) + FASE 2 (bf451f2, 162 motor-provides
+git rm). Recovery 791787b (incidente install --sync). Clone-demo verde (destino opera
+via motor sin las copias). validate destino 0/0, motor pristine 687d5b9, CI sin refs,
+destino-keep intacto, 0 flujo vivo roto. FASE 3 diferida a MOTOR-FU-001. ruff/pytest-safe
+N/A (retirada via git rm/mv; tests/ motor-provides retirado). All checks passed for
+WOT-2026-002c (alcance FASE 1+2).

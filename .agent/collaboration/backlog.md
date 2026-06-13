@@ -33,8 +33,10 @@
 
 | Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | completed | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- verificado: 48754f8 -->
 
-| Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | pending | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |
+| Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |  <!-- FASE1+2: 1a2d700+bf451f2 (162 removed+7 archived); FASE3 diferida (incidente install --sync); recovery 791787b -->
 | Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | absorbed | - | session-2026-06-13-host-extends |  <!-- premisa obsoleta: log ya compacto -->
+| Baja | MOTOR-FU-001 | install host-extends-aware: retirar bundle del destino sin re-vendorizar | motor/installer | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. A2d FASE3 lo necesita -->
+| Baja | MOTOR-FU-002 | gates-dispatch: manejar 'destino sin tests locales' (run_pytest_safe exit 4) | motor/quality-gates | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. Hallazgo 002a -->
 
 
 ## Completados en sesion 2026-06-11 (audit integral)
@@ -175,7 +177,14 @@
 ## WOT-2026-002c - A2d: eliminar copias motor-provides + ejecutar decisiones
 - **Prioridad:** Alta
 - **Scope:** system/host-extends
-- **Estado:** pending
+- **Estado:** completed-partial (FASE 1+2 hechas; FASE 3 diferida)
+- **Resultado:** FASE 1 (1a2d700) archivo 7 legacy a `_legacy/`. FASE 2 (bf451f2)
+  retiro 162 motor-provides (`agent_system/` 113, `skills/` 41, 7 scripts,
+  `test_event_bus_hygiene`). `.agent/README.md` conservado (STOP#3: customizado).
+  Clone-demo verde (destino opera via motor), CI sin refs a copias, validate 0/0,
+  motor pristine, 0 destino-keep tocado. FASE 3 (3 installer-managed) DIFERIDA: el
+  re-sync via `install --sync` re-vendoriza el bundle completo (incidente; recovery
+  791787b). Los 3 quedan destino-keep -> follow-up MOTOR-FU-001. Pytest -> MOTOR-FU-002.
 - **deliverable_type:** code
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
@@ -212,6 +221,36 @@
     de `.claude/settings.json` (PreCompact) para que resuelva al hook del motor antes de
     retirar; para onboarding/glossary correr `install --sync` tras retirar.
 - **Depende de:** WOT-2026-002a, WOT-2026-002b.
+- **Origen:** session-2026-06-13-host-extends.
+
+## MOTOR-FU-001 - install host-extends-aware (retirar bundle sin re-vendorizar)
+- **Prioridad:** Baja
+- **Scope:** motor/installer (repo_motor)
+- **Estado:** pending
+- **deliverable_type:** code
+- **Problema (hallazgo WOT-2026-002c FASE 3):** `install_agent_system.py --sync`
+  re-provisiona el bundle COMPLETO en el destino (re-crea `agent_system/` + caches),
+  ademas de borrar superficies no-managed en el working tree. No existe un modo que
+  RETIRE las copias motor-provides del destino dejandolo como workspace puro.
+- **Objetivo:** modo install host-extends que (a) no re-vendorice `agent_system/`/
+  `skills/`/scripts cuando el destino opera por referencia externa al motor, y (b)
+  re-provisione SOLO los installer-managed declarados (onboarding, glossary) sin
+  arrastrar el bundle ni borrar superficies destino-keep.
+- **Desbloquea:** FASE 3 de A2d (retirar los 3 installer-managed del destino).
+- **Depende de:** WOT-2026-002c.
+- **Origen:** session-2026-06-13-host-extends.
+
+## MOTOR-FU-002 - gates-dispatch: manejar 'destino sin tests locales'
+- **Prioridad:** Baja
+- **Scope:** motor/quality-gates (repo_motor)
+- **Estado:** pending
+- **deliverable_type:** code
+- **Problema (hallazgo WOT-2026-002a):** tras retirar `tests/`, `run_pytest_safe.py`
+  (que `run_gates_dispatch` invoca para tickets `code`/`mixed`) colecciona 0 y da
+  exit 4 contra el destino. El CI ya pivoto a validate-state, pero el dispatch local no.
+- **Objetivo:** `run_gates_dispatch` detecta 'sin tests locales' y o bien apunta a
+  `<motor>/tests`, o salta pytest de forma auditable, en vez de fallar con exit 4.
+- **Depende de:** WOT-2026-002c.
 - **Origen:** session-2026-06-13-host-extends.
 
 ## WOT-2026-002d - LOG-COMPACT: compactar historico A2a en execution_log
