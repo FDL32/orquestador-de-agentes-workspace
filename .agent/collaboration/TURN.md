@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-12 17:43:58
+**Ultima actualizacion:** 2026-06-13 14:01:38
 
 ---
 
@@ -17,7 +17,7 @@
 
 ## Instruccion
 
-> Ticket WT-2026-251a closed. Create new work_plan.md for next cycle.
+> Ticket WOT-AUDIT-A2a closed. Create new work_plan.md for next cycle.
 
 ---
 
