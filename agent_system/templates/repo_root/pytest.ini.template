@@ -1,4 +1,0 @@
-[pytest]
-tmp_path_retention_policy = none
-norecursedirs = .runtime .pytest_cache .ruff_cache __pycache__ .agent
-log_cli = false

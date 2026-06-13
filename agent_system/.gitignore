@@ -1,9 +1,0 @@
-# Pytest temp directory and cache
-.pytest_tmp/
-_pytest_tmp*/
-.pytest_cache/
-__pycache__/
-.agent/runtime/
-
-# Session artifacts (durable scratchpad, no commit)
-.session/

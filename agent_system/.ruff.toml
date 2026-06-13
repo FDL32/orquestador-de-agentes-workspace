@@ -1,4 +1,0 @@
-﻿[lint]
-[lint.per-file-ignores]
-"tests/test_hooks.py" = ["E402"]
-
