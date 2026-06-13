@@ -34,7 +34,8 @@
 | Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | completed | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- verificado: 48754f8 -->
 
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | pending | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |
-| Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
+| Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | absorbed | - | session-2026-06-13-host-extends |  <!-- premisa obsoleta: log ya compacto -->
+
 
 ## Completados en sesion 2026-06-11 (audit integral)
 
@@ -216,7 +217,12 @@
 ## WOT-2026-002d - LOG-COMPACT: compactar historico A2a en execution_log
 - **Prioridad:** Baja
 - **Scope:** system/collab-hygiene
-- **Estado:** pending
+- **Estado:** absorbed (premisa obsoleta)
+- **Resolucion:** la premisa ("el execution_log arrastra el historico completo de
+  A2a") ya no se cumple: el log se reescribio en cada ticket (002a -> 002b) y el
+  ciclado natural elimino el historico A2a. Verificado 2026-06-13: execution_log.md =
+  89 lineas, 0 menciones de A2a (`grep -c A2a` = 0). El detalle historico vive en git
+  (commits de A2a). No requiere accion; trazabilidad preservada.
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
