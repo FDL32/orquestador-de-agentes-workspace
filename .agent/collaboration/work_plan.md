@@ -1,115 +1,149 @@
-# Work Plan: WOT-AUDIT-A2a - Resolucion de recursos por precedencia (host-extends/motor-provides)
+# Work Plan: WOT-AUDIT-A2b - Manifiesto de triage por ruta (motor-provides vs destino-keep)
 
 ## Metadata
-- **ID:** WOT-AUDIT-A2a
-- **Estado:** READY_TO_START
-- **deliverable_type:** documentation
-- **Titulo:** Documentar y mapear la resolucion de recursos del destino por precedencia
+- **ID:** WOT-AUDIT-A2b
+- **Estado:** APPROVED
+- **deliverable_type:** analysis
+- **Titulo:** Inventariar y clasificar por ruta el contenido trackeado del destino segun el contrato host-extends/motor-provides
 - **Asignado a:** Builder
 - **Repo de autoridad:** repo_destino
-- **Severidad:** Media | **Riesgo:** Bajo (solo documentacion; cero file-moves)
-- **Origen:** WOT-AUDIT-A2 (subfase A2a) en `_legacy/general_audit_20260613/03_tickets.md`
+- **Severidad:** Alta | **Riesgo:** Bajo (solo inventario/analisis; cero file-moves, cero edicion de CI/allowlist)
+- **Origen:** WOT-AUDIT-A2. RE-SCOPE: la version previa de A2b ("reapuntar comandos")
+  se apoyaba en `.claude/settings.local.json` (personal/untracked) y resulto un
+  no-op de portabilidad. Se reemplaza por este ticket de inventario.
 
 ## Objetivo
-Producir un documento canonico del `repo_destino` que (1) fije la regla de
-precedencia de recursos host-extends/motor-provides y (2) mapee cada comando
-del destino que hoy apunta a una COPIA LOCAL a su equivalente invocable del
-motor externo. A2a NO mueve ni borra archivos: solo documenta y mapea para
-habilitar A2b/A2c/A2d posteriores.
+Producir un manifiesto de triage por ruta que clasifique cada ruta tracked del
+destino en buckets accionables, con evidencia verificable por fila. El manifiesto
+es el spec ejecutable para los tickets posteriores (CI portability, A2c clone
+limpio, A2d eliminacion). A2b NO mueve, borra ni edita nada ejecutable.
 
 ## Decision Arquitectonica
-El destino no debe contener copias versionadas de prompts/skills/scripts del
-motor: referencia el motor externo y usa sus capacidades canonicas sin
-modificarlas. Orden de precedencia para resolver un recurso (skill, prompt,
-script, tool):
+Inventariar antes de actuar. El error de `test_refactor_kit_performance.py` (dado
+por "sin equivalente" mirando solo `scripts/`) demostro que clasificar por
+basename o por una sola superficie produce falsos positivos que llegan a commit.
+Por eso A2b separa el inventario (analysis, riesgo bajo) de la ejecucion
+(eliminacion en A2d, riesgo alto): el manifiesto fija la verdad por ruta con
+evidencia funcional y de invocacion viva, y solo entonces los tickets de
+ejecucion actuan sobre esa verdad. Clasificar por equivalencia FUNCIONAL (no
+nominal) y por invocacion real es lo que evita sobre-migrar superficies legitimas
+del destino (estado operativo, integracion, config, dominio).
 
-1. **Host/local del destino** -- `repo_destino/.agent/{skills,prompts,tools}/`.
-   Extensiones y overrides propios. Maxima prioridad.
-2. **Motor (read-only)** -- `repo_motor/{skills,prompts,scripts}/`, invocado con
-   `AGENT_PROJECT_ROOT=<repo_destino>` (y `cwd=<repo_destino>` donde el flujo lo
-   exija; ver tabla). Fuente canonica; nunca se edita desde el destino.
-3. **Copias legacy** -- `repo_destino/{scripts,skills,agent_system}/`. Estado
-   transitorio de dogfooding; objetivo final = desaparecer (A2d). **Nunca** es
-   resolucion valida una vez exista el equivalente del motor.
+## Criterio canonico (congelado)
+Eje primario (regla del host-extends/motor-provides reformulada):
+- **motor:** tooling reutilizable, framework, prompts/skills/scripts compartidos
+  (cualquier cosa de desarrollo o creacion del sistema).
+- **destino:** estado operativo, integracion local, configuracion del host,
+  overrides autenticos del host, y funcionalidad de dominio del repo_destino.
 
-Override de una skill del motor = crear una propia en `.agent/skills/` con otro
-nombre u override documentado; jamas editar la del motor.
+Definiciones de bucket (NO clasificar por basename; exige equivalencia funcional):
+- **motor-provides:** existe equivalente FUNCIONAL verificado en el motor y el
+  flujo del destino puede invocarlo -> el destino no debe versionar la copia.
+- **destino-keep:** estado operativo / integracion / config / override autentico /
+  funcionalidad de dominio del repo_destino.
+- **huerfano-needs-decision:** NO existe equivalente funcional en el motor y NO
+  implementa dominio del destino (tooling comun que el motor dropeo). Decision:
+  promover al motor vs archivar.
+- **ci-portability-blocker:** superficie machine-executed (CI) que hoy depende de
+  copias locales y no puede referenciar un motor sibling en GitHub Actions.
 
-## Mapeo de comandos del destino -> equivalente del motor (evidencia A2a)
-Fuente: `.claude/settings.local.json`. Verificado por `git ls-files` (destino) y
-`test -f` (motor) el 2026-06-13 a HEAD destino `13ee7e1` / motor `704939f`.
+Regla de prueba para "particular/dominio": solo cuenta como destino-keep por
+dominio si implementa comportamiento del repo_destino, no si es tooling de
+sistema que casualmente solo existe en el destino.
 
-> Correccion de review (Manager, verificada): estos 3 scripts del motor NO
-> exponen `--project-root`. La propagacion de root real es la env var
-> `AGENT_PROJECT_ROOT` (via `runtime/project_root.py:resolve_project_root`), y
-> algunos flujos dependen ademas de `cwd=<repo_destino>` (host-first discovery,
-> guard-paths). La forma invocable real y evidenciada vive en el entregable
-> `.agent/docs/resource_precedence.md`, que es la autoridad para A2b.
+## Separacion de superficies (obligatoria en el manifiesto)
+- **Machine-executed local:** `.claude/settings.local.json` (personal/untracked).
+- **Machine-executed CI:** `.github/workflows/**`.
+- **Documentation/reference only:** `.claude/rules/**`, `.agent/docs/**`,
+  `agent_system/**/*.md`, `README*`, `AGENTS.md`, `CLAUDE.md`, `PROJECT.md`.
+El Builder NO debe tocar ninguna de estas en A2b; solo inventariar a que bucket
+pertenece cada ruta.
 
-| Comando actual (settings.local.json) | Copia local en destino | Existe en motor | Equivalente propuesto (A2b) |
-|---|---|---|---|
-| `python scripts/run_pytest_safe.py` | TRACKED | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `cwd=<repo_destino>` + `python <repo_motor>/scripts/run_pytest_safe.py` (sin `--project-root`) |
-| `python scripts/discover_skills.py --json` | TRACKED | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `cwd=<repo_destino>` + `python <repo_motor>/scripts/discover_skills.py --json` (host-first depende de `cwd`; sin `--project-root`) |
-| `python scripts/local_audit.py --quick` | AUSENTE (no es copia) | si | `AGENT_PROJECT_ROOT=<repo_destino>` + `python <repo_motor>/scripts/local_audit.py --json --quick` (sin `--project-root`; no hay copia que archivar) |
-| `python scripts/test_refactor_kit_performance.py` | TRACKED | **SI** (motor `tests/test_refactor_kit_performance.py`, lo corre la suite) | CORRECCION 2026-06-13: la afirmacion original "sin equivalente" fue gap de verificacion (solo se miro `scripts/`). La copia del destino es el mismo test (diff solo en BOM, una linea `# ruff: noqa: PERF203` y el newline final); no hay gap de capacidad. A2b retira la copia stale + entrada de allowlist; la suite del motor preserva cobertura. NO es STOP. |
-| `agent_system/refactor-kit/install_refactor_kit.py` | AUSENTE (ruta hyphen inexistente) | motor tiene `agent_system/refactor_kit/` (underscore) | entrada allowlist **stale/muerta** -> ver STOP/escalado #2 |
+## Evidencia ya recolectada (input, el Builder la verifica y amplia)
+- **Contrato:** `MANIFEST.workspace` (motor) lista SOLO rutas `.agent/` (estado,
+  runtime, context, config) como contenido del workspace. NO incluye `scripts/`,
+  `skills/`, `agent_system/`, `tests/`. El instalador `install_agent_system.py`
+  sincroniza por esa allowlist (solo `.agent/`).
+- **Volumen tracked destino:** `.agent/` 125, `agent_system/` 113, `skills/` 41,
+  `scripts/` 12, `.claude/` 11, `_legacy/` 5, `tests/` 2.
+- **Sin codigo de dominio:** la busqueda de producto/dominio solo devolvio
+  configs (`ruff.toml`, `repomix.config.json`, `.code-workspace`).
+- **scripts/ (12):** todos dev/creacion por docstring (test-runners, audit,
+  drift, rollback/upgrade, discovery, suites refactor-kit). 7 con equivalente en
+  el motor; 5 ausentes del motor (`artifact_graph`, `audit_codebase`,
+  `rollback_agent_system`, `state_drift`, `test_refactor_manager_skill`).
+- **Mapa de invocacion viva (machine-executed, no-.md):** el tooling forma una
+  cadena interna (`audit_codebase`->`artifact_graph`/`state_drift`/`run_pytest_safe`;
+  `upgrade`->`rollback`->`detect_version`). Las unicas superficies machine-executed
+  a nivel destino son `.claude/settings.local.json` y `.github/workflows/`.
+  Los 5 huerfanos no tienen entrypoint vivo a nivel destino.
 
-## Superficies (contrato documentation por tipo)
-- **Builder (entregable, debe crear):**
-  - `repo_destino/.agent/docs/resource_precedence.md` -- nuevo. Contiene la
-    Decision Arquitectonica (3 niveles) y la tabla de mapeo de arriba con su
-    evidencia (fecha, HEADs, metodo de verificacion).
-- **Read/inspect only (contexto, NO cuentan como entregable):**
-  - `.claude/settings.local.json` (fuente de comandos)
-  - `_legacy/general_audit_20260613/03_tickets.md` (ticket padre A2)
-  - `MANIFEST.workspace`, `AGENTS.md` (contrato de portabilidad, solo lectura)
-- **Manager-only (gate, no lo ejecuta el Builder):**
-  - revision de coherencia del doc contra el contrato host-extends/motor-provides.
+## Conclusion provisional (NO cerrar como definitiva)
+No se ha encontrado aun ninguna herramienta claramente de DOMINIO del destino;
+el contrato `MANIFEST.workspace` ademas restringe el workspace a `.agent/`. Queda
+pendiente de confirmar por fila: equivalencia funcional real (no basename),
+invocacion viva, y dependencia de launcher/CI. El manifiesto debe declarar el set
+`destino-keep por dominio` como vacio-hasta-prueba, no como hecho cerrado.
+
+## Entregable (Builder)
+`repo_destino/.agent/docs/triage_manifest.md` con una fila por ruta tracked (o por
+grupo homogeneo justificado), columnas minimas:
+1. **ruta**
+2. **bucket** (motor-provides | destino-keep | huerfano-needs-decision | ci-portability-blocker)
+3. **por que** (criterio funcional aplicado, no basename)
+4. **quien la invoca hoy** (machine-executed local / CI / framework-interno / solo-docs / nadie)
+5. **accion posterior propuesta** (referenciar motor / conservar / promover-o-archivar / portar CI)
+
+## Superficies
+- **Builder (crea):** `.agent/docs/triage_manifest.md`; `execution_log.md`.
+- **Read/inspect only:** `MANIFEST.workspace`, `MANIFEST.distribute`,
+  `install_agent_system.py` (motor), arbol tracked del destino, `.github/workflows/**`,
+  `.claude/settings.local.json`. NO se editan.
+- **Manager-only:** review de coherencia del manifiesto contra el criterio congelado.
 
 ## Non-goals
-- No `git mv` ni borrado de ninguna copia legacy (eso es A2d).
-- No tocar `.claude/settings.local.json` (eso es A2b).
+- No mover, borrar ni `git mv` ninguna ruta (eso es A2d).
+- No editar `.claude/settings.local.json` ni `.github/workflows/**` (CI ticket).
 - No editar prompts/skills/scripts del motor.
-- No reapuntar ni limpiar `test_refactor_kit_performance.py` ni su entrada de
-  allowlist (eso es A2b); A2a solo documenta el hallazgo (ya corregido: no es
-  un gap de capacidad del motor).
+- No cerrar la decision de los huerfanos (promover vs archivar): solo marcarlos.
 
 ## Criterios binarios de cierre
-- [ ] Existe `repo_destino/.agent/docs/resource_precedence.md` con: regla de
-      precedencia de 3 niveles + tabla de mapeo completa (5 comandos).
-- [ ] El doc declara explicitamente los hallazgos para A2b: la correccion del
-      falso STOP del perf-test (el motor SI tiene el test en `tests/`) y la
-      entrada stale de allowlist (`refactor-kit` hyphen). Ninguno bloquea A2b.
-- [ ] El doc registra fecha y HEADs de verificacion (destino `13ee7e1`, motor `704939f`).
-- [ ] `execution_log.md` cierra con una linea que combina artefacto + gate final,
-      p.ej.: `Doc .agent/docs/resource_precedence.md creado. Validate: exit 0, 0 errors, 0 warnings.`
-- [ ] `agent_controller.py --validate --project-root <destino>` exit 0 (sin
-      regresion por el work_plan/log nuevos). Exit real (last-run/json), no pipe.
+- [ ] Existe `.agent/docs/triage_manifest.md` que cubre las 7 superficies tracked
+      (`scripts/`, `skills/`, `agent_system/`, `tests/`, `.agent/`, `.claude/`,
+      root) sin dejar rutas sin bucket.
+- [ ] Cada fila tiene los 5 campos; el campo "por que" usa equivalencia funcional
+      o dominio, NUNCA basename como prueba.
+- [ ] Las superficies se separan en machine-executed local / CI / docs.
+- [ ] La conclusion sobre `destino-keep por dominio` se declara vacia-hasta-prueba,
+      no cerrada.
+- [ ] `agent_controller.py --validate --project-root <destino>` exit 0, 0 errors.
 
 ## STOP / escalado
-1. ~~**`test_refactor_kit_performance.py` sin equivalente en el motor.**~~
-   RESUELTO / NO ES STOP (corregido 2026-06-13): el motor SI tiene el test en
-   `tests/test_refactor_kit_performance.py`, ejecutado por la suite
-   (`run_pytest_safe.py`). La verificacion original solo miro `scripts/`. A2b
-   retira la copia stale del destino y su entrada de allowlist; no requiere
-   decision de capacidad del motor.
-2. **Entrada allowlist stale `agent_system/refactor-kit/install_refactor_kit.py`.**
-   La ruta con hyphen no existe en el destino; el motor lo tiene bajo
-   `agent_system/refactor_kit/` (underscore). Es una entrada muerta de allowlist.
-   **Documentar; su limpieza pertenece a A2b, no a A2a.**
-3. Si al redactar el doc aparece cualquier comando adicional que apunte a copia
-   local sin equivalente claro del motor: anadir fila + STOP, no improvisar fix.
+1. Si una ruta clasificada como motor-provides resulta tener invocacion viva
+   machine-executed sin equivalente funcional confirmado en el motor: marcar como
+   huerfano-needs-decision o ci-portability-blocker, NO como motor-provides.
+2. Si aparece una ruta que implementa dominio real del destino: marcar destino-keep
+   y escalar (cambia la conclusion de "dominio vacio").
+3. No inferir equivalencia por basename: si no se puede verificar equivalencia
+   funcional, la fila va a huerfano-needs-decision.
 
-## Gates (deliverable_type: documentation)
+## Files Likely Touched
+- `.agent/docs/triage_manifest.md` (nuevo)
+- `.agent/collaboration/execution_log.md`
+- `.agent/collaboration/work_plan.md` / `PLAN_WOT-AUDIT-A2b.md` (fase de contrato)
+
+## Gates (deliverable_type: analysis)
 - `agent_controller.py --validate --project-root <destino>` exit 0.
-- Deliverable existence check: `.agent/docs/resource_precedence.md` existe.
+- Deliverable existence check: `.agent/docs/triage_manifest.md` existe.
 - NO se exige pytest/ruff/pip-audit (no toca codigo).
 
 ## Riesgos
-- Bajo. Solo crea un doc nuevo + actualiza superficies de colaboracion.
-- A2b no tiene bloqueos de capacidad: el supuesto STOP del perf-test era un gap
-  de verificacion (el motor SI tiene el test en `tests/`). Los dos hallazgos
-  para A2b son limpieza (retirar copia stale + arreglar entrada de allowlist).
+- Bajo. Inventario/analisis sin efectos ejecutables. El riesgo real (eliminar una
+  ruta viva) queda en A2d, gateado por este manifiesto y por el ticket de CI
+  portability.
 
-## Entregables
-- `repo_destino/.agent/docs/resource_precedence.md` (doc canonico de precedencia + mapeo).
+## Tickets derivados (posteriores, fuera de A2b)
+- **CI portability:** el CI del destino debe traer el motor (checkout/instalar) o
+  saltar; no puede referenciar sibling. Gate de A2d.
+- **A2c:** demo de clone limpio (`install --sync` regenera link; motor visible).
+- **A2d:** eliminar copias motor-provides + resolver huerfanos, tras CI + A2c.

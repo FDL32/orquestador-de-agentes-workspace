@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-13 14:01:38
+**Ultima actualizacion:** 2026-06-13 15:05:00
 
 ---
 
@@ -8,16 +8,20 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WOT-AUDIT-A2b |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WOT-AUDIT-A2a closed. Create new work_plan.md for next cycle.
+> Ejecuta WOT-AUDIT-A2b segun `work_plan.md` y `PLAN_WOT-AUDIT-A2b.md`. Crea
+> `.agent/docs/triage_manifest.md` como deliverable de analysis. No toques
+> `.claude/settings.local.json`, `.github/workflows/**` ni superficies
+> ejecutables. Clasifica por equivalencia funcional e invocacion viva, no por
+> basename.
 
 ---
 
@@ -25,9 +29,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | APPROVED |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
-*Generado por agent_controller.py v5*
+*Materializado para lanzamiento del Builder*
