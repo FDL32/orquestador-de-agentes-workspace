@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-AUDIT-A2b
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** analysis
 - **Titulo:** Inventariar y clasificar por ruta el contenido trackeado del destino segun el contrato host-extends/motor-provides
 - **Asignado a:** Builder
