@@ -37,6 +37,7 @@
 | Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | absorbed | - | session-2026-06-13-host-extends |  <!-- premisa obsoleta: log ya compacto -->
 | Baja | MOTOR-FU-001 | install host-extends-aware: retirar bundle del destino sin re-vendorizar | motor/installer | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. A2d FASE3 lo necesita -->
 | Baja | MOTOR-FU-002 | gates-dispatch: manejar 'destino sin tests locales' (run_pytest_safe exit 4) | motor/quality-gates | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. Hallazgo 002a -->
+| Alta | WOT-2026-003a | CI: validate falla en checkout por bus gitignored (invariantes COMPLETED sin eventos) | system/ci-portability | pending | WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- CI rojo en main, pre-existente (42e4a3a), no por A2d -->
 
 
 ## Completados en sesion 2026-06-11 (audit integral)
