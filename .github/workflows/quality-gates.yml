@@ -1,23 +1,21 @@
 name: Quality Gates
 
+# Host-extends / motor-provides (WOT-AUDIT-CI):
+# The destination is a pure agent workspace; it does not vendor the engine.
+# CI checks out the PUBLIC engine repo and validates the destination's own
+# .agent/ operational state with the engine's controller. It must not depend on
+# local copies of scripts/ tests/ skills/ (removed by WOT-AUDIT-A2d).
+
 on:
   push:
     branches: [main, develop, '*/feature/**', '*/fix/**']
     paths:
       - '.agent/**'
-      - 'agent_system/**'
-      - 'scripts/**'
-      - 'skills/**'
-      - 'tests/**'
       - '.github/workflows/quality-gates.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - '.agent/**'
-      - 'agent_system/**'
-      - 'scripts/**'
-      - 'skills/**'
-      - 'tests/**'
       - '.github/workflows/quality-gates.yml'
 
 jobs:
@@ -25,26 +23,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout destination
         uses: actions/checkout@v4
+
+      - name: Checkout engine (public motor)
+        uses: actions/checkout@v4
+        with:
+          repository: FDL32/orquestador-de-agentes
+          path: _motor
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Compile workspace Python files
+      - name: Validate destination .agent state (engine controller)
+        env:
+          AGENT_PROJECT_ROOT: ${{ github.workspace }}
         run: |
-          python -m compileall scripts tests
-
-      - name: Skill discovery validation
-        run: |
-          if [ -f scripts/discover_skills.py ]; then
-            python scripts/discover_skills.py --json | python -m json.tool > /tmp/skills.json
-            python -c "import json; data=json.load(open('/tmp/skills.json')); assert data.get('total_skills', 0) >= 1; print('Skill discovery validation passed')"
-          else
-            echo "scripts/discover_skills.py not present; skipping"
-          fi
+          python _motor/.agent/agent_controller.py --validate --json --project-root . | tee validate.json
+          python -c "import json; d=json.load(open('validate.json')); e=sum(len(v) for v in d['errors'].values()); w=sum(len(v) for v in d['warnings'].values()); print(f'validate errors={e} warnings={w}'); raise SystemExit(1 if e else 0)"
 
       - name: Workflow reference check
         run: |
@@ -67,6 +65,6 @@ jobs:
         run: |
           echo "## Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Python compileall" >> $GITHUB_STEP_SUMMARY
-          echo "- Skill discovery" >> $GITHUB_STEP_SUMMARY
+          echo "- Engine checkout (public motor)" >> $GITHUB_STEP_SUMMARY
+          echo "- Destination .agent state validate (engine controller)" >> $GITHUB_STEP_SUMMARY
           echo "- Workflow reference check" >> $GITHUB_STEP_SUMMARY
