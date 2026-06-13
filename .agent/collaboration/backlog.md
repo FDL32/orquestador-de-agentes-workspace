@@ -26,6 +26,13 @@
 | Media | WT-2026-254b | Regenerar .claude/rules del destino desde el estado real | system/docs-coherence | done | WT-2026-254a | session-2026-06-11-system-audit |  <!-- verificado: 3f6aad3 -->
 | Media | WT-2026-255a | Extraer parser de decisiones de review_bridge a modulo propio | system/seam-extraction | done | WT-2026-252a | session-2026-06-11-system-audit |  <!-- verificado: 2dda386 + 886652b (decision artifact canal primario) -->
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked-external | - | session-2026-06-11-security-followup |  <!-- 2026-06-12: uv sigue resolviendo pip<=26.1.1; excepcion legitima -->
+| - | WOT-AUDIT-A2a | Contrato de precedencia host-extends/motor-provides | system/host-extends | completed | - | session-2026-06-13-host-extends |  <!-- verificado: 6240dc0 + 26afa33 -->
+| - | WOT-AUDIT-A2b | Manifiesto de triage por ruta del destino | system/host-extends | completed | WOT-AUDIT-A2a | session-2026-06-13-host-extends |  <!-- verificado: 4452e6f + bec8468 -->
+| Alta | WOT-AUDIT-CI | CI del destino portable bajo host-extends | system/ci-portability | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
+| Media | WOT-AUDIT-A2c | Demo de clone limpio + install --sync sin copias legacy | system/host-extends | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
+| Media | WOT-AUDIT-ORPHANS | Decision promover-vs-archivar de los 10 huerfanos | system/host-extends | pending | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
+| Alta | WOT-AUDIT-A2d | Eliminar copias motor-provides + ejecutar decisiones de huerfanos | system/host-extends | pending | WOT-AUDIT-CI, WOT-AUDIT-A2c, WOT-AUDIT-ORPHANS | session-2026-06-13-host-extends |
+| Baja | WOT-LOG-COMPACT | Compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
 
 ## Completados en sesion 2026-06-11 (audit integral)
 
@@ -50,6 +57,130 @@
 | WOT-2026-001d | completed | Cumplido de facto: `review_bridge.py` ya esta por debajo del umbral (`2618 < 2700`). |
 
 > Serie 001x resuelta sin abrir trabajo activo nuevo en `repo_destino`.
+
+## Cadena WOT-AUDIT-A2 - Migracion host-extends / motor-provides (sesion 2026-06-13)
+
+> Origen: auditoria host-extends. A2a (contrato de precedencia) y A2b (manifiesto
+> de triage) ya cerrados y publicados. Autoridad de clasificacion:
+> `.agent/docs/triage_manifest.md`. Estos tickets ejecutan el manifiesto.
+> Orden de ejecucion por dependencias: CI -> A2c -> ORPHANS (paralelizables tras
+> A2b) -> A2d (requiere los tres). WOT-LOG-COMPACT es independiente.
+
+### Completados de la cadena
+| Ticket | Titulo | Commit(s) |
+|--------|--------|-----------|
+| WOT-AUDIT-A2a | Contrato de precedencia + correccion STOP#1 | 6240dc0, 26afa33 |
+| WOT-AUDIT-A2b | Manifiesto de triage por ruta | 4452e6f, bec8468 |
+
+## WOT-AUDIT-CI - CI del destino portable bajo host-extends
+- **Prioridad:** Alta
+- **Scope:** system/ci-portability
+- **Estado:** pending
+- **deliverable_type:** code
+- **Repo de autoridad:** repo_destino
+- **Problema:** `.github/workflows/quality-gates.yml` ejecuta `compileall scripts tests`
+  y `discover_skills.py` sobre copias locales. GitHub Actions hace checkout SOLO del
+  destino: no hay motor sibling, asi que la migracion no puede "reapuntar" el CI a
+  `../orquestador_de_agentes/`. Es el unico bloqueante machine-executed de A2d
+  (ver `triage_manifest.md` bucket ci-portability-blocker).
+- **Objetivo:** redefinir el CI para el modelo host-extends: o bien hace checkout del
+  motor como segundo repo y corre sus tools con `AGENT_PROJECT_ROOT=<destino>`, o
+  bien valida solo lo que el destino posee (estado `.agent/` via
+  `agent_controller --validate`) y retira los gates que solo tenian sentido con
+  copias vendorizadas.
+- **Files Likely Touched:** `.github/workflows/quality-gates.yml`.
+- **Criterio:** el workflow no depende de `scripts/`/`tests/`/`skills/` locales del
+  destino; un push de prueba (o `act`/dry equivalente) pasa; el CI sigue validando
+  algo real del destino (estado `.agent/` o tools del motor via checkout). validate
+  del destino 0/0.
+- **STOP:** si el checkout del motor en Actions exige secretos/credenciales o el repo
+  motor es privado sin token disponible, documentar el blocker y proponer la variante
+  validate-state-only en vez de forzar el checkout.
+- **Depende de:** WOT-AUDIT-A2b.
+- **Origen:** session-2026-06-13-host-extends.
+
+## WOT-AUDIT-A2c - Demo de clone limpio + install --sync sin copias legacy
+- **Prioridad:** Media
+- **Scope:** system/host-extends
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **Repo de autoridad:** repo_destino
+- **Objetivo:** demostrar, sobre un clone limpio del destino en `tmp_path`, que
+  `install_agent_system.py --sync` regenera `motor_destination_link.json`, que las
+  skills/prompts/scripts del motor quedan accesibles via el motor externo, y que el
+  destino opera SIN necesitar las copias legacy de `scripts/`/`skills/`/`agent_system/`.
+- **Files Likely Touched:** `orchestrator_pipeline/reports/` (evidencia del demo);
+  ninguna superficie productiva del destino (es validacion).
+- **Criterio:** clone limpio + `install --sync` regenera el link (exit 0);
+  `discover_skills`/`run_pytest_safe`/`validate` del motor corren contra el clone con
+  `AGENT_PROJECT_ROOT`; reporte con exit codes reales; sin tocar el arbol legacy.
+- **STOP:** si install --sync requiere las copias legacy para regenerar el link,
+  documentarlo: cambia el alcance de A2d (algunas copias serian dependencia del
+  instalador, no vestigios).
+- **Depende de:** WOT-AUDIT-A2b.
+- **Origen:** session-2026-06-13-host-extends.
+
+## WOT-AUDIT-ORPHANS - Decision promover-vs-archivar de los 10 huerfanos
+- **Prioridad:** Media
+- **Scope:** system/host-extends
+- **Estado:** pending
+- **deliverable_type:** analysis
+- **Repo de autoridad:** repo_destino
+- **Objetivo:** para cada ruta del bucket `huerfano-needs-decision` del
+  `triage_manifest.md` (5 scripts del cluster audit/upgrade, `test_ticket_007`,
+  `.agent/hooks/pre_compact_hook.py`, `.agent/microagents/onboarding.md`,
+  `.agent/glossary.md`, `.goosehints`), decidir con evidencia: promover al motor,
+  conservar como host-specific real, o archivar como legacy muerto.
+- **Files Likely Touched:** `.agent/docs/triage_manifest.md` (anexar decision por
+  fila) o un doc de decisiones nuevo en `.agent/docs/`.
+- **Criterio:** cada uno de los 10 huerfanos tiene una decision con evidencia
+  (invocacion viva, dominio real, o ausencia de uso); 0 huerfanos sin resolver;
+  validate 0/0.
+- **STOP:** si alguno resulta ser dominio real del destino (p.ej. `test_ticket_007`
+  como experimento vivo), marcar destino-keep y NO archivar; cambia la conclusion
+  "dominio vacio" del manifiesto.
+- **Depende de:** WOT-AUDIT-A2b.
+- **Origen:** session-2026-06-13-host-extends.
+
+## WOT-AUDIT-A2d - Eliminar copias motor-provides + ejecutar decisiones de huerfanos
+- **Prioridad:** Alta
+- **Scope:** system/host-extends
+- **Estado:** pending
+- **deliverable_type:** code
+- **Repo de autoridad:** repo_destino
+- **Severidad:** Alta | **Riesgo:** Alto (blast radius ~166 archivos + estado CI).
+- **Objetivo:** retirar del destino las copias `motor-provides` (`agent_system/` 113,
+  `skills/` ~41, `tests/` 1, `scripts/` 7, `.agent/README.md`) via `git mv` a
+  `_legacy/` o borrado, y ejecutar las decisiones de WOT-AUDIT-ORPHANS. El destino
+  queda con su `.agent/` de estado + integracion + docs de identidad (coherente con
+  MANIFEST.workspace).
+- **Files Likely Touched:** `scripts/`, `skills/`, `agent_system/`, `tests/`,
+  `.agent/README.md`, `_legacy/`, `.gitignore` del destino.
+- **Criterio:** 0 copias motor-provides trackeadas; `git ls-files` sin
+  `agent_system/`/`skills/`/los 7 scripts comunes; CI verde (gracias a WOT-AUDIT-CI);
+  clone limpio sigue operando (WOT-AUDIT-A2c); validate 0/0; ningun flujo vivo roto.
+- **STOP / barrera obligatoria:** NO eliminar ninguna copia `stale-diverged` sin
+  reconciliar antes que la version del motor cubre el uso del destino (diff hasta
+  601 lineas en `run_pytest_safe`); NO borrar por basename. Si una copia tiene
+  invocacion viva sin equivalente funcional confirmado, parar y escalar.
+- **Depende de:** WOT-AUDIT-CI, WOT-AUDIT-A2c, WOT-AUDIT-ORPHANS.
+- **Origen:** session-2026-06-13-host-extends.
+
+## WOT-LOG-COMPACT - Compactar historico A2a en execution_log
+- **Prioridad:** Baja
+- **Scope:** system/collab-hygiene
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **Repo de autoridad:** repo_destino
+- **Problema:** `execution_log.md` arrastra el historico completo de A2a (sugerencia
+  no bloqueante del Manager en review de A2b): dificulta leer el packet activo.
+- **Objetivo:** dejar una cabecera corta del ticket activo y mover el historico A2a a
+  una nota resumida o a `_archive/`, sin perder trazabilidad (el detalle vive en git).
+- **Files Likely Touched:** `.agent/collaboration/execution_log.md`.
+- **Criterio:** `execution_log.md` del ticket activo legible sin el historico A2a
+  embebido; trazabilidad preservada (referencia a commits); validate 0/0.
+- **Depende de:** -.
+- **Origen:** session-2026-06-13-host-extends.
 
 ---
 
