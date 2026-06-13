@@ -1,97 +1,64 @@
-# Execution Log WT-2026-251a
+# Execution Log WOT-AUDIT-A2a
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Metadata
 
-- **ID:** WT-2026-251a
-- **deliverable_type:** code
+- **ID:** WOT-AUDIT-A2a
+- **deliverable_type:** documentation
 - **Rol activo:** MANAGER
-- **Accion:** DOCUMENTARY_CLOSEOUT
+- **Accion:** CREATE_PLAN
 
-## Resumen ejecutivo
+## Resumen
 
-- El cambio productivo del ticket vive en `repo_motor` y ya estaba cerrado con
-  commit `edbad61`.
-- El `repo_destino` conservaba deriva documental de sesiones posteriores:
-  `execution_log.md` apuntaba a `WT-2026-256a`, las skills instaladas fallaban
-  validacion por BOM/frontmatter legacy y el bus no tenia eventos minimos de
-  `WT-2026-251a`.
-- Este cierre recompone la trazabilidad local sin reabrir el deliverable del
-  motor: se sanean las superficies del destino, se curan lecciones y se
-  formaliza la serie `WOT-2026-001x`.
+- Manager redacto `work_plan.md` para WOT-AUDIT-A2a (subfase documentation de
+  WOT-AUDIT-A2: host-extends/motor-provides).
+- Alcance: documentar la regla de precedencia de recursos (host .agent -> motor
+  read-only -> nunca legacy) y mapear los comandos del destino que apuntan a
+  copias locales hacia su equivalente del motor externo. SIN mover/borrar nada.
+- Evidencia de mapeo recolectada el 2026-06-13 a HEAD destino `13ee7e1` / motor
+  `704939f` (ver tabla en work_plan.md).
+- Bus inicializado con `--bootstrap-ticket` (STATE_CHANGED -> IN_PROGRESS).
 
-## Evidencia reconciliada
+## Hallazgos divergentes registrados como STOP para A2b
 
-- `work_plan.md` ya registraba `WT-2026-251a` como `COMPLETED`.
-- `.agent/collaboration/backlog.md` ya lo listaba como completado en la sesion
-  2026-06-11.
-- `CHANGELOG.md` preserva el cierre base de 2026-06-09 y ahora agrega el
-  closeout documental de 2026-06-12.
-- `.agent/runtime/events/events.jsonl` recupera la evidencia minima que faltaba
-  para que el controller no vea `WT-2026-251a` como ticket cerrado sin bus.
+- `scripts/test_refactor_kit_performance.py`: existe como copia local en el
+  destino pero NO tiene equivalente en el motor -> escalar (gap de capacidad o
+  reclasificar como extension del host).
+- `agent_system/refactor-kit/install_refactor_kit.py`: entrada allowlist stale
+  (ruta hyphen inexistente; el motor lo tiene bajo `refactor_kit/` underscore).
 
-## Higiene aplicada en repo_destino
+## Pendiente (Builder)
 
-- `..\orquestador_de_agentes\.venv\Scripts\python.exe
-  ..\orquestador_de_agentes\.agent\agent_controller.py --validate --json
-  --project-root .` vuelve a dar `0 errors / 0 warnings`.
-- `skills/validate_all.py --json` vuelve a dar `15 valid / 0 invalid`.
-- `agent_system/skills/validate_all.py --json` vuelve a dar
-  `13 valid / 0 invalid`.
-- Se anaden lecciones curadas sobre BOM/mojibake, recovery Manager-Builder por
-  chat y la correccion del propio Manager como superficie legitima.
-- La serie `WOT-2026-001x` queda resuelta documentalmente:
-  `001a absorbed`, `001b completed`, `001c completed`, `001d completed`.
+- Crear `repo_destino/.agent/docs/resource_precedence.md` con la decision
+  arquitectonica + tabla de mapeo. Cierre con linea artefacto+gate.
 
-## Nota operativa
+## Builder - diagnostico antes del cambio
 
-El siguiente paso canonico ya no es reabrir `WT-2026-251a`, sino ejecutar
-`--session-close` sobre arbol limpio para archivar este estado del
-`repo_destino` sin mezclarlo con mas cambios de producto.
-
-## WT-2026-259a - Fase 0 Scope Gate Mapping
-
-- Fecha: 2026-06-12
-- Ticket: `WT-2026-259a`
-- Superficie productiva prevista en `repo_motor`:
-  - `.agent/agent_controller.py`
-  - `.agent/scope_gate.py` (nuevo)
-
-### Patch-targets confirmados antes de editar
-
-- `tests/unit/test_scope_gate.py`
-  - importa desde `agent_controller`:
-    - `PROJECT_ROOT`
-    - `_exclude_files`
-    - `_handle_mark_ready`
-    - `_scope_gate_allows_close`
-    - `check_scope_gate`
-    - `get_changed_files`
-    - `parse_files_likely_touched`
-  - parchea:
-    - `agent_controller.PROJECT_ROOT`
-    - `agent_controller.get_changed_files`
-- `tests/unit/test_mark_ready_idempotency.py`
-  - parchea `agent_controller._scope_gate_allows_close`
-- `tests/test_agent_controller.py`
-  - parchea:
-    - `agent_controller.parse_files_likely_touched`
-    - `agent_controller.get_changed_files`
-  - asume lectura de globals del controller en tiempo de llamada
-- `tests/evals/test_eval_scope_gate.py`
-  - importa desde `agent_controller`:
-    - `parse_files_likely_touched`
-    - `check_scope_gate`
-
-### Hallazgo operativo
-
-- Los seams que no se pueden romper son los nombres exportados por
-  `agent_controller`, no solo la logica interna. La extraccion debe dejar
-  wrappers finos que:
-  - lean globals del controller en tiempo de llamada;
-  - mantengan patch-targets en `agent_controller.*`;
-  - no introduzcan imports desde `.agent/scope_gate.py` de vuelta al controller.
-
-
-Manager approved canonical closeout for WT-2026-251a
+- Seams confirmados en codigo del motor:
+  - `runtime/project_root.py` resuelve el root por `AGENT_PROJECT_ROOT`.
+  - `scripts/run_pytest_safe.py` no expone `--project-root`; usa el resolver
+    central y acepta `--status`.
+  - `scripts/local_audit.py` no expone `--project-root`; solo acepta `--json`
+    y `--quick`.
+  - `scripts/discover_skills.py` no expone `--project-root`; su host-first
+    discovery depende de `cwd/.agent/skills`.
+- Evidencia runtime confirmada desde `cwd=repo_destino`:
+  - `python <repo_motor>/scripts/discover_skills.py --json` funciona con
+    `AGENT_PROJECT_ROOT=<repo_destino>`.
+  - `python <repo_motor>/scripts/run_pytest_safe.py --status` funciona con
+    `AGENT_PROJECT_ROOT=<repo_destino>`.
+  - `python <repo_motor>/scripts/local_audit.py --json --quick` funciona con
+    `AGENT_PROJECT_ROOT=<repo_destino>`.
+- Desviacion de scope detectada y contenida:
+  - el `work_plan.md` usa la forma abreviada `--project-root <repo_destino>` en
+    la tabla de equivalencias, pero esa interfaz no existe hoy para al menos
+    `run_pytest_safe.py`, `discover_skills.py` y `local_audit.py`. El
+    entregable A2a documenta la forma invocable real sin modificar el scope del
+    ticket ni tocar A2b.
+- Artefacto creado:
+  - `repo_destino/.agent/docs/resource_precedence.md`
+- Gate final:
+  - Doc `.agent/docs/resource_precedence.md` creado. Validate: exit 0, 0 errors,
+    1 warning (`TP-STRUCT-01` esperado; `AUDIT_*` con `TP Check` pertenece al
+    review artefact del Manager y no a A2a).
