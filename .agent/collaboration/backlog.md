@@ -29,7 +29,8 @@
 | - | WOT-AUDIT-A2a | Contrato de precedencia host-extends/motor-provides | system/host-extends | completed | - | session-2026-06-13-host-extends |  <!-- verificado: 6240dc0 + 26afa33 -->
 | - | WOT-AUDIT-A2b | Manifiesto de triage por ruta del destino | system/host-extends | completed | WOT-AUDIT-A2a | session-2026-06-13-host-extends |  <!-- verificado: 4452e6f + bec8468 -->
 | Alta | WOT-AUDIT-CI | CI del destino portable bajo host-extends | system/ci-portability | completed | WOT-AUDIT-A2b | session-2026-06-13-host-extends |
-| Media | WOT-2026-002a | A2c: demo de clone limpio + install --sync sin copias legacy | system/host-extends | pending | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |
+| Media | WOT-2026-002a | A2c: demo de clone limpio + install --sync sin copias legacy | system/host-extends | completed | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- verificado: cca3540 -->
+
 | Media | WOT-2026-002b | ORPHANS: decision promover-vs-archivar de los 10 huerfanos | system/host-extends | pending | WOT-AUDIT-A2b, WOT-AUDIT-CI | session-2026-06-13-host-extends |
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | pending | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |
 | Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | pending | - | session-2026-06-13-host-extends |
@@ -114,7 +115,12 @@
 ## WOT-2026-002a - A2c: demo de clone limpio + install --sync sin copias legacy
 - **Prioridad:** Media
 - **Scope:** system/host-extends
-- **Estado:** pending
+- **Estado:** completed (cca3540; closeout closeout_WOT-2026-002a.md)
+- **Resultado:** A2d parcialmente des-riesgado. install --sync (exit 0) y
+  discover_skills (exit 0, 28 skills del MOTOR) operan sin las copias motor-provides.
+  DEPENDENCIA VIVA detectada para A2d: `run_pytest_safe.py` corre pytest contra
+  `tests/` LOCAL; sin `tests/` da exit 4 (0 coleccionados). WOT-2026-002c debe
+  definir la estrategia de pytest del destino post-A2d.
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino
@@ -181,6 +187,11 @@
   reconciliar antes que la version del motor cubre el uso del destino (diff hasta
   601 lineas en `run_pytest_safe`); NO borrar por basename. Si una copia tiene
   invocacion viva sin equivalente funcional confirmado, parar y escalar.
+- **Input de WOT-2026-002a (A2c):** retirar `tests/` deja `run_pytest_safe.py` (que el
+  gates-dispatch invoca para tickets `code`/`mixed`) sin coleccion (exit 4). A2d DEBE
+  decidir la estrategia: apuntar el pytest del destino a `<MOTOR>/tests`, conservar un
+  `tests/` minimo propio del destino, o ensenar al gates-dispatch a manejar 'sin tests
+  locales'. El CI ya pivoto a validate-state (WOT-AUDIT-CI), pero el dispatch local no.
 - **Depende de:** WOT-2026-002a, WOT-2026-002b.
 - **Origen:** session-2026-06-13-host-extends.
 

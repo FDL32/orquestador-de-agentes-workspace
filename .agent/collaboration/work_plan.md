@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-002a
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino

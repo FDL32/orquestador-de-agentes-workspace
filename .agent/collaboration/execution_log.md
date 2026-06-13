@@ -1,6 +1,6 @@
 # Execution Log WOT-2026-002a
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## Metadata
 
@@ -58,3 +58,37 @@ A2d PARCIALMENTE DES-RIESGADO:
 - install + discover: operan sin copias motor-provides (VERDE).
 - run_pytest_safe: DEPENDENCIA VIVA en tests/ (STOP#2 activado; input para A2d).
 - validate clone: errores pre-existentes (no del stripping); destino real 0/0 (VERDE).
+
+
+Scope override: Checkpoint cca3540 agrupa artefactos de plan del Manager (work_plan/PLAN/AUDIT), superficies vivas del controller (STATE/TURN), execution_log, el deliverable declarado (closeout report) y evidencia de integridad del motor (motor_after json). Ningun cambio de codigo productivo fuera del reporte declarado. FLT con comentarios inline no parseo; los paths son superficies legitimas del ticket.. Affected files: .agent/collaboration/AUDIT_WOT-2026-002a.md, .agent/collaboration/PLAN_WOT-2026-002a.md, .agent/collaboration/STATE.md, .agent/collaboration/TURN.md, .agent/collaboration/execution_log.md, .agent/collaboration/work_plan.md, orchestrator_pipeline/reports/closeout_WOT-2026-002a.md, orchestrator_pipeline/session_close/motor_after_WOT-2026-002a.json
+
+## Manager review (doble pasada, §6) - 2026-06-13
+
+- **Rev1 (verificacion independiente):** destino real intacto (git status limpio,
+  validate 0/0); motor intacto (check_motor_pristine OK, HEAD 687d5b9, sin tag M3 en
+  motor); M3 en DESTINO (checkpoint/review-WOT-2026-002a -> cca3540) confirma el fix
+  bae1906 en produccion; reporte con exit codes reales y etiquetas de evidencia.
+- **Rev2 (adversarial/counterexamples):** (a) install --sync NO reintrodujo copias
+  (run_pytest siguio fallando, discover uso paths del MOTOR) -> host-extends real;
+  (b) validate-clone exit 1 es estado heredado WOT-AUDIT-CI + bus gitignored, no del
+  stripping; (c) discover exit 0 con 28 skills reales, no fail-open; (d) el "partial
+  de-risk" da input accionable a A2d, no lo empeora. No se pudo refutar el cierre.
+- **Decision:** APROBADO. Artifact: .agent/runtime/reviews/decision_WOT-2026-002a.json
+- **Hallazgo para WOT-2026-002c (A2d):** run_pytest_safe corre pytest contra tests/
+  LOCAL; post-A2d sin tests/ -> exit 4, 0 coleccionados. A2d debe definir la estrategia
+  de pytest (apuntar a <MOTOR>/tests, mantener tests/ minimo, o que el gates-dispatch
+  maneje 'sin tests locales'). El CI ya pivoto a validate-state (WOT-AUDIT-CI).
+
+## Gate final
+
+Demo ejecutado sobre clone desechable: install --sync exit 0 (link regenerado),
+discover_skills exit 0 (28 skills del MOTOR), run_pytest_safe exit 4 (dependencia
+viva tests/ documentada para A2d), validate clone exit 1 (estado heredado, no
+stripping), validate destino real exit 0. Motor intacto (MOTOR_PRISTINE_OK).
+Deliverable orchestrator_pipeline/reports/closeout_WOT-2026-002a.md creado. Encoding
+guard OK. Validate destino: exit 0, 0 errors, 1 warning NO BLOQUEANTE (seccion FLT
+con comentarios inline no parseada por _looks_like_path_token; paths validos,
+deliverable presente; warning transitoria reemplazada por el plan de 002b; leccion:
+FLT con paths desnudos en 002b/c/d). All checks passed for WOT-2026-002a.
+
+Manager approved canonical closeout for WOT-2026-002a
