@@ -1,60 +1,74 @@
-# Work Plan: WOT-2026-005d - Audit completo motor-destino: patrones host-extends y memoria
+# Work Plan: WOT-2026-003d - install/sync: jamas prunear rutas trackeadas del destino
 
 ## Metadata
-- **ID:** WOT-2026-005d
-- **Estado:** COMPLETED
-- **deliverable_type:** documentation
+- **ID:** WOT-2026-003d
+- **Estado:** APPROVED
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Repo de autoridad:** repo_motor
-- **Titulo:** Elevar los incidentes 002/003 a patrones estrategicos en el audit completo: resolvers/bootstraps, fail-open, bus no-verificable y capas de memoria
+- **Alias historico:** MOTOR-FU-001
+- **Titulo:** El residue-prune del instalador nunca borra rutas git-trackeadas del repo_destino
 - **Asignado a:** Builder
-- **Severidad:** Media | **Riesgo:** Bajo (cambio documental; reversible via git)
-- **Depende de:** WOT-2026-005c (completed)
-- **Origen:** session-2026-06-14-host-extends-learnings
+- **Severidad:** Alta | **Riesgo:** Alto (instalador; toca borrado en working tree). Cierre SOLO a READY_FOR_REVIEW.
+- **Depende de:** WOT-2026-002c (completed)
+- **Origen:** session-2026-06-13-host-extends; re-scoped 2026-06-14 tras verificacion de premisa.
 
-## Decision Arquitectonica
-El audit completo debe evaluar la integracion motor-destino de CUALQUIER destino (no solo
-este dogfooding), elevando los incidentes host-extends a patrones estrategicos sin incrustar
-cronica. Se endurecen secciones existentes (portabilidad, calidad, observabilidad, fuentes)
-para cubrir resolvers/bootstraps, fail-open en validators/hooks/launchers/CI, distincion
-bus-ausente vs bus-violado, y memoria por capas con chequeo de promocion por schema. Se
-referencian las fuentes canonicas (005b/005c/005a) en vez de duplicar sus checklists.
+## ACTUALIZACION DE SCOPE (premisa original parcialmente obsoleta)
+Verificacion empirica (`install --sync --dry-run` contra el destino, READ-ONLY):
+- **Premisa original "--sync re-vendoriza el bundle completo (re-crea agent_system/)": FALSA hoy.**
+  El instalador solo copia `.agent/` bajo el allowlist de `MANIFEST.workspace` (20 rutas) y
+  SALTA subrutas no autorizadas de `.agent/` (hooks, rules, council, templates...). No copia
+  `agent_system/`/`skills/`/`scripts/`. (El no-clobber de `.gitleaks.toml` de 004b se ve activo.)
+- **Riesgo real actual: `--sync` strict (default) prunea `.agent/docs/`**, que contiene
+  deliverables destino-keep TRACKEADOS: `orphans_decision_WOT-2026-002b.md`,
+  `triage_manifest.md`, `resource_precedence.md`. Evidencia: dry-run -> "Residues selected for
+  cleanup (automatic (strict)): 1 -> docs"; `git ls-files .agent/docs` no vacio.
+
+## Nuevo contrato (canonico)
+El residue-prune del instalador solo puede actuar sobre residuos NO TRACKEADOS por git en el
+repo_destino. JAMAS borra una ruta trackeada por git, este o no en `MANIFEST.workspace`. Esto
+protege `.agent/docs/` hoy y cualquier futuro deliverable destino-keep que el manifiesto aun
+no conozca. Fail-safe: si no se puede determinar el estado git-trackeado, NO prunear.
 
 ## Files Likely Touched (repo_motor)
-prompts/audit_complete_motor_destination.md
+scripts/install_agent_system.py
+tests/unit/test_install_agent_system.py
 
 ## Read/inspect only
-- `prompts/destination_bootstrap.md`, `skills/orchestrate-pipeline/references/destination-preflight.md`,
-  `skills/system-health-audit/SKILL.md`, `prompts/memory_upload.md` (fuentes a referenciar).
+- `MANIFEST.workspace` (allowlist; no se modifica).
+- `detect_destination_residues`, `prune_residues` (chokepoint de prune).
 
-## Manager-only
-- Revision documental (no toca skill: no requiere skill_collisions, pero se corre por higiene).
+## Manager-only / Revision
+- Revision adversarial INDEPENDIENTE obligatoria (code + alto blast radius + politica FALLBACK).
+- Cierre SOLO a READY_FOR_REVIEW. NO `manager-approve`. NO push. Espera revision independiente.
 
 ## Non-goals
-- NO duplicar checklists completas de otros prompts; referenciar fuentes canonicas.
-- NO añadir gates ni runtime; NO crear higiene de mojibake masivo (ticket aparte si aparece).
+- NO re-introducir un modo host-extends amplio (premisa de re-vendor obsoleta).
+- NO modificar `MANIFEST.workspace` ni la logica de copia (`copy_tree`).
+- NO cambiar la deteccion de residuos para untracked (deben seguir detectandose).
+- NO añadir dependencias (git via subprocess; subprocess ya importado).
 
-## Criterios binarios de cierre
-- [ ] La seccion de portabilidad exige auditar resolvers/bootstraps ademas de imports.
-- [ ] La seccion de calidad incluye fail-open en validators, hooks, launchers, CI y
-      fallback/stubs de topologia.
-- [ ] Observabilidad distingue `bus ausente/no verificable` de `bus presente/evento violado`
-      (especialmente CI o clone limpio).
-- [ ] Memoria evalua por separado Claude privada, portable motor y portable destino, y
-      comprueba si el schema real permite promocion.
-- [ ] Fuentes minimas incluyen `destination_bootstrap.md`, `orchestrate-pipeline/SKILL.md`,
-      `destination-preflight.md`, `system-health-audit/SKILL.md` y `memory_upload.md`.
-- [ ] `check_encoding_guard.py` pasa; validate destino 0; motor solo este archivo; commit con WOT-2026-005d.
+## Criterios binarios de cierre (a READY_FOR_REVIEW)
+- [ ] `prune_residues` excluye del prune toda ruta git-trackeada del destino (strict E interactivo).
+- [ ] Mensaje auditable `[SKIP] residue is git-tracked...` por cada ruta protegida.
+- [ ] Fail-safe: si no se puede determinar tracked (git ausente), NO prunear (warning).
+- [ ] Residuo UNTRACKED se sigue detectando y se prunea normalmente.
+- [ ] Test barrera: destino con `.agent/docs/*.md` TRACKEADO + un residuo untracked; verificar
+      que `.agent/docs` NO se selecciona/prunea y el untracked SI.
+- [ ] `ruff` limpio; `run_pytest_safe` motor verde; encoding 0.
+- [ ] Commit en repo_motor con WOT-2026-003d. Ticket queda READY_FOR_REVIEW (no cerrado).
 
 ## STOP / escalado
-- No duplicar checklists de 005b/005c; referenciar fuentes canonicas.
-- Si aparece mojibake masivo no acotado, abrir higiene separada (no mezclar aqui).
+- Si el guard pudiera bloquear un prune legitimo de untracked, parar y acotar.
+- Si la deteccion de "tracked" no es fiable en algun entorno, preferir fail-safe (no borrar).
 
-## Gates (deliverable_type: documentation)
-- `check_encoding_guard.py prompts/audit_complete_motor_destination.md`.
-- `check_skill_collisions.py` exit 0 (higiene; no se toca skill).
-- `validate --project-root .` 0; `check_motor_pristine --check` (solo este archivo).
+## Gates (deliverable_type: code)
+- `ruff check`/`format --check` sobre los .py tocados.
+- `python scripts/run_pytest_safe.py` (cwd=motor) incluyendo el test nuevo.
+- `check_encoding_guard.py`; `check_motor_pristine --check` vs snapshot.
 
 ## Entregables
-- `prompts/audit_complete_motor_destination.md` endurecido.
-- `orchestrator_pipeline/reports/closeout_WOT-2026-005d.md`.
+- `install_agent_system.py` con guard git-tracked en el prune (+ helpers).
+- Test de barrera en `tests/unit/test_install_agent_system.py`.
+- Evidence packet para revision independiente (diff, dry-run antes/despues, gates).
+- `orchestrator_pipeline/reports/readyforreview_WOT-2026-003d.md` (no closeout: queda abierto).
