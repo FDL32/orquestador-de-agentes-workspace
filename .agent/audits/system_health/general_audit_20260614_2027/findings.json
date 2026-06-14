@@ -1,0 +1,50 @@
+{
+  "schema": "system-health-collector/v0",
+  "generated_at": "2026-06-14T20:27:37.976620+00:00",
+  "mode": "auto",
+  "degraded": false,
+  "topology": {
+    "motor_root": "<MOTOR_ROOT>",
+    "destino_root": "<DESTINO_ROOT>",
+    "motor_head": "3df6620b4697764d80ffee1d21846f6c0eab2269",
+    "destino_head": "905480ed0ad1c05631a994c4ff4b8761fa9500bb",
+    "destino_present": true
+  },
+  "checks": {
+    "ruff_motor": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "validate_motor": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "discover_skills_contract": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "motor_pristine_snapshot": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "ruff_destino": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "validate_destino": {
+      "exit_code": 0,
+      "ok": true
+    }
+  },
+  "pytest_safe_last_run": {
+    "present": true,
+    "exit_code": 0,
+    "finished_at": "2026-06-14T17:49:00+00:00"
+  },
+  "inventory": {
+    "motor_tracked_count": 525,
+    "destino_tracked_count": 214
+  },
+  "automatic_criticals": [],
+  "note": "Collector output is [RELATO]; the agent produces the verdict (Pass B)."
+}
