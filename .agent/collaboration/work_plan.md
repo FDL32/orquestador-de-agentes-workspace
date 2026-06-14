@@ -1,4 +1,4 @@
-# Work Plan: WOT-2026-003d - install/sync: jamas prunear rutas trackeadas del destino
+﻿# Work Plan: WOT-2026-003d - install/sync: jamas prunear rutas trackeadas del destino
 
 ## Metadata
 - **ID:** WOT-2026-003d
@@ -30,6 +30,8 @@ repo_destino. JAMAS borra una ruta trackeada por git, este o no en `MANIFEST.wor
 protege `.agent/docs/` hoy y cualquier futuro deliverable destino-keep que el manifiesto aun
 no conozca. Fail-safe: si no se puede determinar el estado git-trackeado, NO prunear.
 
+## Decision Arquitectonica
+Se corrige el chokepoint de prune (`prune_residues`) en lugar de abrir un modo nuevo de instalacion o ampliar `MANIFEST.workspace` para un caso puntual. La decision protege cualquier superficie destino-keep trackeada por git, no solo `.agent/docs/`, y mantiene intacta la deteccion de residuos untracked. El criterio es fail-safe: si el instalador no puede determinar el estado git-trackeado, no borra.
 ## Files Likely Touched (repo_motor)
 scripts/install_agent_system.py
 tests/unit/test_install_agent_system.py
@@ -46,7 +48,7 @@ tests/unit/test_install_agent_system.py
 - NO re-introducir un modo host-extends amplio (premisa de re-vendor obsoleta).
 - NO modificar `MANIFEST.workspace` ni la logica de copia (`copy_tree`).
 - NO cambiar la deteccion de residuos para untracked (deben seguir detectandose).
-- NO añadir dependencias (git via subprocess; subprocess ya importado).
+- NO aÃ±adir dependencias (git via subprocess; subprocess ya importado).
 
 ## Criterios binarios de cierre (a READY_FOR_REVIEW)
 - [ ] `prune_residues` excluye del prune toda ruta git-trackeada del destino (strict E interactivo).
@@ -72,3 +74,4 @@ tests/unit/test_install_agent_system.py
 - Test de barrera en `tests/unit/test_install_agent_system.py`.
 - Evidence packet para revision independiente (diff, dry-run antes/despues, gates).
 - `orchestrator_pipeline/reports/readyforreview_WOT-2026-003d.md` (no closeout: queda abierto).
+

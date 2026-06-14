@@ -3,3 +3,5 @@
 | Fecha | Motor HEAD | Destino HEAD | Criticos auto | Ruta |
 |-------|-----------|--------------|---------------|------|
 | 20260613_1044 | c4f2ae8 | 17813a5 | 0 | general_audit_20260613_1044 |
+| 20260614_1738 | ff05b8d | 53e3e65 | 0 | general_audit_20260614_1738 |
+| 20260614_1739 | ff05b8d | a904aae | 0 | general_audit_20260614_1739 |
