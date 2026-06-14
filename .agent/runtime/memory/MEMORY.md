@@ -1,12 +1,13 @@
 # MEMORY
 
-Regenerated: 2026-06-14T20:38:21.158494+00:00
+Regenerated: 2026-06-14T20:52:29.275397+00:00
 
-Total observations: 40
+Total observations: 42
 
 - Architecture (15 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
+- Backlog-Summary-Detail-Reconcile-After-Rescope (1 observations)
 - Bom-Breaks-Lightweight-Validators (1 observations)
 - Builder-Evidence-Gate (1 observations)
 - Builder-Validates-Existing-Work (1 observations)
@@ -27,6 +28,7 @@ Total observations: 40
 - Runtime-Proof-For-Concurrency-Fixes (1 observations)
 - Scope-Gate-Path-Format (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
+- Session-Close-May-Need-Final-Memory-Commit (1 observations)
 - Ticket-Completion (2 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
@@ -47,6 +49,9 @@ Total observations: 40
 
 ## auditor-skeptic-pattern
 - The strongest review role is an auditor who searches for counterexamples in the real codebase and test suite, not a second pass that only judges whether the contract sounds plausible. That role catche
+
+## backlog-summary-detail-reconcile-after-rescope
+- When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and de
 
 ## bom-breaks-lightweight-validators
 - UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics
@@ -69,11 +74,6 @@ Total observations: 40
 ## cleanup-vs-bus-reconcile
 - Local runtime cleanup and bus reconciliation are different recovery classes. If the previous ticket is already terminal in the bus, clean stale local runtime only; if it is non-terminal with confirmed
 
-## delivery-hygiene
-- El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descriptivo. Patron observado: WT-2026-186 commiteado como WP-2026-176, WT-2026-189 sin commit hasta cierre manual, WT-2026-1
-
-## double-requeue-diagnostics
-- If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different rounds, requeue_ticket() ran twice for the same decision. And when outcome=success appears in older bus history, it only pro
 
 ---
 

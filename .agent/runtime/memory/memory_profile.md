@@ -1,6 +1,6 @@
 # Memory Profile (L3)
 
-Total observations: 40
+Total observations: 42
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
@@ -8,9 +8,10 @@ High-level profile of project memory for quick context loading. This is the firs
 
 - bus-architecture: 19 observations
 - review-quality: 8 observations
-- delivery-hygiene: 7 observations
+- delivery-hygiene: 8 observations
 - builder-contract: 5 observations
 - testing: 1 observations
+- collaboration: 1 observations
 
 ## Active Tickets Referenced
 
@@ -45,6 +46,8 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
+- [session-close-may-need-final-memory-commit] After the canonical session-close pipeline runs on a tracked destination, it can legitimately leave versioned memory artifacts dirty (`MEMORY.md`, `me (session-close)
+- [backlog-summary-detail-reconcile-after-rescope] When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout (session-close)
 - [ticket-completion] Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra rutas git-trackeadas del repo_destino (deliverable_type=code) (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-003d (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-005d (session-close)
@@ -53,5 +56,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-005a (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-003f (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-003e (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-004b (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-002c (session-close)
