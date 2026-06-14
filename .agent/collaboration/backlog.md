@@ -43,6 +43,160 @@
 | Baja | WOT-2026-003f | CI del destino: paso que corre el gate de portabilidad contra su .claude/settings.json | system/ci-portability | pending | WOT-2026-003c | session-2026-06-14-post-a2d-hardening |  <!-- follow-up de 003c: protege el settings del destino via CI -->
 | Alta | WOT-2026-004a | Suprimir 2 falsos positivos de gitleaks en CI del destino (scan full-history) | system/ci-portability | completed | - | session-2026-06-14-session-close |  <!-- 3e23873; .gitleaks.toml useDefault+allowlist tight; placeholder didactico (sk_live_1234567890) + SHA git publico (9c92e3d4, repo-compare WT-2026-236a); gitleaks 8.30.1 local 101 commits 0 leaks exit 0 -->
 | Baja | WOT-2026-004b | Motor: seed .gitleaks.toml en bundle + politica generic-api-key-on-SHA en logs operativos + fix guard \.git over-match | motor/security-hooks | pending | WOT-2026-004a | session-2026-06-14-session-close |  <!-- scope: repo_motor. guard \.git (substring) bloquea Write a .gitleaks*/.github/ legitimos; verificado en guard_paths.py:25 -->
+| Media | WOT-2026-005a | Separacion memoria privada vs portable en memory_upload | motor/protocol-docs | pending | WOT-2026-003b, WOT-2026-003c | session-2026-06-14-host-extends-learnings |
+| Alta | WOT-2026-005b | Bootstrap/preflight destino: checks host-extends, settings y guard fail-closed | motor/protocol-docs | pending | WOT-2026-003c | session-2026-06-14-host-extends-learnings |
+| Media | WOT-2026-005c | Audit post-change: resolver integrity, hooks, CI e install-sync risk | motor/protocol-docs | pending | WOT-2026-005b | session-2026-06-14-host-extends-learnings |
+| Media | WOT-2026-005d | Audit completo motor-destino: patrones estrategicos host-extends y memoria | motor/protocol-docs | pending | WOT-2026-005c | session-2026-06-14-host-extends-learnings |
+
+
+## Plan WOT-2026-005 - Protocolizar aprendizajes host-extends en prompts y skills
+
+> Objetivo de familia: convertir los fallos reales del ciclo host-extends
+> (resolvers rotos tras retirar copias motor-provides, hooks fail-open, CI sin bus,
+> install --sync re-vendorizando, y ambiguedad de memorias) en preflights y checks
+> explicitos dentro de prompts/skills. No implementar gates nuevos ni cambiar logica
+> runtime en esta familia; si aparece necesidad de codigo, abrir follow-up separado.
+>
+> Orden recomendado para pipeline: 005a y 005b pueden correr en paralelo; despues
+> 005c -> 005d. Los tickets son documentales pero afectan autonomia operativa:
+> deben dejar instrucciones binarias para Manager/Builder, no relato historico de
+> la sesion.
+
+### WOT-2026-005a - Separacion memoria privada vs portable en memory_upload
+- **Prioridad:** Media
+- **Scope:** motor/protocol-docs
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Problema:** `prompts/memory_upload.md` no separa con suficiente fuerza memoria
+  Claude privada, memoria portable del motor y memoria portable del destino. En el
+  ciclo host-extends se guardo aprendizaje util en memoria privada, pero no quedo
+  claro cuando debe promoverse a memoria portable validable.
+  Nota de evidencia: el archivo NO tiene mojibake (verificado por 3 metodos:
+  grep de marcadores, clasificacion no-ASCII y decode UTF-8 estricto, 0 hits).
+  Si un Builder cree ver corrupcion de encoding, debe pegar la linea/byte exacto
+  antes de tocar acentos legitimos.
+- **Objetivo:** anadir al prompt una decision explicita antes de guardar: destino de
+  memoria (`Claude privada`, `portable motor`, `portable destino`, `varias`),
+  evidencia requerida, y condicion de promocion a `observations.jsonl`.
+- **Files Likely Touched:** `prompts/memory_upload.md`; opcionalmente docs breves si el
+  prompt referencia reglas de memoria existentes. Frontera: este ticket solo toca
+  `prompts/memory_upload.md`; `WT-2026-250c` conserva la higiene amplia de backlog y
+  otras superficies vivas.
+- **Criterios binarios:**
+  - El prompt distingue las tres memorias y exige declarar destino antes de escribir.
+  - Si una observacion se marca portable, el prompt exige validacion de schema o la
+    etiqueta `NO PROMOVIBLE` con motivo.
+  - Si `observations.jsonl` esta en drift de schema, el prompt prohibe anadir nuevas
+    entradas portables sin ticket de migracion.
+  - Encoding guard pasa sobre el archivo tocado.
+- **STOP:** si aparece cambio de schema o codigo de memoria, abrir ticket code
+  separado. Si el saneo de redaccion excede `memory_upload.md`, derivar la higiene
+  amplia a `WT-2026-250c` en vez de ampliar el scope aqui.
+- **Depende de:** WOT-2026-003b, WOT-2026-003c.
+- **Origen:** session-2026-06-14-host-extends-learnings.
+
+### WOT-2026-005b - Bootstrap/preflight destino: checks host-extends, settings y guard fail-closed
+- **Prioridad:** Alta
+- **Scope:** motor/protocol-docs
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Problema:** `destination_bootstrap` y el preflight del pipeline no obligan aun a
+  verificar que un destino host-extends tiene resolvers vivos y hooks fail-closed antes
+  de lanzar Builder. A2d demostro que retirar copias motor-provides puede dejar
+  consumidores vivos apuntando a rutas locales retiradas.
+- **Objetivo:** endurecer el arranque documental para que Manager/Builder comprueben
+  motor link, settings Claude, hooks de seguridad, CI/launchers y resolvers contra
+  `scripts/`, `skills/`, `agent_system/` y `.agent/hooks/` locales antes de operar.
+- **Files Likely Touched:** `prompts/destination_bootstrap.md`,
+  `skills/orchestrate-pipeline/SKILL.md`,
+  `skills/orchestrate-pipeline/references/destination-preflight.md`.
+- **Criterios binarios:**
+  - El bootstrap exige confirmar `repo_motor`, `repo_destino`, `AGENT_PROJECT_ROOT` o
+    `motor_destination_link.json` antes de tickets que toquen hooks/CI/install.
+  - `destination-preflight.md` exige correr `check_claude_settings_portability.py`
+    contra `.claude/settings.json` del destino cuando exista.
+  - El preflight detecta y reporta `permissions.allow` trackeado, hook ausente,
+    hook fail-open, y resolvers vivos hacia copias locales retirables.
+  - El texto advierte que `install --sync` NO es mecanismo seguro de poda host-extends
+    hasta cerrar WOT-2026-003d.
+  - No se cambia el trigger `/pipeline` ni logica runtime.
+  - Manager-only gates si se toca `SKILL.md`: `python scripts/check_skill_collisions.py`
+    exit 0 y `python scripts/discover_skills.py` carga `orchestrate-pipeline` sin
+    romper triggers.
+- **STOP:** si algun check requiere ejecutar shell arbitrario o crear un gate nuevo,
+  documentarlo como follow-up code. Si el preflight no puede distinguir invocador vivo
+  de referencia historica, exigir evidencia manual en el work_plan antes de Builder.
+- **Depende de:** WOT-2026-003c.
+- **Origen:** session-2026-06-14-host-extends-learnings.
+
+### WOT-2026-005c - Audit post-change: resolver integrity, hooks, CI e install-sync risk
+- **Prioridad:** Media
+- **Scope:** motor/protocol-docs
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Problema:** la auditoria post-cambio ya cubre motor/destino/integracion, pero los
+  fallos recientes deben pasar de memoria a checklist: hook portable, fail-closed,
+  CI sin bus runtime, install --sync re-vendor, y resolvers a superficies retiradas.
+- **Objetivo:** actualizar el prompt y la skill de system-health para que toda auditoria
+  post-cambio incluya una tabla de `Resolver integrity` y pruebas de comportamiento
+  cuando el cambio toque host-extends, hooks, CI, install o limpieza de copias.
+- **Files Likely Touched:** `prompts/audit_post_change_system_health.md`,
+  `skills/system-health-audit/SKILL.md`.
+- **Criterios binarios:**
+  - La fase de integracion exige revisar `.claude/settings.json`,
+    `.agent/hooks/claude_guard_entry.py`, `check_claude_settings_portability.py`, CI y
+    launchers relevantes.
+  - La auditoria pide prueba de comportamiento para hooks de escritura: payload externo
+    debe bloquear, payload interno benigno debe permitir, link/motor ausente debe
+    fallar cerrado.
+  - El prompt busca resolvers hacia `agent_system/`, `scripts/`, `skills/` y
+    `.agent/hooks/` locales antes de declarar segura una retirada de copias.
+  - La fase destino indica que `.claude/settings.json` trackeado no debe contener grants
+    personales.
+  - Los artefactos de salida incluyen o piden tabla `Resolver integrity` en la auditoria
+    de integracion.
+  - Manager-only gates: `python scripts/check_skill_collisions.py` exit 0 y
+    `python scripts/discover_skills.py` carga `system-health-audit` sin romper
+    triggers ni `source_prompt`.
+- **STOP:** si la auditoria descubre un fail-open real, no seguir saneando docs: abrir
+  ticket de seguridad/code. Si se propone borrar installer-managed, exigir demo/fixture
+  de clone limpio o depender de WOT-2026-003d.
+- **Depende de:** WOT-2026-005b.
+- **Origen:** session-2026-06-14-host-extends-learnings.
+
+### WOT-2026-005d - Audit completo motor-destino: patrones estrategicos host-extends y memoria
+- **Prioridad:** Media
+- **Scope:** motor/protocol-docs
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Problema:** el audit completo debe elevar los incidentes 002/003 a patrones
+  estrategicos sin incrustar cronica: auditar resolvers y bootstraps, distinguir
+  no-verificable vs violado cuando falta bus runtime, y revisar capas de memoria.
+- **Objetivo:** actualizar el prompt de auditoria completa para que evalue la
+  integracion motor-destino de cualquier repo destino, no solo este dogfooding, con
+  foco en fallos fail-open y topologia host-extends.
+- **Files Likely Touched:** `prompts/audit_complete_motor_destination.md`.
+- **Criterios binarios:**
+  - La seccion de portabilidad exige auditar resolvers/bootstraps ademas de imports.
+  - La seccion de calidad incluye fail-open en validators, hooks, launchers, CI y
+    fallback/stubs de topologia.
+  - Observabilidad distingue `bus ausente/no verificable` de `bus presente/evento
+    violado`, especialmente en CI o clone limpio.
+  - Memoria evalua por separado Claude privada, portable motor y portable destino, y
+    comprueba si el schema real permite promocion.
+  - Fuentes minimas incluyen `prompts/destination_bootstrap.md`,
+    `skills/orchestrate-pipeline/SKILL.md`,
+    `skills/orchestrate-pipeline/references/destination-preflight.md`,
+    `skills/system-health-audit/SKILL.md` y `prompts/memory_upload.md`.
+- **STOP:** no duplicar checklists completas de otros prompts; referenciar fuentes
+  canonicas cuando el detalle ya vive en 005b/005c. Si aparece mojibake masivo no
+  acotado, abrir higiene separada en vez de mezclar con el audit completo.
+- **Depende de:** WOT-2026-005c.
+- **Origen:** session-2026-06-14-host-extends-learnings.
 
 
 ## Completados en sesion 2026-06-11 (audit integral)
