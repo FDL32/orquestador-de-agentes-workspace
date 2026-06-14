@@ -30,7 +30,10 @@ FALLBACK_SIN_TASK_TOOL. Orquestador como Builder. Scope repo_destino.
 ### Gates / evidencia
 - YAML valido: `yaml.safe_load` -> YAML OK.
 - Barrera de comportamiento: gate local contra `.claude/settings.json` del destino ->
-  "OK (portable, fail-closed)", exit 0.
+  "OK (portable, fail-closed)", exit 0. Gate **passed** (gate del motor 003c reutilizado).
+- Nota de gates: este ticket no añade Python (cambio de YAML de CI); no aplica ruff/pytest
+  nuevo. La evidencia de codigo es el run del gate canonico (passed) + YAML valido. El gate
+  en si esta cubierto por la suite del motor (003c, 22 tests).
 - `validate --project-root .` (destino): 0 errores.
 - `check_motor_pristine --check`: MOTOR_PRISTINE_OK, head_changed=false (motor intacto;
   ticket destino-authority). Evidencia: motor_after_WOT-2026-003f.json.
