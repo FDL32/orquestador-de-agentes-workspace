@@ -50,13 +50,19 @@ agujero de seguridad que oculte secretos reales en cualquier ruta.
   separadores antes de anclar el patron (`_normalize` ya existe en el modulo).
 
 ## Files Likely Touched (repo_motor)
-- `.agent/hooks/guard_paths.py` (fix del patron `\.git` + normalizacion de path_str)
-- `agent_system/templates/gitleaks.config.toml` (NUEVO seed generico portable)
-- `scripts/install_agent_system.py` (nueva `copy_gitleaks_config()` analoga a
-  `copy_repomix_config()`, con no-clobber; wiring en install/sync)
-- `MANIFEST.distribute` (declarar la ruta del template seed)
-- `tests/` del motor: test del fix del guard + test de la copia seed del installer
-  (rutas exactas a decidir por Builder segun layout de `tests/`)
+.agent/hooks/guard_paths.py
+agent_system/templates/gitleaks.config.toml
+scripts/install_agent_system.py
+tests/test_guard_paths.py
+tests/unit/test_install_agent_system.py
+MANIFEST.distribute
+
+Notas (fuera de la lista de rutas, para no romper el parser de scope):
+- `guard_paths.py`: fix del patron `\.git` + normalizacion de path_str.
+- `gitleaks.config.toml`: NUEVO seed generico portable.
+- `install_agent_system.py`: `copy_gitleaks_config()` no-clobber + wiring install/sync.
+- `tests/...`: barrera del guard + no-clobber del installer.
+- `MANIFEST.distribute`: planificado, NO tocado (ver desviacion en execution_log).
 
 ## Read/inspect only
 - `<destino>/.gitleaks.toml` (artefacto 004a; referencia de que NO debe heredarse
