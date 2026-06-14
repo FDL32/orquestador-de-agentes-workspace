@@ -1,10 +1,10 @@
-# Execution Log WOT-2026-005b
+# Execution Log WOT-2026-005c
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Metadata
 
-- **ID:** WOT-2026-005b
+- **ID:** WOT-2026-005c
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Rol activo:** BUILDER
@@ -12,33 +12,31 @@
 
 ## Resumen
 
-- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL). Doc ticket: endurecer bootstrap y preflight
-  del destino con checks de host-extends, settings Claude, hooks fail-closed y resolvers
-  vivos. Toca 3 archivos (incl. SKILL.md body, frontmatter intacto). Scope motor.
+- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL). Doc ticket: auditoria post-cambio cubre
+  resolver integrity, hooks fail-closed, CI e install-sync risk. Toca 2 archivos motor
+  (audit prompt + SKILL body, frontmatter intacto). Depende de 005b (completed). Scope motor.
 
 ## Ejecucion Builder
 
-FALLBACK_SIN_TASK_TOOL. Orquestador como Builder via Bash. Doc ticket, 3 archivos motor.
+FALLBACK_SIN_TASK_TOOL. Orquestador como Builder via Bash.
 
 ### Cambios
-- `prompts/destination_bootstrap.md`: nueva seccion "Preflight de seguridad (host-extends)"
-  (dentro del prompt) con 3 checks: topologia resuelta; gate de portabilidad de settings;
-  resolvers vivos + aviso install --sync no es poda hasta WOT-2026-003d.
-- `skills/orchestrate-pipeline/references/destination-preflight.md`: checks 7 (portabilidad
-  settings + guard fail-closed: reporta permissions.allow trackeado, hook ausente, hook
-  fail-open) y 8 (integridad de resolvers + aviso install --sync / WOT-2026-003d).
-- `skills/orchestrate-pipeline/SKILL.md` (body): referencia a los checks 7-8. Frontmatter
-  (triggers/source_prompt/contract_id) INTACTO.
+- `prompts/audit_post_change_system_health.md`:
+  - Fase 4 (destino): verificar `.claude/settings.json` trackeado sin grants personales (`permissions.allow`).
+  - Fase 5 (integracion): tabla obligatoria de Resolver integrity (resolvers vivos hacia
+    `agent_system/`/`scripts/`/`skills/`/`.agent/hooks/`); revisar settings + claude_guard_entry
+    + check_claude_settings_portability; prueba de comportamiento del hook (externo bloquea,
+    interno permite, link/motor ausente falla cerrado); CI/launchers; aviso install --sync / WOT-2026-003d.
+  - Estructura de salida: `03_integration_audit.md` menciona la tabla Resolver integrity.
+- `skills/system-health-audit/SKILL.md` (body): bullet de Contrato duro con la integracion
+  host-extends de Fase 5. Frontmatter (triggers/source_prompt/contract_id) INTACTO.
 
 ### Gates / evidencia
-- `check_encoding_guard.py` (3 archivos): exit 0.
+- `check_encoding_guard.py` (2 archivos): exit 0.
 - `check_skill_collisions.py`: exit 0.
-- `discover_skills.py --json`: orchestrate-pipeline presente; trigger /pipeline presente.
+- `discover_skills.py --json`: system-health-audit presente; trigger /audit-system-health presente.
 - `validate --project-root .` (destino): 0 errores.
-- `check_motor_pristine --check`: solo los 3 archivos cambian.
+- `check_motor_pristine --check`: solo los 2 archivos cambian.
 
 ### Commit (repo_motor)
-- `9c1ba3d` docs(WOT-2026-005b). 3 archivos. Pre-commit motor: todos los hooks Passed.
-
-
-Manager approved canonical closeout for WOT-2026-005b
+- `c783e40` docs(WOT-2026-005c). 2 archivos. Pre-commit motor: todos los hooks Passed.
