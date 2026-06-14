@@ -1,4 +1,4 @@
-﻿# Execution Log WOT-2026-003d
+# Execution Log WOT-2026-003d
 
 **Estado:** READY_FOR_REVIEW
 
@@ -21,7 +21,7 @@
 
 ## Ejecucion Builder
 
-- Implementacion en `repo_motor`: commit `ff05b8d` (`fix(WOT-2026-003d): never prune git-tracked destino residues`).
+- Implementacion en `repo_motor`: commits `ff05b8d` (`fix(WOT-2026-003d): never prune git-tracked destino residues`) y `50beca6` (`chore(WOT-2026-003d): clarify dry-run residue reporting`).
 - `scripts/install_agent_system.py`: anadidos `_git_tracked_relpaths()` y `_filter_git_tracked_residues()`; `prune_residues()` filtra residuos git-trackeados antes del prune (strict e interactivo), con fail-safe si el estado tracked no es determinable.
 - `tests/unit/test_install_agent_system.py`: anadidos tests barrera con repo git real para `.agent/docs/` trackeado + residuo untracked, y test fail-safe cuando tracked status no puede determinarse.
 
