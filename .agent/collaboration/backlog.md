@@ -41,6 +41,8 @@
 | Baja | WOT-2026-003d | install host-extends-aware: retirar bundle del destino sin re-vendorizar | motor/installer | pending | WOT-2026-002c | session-2026-06-14-post-a2d-hardening |  <!-- alias: MOTOR-FU-001. scope: repo_motor. A2d FASE3 lo necesita -->
 | Baja | WOT-2026-003e | gates-dispatch: manejar 'destino sin tests locales' (run_pytest_safe exit 4) | motor/quality-gates | pending | WOT-2026-002c | session-2026-06-14-post-a2d-hardening |  <!-- alias: MOTOR-FU-002. scope: repo_motor. Hallazgo 002a -->
 | Baja | WOT-2026-003f | CI del destino: paso que corre el gate de portabilidad contra su .claude/settings.json | system/ci-portability | pending | WOT-2026-003c | session-2026-06-14-post-a2d-hardening |  <!-- follow-up de 003c: protege el settings del destino via CI -->
+| Alta | WOT-2026-004a | Suprimir 2 falsos positivos de gitleaks en CI del destino (scan full-history) | system/ci-portability | completed | - | session-2026-06-14-session-close |  <!-- 3e23873; .gitleaks.toml useDefault+allowlist tight; placeholder didactico (sk_live_1234567890) + SHA git publico (9c92e3d4, repo-compare WT-2026-236a); gitleaks 8.30.1 local 101 commits 0 leaks exit 0 -->
+| Baja | WOT-2026-004b | Motor: seed .gitleaks.toml en bundle + politica generic-api-key-on-SHA en logs operativos + fix guard \.git over-match | motor/security-hooks | pending | WOT-2026-004a | session-2026-06-14-session-close |  <!-- scope: repo_motor. guard \.git (substring) bloquea Write a .gitleaks*/.github/ legitimos; verificado en guard_paths.py:25 -->
 
 
 ## Completados en sesion 2026-06-11 (audit integral)
