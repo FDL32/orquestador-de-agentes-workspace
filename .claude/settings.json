@@ -1,32 +1,15 @@
 {
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:paperclip.ing)",
-      "Bash(ls -la /c/Users/fdl/Proyectos_Python/z_scripts/agent_system/skills/*/SKILL.md)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:api.github.com)",
-      "Bash(curl -s https://raw.githubusercontent.com/github/spec-kit/main/README.md)",
-      "Bash(python3:*)",
-      "Bash(for f:*)",
-      "Bash(do echo:*)",
-      "Read(//c/Users/fdl/Proyectos_Python/z_scripts/**)",
-      "Bash(done)",
-      "Bash(find \"c:/Users/fdl/Proyectos_Python/z_scripts/agent_system\" -type d -name \"__pycache__\" -exec rm -rf {} +)",
-      "Bash(find \"c:/Users/fdl/Proyectos_Python/z_scripts/agent_system\" -type d -name \".pytest_cache\" -exec rm -rf {} +)"
-    ]
-  },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-      "command": "python -c \"import sys,subprocess; from pathlib import Path; cwd=Path('.').resolve(); root=next((p for p in [cwd]+list(cwd.parents) if (p/'.claude').exists()),cwd); data=sys.stdin.buffer.read(); candidates=[root/'orquestacion_agentes'/'.agent'/'hooks'/'guard_paths.py', root/'.agent'/'hooks'/'guard_paths.py', root/'agent_system'/'.agent'/'hooks'/'guard_paths.py']; guard=next((p for p in candidates if p.exists()), None); sys.exit(0 if guard is None else subprocess.run([sys.executable,str(guard)],input=data,capture_output=False).returncode)\""
+            "command": "python -c \"import sys,json,subprocess; from pathlib import Path; cwd=Path('.').resolve(); root=next((p for p in [cwd]+list(cwd.parents) if (p/'.claude').exists()),cwd); data=sys.stdin.buffer.read(); link=root/'.agent'/'config'/'motor_destination_link.json'; d=json.loads(link.read_text(encoding='utf-8')) if link.exists() else {}; c=(Path(d['motor_root'])/'.agent'/'hooks'/'guard_paths.py') if d.get('motor_root') else None; g=c if (c and c.exists()) else None; sys.exit(subprocess.run([sys.executable,str(g)],input=data,cwd=str(root)).returncode) if g else (sys.stderr.write('SECURITY HOOK INACTIVE: motor link or guard_paths.py not resolved; write blocked (fail-closed). Run install --sync from repo_motor.'),sys.exit(2))\""
           }
         ]
       }
     ]
   }
 }
-
