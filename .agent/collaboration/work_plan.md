@@ -1,63 +1,75 @@
-# Work Plan: WOT-2026-005a - Separacion memoria privada vs portable en memory_upload
+# Work Plan: WOT-2026-005b - Bootstrap/preflight destino: host-extends, settings y guard fail-closed
 
 ## Metadata
-- **ID:** WOT-2026-005a
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-005b
+- **Estado:** APPROVED
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Repo de autoridad:** repo_motor
-- **Titulo:** Añadir a `prompts/memory_upload.md` una decision explicita de destino de memoria (privada/portable) con evidencia y condicion de promocion
+- **Titulo:** Endurecer bootstrap y preflight del destino con checks de host-extends, settings Claude, hooks fail-closed y resolvers vivos
 - **Asignado a:** Builder
-- **Severidad:** Media | **Riesgo:** Bajo (cambio documental; reversible via git)
-- **Depende de:** WOT-2026-003b (completed), WOT-2026-003c (completed)
+- **Severidad:** Alta | **Riesgo:** Bajo (cambio documental; reversible via git)
+- **Depende de:** WOT-2026-003c (completed)
 - **Origen:** session-2026-06-14-host-extends-learnings
 
 ## Decision Arquitectonica
-El prompt ya distingue tres memorias y un campo "Donde deberia vivir", pero no obliga a
-DECIDIR el destino con contrato antes de escribir. En el ciclo host-extends se guardo
-aprendizaje util en memoria Claude privada sin criterio claro de cuando promoverlo a
-portable validable. Se añade una seccion de decision obligatoria que crystaliza: declarar
-destino (Claude privada / portable motor / portable destino / varias), evidencia requerida
-por destino, condicion de promocion a `observations.jsonl` (schema + consumidor real) y la
-prohibicion de añadir entradas portables sobre un schema en drift. Cambio documental: no
-toca codigo de memoria ni schema.
+A2d demostro que retirar copias motor-provides puede dejar consumidores vivos apuntando a
+rutas locales retiradas, y que un hook puede quedar fail-open. El bootstrap y el preflight
+documentales no obligan aun a verificar resolvers vivos, settings Claude portables y hooks
+fail-closed antes de lanzar Builder. Se endurecen las TRES superficies documentales (no
+codigo, no runtime): bootstrap exige confirmar topologia + settings/hooks/resolvers para
+tickets que tocan hooks/CI/install; el preflight añade el gate de portabilidad de settings
+y una tabla de integridad de resolvers; y se advierte que `install --sync` NO es mecanismo
+seguro de poda host-extends hasta cerrar WOT-2026-003d. No se cambia el trigger `/pipeline`
+ni logica runtime.
 
 ## Files Likely Touched (repo_motor)
-prompts/memory_upload.md
+prompts/destination_bootstrap.md
+skills/orchestrate-pipeline/references/destination-preflight.md
+skills/orchestrate-pipeline/SKILL.md
 
 ## Read/inspect only
-- `skills/_shared/ap-schema.md` (schema canonico referenciado).
-- `bus/memory_loader.py` (consumidor; solo para confirmar que no se toca codigo).
+- `scripts/check_claude_settings_portability.py` (gate referenciado).
+- `.agent/hooks/claude_guard_entry.py` (entrypoint fail-closed referenciado).
 
 ## Manager-only
-- Revision documental (single review, deliverable_type=documentation): claridad, que las
-  tres memorias quedan separadas y que la decision de destino es obligatoria y binaria.
+- Revision documental.
+- Si se toca `SKILL.md`: `python scripts/check_skill_collisions.py` exit 0 y
+  `python scripts/discover_skills.py` carga `orchestrate-pipeline` sin romper triggers/source_prompt.
 
 ## Non-goals
-- NO cambiar el schema de `observations.jsonl` ni codigo de memoria.
-- NO ampliar la higiene de redaccion mas alla de `memory_upload.md` (eso es WT-2026-250c).
-- NO añadir dependencias.
+- NO cambiar el trigger `/pipeline` ni el frontmatter de la skill (triggers, source_prompt, contract_id).
+- NO añadir gates nuevos ni logica runtime (solo documentar checks existentes).
+- NO ejecutar shell arbitrario como check.
 
 ## Criterios binarios de cierre
-- [ ] El prompt distingue las tres memorias y EXIGE declarar destino antes de escribir.
-- [ ] Si una observacion se marca portable, el prompt exige validacion de schema o la
-      etiqueta `NO PROMOVIBLE` con motivo.
-- [ ] Si `observations.jsonl` esta en drift de schema, el prompt prohibe añadir nuevas
-      entradas portables sin ticket de migracion.
-- [ ] `check_encoding_guard.py` pasa sobre `prompts/memory_upload.md`.
-- [ ] `validate --project-root .` (destino) 0 errores; motor solo cambia este archivo.
-- [ ] Commit en repo_motor con WOT-2026-005a.
+- [ ] Bootstrap exige confirmar `repo_motor`, `repo_destino`, `AGENT_PROJECT_ROOT` o
+      `motor_destination_link.json` antes de tickets que toquen hooks/CI/install.
+- [ ] `destination-preflight.md` exige correr `check_claude_settings_portability.py` contra
+      `.claude/settings.json` del destino cuando exista.
+- [ ] El preflight detecta y reporta: `permissions.allow` trackeado, hook ausente, hook
+      fail-open, y resolvers vivos hacia copias locales retirables.
+- [ ] El texto advierte que `install --sync` NO es mecanismo seguro de poda host-extends
+      hasta cerrar WOT-2026-003d.
+- [ ] No se cambia el trigger `/pipeline` ni logica runtime (frontmatter intacto).
+- [ ] Si se toca SKILL.md: `check_skill_collisions.py` exit 0 y `discover_skills.py` carga
+      `orchestrate-pipeline` sin romper triggers.
+- [ ] `check_encoding_guard.py` pasa sobre los 3 archivos; validate destino 0 errores; motor
+      solo estos 3 archivos.
+- [ ] Commit en repo_motor con WOT-2026-005b.
 
 ## STOP / escalado
-- Si aparece necesidad de cambiar schema o codigo de memoria, abrir ticket code separado.
-- Si el saneo de redaccion excede `memory_upload.md`, derivar a WT-2026-250c.
+- Si algun check requiere ejecutar shell arbitrario o crear un gate nuevo, documentarlo como
+  follow-up code (no implementarlo aqui).
+- Si el preflight no puede distinguir invocador vivo de referencia historica, exigir
+  evidencia manual en el work_plan antes de Builder.
 
 ## Gates (deliverable_type: documentation)
-- `check_encoding_guard.py prompts/memory_upload.md`.
+- `check_encoding_guard.py` sobre los 3 archivos.
+- `python scripts/check_skill_collisions.py` (exit 0) + `python scripts/discover_skills.py` (carga orchestrate-pipeline).
 - `validate --project-root .` (destino) 0 errores.
-- `check_motor_pristine --check` (solo este archivo cambia en el motor).
-- Existencia del deliverable (el archivo editado).
+- `check_motor_pristine --check` (solo los 3 archivos cambian).
 
 ## Entregables
-- `prompts/memory_upload.md` con la seccion de decision de destino + regla de drift.
-- `orchestrator_pipeline/reports/closeout_WOT-2026-005a.md`.
+- `prompts/destination_bootstrap.md`, `references/destination-preflight.md`, `SKILL.md` endurecidos.
+- `orchestrator_pipeline/reports/closeout_WOT-2026-005b.md`.

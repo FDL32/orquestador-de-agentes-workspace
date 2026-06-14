@@ -1,10 +1,10 @@
-# Execution Log WOT-2026-005a
+# Execution Log WOT-2026-005b
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Metadata
 
-- **ID:** WOT-2026-005a
+- **ID:** WOT-2026-005b
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Rol activo:** BUILDER
@@ -12,31 +12,30 @@
 
 ## Resumen
 
-- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL). Doc ticket: añadir a
-  `prompts/memory_upload.md` la decision obligatoria de destino de memoria (privada vs
-  portable motor vs portable destino) + regla de drift de schema. Scope motor.
+- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL). Doc ticket: endurecer bootstrap y preflight
+  del destino con checks de host-extends, settings Claude, hooks fail-closed y resolvers
+  vivos. Toca 3 archivos (incl. SKILL.md body, frontmatter intacto). Scope motor.
 
 ## Ejecucion Builder
 
-FALLBACK_SIN_TASK_TOOL. Orquestador como Builder via Bash (motor file). Doc ticket.
+FALLBACK_SIN_TASK_TOOL. Orquestador como Builder via Bash. Doc ticket, 3 archivos motor.
 
-### Cambio (`prompts/memory_upload.md`)
-- Nueva seccion `## Decisión de destino de memoria (obligatoria antes de escribir)`:
-  tabla de 3 destinos (Claude privada / portable motor / portable destino) con
-  portabilidad/validabilidad, + 4 reglas binarias (declarar destino; evidencia por destino;
-  promocion a observations.jsonl solo con schema + consumidor real, si no `NO PROMOVIBLE`;
-  decidir promover-o-no lo privado).
-- Subseccion `### Drift de schema en observations.jsonl`: prohibido añadir portables nuevas
-  sobre schema en drift sin ticket de migracion.
+### Cambios
+- `prompts/destination_bootstrap.md`: nueva seccion "Preflight de seguridad (host-extends)"
+  (dentro del prompt) con 3 checks: topologia resuelta; gate de portabilidad de settings;
+  resolvers vivos + aviso install --sync no es poda hasta WOT-2026-003d.
+- `skills/orchestrate-pipeline/references/destination-preflight.md`: checks 7 (portabilidad
+  settings + guard fail-closed: reporta permissions.allow trackeado, hook ausente, hook
+  fail-open) y 8 (integridad de resolvers + aviso install --sync / WOT-2026-003d).
+- `skills/orchestrate-pipeline/SKILL.md` (body): referencia a los checks 7-8. Frontmatter
+  (triggers/source_prompt/contract_id) INTACTO.
 
 ### Gates / evidencia
-- `check_encoding_guard.py prompts/memory_upload.md`: exit 0 (acentos preservados).
+- `check_encoding_guard.py` (3 archivos): exit 0.
+- `check_skill_collisions.py`: exit 0.
+- `discover_skills.py --json`: orchestrate-pipeline presente; trigger /pipeline presente.
 - `validate --project-root .` (destino): 0 errores.
-- `check_motor_pristine --check`: solo `prompts/memory_upload.md` cambia.
-- 3 criterios binarios presentes (grep: Decisión de destino / NO PROMOVIBLE / Drift de schema).
+- `check_motor_pristine --check`: solo los 3 archivos cambian.
 
 ### Commit (repo_motor)
-- (ver commit docs WOT-2026-005a)
-
-
-Manager approved canonical closeout for WOT-2026-005a
+- `9c1ba3d` docs(WOT-2026-005b). 3 archivos. Pre-commit motor: todos los hooks Passed.
