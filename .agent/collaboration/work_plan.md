@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-003e
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Repo de autoridad:** repo_motor (orquestador_de_agentes)
