@@ -1,47 +1,39 @@
-# Execution Log WOT-2026-003e
+# Execution Log WOT-2026-003f
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Metadata
 
-- **ID:** WOT-2026-003e
+- **ID:** WOT-2026-003f
 - **deliverable_type:** code
-- **delivery_authority:** repo_motor
+- **delivery_authority:** repo_destino
 - **Rol activo:** BUILDER
 - **Accion:** EXECUTE
 
 ## Resumen
 
-- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL: subagentes agotados hasta 18:00).
-- Objetivo: `run_gates_dispatch` detecta destino sin tests locales y salta pytest
-  auditablemente en vez de propagar exit 4. Scope motor; commit en repo_motor.
+- Pipeline orquestado (FALLBACK_SIN_TASK_TOOL). Scope repo_destino: añadir paso de CI
+  que corre el gate de portabilidad de settings del motor contra el `.claude/settings.json`
+  del destino, + `.claude/**` en filtros paths.
 
 ## Ejecucion Builder
 
-FALLBACK_SIN_TASK_TOOL (subagentes agotados). Orquestador como Builder via Bash.
+FALLBACK_SIN_TASK_TOOL. Orquestador como Builder. Scope repo_destino.
 
-### Cambio
-- `scripts/run_gates_dispatch.py`: nuevo `has_local_tests(project_root)` (deteccion
-  estructural: `tests/` existe y contiene `test_*.py`/`*_test.py` via rglob). En
-  `run_code_gates`, pytest-safe se ejecuta solo si `has_local_tests` es True; si no,
-  log auditable `[dispatch] No local tests under <root>/tests; skipping pytest-safe
-  (destino sin tests locales). CI uses validate-state.` y continua.
-- `tests/unit/test_run_gates_dispatch.py`: 5 tests de barrera (sin dir, dir vacio, dir
-  sin archivos test, prefijo test_, sufijo _test anidado).
+### Cambio (`.github/workflows/quality-gates.yml`)
+- `paths:` (push y pull_request) ahora incluyen `.claude/**`.
+- Nuevo step "Claude settings portability/security gate":
+  `python _motor/scripts/check_claude_settings_portability.py .claude/settings.json`
+  (reutiliza el gate del motor ya checkouteado en `_motor/`; sin duplicar logica).
+- Summary actualizado con el nuevo bullet.
 
-### Gates
-- `ruff check` + `ruff format` (2 archivos): exit 0.
-- `pytest tests/unit/test_run_gates_dispatch.py`: 10 passed. exit 0.
-- `python scripts/run_pytest_safe.py` (cwd=motor): 2631 passed, 19 skipped, 9 warnings
-  (pre-existentes). exit 0.
+### Gates / evidencia
+- YAML valido: `yaml.safe_load` -> YAML OK.
+- Barrera de comportamiento: gate local contra `.claude/settings.json` del destino ->
+  "OK (portable, fail-closed)", exit 0.
 - `validate --project-root .` (destino): 0 errores.
+- `check_motor_pristine --check`: MOTOR_PRISTINE_OK, head_changed=false (motor intacto;
+  ticket destino-authority). Evidencia: motor_after_WOT-2026-003f.json.
 
-### Commit (repo_motor)
-- `50bdf07` feat(WOT-2026-003e). 2 archivos. Pre-commit motor: todos los hooks Passed.
-
-### Integridad motor
-- motor_head_before 9c7c91d -> motor_head_after 50bdf07 (esperado: delivery_authority=repo_motor).
-- motor_status_new: [] (commiteado). Evidencia: motor_after_WOT-2026-003e.json.
-
-
-Manager approved canonical closeout for WOT-2026-003e
+### Commit (repo_destino)
+- (ver commit feat WOT-2026-003f abajo)
