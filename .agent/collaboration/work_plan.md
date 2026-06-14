@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-003f
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_destino
 - **Repo de autoridad:** repo_destino (orquestador_de_agentes_workspace)
