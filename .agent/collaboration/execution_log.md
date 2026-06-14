@@ -45,3 +45,12 @@
 
 
 Manager approved canonical closeout for WOT-2026-003d
+
+## Clasificacion de bus_drift (cierre 003d)
+
+- Validate (--validate --json) reporta 1 warning: `bus_drift` -> "No STATE_CHANGED event found in bus for ticket WOT-2026-003d".
+- Clasificacion: ESPERADO bajo FALLBACK_SIN_TASK_TOOL. Toda la sesion 2026-06-14 se condujo sin la maquina de estados (supervisor/controller), por lo que no se emitio ningun STATE_CHANGED al bus del destino. El bus tiene 52 eventos, todos de tickets antiguos accionados por la maquina (WT-2026-182/200/238a/239a/245a/245b); ningun ticket WOT-2026-003/004/005/006 tiene eventos.
+- Severidad correcta: WARNING, no ERROR. Bus ausente-para-ticket = invariantes de cierre no verificables por bus, NO violadas (regla canonica bus-absent-is-unverifiable).
+- El cierre NO se apoya en el bus sino en evidencia real: commits motor ff05b8d/50beca6 (pusheados); commits destino 905480e/8346d9a; gates verdes (focal 45 passed, suite 2633 passed, ruff 0, validate 0/0, encoding 0); barrera de regresion verificada (worktree ba52a86 pre-fix: los 2 tests nuevos FALLAN); review independiente adversarial (review_manager) APROBADO; auditoria system-health general_audit_20260614_2027 APROBADO CON NITS.
+- Decision deliberada: NO se fabrica un STATE_CHANGED sintetico. Emitir un evento canonico para una transicion que la maquina nunca ejecuto seria falso-verde (relato como evidencia). El warning se acepta como informativo y persistira hasta que el siguiente ticket sobrescriba el tablero.
+- Estado: WOT-2026-003d CERRADO. Sin trabajo pendiente para 003d.
