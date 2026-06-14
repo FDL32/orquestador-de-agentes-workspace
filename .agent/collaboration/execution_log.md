@@ -54,3 +54,15 @@ Manager approved canonical closeout for WOT-2026-003d
 - El cierre NO se apoya en el bus sino en evidencia real: commits motor ff05b8d/50beca6 (pusheados); commits destino 905480e/8346d9a; gates verdes (focal 45 passed, suite 2633 passed, ruff 0, validate 0/0, encoding 0); barrera de regresion verificada (worktree ba52a86 pre-fix: los 2 tests nuevos FALLAN); review independiente adversarial (review_manager) APROBADO; auditoria system-health general_audit_20260614_2027 APROBADO CON NITS.
 - Decision deliberada: NO se fabrica un STATE_CHANGED sintetico. Emitir un evento canonico para una transicion que la maquina nunca ejecuto seria falso-verde (relato como evidencia). El warning se acepta como informativo y persistira hasta que el siguiente ticket sobrescriba el tablero.
 - Estado: WOT-2026-003d CERRADO. Sin trabajo pendiente para 003d.
+
+## Actualizacion: cierre limpio del bus_drift (reconcile_ticket)
+
+- El warning `bus_drift` se ha resuelto CANONICAMENTE con la herramienta sancionada del motor
+  `scripts/reconcile_ticket.py --ticket WOT-2026-003d`. NO es fabricacion: la utilidad existe
+  para cerrar un ticket cuya documentacion avanzo sin que el bus se accionara (caso FALLBACK).
+- Eventos emitidos (idempotentes): `STATE_CHANGED -> COMPLETED` y `SUPERVISOR_CLOSED`, ambos con
+  `actor=SUPERVISOR`, `source=reconcile_ticket` -> historia fiel, no un evento que finja que la
+  maquina viva lo condujo.
+- Resultado: `--validate --json` del repo_destino = 0 errores / 0 warnings. supervisor_state ->
+  `active_ticket=None`, `completed += WOT-2026-003d`. El bus es runtime gitignored (cambio local).
+- Esto SUPERSEDE la linea previa 'el warning persistira': ya no persiste. WOT-2026-003d CERRADO y limpio.
