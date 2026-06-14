@@ -11,11 +11,13 @@ on:
     branches: [main, develop, '*/feature/**', '*/fix/**']
     paths:
       - '.agent/**'
+      - '.claude/**'
       - '.github/workflows/quality-gates.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - '.agent/**'
+      - '.claude/**'
       - '.github/workflows/quality-gates.yml'
 
 jobs:
@@ -44,6 +46,13 @@ jobs:
           python _motor/.agent/agent_controller.py --validate --json --project-root . | tee validate.json
           python -c "import json; d=json.load(open('validate.json')); e=sum(len(v) for v in d['errors'].values()); w=sum(len(v) for v in d['warnings'].values()); print(f'validate errors={e} warnings={w}'); raise SystemExit(1 if e else 0)"
 
+      - name: Claude settings portability/security gate
+        # Runs the engine's canonical gate (003c) against the destination's own
+        # tracked .claude/settings.json: catches personal grants and fail-open
+        # hook regressions in CI, not only in the engine pre-commit (003f).
+        run: |
+          python _motor/scripts/check_claude_settings_portability.py .claude/settings.json
+
       - name: Workflow reference check
         run: |
           python - <<'PY'
@@ -67,4 +76,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Engine checkout (public motor)" >> $GITHUB_STEP_SUMMARY
           echo "- Destination .agent state validate (engine controller)" >> $GITHUB_STEP_SUMMARY
+          echo "- Claude settings portability/security gate" >> $GITHUB_STEP_SUMMARY
           echo "- Workflow reference check" >> $GITHUB_STEP_SUMMARY
