@@ -1,103 +1,117 @@
-# Work Plan: WOT-2026-002c - A2d retirar copias motor-provides + ejecutar decisiones
+# Work Plan: WOT-2026-004b - Motor: seed .gitleaks.toml + politica generic-api-key-on-SHA + fix guard \.git over-match
 
 ## Metadata
-- **ID:** WOT-2026-002c
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-004b
+- **Estado:** APPROVED
 - **deliverable_type:** code
-- **delivery_authority:** repo_destino
-- **Repo de autoridad:** repo_destino
-- **Alias historico:** WOT-AUDIT-A2d
-- **Titulo:** Retirar del destino las copias motor-provides y ejecutar las decisiones de huerfanos
+- **delivery_authority:** repo_motor
+- **Repo de autoridad:** repo_motor (orquestador_de_agentes)
+- **Titulo:** Seed `.gitleaks.toml` portable en el bundle + politica generic-api-key-on-SHA en logs operativos + fix del over-match `\.git` del guard
 - **Asignado a:** Builder
-- **Severidad:** Alta | **Riesgo:** Alto (blast radius ~168 archivos). Reversible via git.
-- **Origen:** WOT-AUDIT-A2 / triage_manifest.md + decisiones WOT-2026-002b
+- **Severidad:** Media | **Riesgo:** Medio (toca hook de seguridad; reversible via git)
+- **Depende de:** WOT-2026-004a (completed)
+- **Origen:** session-2026-06-14-session-close (backlog destino, scope motor)
 
 ## Decision Arquitectonica
-El destino deja de vendorizar el tooling del motor: lo referencia externamente
-(host-extends, probado en WOT-2026-002a). La retirada es por BUCKETS en COMMITS
-SEPARADOS para reducir blast radius y permitir revert granular. Lo muerto-pero-unico
-se ARCHIVA a `_legacy/`; lo motor-provides se hace `git rm` (el motor tiene la copia
-canonica). Toda la operacion es `git rm`/`git mv` + commit: recuperable.
+El motor es la fuente canonica de seguridad portable: el guard `\.git` y el seed de
+gitleaks viven UNA vez en el motor y los destinos los heredan. Se elige (1) anclar el
+patron `.git` a segmento de ruta (en vez de relajar el guard o moverlo a allowlist por
+destino) porque el over-match es un bug de precision, no de politica: el contrato
+fail-closed sobre `.git/` interno se preserva intacto. Se elige (2) un seed GENERICO en
+`agent_system/templates/` con allowlist por PATH (no por valor) porque los falsos
+positivos estructurales (SHA git de 40 hex en logs operativos) son comunes a todo
+destino, mientras que los falsos positivos por valor concreto (placeholders, SHAs
+puntuales) son especificos y deben añadirse por destino. Se elige (3) copia no-clobber
+en el installer para no pisar la personalizacion del destino (p.ej. la de 004a). Esta
+separacion generico-vs-especifico es deliberada: evita que el seed se convierta en un
+agujero de seguridad que oculte secretos reales en cualquier ruta.
 
-## Inventario por bucket
-### Bucket 1 - motor-provides -> git rm (163) [FASE 2 HECHA: bf451f2]
-- `agent_system/` (113), `skills/` (41), 7 scripts (run_pytest_safe, discover_skills,
-  upgrade_agent_system, detect_agent_system_version, test_refactoring_impact,
-  test_refactor_kit_portable, test_refactor_kit_performance),
-  `tests/test_event_bus_hygiene.py` (1).
-- `.agent/README.md`: STOP#3 -> CUSTOMIZADO vs motor -> destino-keep, NO retirado.
+## Contrato canonico que protege el cambio
+1. **Guard fail-closed pero preciso:** `guard_paths.py` debe seguir bloqueando el
+   directorio interno `.git/` y rutas sensibles, pero NO debe bloquear escrituras
+   legitimas a `.github/`, `.gitignore`, `.gitleaks.toml`, `.gitattributes`,
+   `.gitmodules` (over-match actual del patron substring `\.git`).
+2. **Portabilidad del bundle:** un destino nuevo debe recibir un `.gitleaks.toml`
+   seed generico (useDefault) para que su CI con `fetch-depth: 0` no rompa por
+   falsos positivos estructurales (SHA git en logs operativos), SIN heredar los
+   falsos positivos especificos de ESTE destino (placeholder didactico, SHA concreto).
+3. **No clobber:** el installer NO debe sobreescribir un `.gitleaks.toml` ya
+   personalizado en el destino (p.ej. el de WOT-2026-004a).
 
-### Bucket 2 - archive-legacy -> git mv a _legacy/ (7) [FASE 1 HECHA: 1a2d700]
-- 5 scripts del cluster + `tests/test_ticket_007_context_recovery.py` + `.goosehints`.
+## Bug confirmado (recon orquestador)
+`guard_paths.py`:
+- `PROTECTED_PATH_PATTERNS` incluye `r"\.git"` (linea ~24).
+- `_is_protected_path` hace `path_str = str(path_obj)` y luego
+  `_matches_any_pattern(path_str, PROTECTED_PATH_PATTERNS)` con `re.search`.
+- `re.search(r"\.git", "...\\.github\\workflows\\ci.yml")` -> MATCH. Tambien
+  `.gitignore`, `.gitleaks.toml`. Resultado: Write/Edit bloqueado como
+  "ruta protegida por patron: \.git" (fail-closed sobre rutas legitimas).
+- Nota Windows: `str(path_obj)` resuelve con backslashes; el fix debe normalizar
+  separadores antes de anclar el patron (`_normalize` ya existe en el modulo).
 
-### Bucket 3 - installer-managed (3) [FASE 3 DIFERIDA -> ver STOP#7]
-- `.agent/hooks/pre_compact_hook.py`, `.agent/microagents/onboarding.md`,
-  `.agent/glossary.md`. DIFERIDOS a follow-up: el mecanismo de re-sync previsto
-  (`install --sync`) re-vendoriza el bundle COMPLETO en el destino (re-crea
-  agent_system/ + caches), contradiciendo A2d. Se conservan como destino-keep hasta
-  un install host-extends-aware (follow-up de motor).
+## Files Likely Touched (repo_motor)
+- `.agent/hooks/guard_paths.py` (fix del patron `\.git` + normalizacion de path_str)
+- `agent_system/templates/gitleaks.config.toml` (NUEVO seed generico portable)
+- `scripts/install_agent_system.py` (nueva `copy_gitleaks_config()` analoga a
+  `copy_repomix_config()`, con no-clobber; wiring en install/sync)
+- `MANIFEST.distribute` (declarar la ruta del template seed)
+- `tests/` del motor: test del fix del guard + test de la copia seed del installer
+  (rutas exactas a decidir por Builder segun layout de `tests/`)
 
-## Files Likely Touched
-- `agent_system/`
-- `skills/`
-- `scripts/`
-- `tests/`
-- `_legacy/`
-- `orchestrator_pipeline/reports/closeout_WOT-2026-002c.md`
-- `.agent/collaboration/execution_log.md`
+## Read/inspect only
+- `<destino>/.gitleaks.toml` (artefacto 004a; referencia de que NO debe heredarse
+  literalmente; NO editar desde este ticket)
+- `scripts/install_agent_system.py::copy_repomix_config` (patron a imitar)
+- `agent_system/templates/` (layout de templates existente)
 
-## Superficies
-- **Builder (modifica):** Buckets 1 y 2; `_legacy/`; reporte y `execution_log.md`.
-- **Read/inspect only:** `triage_manifest.md`, `orphans_decision_WOT-2026-002b.md`,
-  arbol del motor para paridad. NO editar el motor.
-- **Manager-only:** doble review adversarial; verificacion de que ningun flujo vivo
-  se rompe y de que el destino sigue operando via motor externo.
+## Manager-only
+- Doble revision adversarial (deliverable_type=code).
+- Verificar barrera: el test del guard DEBE fallar con el patron viejo `\.git` y
+  pasar con el fix (demostrar que bloquea lo que promete bloquear y permite lo legitimo).
+- Verificar no-clobber del installer con evidencia (destino con config previa no se pisa).
+- `check_motor_pristine --check` (este ticket SI toca el motor: el head cambiara;
+  la integridad se evalua como "solo los archivos del ticket", no "motor intacto").
 
 ## Non-goals
-- NO tocar el motor (read-only).
-- NO retirar destino-keep (.agent/collaboration|runtime|config|audits|docs, .claude,
-  docs de identidad de raiz, `.agent/README.md` customizado).
-- NO usar `install --sync` para re-provisionar (re-vendoriza el bundle completo).
+- NO tocar el `.gitleaks.toml` del destino (004a) ni sus regexes especificos.
+- NO cambiar otros patrones del guard (`.env`, `privada`, etc.).
+- NO cambiar el comportamiento fail-closed del guard ante link/motor ausente.
+- NO añadir dependencias nuevas (stdlib + tooling existente).
 
-## Criterios binarios de cierre (alcance: FASE 1 + FASE 2)
-- [x] `git ls-files` sin `agent_system/`, `skills/`, los 7 scripts motor-provides,
-      `tests/test_event_bus_hygiene.py` (Bucket 1, bf451f2).
-- [x] Bucket 2 (7) en `_legacy/` (1a2d700).
-- [ ] `agent_controller --validate --project-root .` = 0/0.
-- [ ] Clone limpio + motor externo opera SIN las copias retiradas (exit codes reales).
-- [ ] Workflow CI no referencia copias retiradas (grep vacio).
-- [ ] Bucket 3 diferido y documentado como follow-up de motor (install host-extends-aware).
-- [ ] Follow-up de motor (gates-dispatch sin tests locales) creado en backlog.
+## Criterios binarios de cierre
+- [ ] Guard: Write/Edit a `.github/workflows/x.yml`, `.gitignore`, `.gitleaks.toml`,
+      `.gitattributes` -> NO bloqueado (evaluate_tool_request devuelve 0).
+- [ ] Guard: Write/Edit a `.git/config` o cualquier `.git/<interno>` -> bloqueado (exit 2).
+- [ ] Test nuevo que falla con el patron viejo `\.git` y pasa con el fix (barrera real).
+- [ ] Seed `agent_system/templates/gitleaks.config.toml` existe: useDefault=true,
+      documenta la politica generic-api-key-on-SHA para logs operativos, y NO contiene
+      los regexes especificos del destino (sk_live_1234567890 / el SHA concreto).
+- [ ] `install_agent_system.py` copia el seed a `<destino>/.gitleaks.toml` SOLO si no
+      existe (no-clobber), con test que lo demuestre.
+- [ ] `MANIFEST.distribute` lista el template seed.
+- [ ] `ruff check` limpio sobre archivos Python tocados; `run_pytest_safe.py` del motor verde.
+- [ ] `agent_controller --validate --project-root .` (destino) 0/0 (no debe verse afectado).
+- [ ] Commit(s) en repo_motor con `WOT-2026-004b` en el mensaje.
 
-## STOP / escalado (activados durante la ejecucion)
-- **STOP#3 ACTIVADO:** `.agent/README.md` customizado vs motor -> destino-keep, NO retirado.
-- **STOP#7 (nuevo, FASE 3):** `install --sync` re-vendoriza el bundle completo
-  (re-crea `agent_system/` + caches en el destino) y borro deliverables destino-keep
-  en el working tree durante el re-provision. Es la herramienta EQUIVOCADA para
-  host-extends. FASE 3 (installer-managed) se DIFIERE: los 3 archivos se conservan como
-  destino-keep hasta que el motor ofrezca un install host-extends-aware. Recuperado el
-  estado limpio post-FASE-2 via git restore (sin tocar 1a2d700/bf451f2).
-- STOP#1/#2: 0 invocadores vivos / paridad de skills OK (FASE 0 limpia).
+## STOP / escalado
+- Si el fix del guard requiere cambiar la semantica de otros patrones para funcionar,
+  parar y acotar: este ticket solo arregla `\.git`.
+- Si seedear el `.gitleaks.toml` requiere cambiar el contrato del installer mas alla de
+  una copia no-clobber (p.ej. tocar la maquinaria de allowlist/copytree), abrir follow-up.
+- Si la politica generic-api-key-on-SHA no puede expresarse sin ocultar secretos reales
+  (allowlist demasiado amplia), parar: preferir allowlist por PATH de superficies de log
+  operativo, no por regex amplio de 40-hex.
 
-## Gates (deliverable_type: code; ticket de retirada)
-- `agent_controller --validate --project-root .` 0/0.
-- Clone limpio + motor externo (install --sync, discover, validate) con exit codes
-  reales SIN las copias (host-extends post-retirada).
-- Workflow CI: grep sin refs a copias retiradas.
-- ruff/pytest-safe contra el destino: N/A (retirada via git rm/mv; sin Python editado;
-  tests/ motor-provides retirado -> pytest-local no aplica). Gate de codigo = clone-demo.
-- Integridad motor: `check_motor_pristine --check` vs snapshot.
-
-## Riesgos
-- Alto blast radius (~163 retirados) pero reversible via git. Mitigacion: commits por
-  bucket, FASE 0 de reconciliacion, STOPs duros, verificacion por clone-demo.
-- FASE 3 diferida limpiamente (install --sync inadecuado); sin perdida (los 3 archivos
-  permanecen).
+## Gates (deliverable_type: code)
+- `ruff check <archivos .py tocados>` y `ruff format --check`.
+- `python scripts/run_pytest_safe.py` con cwd=repo_motor (target = motor; incluye tests nuevos).
+- `agent_controller --validate --project-root .` (destino) 0/0.
+- `check_motor_pristine --check` vs snapshot (espera: solo los archivos del ticket).
 
 ## Entregables
-- Destino sin Bucket 1 (163 motor-provides); `_legacy/` con Bucket 2 (7).
-- Bucket 3 conservado (destino-keep) + follow-up de motor documentado.
-- `orchestrator_pipeline/reports/closeout_WOT-2026-002c.md` con git ls-files
-  antes/despues, clone-demo, el incidente install --sync y los follow-ups.
-- Entradas de backlog (scope motor): install host-extends-aware + gates-dispatch sin
-  tests locales.
+- `guard_paths.py` con patron `.git` anclado a segmento de ruta + normalizacion.
+- `agent_system/templates/gitleaks.config.toml` seed portable generico.
+- `copy_gitleaks_config()` no-clobber en el installer + wiring.
+- `MANIFEST.distribute` actualizado.
+- Tests de barrera (guard) y de copia (installer).
+- `orchestrator_pipeline/reports/closeout_WOT-2026-004b.md`.
