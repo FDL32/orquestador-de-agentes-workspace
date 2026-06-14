@@ -35,9 +35,11 @@
 
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends |  <!-- FASE1+2: 1a2d700+bf451f2 (162 removed+7 archived); FASE3 diferida (incidente install --sync); recovery 791787b -->
 | Baja | WOT-2026-002d | LOG-COMPACT: compactar historico A2a en execution_log | system/collab-hygiene | absorbed | - | session-2026-06-13-host-extends |  <!-- premisa obsoleta: log ya compacto -->
-| Baja | MOTOR-FU-001 | install host-extends-aware: retirar bundle del destino sin re-vendorizar | motor/installer | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. A2d FASE3 lo necesita -->
-| Baja | MOTOR-FU-002 | gates-dispatch: manejar 'destino sin tests locales' (run_pytest_safe exit 4) | motor/quality-gates | pending | WOT-2026-002c | session-2026-06-13-host-extends |  <!-- scope: repo_motor. Hallazgo 002a -->
-| Alta | WOT-2026-003a | CI: validate falla en checkout por bus gitignored (invariantes COMPLETED sin eventos) | system/ci-portability | pending | WOT-AUDIT-CI | session-2026-06-13-host-extends |  <!-- CI rojo en main, pre-existente (42e4a3a), no por A2d -->
+| Alta | WOT-2026-003a | CI: validate falla en checkout por bus gitignored (invariantes COMPLETED sin eventos) | system/ci-portability | done | WOT-AUDIT-CI | session-2026-06-14-post-a2d-hardening |  <!-- motor cf59288 + release ea8936e; CI destino re-run SUCCESS -->
+| Alta | WOT-2026-003b | Restaurar guard_paths hook (fail-closed) + des-personalizar settings.json del destino | system/security-hooks | completed | WOT-2026-002c | session-2026-06-14-post-a2d-hardening |  <!-- cd0ecfb; mitiga regresion fail-open de A2d -->
+| Alta | WOT-2026-003c | Barrera estructural de hooks Claude en el motor (gate + entry script + test + install) | motor/security-hooks | pending | WOT-2026-003b | session-2026-06-14-post-a2d-hardening |  <!-- alias: MOTOR-FU-003. scope: repo_motor -->
+| Baja | WOT-2026-003d | install host-extends-aware: retirar bundle del destino sin re-vendorizar | motor/installer | pending | WOT-2026-002c | session-2026-06-14-post-a2d-hardening |  <!-- alias: MOTOR-FU-001. scope: repo_motor. A2d FASE3 lo necesita -->
+| Baja | WOT-2026-003e | gates-dispatch: manejar 'destino sin tests locales' (run_pytest_safe exit 4) | motor/quality-gates | pending | WOT-2026-002c | session-2026-06-14-post-a2d-hardening |  <!-- alias: MOTOR-FU-002. scope: repo_motor. Hallazgo 002a -->
 
 
 ## Completados en sesion 2026-06-11 (audit integral)
@@ -224,7 +226,42 @@
 - **Depende de:** WOT-2026-002a, WOT-2026-002b.
 - **Origen:** session-2026-06-13-host-extends.
 
-## MOTOR-FU-001 - install host-extends-aware (retirar bundle sin re-vendorizar)
+## WOT-2026-003b - Restaurar guard_paths hook (fail-closed) + des-personalizar settings.json
+- **Prioridad:** Alta
+- **Scope:** system/security-hooks
+- **Estado:** completed (cd0ecfb)
+- **deliverable_type:** code | **delivery_authority:** repo_destino
+- **Problema:** A2d (WOT-2026-002c) retiro `agent_system/`, donde el hook PreToolUse
+  del `.claude/settings.json` del destino resolvia `guard_paths.py`. Sin candidato, el
+  hook caia a `sys.exit(0)` -> FAIL-OPEN (escrituras permitidas con falsa proteccion).
+  Verificado empiricamente. Ademas el settings.json tracked mezclaba 12 grants
+  personales (paperclip.ing, z_scripts, broad).
+- **Resultado:** tracked `.claude/settings.json` = solo hooks; hook portable que
+  resuelve el `guard_paths.py` del motor via `motor_destination_link.json`, corre con
+  `cwd=<destino>` y FALLA CERRADO (exit 2) si no resuelve. Grants utiles (github
+  domains) -> `settings.local.json` gitignored; resto dropeado. Checklist verificado
+  (block prohibido, allow benigno, cwd hardening, link-ausente/motor-inexistente exit 2).
+- **Origen:** session-2026-06-14-post-a2d-hardening.
+
+## WOT-2026-003c - Barrera estructural de hooks Claude en el motor (alias MOTOR-FU-003)
+- **Prioridad:** Alta
+- **Scope:** motor/security-hooks (repo_motor)
+- **Estado:** pending
+- **deliverable_type:** mixed | **delivery_authority:** repo_motor
+- **Objetivo:** convertir la mitigacion de 003b en barrera permanente del motor.
+  (a) `scripts/check_claude_settings_portability.py` (gate): tracked `.claude/settings.json`
+  no puede contener `permissions.allow`; ningun hook tracked puede fail-open (exit 0)
+  cuando su guard no resuelve. (b) Extraer la logica del hook inline a un script
+  versionado del motor (p.ej. `.agent/hooks/claude_guard_entry.py`) testeable, dejando
+  el hook tracked del destino minimo. (c) Test funcional: payload Claude real
+  (`{"tool_name":"Write","tool_input":{"file_path":"../fuera.txt"}}`) contra el
+  `guard_paths.py` real -> espera block exit 2; y link-ausente -> exit 2. (d) Integrar en
+  `install --sync`/launcher para garantizar el link + mensaje de recovery.
+- **Politica:** un hook de seguridad nunca debe `exit 0` cuando su guard no resuelve.
+- **Depende de:** WOT-2026-003b.
+- **Origen:** session-2026-06-14-post-a2d-hardening.
+
+## WOT-2026-003d - install host-extends-aware (retirar bundle sin re-vendorizar) (alias MOTOR-FU-001)
 - **Prioridad:** Baja
 - **Scope:** motor/installer (repo_motor)
 - **Estado:** pending
@@ -241,7 +278,7 @@
 - **Depende de:** WOT-2026-002c.
 - **Origen:** session-2026-06-13-host-extends.
 
-## MOTOR-FU-002 - gates-dispatch: manejar 'destino sin tests locales'
+## WOT-2026-003e - gates-dispatch: manejar 'destino sin tests locales' (alias MOTOR-FU-002)
 - **Prioridad:** Baja
 - **Scope:** motor/quality-gates (repo_motor)
 - **Estado:** pending
