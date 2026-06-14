@@ -1,10 +1,10 @@
 # MEMORY
 
-Regenerated: 2026-06-12T17:33:52.095563+00:00
+Regenerated: 2026-06-14T20:38:21.158494+00:00
 
-Total observations: 25
+Total observations: 40
 
-- Architecture (1 observations)
+- Architecture (15 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
 - Bom-Breaks-Lightweight-Validators (1 observations)
@@ -27,11 +27,20 @@ Total observations: 25
 - Runtime-Proof-For-Concurrency-Fixes (1 observations)
 - Scope-Gate-Path-Format (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
-- Ticket-Completion (1 observations)
+- Ticket-Completion (2 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
 ## architecture
-- Decisiones arquitectonicas documentadas en WT-2026-251a
+- Decisiones arquitectonicas documentadas en WOT-2026-003d
+- Decisiones arquitectonicas documentadas en WOT-2026-005d
+- Decisiones arquitectonicas documentadas en WOT-2026-005c
+- Decisiones arquitectonicas documentadas en WOT-2026-005b
+- Decisiones arquitectonicas documentadas en WOT-2026-005a
+- Decisiones arquitectonicas documentadas en WOT-2026-003f
+- Decisiones arquitectonicas documentadas en WOT-2026-003e
+- Decisiones arquitectonicas documentadas en WOT-2026-004b
+- Decisiones arquitectonicas documentadas en WOT-2026-002c
+- Decisiones arquitectonicas documentadas en WOT-2026-002b
 
 ## atomic-requeue-claim
 - Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super
@@ -65,15 +74,6 @@ Total observations: 25
 
 ## double-requeue-diagnostics
 - If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different rounds, requeue_ticket() ran twice for the same decision. And when outcome=success appears in older bus history, it only pro
-
-## dual-contract-sync
-- When a planning correction lands during review, apply it to both `work_plan.md` and `PLAN_WT-*`. They are not redundant copies: `work_plan.md` drives validation and canonical state, while `PLAN_WT-*` 
-
-## manager-is-fix-surface
-- The Manager is not an untouchable narrator layer. If the fault lives in review instructions, prompt contracts, or parser expectations, correcting the Manager itself is part of normal system hardening 
-
-## one-line-fix-contract-pattern
-- For one-line fixes with high regression risk, the minimum useful contract is small and exact: name the symbol or line that changes as old -> new, name the test that breaks by design, and name the symm
 
 ---
 
