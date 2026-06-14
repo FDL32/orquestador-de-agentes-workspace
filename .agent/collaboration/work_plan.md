@@ -1,62 +1,63 @@
-# Work Plan: WOT-2026-003f - CI destino: gate de portabilidad contra .claude/settings.json
+# Work Plan: WOT-2026-005a - Separacion memoria privada vs portable en memory_upload
 
 ## Metadata
-- **ID:** WOT-2026-003f
-- **Estado:** COMPLETED
-- **deliverable_type:** code
-- **delivery_authority:** repo_destino
-- **Repo de autoridad:** repo_destino (orquestador_de_agentes_workspace)
-- **Titulo:** Paso de CI del destino que corre `check_claude_settings_portability.py` contra su `.claude/settings.json`
+- **ID:** WOT-2026-005a
+- **Estado:** APPROVED
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Repo de autoridad:** repo_motor
+- **Titulo:** Añadir a `prompts/memory_upload.md` una decision explicita de destino de memoria (privada/portable) con evidencia y condicion de promocion
 - **Asignado a:** Builder
-- **Severidad:** Baja | **Riesgo:** Bajo (paso de CI nuevo; reversible via git)
-- **Depende de:** WOT-2026-003c (completed)
-- **Origen:** session-2026-06-14-post-a2d-hardening (follow-up de 003c)
+- **Severidad:** Media | **Riesgo:** Bajo (cambio documental; reversible via git)
+- **Depende de:** WOT-2026-003b (completed), WOT-2026-003c (completed)
+- **Origen:** session-2026-06-14-host-extends-learnings
 
 ## Decision Arquitectonica
-El gate de portabilidad de settings (003c) ya existe y esta testeado en el motor, pero
-solo corre en el pre-commit del MOTOR. Un fail-open o grants personales en el
-`.claude/settings.json` del DESTINO no se detectarian hasta tocar el motor. Se añade un
-paso al workflow `quality-gates.yml` del destino que corre el gate (del motor, ya
-checkouteado en `_motor/`) contra el settings del destino, y se amplia el filtro `paths:`
-con `.claude/**` para que cambios de settings disparen el workflow. No se duplica logica:
-se reutiliza el script canonico del motor.
+El prompt ya distingue tres memorias y un campo "Donde deberia vivir", pero no obliga a
+DECIDIR el destino con contrato antes de escribir. En el ciclo host-extends se guardo
+aprendizaje util en memoria Claude privada sin criterio claro de cuando promoverlo a
+portable validable. Se añade una seccion de decision obligatoria que crystaliza: declarar
+destino (Claude privada / portable motor / portable destino / varias), evidencia requerida
+por destino, condicion de promocion a `observations.jsonl` (schema + consumidor real) y la
+prohibicion de añadir entradas portables sobre un schema en drift. Cambio documental: no
+toca codigo de memoria ni schema.
 
-## Files Likely Touched (repo_destino)
-.github/workflows/quality-gates.yml
+## Files Likely Touched (repo_motor)
+prompts/memory_upload.md
 
 ## Read/inspect only
-- `_motor/scripts/check_claude_settings_portability.py` (CLI: arg opcional path; default `.claude/settings.json`; exit 1 si viola).
-- `.claude/settings.json` del destino (objeto del gate; NO editar aqui).
+- `skills/_shared/ap-schema.md` (schema canonico referenciado).
+- `bus/memory_loader.py` (consumidor; solo para confirmar que no se toca codigo).
 
 ## Manager-only
-- Revision: confirmar que el paso corre el gate del motor (no duplica logica), que el filtro
-  `paths:` incluye `.claude/**`, y que el gate pasa localmente contra el settings actual del destino.
+- Revision documental (single review, deliverable_type=documentation): claridad, que las
+  tres memorias quedan separadas y que la decision de destino es obligatoria y binaria.
 
 ## Non-goals
-- NO modificar `.claude/settings.json` del destino.
-- NO duplicar la logica del gate en el workflow.
-- NO tocar el motor (script ya existe).
+- NO cambiar el schema de `observations.jsonl` ni codigo de memoria.
+- NO ampliar la higiene de redaccion mas alla de `memory_upload.md` (eso es WT-2026-250c).
+- NO añadir dependencias.
 
 ## Criterios binarios de cierre
-- [ ] `quality-gates.yml`: nuevo step que corre `python _motor/scripts/check_claude_settings_portability.py .claude/settings.json`.
-- [ ] Filtros `paths:` (push y pull_request) incluyen `.claude/**`.
-- [ ] El gate pasa localmente contra el `.claude/settings.json` del destino (exit 0).
-- [ ] YAML valido (parsea sin error).
-- [ ] `validate --project-root .` (destino) 0 errores; motor intacto (check_motor_pristine).
-- [ ] Commit en repo_destino con WOT-2026-003f.
+- [ ] El prompt distingue las tres memorias y EXIGE declarar destino antes de escribir.
+- [ ] Si una observacion se marca portable, el prompt exige validacion de schema o la
+      etiqueta `NO PROMOVIBLE` con motivo.
+- [ ] Si `observations.jsonl` esta en drift de schema, el prompt prohibe añadir nuevas
+      entradas portables sin ticket de migracion.
+- [ ] `check_encoding_guard.py` pasa sobre `prompts/memory_upload.md`.
+- [ ] `validate --project-root .` (destino) 0 errores; motor solo cambia este archivo.
+- [ ] Commit en repo_motor con WOT-2026-005a.
 
 ## STOP / escalado
-- Si el gate falla localmente contra el settings del destino, NO maquillar el workflow:
-  el settings del destino tendria una regresion (grants/fail-open) -> abrir ticket de seguridad.
-- Si el gate requiere el motor no disponible en CI, revisar el checkout `_motor/` antes de añadir el paso.
+- Si aparece necesidad de cambiar schema o codigo de memoria, abrir ticket code separado.
+- Si el saneo de redaccion excede `memory_upload.md`, derivar a WT-2026-250c.
 
-## Gates (deliverable_type: code; cambio de CI/config)
-- Parseo YAML del workflow (python yaml.safe_load).
-- Run local del gate contra `.claude/settings.json` (exit 0) = barrera de comportamiento.
+## Gates (deliverable_type: documentation)
+- `check_encoding_guard.py prompts/memory_upload.md`.
 - `validate --project-root .` (destino) 0 errores.
-- `check_motor_pristine --check` (motor no debe cambiar).
-- Nota: sin pytest nuevo (no se añade logica Python; el gate ya esta testeado en el motor por 003c).
+- `check_motor_pristine --check` (solo este archivo cambia en el motor).
+- Existencia del deliverable (el archivo editado).
 
 ## Entregables
-- `quality-gates.yml` con el paso del gate + `.claude/**` en paths.
-- `orchestrator_pipeline/reports/closeout_WOT-2026-003f.md`.
+- `prompts/memory_upload.md` con la seccion de decision de destino + regla de drift.
+- `orchestrator_pipeline/reports/closeout_WOT-2026-005a.md`.
