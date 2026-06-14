@@ -2,7 +2,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-005c
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Repo de autoridad:** repo_motor
