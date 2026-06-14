@@ -46,7 +46,7 @@
 | Media | WOT-2026-005a | Separacion memoria privada vs portable en memory_upload | motor/protocol-docs | completed | WOT-2026-003b, WOT-2026-003c | session-2026-06-14-host-extends-learnings |  <!-- verificado: motor 260c0c4. memory_upload.md seccion decision de destino (privada/portable motor/portable destino) + regla drift schema; encoding 0 -->
 | Alta | WOT-2026-005b | Bootstrap/preflight destino: checks host-extends, settings y guard fail-closed | motor/protocol-docs | completed | WOT-2026-003c | session-2026-06-14-host-extends-learnings |  <!-- verificado: motor 9c1ba3d. bootstrap+preflight+SKILL body con checks topologia/settings/guard/resolvers; frontmatter intacto; skill_collisions 0; discover OK -->
 | Media | WOT-2026-005c | Audit post-change: resolver integrity, hooks, CI e install-sync risk | motor/protocol-docs | completed | WOT-2026-005b | session-2026-06-14-host-extends-learnings |  <!-- verificado: motor c783e40. audit_post_change Fase4/Fase5 + SKILL body: Resolver integrity, hook behavior test, settings/CI/install-sync; frontmatter intacto -->
-| Media | WOT-2026-005d | Audit completo motor-destino: patrones estrategicos host-extends y memoria | motor/protocol-docs | pending | WOT-2026-005c | session-2026-06-14-host-extends-learnings |
+| Media | WOT-2026-005d | Audit completo motor-destino: patrones estrategicos host-extends y memoria | motor/protocol-docs | completed | WOT-2026-005c | session-2026-06-14-host-extends-learnings |  <!-- verificado: motor f53dd1a. audit_complete: resolvers/bootstraps, fail-open ampliado, bus ausente-vs-violado, memoria por capas; fuentes host-extends; referencia 005a/b/c -->
 
 
 ## Plan WOT-2026-005 - Protocolizar aprendizajes host-extends en prompts y skills
