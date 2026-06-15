@@ -958,6 +958,12 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - DEC de discovery resuelta: mantener `triggers` como API propia, migrar a
     discovery por `description` estilo Claude, o soportar hibrido. La decision
     declara compatibilidad, coste de migracion y efecto en prompts/skills actuales.
+  - Matriz `agents.json` allowlist vs triggers reales de `SKILL.md`: todo trigger
+    permitido por rol debe resolver a una skill real, y toda skill critica de
+    Builder/Manager debe estar alcanzable por su rol o documentar por que no.
+  - Si se adopta discovery por `description` o hibrido, las descriptions siguen un
+    patron verificable tipo `Use when ...`; se mide longitud y claridad antes de
+    convertirlo en contrato obligatorio.
   - La DEC compara al menos cuatro opciones: registry central, manifest por skill
     (`manifest.json`), `.claude-plugin/plugin.json` compatible y discovery
     recursivo sin manifest.
@@ -1055,6 +1061,12 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Si se divide un prompt grande, queda un router canonico estable, referencias
     relativas validables y test/check de enlaces; no se duplican reglas entre
     router y subdocumentos.
+  - Antes de mover prompts a subdirectorios, se lista toda referencia hardcoded a
+    `prompts/*.md` en scripts, skills, prompts, docs y launchers; cada referencia
+    tiene resolver/fallback o shim probado antes del move.
+  - La opcion `deprecated/` se prefiere a borrar recursos legacy cuando aun hay
+    referencias historicas o riesgo de compatibilidad; debe incluir README/registry
+    que marque no uso.
 - **STOP:**
   - Si un rename no puede tener shim, requiere aprobacion humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
