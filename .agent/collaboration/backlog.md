@@ -925,13 +925,15 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   skills descubiertas. La causa verificada fue BOM UTF-8 en
   `skills/man-review-implementation/SKILL.md`, que hace que `parse_frontmatter`
   vea `NO_FRONTMATTER` y omita la skill.
-- **Objetivo:** endurecer discovery/frontmatter contra BOM y decidir el modelo
-  canonico de registro: manifest-first explicito vs discovery por glob/recursivo.
-  No mover ni renombrar skills.
+- **Objetivo:** barrer BOMs historicos en skills/prompts, hacer
+  `discover_skills.py` tolerante o fail-closed ante BOM/frontmatter roto, y
+  decidir el modelo canonico de registro: manifest-first explicito vs discovery
+  por glob/recursivo/description. No mover ni renombrar skills.
 - **Evidencia externa a evaluar:** `mattpocock/skills` usa skill-as-package,
-  namespaces de dominio y un manifest/plugin registry explicito. Tomar como patron
-  de diseno, no como plantilla a copiar: sus categorias no son nuestro contrato
-  Manager/Builder y el manifest no elimina la necesidad de detectar BOM en
+  namespaces de dominio y un manifest/plugin registry explicito minimo
+  (`plugin.json` lista paths). Tomar como patron de diseno, no como plantilla a
+  copiar: sus categorias no son nuestro contrato Manager/Builder, no valida un
+  `registry.json` rico y el manifest no elimina la necesidad de detectar BOM en
   `SKILL.md`.
 - **Files Likely Touched:**
   - `scripts/discover_skills.py`
@@ -942,12 +944,20 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Criterios binarios:**
   - Test reproduce el fallo: un `SKILL.md` con BOM no puede desaparecer
     silenciosamente del discovery.
+  - Barrido unico de BOMs historicos en `skills/**/SKILL.md`, prompts relevantes
+    y referencias de skill; el resultado queda documentado con rutas exactas.
+  - Se aclara la diferencia entre `scripts/check_encoding_guard.py` (bloquea BOM,
+    pero normalmente sobre archivos explicitos/staged) y cualquier script hermano
+    de encoding; si hay inconsistencia CLI, queda corregida o ticketizada.
   - El sistema falla con diagnostico accionable o normaliza BOM de forma
     deliberada; no hay omision silenciosa.
   - `discover_skills.py --check-contract` y `check_skill_collisions.py` cubren el
     caso `man-review-implementation`.
   - DEC de registry resuelta: manifest-first explicito, glob recursivo o hibrido,
     con tradeoffs y compatibilidad.
+  - DEC de discovery resuelta: mantener `triggers` como API propia, migrar a
+    discovery por `description` estilo Claude, o soportar hibrido. La decision
+    declara compatibilidad, coste de migracion y efecto en prompts/skills actuales.
   - La DEC compara al menos cuatro opciones: registry central, manifest por skill
     (`manifest.json`), `.claude-plugin/plugin.json` compatible y discovery
     recursivo sin manifest.
@@ -955,6 +965,11 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     (`motor|host`), `canonical_source`, `path`, `trigger`, `role`, `status`
     (`active|deprecated|draft`), `deliverable_types`, `deprecated_by`,
     `compat_until` y, solo si aporta valor demostrado, `deliverable_profile`.
+    `deliverable_profile` no se adopta por defecto: primero se contrasta contra
+    `run_gates_dispatch.py` para evitar duplicar `deliverable_type`.
+  - Registry/manifest rico queda atribuido como diseno propio (OKF/CEM/host-extends),
+    no como patron probado por `mattpocock/skills`, que solo valida lista explicita
+    de paths.
   - El contrato declara que el registry/manifest define la API publica activa,
     mientras el layout fisico puede contener docs, tests, deprecated o in-progress.
   - El contrato declara como se integra host-first: un posible
@@ -968,7 +983,9 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - No hay renames, moves ni cambios de trigger.
 - **STOP:**
   - Si el fix requiere reorganizar carpetas, abrir 008d; no mezclar.
-  - Si el registry introduce fuente de verdad manual no validada, bloquear.
+  - Si el registry introduce fuente de verdad manual no validada, bloquear. Por
+    defecto el registry debe ser generado/validado desde frontmatter/filesystem;
+    los overrides host-first son la excepcion explicita.
   - Si la propuesta intenta crear `skills/domain/...` o `prompts/system/...` en
     008b, bloquear y moverlo a 008d tras registry + shims.
 
