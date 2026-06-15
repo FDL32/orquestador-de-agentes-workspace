@@ -54,6 +54,10 @@
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
 | Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | in_progress | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
+| Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | pending | WOT-2026-008a, WOT-2026-009a | session-2026-06-15-taxonomy |
+| Media | WOT-2026-008c | Registry/INDEX generado de prompts y skills | motor/skills-discovery | pending | WOT-2026-008b | session-2026-06-15-taxonomy |
+| Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | pending | WOT-2026-008c | session-2026-06-15-taxonomy |
+| Baja | WOT-2026-008e | Retirada versionada de shims y compat legacy | motor/skills-taxonomy | pending | WOT-2026-008d | session-2026-06-15-taxonomy |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | pending | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- follow-up: ningun Builder arranca con contrato que no valide en modo handoff; override debe ser evento auditable, no nota markdown -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
@@ -903,6 +907,127 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 > infraestructura discovery, migracion de prompts, migracion de skills y retirada
 > de shims se crean solo despues de aprobar el manifiesto. No se permite un rename
 > masivo ni anidar skills mientras discovery/collision sigan siendo planos.
+>
+> Secuencia canonica: 009a primero si se va a lanzar Builder; despues 008b
+> (discovery/BOM/decision registry), 008c (registry/INDEX generado), 008d
+> (renames con shims) y 008e (retirada versionada de shims). Las propuestas de
+> prefijo `aud-*`, `manager_review_rubric.md` o carpetas nuevas son hipotesis de
+> 008d, no acciones directas.
+
+### WOT-2026-008b - Discovery/frontmatter hardening: BOM y registry decision
+- **Prioridad:** Alta
+- **Scope:** motor/skills-discovery
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008a, WOT-2026-009a
+- **Problema:** el manifiesto 008a detecto 29 `SKILL.md` en disco pero solo 28
+  skills descubiertas. La causa verificada fue BOM UTF-8 en
+  `skills/man-review-implementation/SKILL.md`, que hace que `parse_frontmatter`
+  vea `NO_FRONTMATTER` y omita la skill.
+- **Objetivo:** endurecer discovery/frontmatter contra BOM y decidir el modelo
+  canonico de registro: manifest-first explicito vs discovery por glob/recursivo.
+  No mover ni renombrar skills.
+- **Files Likely Touched:**
+  - `scripts/discover_skills.py`
+  - `scripts/check_skill_collisions.py`
+  - `scripts/check_encoding_guard.py` si el gap real esta en su cobertura
+  - tests de discovery/collision/encoding
+  - documentacion minima del contrato de registry si se adopta manifest-first
+- **Criterios binarios:**
+  - Test reproduce el fallo: un `SKILL.md` con BOM no puede desaparecer
+    silenciosamente del discovery.
+  - El sistema falla con diagnostico accionable o normaliza BOM de forma
+    deliberada; no hay omision silenciosa.
+  - `discover_skills.py --check-contract` y `check_skill_collisions.py` cubren el
+    caso `man-review-implementation`.
+  - DEC de registry resuelta: manifest-first explicito, glob recursivo o hibrido,
+    con tradeoffs y compatibilidad.
+  - Si se adopta manifest-first, el manifest controla que esta activo; carpetas
+    `deprecated/` o `in-progress/` solo son layout, no API publica.
+  - No hay renames, moves ni cambios de trigger.
+- **STOP:**
+  - Si el fix requiere reorganizar carpetas, abrir 008d; no mezclar.
+  - Si el registry introduce fuente de verdad manual no validada, bloquear.
+
+### WOT-2026-008c - Registry/INDEX generado de prompts y skills
+- **Prioridad:** Media
+- **Scope:** motor/skills-discovery
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008b
+- **Problema:** los agentes descubren prompts/skills por memoria, glob o nombres
+  humanos. Eso escala mal cuando haya categorias, shims o deprecated entries.
+- **Objetivo:** crear un registry/INDEX generado y validable de prompts y skills
+  con rutas canonicas, triggers, rol, tipo de artefacto y estado activo/deprecated.
+- **Files Likely Touched:**
+  - script generador/validador de registry
+  - `skills/INDEX.md` o manifest equivalente generado
+  - docs de contrato del registry
+  - tests
+- **Criterios binarios:**
+  - El INDEX/registry se genera desde fuente canonica validada; no es una tabla
+    manual que pueda derivar.
+  - Incluye prompts, skills, templates/references relevantes y scripts consumidores
+    declarados por 008a.
+  - Distingue API publica, layout fisico y shims.
+  - Check de CI/pre-commit o gate local falla si el registry generado esta stale.
+  - No mueve carpetas ni renombra archivos.
+- **STOP:**
+  - Si el INDEX exige mantenimiento manual, redisenar.
+  - Si se detectan colisiones de trigger/nombre, abrir ticket dedicado antes de
+    migrar.
+
+### WOT-2026-008d - Migracion de naming audit/version con shims
+- **Prioridad:** Media
+- **Scope:** motor/skills-taxonomy
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008c
+- **Problema:** hay hipotesis de mejora de naming (`aud-*`, `manager_review_rubric`,
+  `bui-version-changelog`), pero renombrar sin registry y shims rompe triggers,
+  docs, memoria y agentes externos.
+- **Objetivo:** ejecutar solo los renames aprobados por DEC de 008a/008b, con shims
+  temporales, warnings de deprecacion y pruebas de compatibilidad.
+- **Files Likely Touched:**
+  - prompts/skills afectados por renames aprobados
+  - registry/manifest/INDEX
+  - docs y referencias
+  - tests discovery/collision
+- **Criterios binarios:**
+  - Cada rename tiene DEC aprobada, motivo, compatibilidad y fecha de retirada.
+  - Los triggers antiguos siguen resolviendo mediante shim durante la ventana
+    declarada.
+  - `discover_skills.py --check-contract`, collision check, registry check y
+    encoding pasan.
+  - `rg` de nombres antiguos solo aparece en shims/deprecation docs permitidos.
+  - No se fusionan prompts/skills solo por similitud de nombre; debe haber mejora
+    demostrada de descubribilidad o reduccion de duplicacion.
+- **STOP:**
+  - Si un rename no puede tener shim, requiere aprobacion humana explicita.
+  - Si rompe un contrato publicado, aplazar a major/versioned migration.
+
+### WOT-2026-008e - Retirada versionada de shims y compat legacy
+- **Prioridad:** Baja
+- **Scope:** motor/skills-taxonomy
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008d
+- **Problema:** los shims ayudan a migrar, pero si no tienen retirada versionada se
+  convierten en deuda permanente.
+- **Objetivo:** retirar shims ya caducados tras verificar que no quedan referencias
+  vivas, con changelog y rollback claro.
+- **Criterios binarios:**
+  - `rg` no encuentra consumidores vivos de nombres legacy fuera de changelog/docs
+    historicos.
+  - Registry no lista entradas legacy como activas.
+  - Tests de discovery/collision/registry pasan sin shims.
+  - CHANGELOG documenta retirada y ruta nueva.
+- **STOP:**
+  - Si cualquier destino activo sigue usando el shim, aplazar y registrar evidencia.
 
 ## Plan WOT-2026-009 - Contract gates antes del Builder
 
