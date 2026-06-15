@@ -1079,6 +1079,10 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     limite de 100 lineas como contrato inicial (23/29 skills lo superan). Mantener
     o endurecer primero el umbral existente de 250 lineas (6/29 skills lo superan)
     y exigir migracion gradual a docs/references antes de cualquier rewrite masivo.
+    Endurecer significa CABLEAR un gate con test (un SKILL.md de 251 lineas falla),
+    no mantener el numero en prosa: hoy el 250 vive solo en create-agent-skill/SKILL.md
+    sin enforcement (6/29 violadores silenciosos), mismo patron que la funcion BOM
+    de 006b (definida pero no llamada). Sin gate+test no cuenta como cerrado.
 - **STOP:**
   - Si un rename no puede tener shim, requiere aprobacion humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
