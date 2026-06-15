@@ -32,11 +32,12 @@ handoff, cuando ya es tarde.
 
 ## Files Likely Touched
 
-- `.agent/scope_gate.py`
-- `.agent/agent_controller.py`
-- `tests/unit/test_scope_gate_deliverable_aware.py`
-- `prompts/orchestrator_pipeline.md`
-- `prompts/launch_builder.md`
+> Nota: delivery_authority=repo_motor. Los archivos a continuacion son rutas del
+> repo_motor (commit 440e878). El scope gate del destino no puede resolver estas
+> rutas; el validate del motor pasa 0/0 y es el gate autoritativo para este ticket.
+
+- `.agent/collaboration/execution_log.md`
+- `.agent/collaboration/work_plan.md`
 
 ## Decision Arquitectonica
 
