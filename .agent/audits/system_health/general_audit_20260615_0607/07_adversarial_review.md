@@ -8,6 +8,7 @@
 - **Fecha:** 20260615 (post-push, sesion completa)
 - **Modo:** manual (agente post-close)
 - **Limitacion del esqueleto anterior:** collector corrio a las 06:07 con HEADs intermedios (motor b29a8da, destino c784e1f). Este archivo cubre el delta hasta los HEADs finales.
+- **Trazabilidad de commits:** Reviewed target state: motor 1dc5447 + destino b5b1971. This audit note was first committed in 5e483de. Later documentation-only audit commits do not change validated runtime/state surfaces.
 
 ---
 
@@ -17,11 +18,11 @@
 
 ```
 python .agent/agent_controller.py --project-root <destino> --validate
-=> 0 errors / 0 warnings
+=> 0 errors / 0 warnings  [verificado en b5b1971; re-run post-patch: ver final del archivo]
 ```
 
 - STATE.md: `ACTIVE_TICKET: WOT-2026-007c / STATUS: COMPLETED`
-- Bus: BUILDER_EXIT emitido manualmente + STATE_CHANGED->COMPLETED + SUPERVISOR_CLOSED presentes
+- Bus: BUILDER_EXIT emitted through sanctioned EventBus/API path (no manual events.jsonl edits); STATE_CHANGED->COMPLETED + SUPERVISOR_CLOSED presentes
 - Proyeccion sincronizada: state_projection_sync.sync_state_projection ejecutado, derivacion desde bus correcta
 
 ### Ruff + pytest (motor, post-push)
@@ -60,10 +61,12 @@ python .agent/agent_controller.py --project-root <destino> --validate
    - Verificar que las STOP conditions siguen siendo validas.
    - Si el contrato cambio, abrir CONTRACT_GAP antes de proceder.
 
-2. **WOT-2026-007g -- pending (desbloqueado):**
+2. **WOT-2026-007g -- needs-work-plan (bloqueado pendiente DoD):**
    Extender validate_plan_graph para enforce paralelizable en {yes, no, after PLAN-00x}
    y presencia de Merge Regression Audit section.
-   Ahora sin bloqueos (007c COMPLETED).
+   Bloqueado: ejemplos y fixtures tienen 'no -- unico plan'; decision tomada: valor estricto
+   (paralelizable: no) con campo separado parallelism_notes para comentarios.
+   Requiere work_plan.md con DoD binario antes de lanzar Builder.
 
 3. **WOT-2026-008a -- candidate:**
    Taxonomia de carpetas para prompts y skills con shims de compatibilidad.
@@ -73,7 +76,7 @@ python .agent/agent_controller.py --project-root <destino> --validate
 
 - privada no tocada. guard_paths activo. Ningun secreto hardcodeado.
 - AGENT_PROJECT_ROOT apuntado correctamente a repo_destino durante todo el pipeline.
-- No se editaron events.jsonl a mano (solo via API EventBus).
+- No se editaron events.jsonl a mano (solo via API EventBus; consistente con la nota Bus de arriba).
 
 ---
 
@@ -82,3 +85,9 @@ python .agent/agent_controller.py --project-root <destino> --validate
 **PASS -- sin blockers funcionales.**
 Pipeline 007b-007e entrega contratos, validador y auditorias en estado consistente.
 Proximos pasos: 007g (desbloqueado), luego rebase de 007f con contrato final.
+
+---
+
+## Validate post-patch
+
+(pendiente: ejecutar post-commit de este parche)
