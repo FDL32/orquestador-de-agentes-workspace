@@ -47,16 +47,34 @@ Machine runs (no files modified):
 discover_skills reports 28 skills but 29 SKILL.md exist on disk. The missing one
 is `skills/man-review-implementation/SKILL.md` -- the canonical Manager review
 skill. Its triggers `/review`, `code-review`, `/approve` are ALL absent from the
-trigger_map; it appears in no discovered path. Candidate root cause (read-only,
-not confirmed by debug): the directory name `man-review-implementation` differs
-from the frontmatter `name: code-review`. Effect: agents relying on trigger
-discovery cannot reach the Manager review skill; only the paired prompt
-`prompts/review_manager.md` and the hardcoded bridge reach it. Owner:
-DISCOVERY-INFRA follow-up ticket. This does NOT falsify the flat-premise, so no
-CONTRACT_GAP; it is a defect to fix downstream.
+trigger_map; it appears in no discovered path.
 
-### External reference (manifest-first), gh authenticated
+ROOT CAUSE (VERIFIED, corrected after Manager review): the file begins with a
+UTF-8 BOM. First bytes are EF BB BF (read_text -> first char U+FEFF); the
+comparison skill man-create-work-plan/SKILL.md starts with 2D 2D 2D (---, no BOM).
+Because the first line is <BOM>--- rather than ---, parse_frontmatter does not
+recognize the frontmatter delimiter and returns no frontmatter, so discovery skips
+the skill. The earlier "dir name != frontmatter name" hypothesis is FALSIFIED:
+the differentiator is the BOM, not the name.
 
+Secondary finding: scripts/encoding_guard.py globs skills/**/*.md (lines 48-49)
+yet this BOM persisted -> either the guard does not flag a UTF-8 BOM or it is not
+enforced as a gate on this path. 008b must (a) strip the BOM / make
+parse_frontmatter BOM-tolerant and (b) make the encoding guard reject a BOM in
+skills/**/SKILL.md.
+
+Effect: agents relying on trigger discovery cannot reach the Manager review skill;
+only the paired prompt prompts/review_manager.md and the hardcoded bridge reach
+it. Owner: DISCOVERY-INFRA follow-up ticket (008b). This does NOT falsify the
+flat-premise, so no CONTRACT_GAP; it is a defect to fix downstream.
+
+### External reference (manifest-first), gh via GITHUB_TOKEN
+
+- gh auth: authenticated via the GITHUB_TOKEN env var (NOT `gh auth login`);
+  `gh api` calls succeeded and returned real data (evidence: fetched
+  mattpocock/skills plugin.json and OKF SPEC.md). No web/raw fallback was
+  used. A reviewer whose shell lacks GITHUB_TOKEN will see `gh auth status`
+  report no login; that is an environment difference, not a fabricated claim.
 - mattpocock/skills (129k stars; take the pattern, not gospel; it is a personal
   .claude dir, not an orchestrator): `.claude-plugin/plugin.json` lists explicit
   skill paths; layout is

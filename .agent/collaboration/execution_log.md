@@ -100,3 +100,30 @@ literal de cada gate. No modificar el repo_motor.
 - [ ] validate destino 0/0 -> ver linea final.
 
 **Estado:** READY_FOR_REVIEW (pendiente validate 0/0 + re-review independiente).
+
+
+## Manager review #1 -> CHANGES + remediacion -- 2026-06-15
+
+Tres hallazgos, los tres VERIFICADOS independientemente:
+
+1. Handoff canonico incompleto: bus 008a derivaba IN_PROGRESS; no habia
+   BUILDER_EXIT ni STATE_CHANGED -> READY_FOR_REVIEW. (Yo habia escrito
+   "READY_FOR_REVIEW" solo en texto del log, sin evento canonico.)
+   -> FIX: ejecutado --mark-ready canonico (emite BUILDER_EXIT + STATE_CHANGED);
+   no se edito events.jsonl a mano.
+2. Claim gh impreciso: el manifiesto decia "gh authenticated" sin mecanismo.
+   Verificado: gh SI autenticado via GITHUB_TOKEN (api calls reales: mattpocock
+   plugin.json, OKF SPEC). No fue falso, pero estaba under-specified.
+   -> FIX: manifiesto declara el mecanismo (GITHUB_TOKEN, no gh auth login) y que
+   un reviewer sin el token vera "no login" (diferencia de entorno).
+3. DISCOVERY-GAP-1 causa raiz erronea: yo dije "dir != name" (hipotesis hedged).
+   Causa real VERIFICADA: BOM UTF-8 en man-review-implementation/SKILL.md
+   (primeros bytes EF BB BF; primer char U+FEFF). parse_frontmatter ve <BOM>---
+   != --- -> NO_FRONTMATTER -> discovery omite la skill. Hipotesis dir!=name
+   FALSIFICADA. Secundario: encoding_guard cubre skills/**/*.md pero el BOM paso.
+   -> FIX: seccion DISCOVERY-GAP-1 corregida con causa real + scope a 008b.
+
+Gates tras remediacion: encoding guard del entregable exit 0; repo_motor git
+status --short EMPTY; validate destino 0/0 (ver linea final).
+
+**Estado:** READY_FOR_REVIEW (handoff canonico emitido al bus; pendiente re-review).
