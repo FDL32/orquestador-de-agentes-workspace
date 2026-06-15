@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-007f
 - **Contract ID:** T-007F-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-007c (COMPLETED ce83621 / 5dafbc7), WOT-2026-007e (COMPLETED 1dc5447), WOT-2026-007g (COMPLETED ce83621)

@@ -56,7 +56,7 @@
 | Baja | WOT-2026-008a | Taxonomia de prompts/skills en carpetas con shims de compatibilidad | system/docs-coherence | candidate | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- diseno: mover prompts/skills planos a subcarpetas (audit/, pipeline/) SIN romper rutas; requiere auditar refs rg 'prompts/.*\.md', shims 1 version, actualizar discovery/docs, tests discover_skills --check-contract + check_skill_collisions, retirar alias despues. NO hacer como refactor amplio dentro de 007d -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
-| Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | in_progress | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- Contract Formation creado en ac58178; contrato frozen T-007F-001; bootstrap-ticket emitio STATE_CHANGED -> IN_PROGRESS; listo para Builder runtime -->
+| Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
 
 ## Plan WOT-2026-007 - Contract Formation Pipeline v0
 
@@ -343,9 +343,10 @@
 ### WOT-2026-007f - Integracion runtime de CONTRACT_GAP en bus/controller
 - **Prioridad:** Baja
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
+- **Cierre:** motor f5923d7+c5d81ee+5fab636+ece7524; 2713 tests; review independiente APROBADO; validate 0/0.
 - **Problema:** en 007a `CONTRACT_GAP` queda como contrato documental; para automatizarlo
   de verdad el bus/controller debe poder representar que un ticket no fallo por codigo,
   sino porque el contrato estaba incompleto u obsoleto.

@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-007f
 - **Contract ID:** T-007F-001
 - **deliverable_type:** code
@@ -94,7 +94,7 @@ Review independiente identifico 5 hallazgos validos (verificados contra codigo/e
   coherente con la autoridad del bus.
 - #5 events.jsonl revertido en motor (git checkout); motor limpio salvo archivos del ticket.
 
-**Estado:** IN_PROGRESS (rework completo; pendiente re-review independiente del Manager).
+**Estado:** COMPLETED (rework completo; pendiente re-review independiente del Manager).
 
 ---
 
@@ -138,3 +138,6 @@ Gates #2: suite 2710 passed, 19 skipped, exit 0. ruff verde. Motor limpio post-s
 - Post-suite: motor sin cambios runtime; solo los commits productivos ahead de origin.
 
 **Estado:** IN_PROGRESS (fix completo; listo para handoff canonico mediante controller).
+
+
+Manager approved canonical closeout for WOT-2026-007f
