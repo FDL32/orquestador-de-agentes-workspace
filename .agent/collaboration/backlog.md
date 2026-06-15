@@ -935,9 +935,14 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Criterios binarios:**
   - Existe un preflight mecanico antes de Builder que falla si `validate` no puede
     cerrar 0 errors / 0 warnings en modo equivalente a handoff.
+  - Toda auditoria/review de cierre declara al inicio `repo_motor`, `repo_destino`,
+    HEADs auditados, si tiene acceso real al destino y que claims quedan fuera de
+    alcance. Sin acceso al destino, el veredicto maximo es `NO AUDITABLE`.
   - El gate es `deliverable_type`-aware: para `analysis`/`documentation`/`research`
     acepta `Builder` + `Read/inspect only` + `Manager-only` como contrato valido de
     superficies, sin exigir una forma propia de tickets `code`.
+  - Post-cierre verifica que cada deliverable declarado existe en el workspace activo
+    donde se cerro el ticket; si no existe, el cierre queda bloqueado.
   - Test negativo: un ticket `analysis` sin superficie Builder ni Files Likely
     Touched falla antes de Builder.
   - Test positivo: un ticket `analysis` con superficies documentales canonicas pasa

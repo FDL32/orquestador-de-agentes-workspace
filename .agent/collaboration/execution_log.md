@@ -160,3 +160,15 @@ status --short EMPTY; validate destino 0/0 (ver linea final).
 
 
 Manager approved canonical closeout for WOT-2026-008a
+
+## Post-close audit correction -- 2026-06-15
+
+- Una auditoria externa inicial marco 008a como `NO ACEPTAR` porque audito solo
+  `repo_motor` seed. Ese veredicto queda invalidado por error de topologia:
+  los claims de 008a pertenecen a `repo_destino`.
+- Evidencia re-derivada en `repo_destino`: entregable presente, bus con
+  `BUILDER_EXIT -> READY_FOR_REVIEW -> REVIEW_DECISION -> COMPLETED ->
+  SUPERVISOR_CLOSED`, backlog con WOT-2026-009a y validate 0/0.
+- Leccion CEM: antes de auditar un cierre, declarar repo auditado, HEAD, acceso
+  a `repo_destino` y claims fuera de alcance. Si no hay acceso al destino, el
+  veredicto correcto es `NO AUDITABLE`, no `NO ACEPTAR`.
