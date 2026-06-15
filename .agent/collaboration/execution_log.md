@@ -95,3 +95,30 @@ Review independiente identifico 5 hallazgos validos (verificados contra codigo/e
 - #5 events.jsonl revertido en motor (git checkout); motor limpio salvo archivos del ticket.
 
 **Estado:** IN_PROGRESS (rework completo; pendiente re-review independiente del Manager).
+
+---
+
+## Manager review #2 -> CHANGES (antes del push)
+
+Segundo review independiente sobre los commits del rework. 3 blockers validos:
+
+1. Motor seguia dirty por un HANDOFF_BLOCKED en events.jsonl (test de pre_handoff
+   escribe al bus real del motor: seam mismatch runtime.project_root vs PROJECT_ROOT).
+2. ticket_id="../outside" eludia el path guard de cg_file_path (canonical se construye
+   con el ticket_id sin validar).
+3. El validador no comprobaba el cg_file_path ALMACENADO en cada evento (solo presencia).
+
+## Remediacion #2 (motor 5fab636)
+
+- #2 emit_contract_gap valida ticket_id con is_valid_ticket_id; cierra el smuggling de
+  traversal via ticket_id. 5 casos negativos parametrizados.
+- #3 _validate_contract_gap_coherence verifica el cg_file_path canonico de cada evento
+  (no solo presencia). Test con evento raw no-canonico (legacy/tampered).
+- #1 Barrera automatica en tests/conftest.py (_isolate_controller_event_bus): resetea el
+  global event_bus + snapshot/restore del events.jsonl real del motor en cada test.
+  Convierte el leak en barrera. Verificado: suite completa deja git status del motor limpio.
+- Ids de test migrados a formato canonico valido (is_valid_ticket_id lo exige).
+
+Gates #2: suite 2710 passed, 19 skipped, exit 0. ruff verde. Motor limpio post-suite.
+
+**Estado:** IN_PROGRESS (rework #2 completo; pendiente re-review breve + push motor/destino).
