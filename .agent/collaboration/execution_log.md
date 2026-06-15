@@ -41,3 +41,11 @@ literal de cada gate. No modificar el repo_motor.
 - Controller validate: exit 0, 0 errors, 0 warnings.
 - Encoding guard: exit 0.
 - repo_motor git status: limpio.
+## CHANGES remediation before relaunch
+
+- Motor root contamination detected from prior Builder attempt: repo_motor `.agent/docs/taxonomy_migration_WOT-2026-008a.md` and runtime events were removed/restored by Manager before relaunch.
+- Contract count reconciled: prompts=19, SKILL.md=29, PROMPT_TEMPLATE.md=2, skill references=33, shared docs=3.
+- DoD expanded beyond `prompts/*.md` and `skills/*/SKILL.md` to include templates, references, `_shared`, manifests, llms and tool consumers.
+- Added DEC-008-004: explicit manifest/registry vs glob discovery, informed by mattpocock/skills plugin manifest pattern.
+- Folder depth is now an evaluated hypothesis, not a frozen decision.
+- Relaunch requirement: verify `AGENT_PROJECT_ROOT` points to repo_destino before any write.

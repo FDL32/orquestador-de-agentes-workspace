@@ -21,6 +21,7 @@ referencias publicadas.
 - Toda migracion posterior requiere compatibilidad temporal y retirada con
   version objetivo explicita.
 - No se asume soporte de carpetas anidadas: se prueba contra el discovery real.
+- El registro explicito de recursos (manifest-first) se evalua como alternativa a discovery por glob antes de proponer migraciones fisicas.
 
 ## Non-Goals
 
@@ -88,3 +89,4 @@ referencias publicadas.
 - DEC-008-001: profundidad maxima de carpetas (recomendacion inicial: un nivel).
 - DEC-008-002: prompts legacy como shims documentales o resolver central.
 - DEC-008-003: skills anidadas fisicamente o mantener layout plano con indice.
+- DEC-008-004: adoptar registro canonico explicito estilo plugin manifest frente a discovery por glob + INDEX propio.

@@ -41,6 +41,8 @@ permite probar primero las limitaciones reales de discovery y contratos.
 - `repo_motor/scripts/discover_skills.py`
 - `repo_motor/scripts/check_skill_collisions.py`
 - `repo_motor/MANIFEST.distribute`, `MANIFEST.workspace`
+- `repo_motor/skills/**/PROMPT_TEMPLATE.md`, `repo_motor/skills/**/references/`, `repo_motor/skills/_shared/`
+- `repo_motor/scripts/build_llms.py` y otros consumidores de prompts/skills
 - referencias en docs, tests, AGENTS.md, PROJECT.md, QUICKSTART.md y llms*.txt
 
 ## Manager-only
@@ -51,12 +53,13 @@ permite probar primero las limitaciones reales de discovery y contratos.
 
 ## Criterios Binarios
 
-- [ ] Inventario completo de prompts y skills sin rutas sin clasificar.
+- [ ] Inventario completo de prompts, skills, prompt templates, references, `_shared`, scripts/manifests/llms consumidores, sin rutas sin clasificar.
 - [ ] Cada fila contiene ruta, API publica, consumidores, destino, compatibilidad,
       riesgo y fase propietaria.
 - [ ] Superficies machine-executed, contratos y docs estan separadas.
 - [ ] Limitacion de discovery/collision demostrada con evidencia de codigo.
-- [ ] Taxonomia propuesta de maximo un nivel y router pequeno.
+- [ ] Profundidad de carpetas evaluada como hipotesis; no se precongela `maximo un nivel` sin evidencia.
+- [ ] Comparativa manifest-first vs discovery por glob/recursivo, incluyendo referencia mattpocock/skills si se puede verificar; si `gh` no esta autenticado, registrarlo como limitacion.
 - [ ] Una sola fuente canonica; shims temporales con retirada versionada.
 - [ ] Fases posteriores y dependencias definidas sin ejecutar ninguna.
 - [ ] Riesgos, STOP, rollback y gates exactos documentados.
@@ -66,10 +69,11 @@ permite probar primero las limitaciones reales de discovery y contratos.
 
 ## Premise Re-check
 
-- Contar prompts y skills top-level.
+- Contar prompts, SKILL.md, PROMPT_TEMPLATE.md, references y `_shared`.
 - Inspeccionar loops/globs de discovery y collision check.
 - Ejecutar `discover_skills.py --check-contract` y `check_skill_collisions.py`.
 - Ejecutar busqueda actual de referencias excluyendo caches y reportes generados.
+- Verificar que el entregable se escribe en repo_destino/.agent/docs, no en repo_motor/.agent/docs.
 - Confirmar HEAD motor y destino; si cambia motor durante el ticket, STOP.
 
 ## Forbidden Surfaces
@@ -85,4 +89,5 @@ permite probar primero las limitaciones reales de discovery y contratos.
 - Inventario incompleto o consumidor no clasificable.
 - Necesidad de decidir una API publica no cubierta por DEC-008-*.
 - Cambio concurrente del HEAD del motor.
+- Entregable o runtime escrito en repo_motor por root equivocado.
 - Scope que derive hacia implementacion: abrir ticket posterior, no improvisar.
