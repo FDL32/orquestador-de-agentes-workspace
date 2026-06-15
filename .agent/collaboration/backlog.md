@@ -53,7 +53,7 @@
 | Alta | WOT-2026-007b | Validacion vertical: idea -> contrato -> backlog -> Builder sin aclaraciones | motor/protocol-validation | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor bb60532; clarification_rate=0; prueba destructiva bloqueada; 007a ratificado -->
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
-| Baja | WOT-2026-008a | Taxonomia de prompts/skills en carpetas con shims de compatibilidad | system/docs-coherence | candidate | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- diseno: mover prompts/skills planos a subcarpetas (audit/, pipeline/) SIN romper rutas; requiere auditar refs rg 'prompts/.*\.md', shims 1 version, actualizar discovery/docs, tests discover_skills --check-contract + check_skill_collisions, retirar alias despues. NO hacer como refactor amplio dentro de 007d -->
+| Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | in_progress | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; inventario + referencias + compatibilidad + fases derivadas; cero moves/edits en repo_motor; contrato T-008A-001 frozen -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -894,3 +894,11 @@ passed" de los gates son una fraccion). Detectado al observar que un
 test nuevo no alteraba el conteo. CEM clase D (gate que no cubre lo que
 dice cubrir). Medicion del estado real en curso; candidato a ticket:
 migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
+
+
+## Plan WOT-2026-008 - Taxonomia portable
+
+> 008a produce el manifiesto verificable sin modificar el motor. Los tickets de
+> infraestructura discovery, migracion de prompts, migracion de skills y retirada
+> de shims se crean solo despues de aprobar el manifiesto. No se permite un rename
+> masivo ni anidar skills mientras discovery/collision sigan siendo planos.

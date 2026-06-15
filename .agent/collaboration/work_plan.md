@@ -1,108 +1,88 @@
-# Work Plan: WOT-2026-007f
+# Work Plan: WOT-2026-008a
 
 ## Metadata
 
-- **ID:** WOT-2026-007f
-- **Contract ID:** T-007F-001
-- **Estado:** COMPLETED
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-007c (COMPLETED ce83621 / 5dafbc7), WOT-2026-007e (COMPLETED 1dc5447), WOT-2026-007g (COMPLETED ce83621)
-- **Contract source:** .agent/planning/ticket_contracts.md (T-007F-001, status: frozen)
+- **ID:** WOT-2026-008a
+- **Contract ID:** T-008A-001
+- **Estado:** APPROVED
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_destino
+- **Depends on:** WOT-2026-007d (COMPLETED 11e7ad8)
+- **Contract source:** .agent/planning/ticket_contracts.md (T-008A-001, status: frozen)
 
 ## Objetivo
 
-Integrar CONTRACT_GAP como evento de bus operativo con tres superficies concretas:
-
-1. bus/event_bus.py: acepta y emite evento de tipo CONTRACT_GAP; reentry guard
-   evita duplicados por mismo ticket_id + gap_type.
-2. .agent/agent_controller.py: transicion a estado CONTRACT_BLOCKED cuando hay
-   evento CONTRACT_GAP; --validate detecta proyeccion incoherente (evento sin
-   archivo CG o archivo CG sin evento).
-3. runtime/state_projection_sync.py: deriva CONTRACT_BLOCKED desde evento CONTRACT_GAP.
-4. tests/unit/test_contract_gap_integration.py: cubre premise_false,
-   forbidden_surface_needed, missing_acceptance y payload seguro.
+Crear `.agent/docs/taxonomy_migration_WOT-2026-008a.md`: inventario verificable,
+taxonomia objetivo y plan de compatibilidad para prompts/skills. Este ticket no
+implanta la migracion ni modifica el repo_motor.
 
 ## Non-goals
 
-- No crear UI ni CLI dedicado para gaps de contrato.
-- No reparar automaticamente el contrato cuando se detecta un gap.
-- No propagar gaps entre tickets en runtime (un gap bloquea solo su ticket).
-- No cambiar el schema del archivo CG-*.md definido en 007c.
-- No tocar tickets ni flujos que no usan Contract Formation.
-- No modificar logic de memoria ni consolidacion (bus/memory_loader.py).
+- No mover, renombrar, borrar ni editar prompts o skills.
+- No modificar discovery, collision checks, manifests, tests o docs del motor.
+- No renombrar triggers, contract_id ni nombres publicos.
+- No crear shims o aliases.
 
 ## Decision Arquitectonica
 
-El evento CONTRACT_GAP se disenio como evento de bus (no como archivo de flag ni
-campo en work_plan.md) porque:
+008a es analysis con autoridad en repo_destino porque el motor no conserva
+historico operativo. Separar analisis de migracion evita un commit masivo y
+permite probar primero las limitaciones reales de discovery y contratos.
 
-- El bus es la fuente de verdad canonico del ciclo de vida del ticket;
-  un gap que no emite evento puede no detectarse si work_plan.md se edita a mano.
-- El reentry guard de event_bus.py protege contra duplicados sin logica adicional.
-- --validate ya lee el bus para inferir estado; extenderlo con CONTRACT_GAP no
-  requiere nuevo mecanismo, solo un nuevo event_type y una nueva regla de coherencia.
-- El payload minimo (ticket_id, gap_type, cg_file_path) mantiene el bus libre de
-  datos sensibles que podrian estar en las premisas del destino.
+## Builder
 
-## Files Likely Touched
-
-- `bus/event_bus.py`
-- `.agent/agent_controller.py`
-- `bus/state_machine.py`
-- `.agent/state_validation.py`
-- `tests/conftest.py`
-- `tests/unit/test_contract_gap_integration.py`
-- `tests/unit/test_motor_bus_isolation_barrier.py`
+- Crear `.agent/docs/taxonomy_migration_WOT-2026-008a.md`.
+- Registrar comandos, resultados y decisiones en `execution_log.md`.
 
 ## Read/inspect only
 
-- `scripts/state_projection_sync.py`
-- `docs/contract_formation/templates/contract_gap.md`
-- `scripts/validate_contract_formation.py`
+- `repo_motor/prompts/`
+- `repo_motor/skills/`
+- `repo_motor/scripts/discover_skills.py`
+- `repo_motor/scripts/check_skill_collisions.py`
+- `repo_motor/MANIFEST.distribute`, `MANIFEST.workspace`
+- referencias en docs, tests, AGENTS.md, PROJECT.md, QUICKSTART.md y llms*.txt
 
-## Criterios Binarios (DoD)
+## Manager-only
 
-- [ ] bus/event_bus.py: test de emision de evento CONTRACT_GAP pasa (exit 0).
-- [ ] agent_controller.py --validate: acepta ticket en estado CONTRACT_BLOCKED
-      con evento CONTRACT_GAP presente; retorna exit 0 con 0 errors.
-- [ ] agent_controller.py --validate: retorna exit 1 con error explicito si hay
-      evento CONTRACT_GAP sin archivo CG-*.md o archivo CG sin evento.
-- [ ] state_projection_sync.py: test de proyeccion CONTRACT_BLOCKED pasa (exit 0).
-- [ ] Test premise_false: gap_type=premise_false -> ticket queda CONTRACT_BLOCKED, no COMPLETED (exit 0).
-- [ ] Test forbidden_surface_needed: gap_type=forbidden_surface_needed -> CONTRACT_BLOCKED (exit 0).
-- [ ] Test missing_acceptance: gap_type=missing_acceptance -> CONTRACT_BLOCKED (exit 0).
-- [ ] Payload del evento en events.jsonl contiene exactamente: ticket_id, gap_type, cg_file_path
-      (assert set(payload.keys()) == {"ticket_id", "gap_type", "cg_file_path"}).
-- [ ] ruff check . -> exit 0.
-- [ ] python scripts/run_pytest_safe.py -> exit 0 (suite completa, 0 regresiones + nuevos tests).
-- [ ] git diff HEAD -- prompts/ skills/ MANIFEST.distribute MANIFEST.workspace
-      bus/memory_loader.py scripts/memory_consolidate.py -> sin cambios.
-- [ ] La barrera pytest anti-leak restaura el bus real y falla con el nodeid del test contaminante; tests negativos y suite completa pasan.
+- Re-derivar el inventario y muestrear consumidores.
+- Verificar que el motor sigue pristine.
+- Ejecutar validate final y revisar que no hay implementacion encubierta.
 
-## STOP conditions
+## Criterios Binarios
 
-- Si events.jsonl del destino activo ya contiene eventos CONTRACT_GAP de otro origen:
-  abrir CG-T-007F-001.md, no improvisar schema.
-- Si agent_controller.py tiene enum cerrado de estados que rechaza CONTRACT_BLOCKED:
-  abrir CG-T-007F-001.md y escalar.
-- Si otro ticket activo toca bus/event_bus.py o .agent/agent_controller.py:
-  detener y serializar con ese ticket antes de continuar.
-- Si el contrato en .agent/planning/ticket_contracts.md cambia durante este ticket:
-  detener y volver a Contract Formation.
+- [ ] Inventario completo de prompts y skills sin rutas sin clasificar.
+- [ ] Cada fila contiene ruta, API publica, consumidores, destino, compatibilidad,
+      riesgo y fase propietaria.
+- [ ] Superficies machine-executed, contratos y docs estan separadas.
+- [ ] Limitacion de discovery/collision demostrada con evidencia de codigo.
+- [ ] Taxonomia propuesta de maximo un nivel y router pequeno.
+- [ ] Una sola fuente canonica; shims temporales con retirada versionada.
+- [ ] Fases posteriores y dependencias definidas sin ejecutar ninguna.
+- [ ] Riesgos, STOP, rollback y gates exactos documentados.
+- [ ] repo_motor `git status --short` vacio al handoff.
+- [ ] encoding guard del entregable exit 0.
+- [ ] validate destino exit 0, 0 errors, 0 warnings al handoff.
 
-## Premise Re-check (ejecutar antes del primer commit)
+## Premise Re-check
 
-- grep -r CONTRACT_GAP bus/ runtime/ .agent/agent_controller.py -> 0 resultados.
-- python scripts/run_pytest_safe.py -> exit 0.
-- python .agent/agent_controller.py --validate -> 0 errors / 0 warnings.
-- git log --oneline -1 -- bus/event_bus.py .agent/agent_controller.py -> sin commits activos en estas superficies.
+- Contar prompts y skills top-level.
+- Inspeccionar loops/globs de discovery y collision check.
+- Ejecutar `discover_skills.py --check-contract` y `check_skill_collisions.py`.
+- Ejecutar busqueda actual de referencias excluyendo caches y reportes generados.
+- Confirmar HEAD motor y destino; si cambia motor durante el ticket, STOP.
 
 ## Forbidden Surfaces
 
-- prompts/ y skills/ (sin modificar)
-- scripts/validate_contract_formation.py (fuera de scope de este ticket)
-- .agent/collaboration/TURN.md (guard_paths; solo controller puede escribirlo)
-- privada/, .env, credenciales de ningun tipo
-- MANIFEST.distribute, MANIFEST.workspace
-- bus/memory_loader.py, scripts/memory_consolidate.py
+- Todo archivo del repo_motor.
+- `.agent/planning/`, `work_plan.md`, backlog y STATE salvo controller/Manager.
+- Bus `events.jsonl` editado manualmente.
+- `privada/`, secretos y rutas personales.
+
+## STOP conditions
+
+- Cualquier accion que mueva, borre, renombre o edite el repo_motor.
+- Inventario incompleto o consumidor no clasificable.
+- Necesidad de decidir una API publica no cubierta por DEC-008-*.
+- Cambio concurrente del HEAD del motor.
+- Scope que derive hacia implementacion: abrir ticket posterior, no improvisar.
