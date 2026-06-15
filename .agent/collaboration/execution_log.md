@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-009a
 - **Contract ID:** T-009A-001
 - **deliverable_type:** code
@@ -96,3 +96,6 @@ Scope override: delivery_authority=repo_motor; rutas FLT relativas al motor resu
 - Motor HEADs: 440e878 (feat) + 9b7666f (fix CHANGES).
 
 Reporte final: Motor commits 440e878 + 9b7666f. Motor validate: exit code 0, 0 errors, 0 warnings.
+
+
+Manager approved canonical closeout for WOT-2026-009a
