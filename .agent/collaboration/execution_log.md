@@ -1,52 +1,33 @@
-# Execution Log: WOT-2026-007g - validate_plan_graph strict parallelism
+# Execution Log: WOT-2026-007f - CONTRACT_GAP runtime integration
 
 ## Metadata
 
-**Estado:** COMPLETED
-- **ID:** WOT-2026-007g
+**Estado:** IN_PROGRESS
+- **ID:** WOT-2026-007f
+- **Contract ID:** T-007F-001
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Rol activo:** BUILDER -> MANAGER REVIEW
-- **Accion:** Implementation completed; Manager review in progress
+- **Rol activo:** BUILDER
+- **Accion:** START_WORK
 
-## Resumen
+## Contract Formation baseline
 
-WOT-2026-007g endurece el validador de Contract Formation para que `plan_graph.md`
-trate `paralelizable` como campo estructurado y requiera `## Merge Regression Audit`.
-El ticket desbloquea el rebase posterior de WOT-2026-007f sobre el contrato final.
+- `.agent/planning/repo_charter.md` creado con OBJ-001 y Negative Audit Checklist.
+- `.agent/planning/plan_graph.md` creado con PLAN-001, Impact Simulation y Merge Regression Audit.
+- `.agent/planning/ticket_contracts.md` contiene `T-007F-001`, `status: frozen`.
+- `work_plan.md` deriva de ese contrato frozen.
 
-## Entregables modificados (repo_motor)
+## Bootstrap
 
-- `scripts/validate_contract_formation.py`: validacion estricta de `paralelizable`, localizando la columna por cabecera.
-- `tests/unit/test_validate_contract_formation.py`: tests positivos/negativos, incluyendo columna `parallelism_notes` separada.
-- `docs/contract_formation/templates/plan_graph.md`: ejemplo de valor formal en `Paralelizable`.
-- `docs/contract_formation/examples/python_service_minimal/plan_graph.md`: migrado `no -- unico plan` -> `no`.
-- `tests/fixtures/contract_formation/valid/plan_graph.md`: migrado a valor estricto y anadida seccion `## Merge Regression Audit`.
+- `agent_controller.py --bootstrap-ticket --project-root <repo_destino>` -> exit 0.
+- Bus emitio `STATE_CHANGED BOOTSTRAP -> IN_PROGRESS` para `WOT-2026-007f`.
+- Proyecciones vivas normalizadas a `IN_PROGRESS` para arrancar Builder sin bus drift.
 
-## Quality Gates
+## Premise Re-check pendiente del Builder
 
-- `ruff check scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py` -> exit 0, All checks passed.
-- `python -m pytest tests/unit/test_validate_contract_formation.py -q` -> exit 0, 44 passed.
-- python scripts/run_pytest_safe.py -- tests/unit/test_validate_contract_formation.py -q -> exit 0, 44 passed.
-- `python -m pytest tests/unit -q` -> exit 0, 1075 passed.
-- `python scripts/validate_contract_formation.py --plan docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0, OK: 3 file(s) validated, 0 errors.
-- `python scripts/check_encoding_guard.py scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0.
-- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> revalidado por Manager tras normalizar proyecciones.
+Antes del primer commit, Builder debe ejecutar los rechecks declarados en `work_plan.md`:
 
-## DoD cumplido
-
-- [x] Rechaza `no -- unico plan` con error explicito.
-- [x] Acepta `yes`, `no`, `after PLAN-001`, `after PLAN-002`.
-- [x] Acepta `parallelism_notes` como columna separada sin falso positivo.
-- [x] Rechaza ausencia de `## Merge Regression Audit`.
-- [x] Ejemplo canonico y fixture valido pasan el validador actualizado.
-- [x] Sin dependencias nuevas (stdlib-only).
-
-## Manager review
-
-- Primera revision: CHANGES por mark-ready no canonico, parseo por posicion y runtime untracked.
-- Fix Builder: commit motor `ce83621`; commit destino `03efad4`; mark-ready canonico emitio BUILDER_EXIT + STATE_CHANGED.
-- Reparacion Manager: normaliza `work_plan.md` y `execution_log.md` al ticket 007g para eliminar warnings reparables antes del cierre.
-
-
-Manager approved canonical closeout for WOT-2026-007g
+- `grep -r CONTRACT_GAP bus/ runtime/ .agent/agent_controller.py` -> esperado 0 resultados.
+- `python scripts/run_pytest_safe.py` -> esperado exit 0, o CONTRACT_GAP si falla por estado real no infra.
+- `python .agent/agent_controller.py --validate --project-root <repo_destino>` -> esperado 0 errors / 0 warnings.
+- `git log --oneline -1 -- bus/event_bus.py .agent/agent_controller.py` -> serializar si hay ticket activo tocando esas superficies.

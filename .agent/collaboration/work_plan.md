@@ -2,8 +2,9 @@
 
 ## Metadata
 
-- **ID:** WOT-2026-007f / T-007F-001
-- **Estado:** READY_TO_START
+- **ID:** WOT-2026-007f
+- **Contract ID:** T-007F-001
+- **Estado:** APPROVED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-007c (COMPLETED ce83621 / 5dafbc7), WOT-2026-007e (COMPLETED 1dc5447), WOT-2026-007g (COMPLETED ce83621)
@@ -65,7 +66,7 @@ campo en work_plan.md) porque:
 - [ ] Test forbidden_surface_needed: gap_type=forbidden_surface_needed -> CONTRACT_BLOCKED (exit 0).
 - [ ] Test missing_acceptance: gap_type=missing_acceptance -> CONTRACT_BLOCKED (exit 0).
 - [ ] Payload del evento en events.jsonl contiene exactamente: ticket_id, gap_type, cg_file_path
-      (assert set(payload.keys()) == {'ticket_id', 'gap_type', 'cg_file_path'}).
+      (assert set(payload.keys()) == {"ticket_id", "gap_type", "cg_file_path"}).
 - [ ] ruff check . -> exit 0.
 - [ ] python scripts/run_pytest_safe.py -> exit 0 (suite completa, 0 regresiones + nuevos tests).
 - [ ] git diff HEAD -- prompts/ skills/ MANIFEST.distribute MANIFEST.workspace

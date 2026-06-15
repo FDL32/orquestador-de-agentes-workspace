@@ -48,7 +48,7 @@
   - Test premise_false: gap_type=premise_false -> ticket queda CONTRACT_BLOCKED, no COMPLETED.
   - Test forbidden_surface_needed: gap_type=forbidden_surface_needed -> ticket queda CONTRACT_BLOCKED, no COMPLETED.
   - Test missing_acceptance: gap_type=missing_acceptance -> ticket queda CONTRACT_BLOCKED, no COMPLETED.
-  - Payload del evento CONTRACT_GAP en events.jsonl contiene solo ticket_id, gap_type y cg_file_path (test: assert set(payload.keys()) == {ticket_id, gap_type, cg_file_path}).
+  - Payload del evento CONTRACT_GAP en events.jsonl contiene solo ticket_id, gap_type y cg_file_path (test: assert set(payload.keys()) == {"ticket_id", "gap_type", "cg_file_path"}).
   - ruff check . exit 0.
   - python scripts/run_pytest_safe.py suite verde (0 regresiones + nuevos tests pasan).
   - git diff HEAD -- prompts/ skills/ MANIFEST.distribute MANIFEST.workspace bus/memory_loader.py scripts/memory_consolidate.py -> vacio (0 cambios en Forbidden Surfaces).

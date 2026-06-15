@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-15 11:02:08
+**Ultima actualizacion:** 2026-06-15 11:41:25
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
-| **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WOT-2026-007f |
+| **Tipo** | IMPLEMENT |
+| **Accion** | START_WORK |
 
 ---
 
 ## Instruccion
 
-> Ticket WOT-2026-007g closed. Create new work_plan.md for next cycle.
+> Builder puede arrancar WOT-2026-007f runtime desde work_plan.md y contrato frozen T-007F-001.
 
 ---
 
@@ -25,9 +25,9 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
-*Generado por agent_controller.py v5*
+*Preparado para Builder por bootstrap-ticket + proyeccion manual verificada*
