@@ -928,6 +928,11 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Objetivo:** endurecer discovery/frontmatter contra BOM y decidir el modelo
   canonico de registro: manifest-first explicito vs discovery por glob/recursivo.
   No mover ni renombrar skills.
+- **Evidencia externa a evaluar:** `mattpocock/skills` usa skill-as-package,
+  namespaces de dominio y un manifest/plugin registry explicito. Tomar como patron
+  de diseno, no como plantilla a copiar: sus categorias no son nuestro contrato
+  Manager/Builder y el manifest no elimina la necesidad de detectar BOM en
+  `SKILL.md`.
 - **Files Likely Touched:**
   - `scripts/discover_skills.py`
   - `scripts/check_skill_collisions.py`
@@ -943,12 +948,21 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     caso `man-review-implementation`.
   - DEC de registry resuelta: manifest-first explicito, glob recursivo o hibrido,
     con tradeoffs y compatibilidad.
+  - La DEC compara al menos cuatro opciones: registry central, manifest por skill
+    (`manifest.json`), `.claude-plugin/plugin.json` compatible y discovery
+    recursivo sin manifest.
+  - El contrato declara que el registry/manifest define la API publica activa,
+    mientras el layout fisico puede contener docs, tests, deprecated o in-progress.
   - Si se adopta manifest-first, el manifest controla que esta activo; carpetas
     `deprecated/` o `in-progress/` solo son layout, no API publica.
+  - Aunque se adopte manifest-first, hay barrera separada para `SKILL.md` con BOM
+    o frontmatter roto, porque el agente aun debe leer semantica on-demand.
   - No hay renames, moves ni cambios de trigger.
 - **STOP:**
   - Si el fix requiere reorganizar carpetas, abrir 008d; no mezclar.
   - Si el registry introduce fuente de verdad manual no validada, bloquear.
+  - Si la propuesta intenta crear `skills/domain/...` o `prompts/system/...` en
+    008b, bloquear y moverlo a 008d tras registry + shims.
 
 ### WOT-2026-008c - Registry/INDEX generado de prompts y skills
 - **Prioridad:** Media
@@ -961,6 +975,8 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   humanos. Eso escala mal cuando haya categorias, shims o deprecated entries.
 - **Objetivo:** crear un registry/INDEX generado y validable de prompts y skills
   con rutas canonicas, triggers, rol, tipo de artefacto y estado activo/deprecated.
+  Si 008b adopta manifest-first, el INDEX es proyeccion generada del manifest; no
+  una segunda fuente de verdad.
 - **Files Likely Touched:**
   - script generador/validador de registry
   - `skills/INDEX.md` o manifest equivalente generado
@@ -972,6 +988,8 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Incluye prompts, skills, templates/references relevantes y scripts consumidores
     declarados por 008a.
   - Distingue API publica, layout fisico y shims.
+  - Distingue componentes activos de `deprecated`/`in-progress`; presencia en disco
+    no implica disponibilidad para agentes.
   - Check de CI/pre-commit o gate local falla si el registry generado esta stale.
   - No mueve carpetas ni renombra archivos.
 - **STOP:**
