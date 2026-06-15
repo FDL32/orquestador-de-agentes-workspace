@@ -33,6 +33,8 @@
   - Builder: .agent/state_validation.py (CONTRACT_BLOCKED en VALID_LOG_STATES)
   - Builder: tests/unit/test_contract_gap_integration.py (nuevo; casos: premise_false,
     forbidden_surface_needed, missing_acceptance, coherencia, path canonico)
+  - Builder: tests/conftest.py (barrera fail-closed contra escrituras al bus real del motor)
+  - Builder: tests/unit/test_motor_bus_isolation_barrier.py (nuevo; pruebas de la barrera)
   - Read/consume only: scripts/state_projection_sync.py (deriva via state_machine, sin modificar)
   - Read only: docs/contract_formation/templates/contract_gap.md (referencia schema)
   - Read only: scripts/validate_contract_formation.py (campos CG requeridos)
@@ -57,6 +59,7 @@
     rechaza rutas absolutas y traversal (test negativo parametrizado real).
   - Los tests de coherencia invocan _validate_contract_gap_coherence() real (no booleanos
     preparados): evento sin CG -> error, CG sin evento -> error, ambos presentes -> sin error.
+  - La barrera pytest anti-leak restaura el events.jsonl real y falla el test contaminante con su nodeid; prueba negativa verificada.
   - ruff check . exit 0.
   - python scripts/run_pytest_safe.py suite verde (0 regresiones + nuevos tests pasan).
   - git diff HEAD -- prompts/ skills/ MANIFEST.distribute MANIFEST.workspace bus/memory_loader.py scripts/memory_consolidate.py -> vacio (0 cambios en Forbidden Surfaces).

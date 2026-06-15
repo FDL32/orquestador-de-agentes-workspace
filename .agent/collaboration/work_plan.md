@@ -49,8 +49,12 @@ campo en work_plan.md) porque:
 
 - Builder: bus/event_bus.py
 - Builder: .agent/agent_controller.py
-- Builder: runtime/state_projection_sync.py
+- Builder: bus/state_machine.py
+- Builder: .agent/state_validation.py
+- Builder: tests/conftest.py (barrera anti-leak solicitada en review)
 - Builder: tests/unit/test_contract_gap_integration.py (nuevo)
+- Builder: tests/unit/test_motor_bus_isolation_barrier.py (nuevo)
+- Read/consume only: scripts/state_projection_sync.py
 - Read only: docs/contract_formation/templates/contract_gap.md
 - Read only: scripts/validate_contract_formation.py
 
@@ -71,6 +75,7 @@ campo en work_plan.md) porque:
 - [ ] python scripts/run_pytest_safe.py -> exit 0 (suite completa, 0 regresiones + nuevos tests).
 - [ ] git diff HEAD -- prompts/ skills/ MANIFEST.distribute MANIFEST.workspace
       bus/memory_loader.py scripts/memory_consolidate.py -> sin cambios.
+- [ ] La barrera pytest anti-leak restaura el bus real y falla con el nodeid del test contaminante; tests negativos y suite completa pasan.
 
 ## STOP conditions
 
