@@ -1,10 +1,10 @@
-# Execution Log: WOT-2026-009a - Pre-Builder contract gate deliverable-aware
+# Execution Log: WOT-2026-009b - Scope gate topology-aware
 
 ## Metadata
 
-**Estado:** COMPLETED
-- **ID:** WOT-2026-009a
-- **Contract ID:** T-009A-001
+**Estado:** READY_FOR_REVIEW
+- **ID:** WOT-2026-009b
+- **Contract ID:** T-009B-001
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Rol activo:** BUILDER
@@ -12,90 +12,109 @@
 
 ## Baseline
 
-- Motor HEAD: ece7524
-- Destino HEAD: 46389d0
-- Validate previo: 0 errors / 0 warnings (estado limpio tras 008a COMPLETED)
-- work_plan.md: APPROVED (creado en este arranque)
+- Motor HEAD: 9b7666f
+- Destino HEAD: 28dad7c
+- Validate previo: 0 errors / 0 warnings
+
+```json
+{
+  "errors": { "work_plan.md": [], "execution_log.md": [], "notifications.md": [],
+    "consistency": [], "TURN.md": [], "host_project_prefix": [], "git_presence": [] },
+  "warnings": {}
+}
+```
+
+## Preflight obligatorio
+
+### Inventario parsers FLT
+
+Comando: `rg "parse_files_likely_touched" .agent scripts bus tests --type py -n`
+
+Resultado (5 parsers):
+1. scope_gate.py:98 — canonical (deliverable-aware desde 009a)
+2. agent_controller.py:318 — wrapper sobre scope_gate
+3. motor_checkpoint.py:130 — parse_raw_flt_paths (retorna paths relativos)
+4. scripts/pre_handoff_guard.py:272 — parser propio independiente
+5. scripts/pip_audit_policy.py:32 — _parse_files_likely_touched (scope-insensible)
+
+Parsers actualizados en 009b: (3) y (4).
+Deuda 009d: (5) pip_audit_policy — inventariado; no toca topologia.
+
+### _check_scope_for_validate verificado
+
+Existe en agent_controller.py:3857. Actualizado en este ticket para usar
+get_productive_changed_files(delivery_authority) y parse_flt_namespaced.
 
 ## Implementacion (Builder)
 
-### Cambios en repo_motor (commit 440e878)
+### Paso 1: scope_gate.py
 
-**`.agent/scope_gate.py`**
-- Extrae `_extract_section_paths(lines, heading, project_root)` como helper reutilizable.
-- Añade `_DOC_DELIVERABLE_TYPES = frozenset({"analysis", "documentation", "research"})`.
-- `parse_files_likely_touched` ahora acepta `deliverable_type="code"` (kw-only).
-  Para doc types: si no hay `## Files Likely Touched`, parsea `## Builder` como fallback.
-- `check_scope_gate` acepta `deliverable_type="code"` y lo pasa al parser fn.
+- Extraidos `_looks_like_path_token` y `_normalize_flt_line` como helpers de modulo.
+- Nueva funcion `_parse_flt_section(lines)` -> (has_namespaces, [(ns, path)]).
+- Nueva funcion `parse_flt_namespaced(content, *, motor_root, project_root, delivery_authority)`
+  retorna `{"motor": set, "destino": set}`.
+- Complexity C901: resuelta extrayendo _parse_flt_section como helper separado.
 
-**`.agent/agent_controller.py`**
-- Wrapper `parse_files_likely_touched`: lee `deliverable_type` con `_read_deliverable_type` y lo pasa a scope_gate.
-- Wrapper `check_scope_gate`: lee `deliverable_type` y lo pasa a scope_gate.
+### Paso 2: motor_checkpoint.py
 
-**`tests/unit/test_scope_gate_deliverable_aware.py`** (nuevo)
-- 9 tests de barrera: negativo backward-compat, 5 positivos doc types, 2 negativos code/mixed, 1 FLT priority.
+- `parse_raw_flt_paths`: ahora reconoce `### repo_motor` / `### repo_destino`.
+- Rutas bajo `### repo_destino` se excluyen del retorno.
+- Rutas planas y bajo `### repo_motor` se retornan (backward-compat).
 
-**`prompts/orchestrator_pipeline.md`**
-- Sección `## 3.b Pre-Builder preflight gate` documentando validate 0/0 como gate fail-closed antes del Builder.
+### Paso 3: agent_controller.py
 
-**`prompts/launch_builder.md`**
-- Sección `## Preflight (WOT-2026-009a)` indicando que Builder no arranca si preflight no pasó 0/0.
+- Nuevo wrapper `parse_flt_namespaced(plan_content)`.
+- Nuevo `get_productive_changed_files(delivery_authority)`: diff del root productivo.
+- `_check_scope_for_validate`: usa delivery_authority para elegir diff y whitelist.
+  Para repo_motor: valida diff motor contra whitelist motor; emite warning con
+  diagnostico (root validado, subseccion esperada, comando para revalidar).
+  Para repo_destino: comportamiento anterior intacto.
+- `_run_pre_handoff_guard`: pasa `--motor-root` si motor_root != project_root.
 
-### Gates ejecutados
+### Paso 4: scripts/pre_handoff_guard.py
 
-- `ruff check`: exit 0 (pre-commit pass)
-- `ruff format`: exit 0 (pre-commit pass)
-- `pytest tests/unit/test_scope_gate_deliverable_aware.py`: 9/9 passed
-- `python scripts/run_pytest_safe.py`: exit 0 (suite completa)
-- `python scripts/check_encoding_guard.py prompts/orchestrator_pipeline.md prompts/launch_builder.md`: exit 0
-- Motor commit: 440e878
+- `parse_files_likely_touched(project_root, motor_root=None)`: namespace-aware.
+  Con namespaces: rutas motor contra motor_root, rutas destino contra project_root.
+  Sin namespaces: flat backward-compat (todas contra project_root).
+- `run_guard(project_root, ticket_id, motor_root=None)`: acepta motor_root.
+- CLI: acepta `--motor-root` para passar motor_root al guard.
 
-### Validate final
+### Paso 5: tests/unit/test_scope_gate_topology.py (nuevo)
 
+12 tests: 7 para parse_flt_namespaced, 5 para parse_raw_flt_paths.
+Cubren: namespace motor/destino separados, flat backward-compat,
+unknown sub-headings ignorados, empty FLT, destino-only sin motor.
+
+## Gates
+
+- ruff check: exit 0
+- pytest focales (unit/ + pre_handoff_guard + mark_ready_motor_scope): 1151/0/0
+- pytest suite completa via run_pytest_safe.py: exit 0
+
+## Motor commit
+
+- c308f40 feat(WOT-2026-009b): topology-aware FLT namespace parsing
+
+## Validate final destino
+
+```json
+{
+  "errors": { "work_plan.md": [], "execution_log.md": [], ... },
+  "warnings": {
+    "ticket_prose": ["[TP-PROSE-04]...", "[TP-PROSE-10]..."],
+    "bus_drift": ["No STATE_CHANGED event found in bus for ticket WOT-2026-009b"]
+  }
+}
 ```
-python .agent/agent_controller.py --validate --json --project-root <destino>
-```
 
-### Validate final
+ticket_prose: warnings de estilo del work_plan, no bloquean cierre de codigo.
+bus_drift: esperado pre-mark-ready. Se resuelve con --mark-ready canonico.
 
-- Motor validate: 0 errors / 0 warnings (exit 0)
-- Destino validate: 0 errors / 1 warning (bus_drift: no STATE_CHANGED event para WOT-2026-009a)
-  - Warning esperado: delivery_authority=repo_motor; el bus del destino no recibe eventos del motor.
-- Motor git status: limpio (git status --short = empty)
-- Motor HEAD: 440e878
+## Deuda documentada (parser inventory 009d)
 
-Reporte final: Artefacto motor 440e878. Validate motor: exit code 0, 0 errors, 0 warnings.
-
-
-Scope override: delivery_authority=repo_motor; rutas FLT relativas al motor resuelven en destino como inexistentes; diff real del motor valida contra work_plan del motor (commit 440e878, pre-commit green). Affected files: .agent/agent_controller.py, .agent/scope_gate.py, prompts/launch_builder.md, prompts/orchestrator_pipeline.md, tests/unit/test_scope_gate_deliverable_aware.py
-## CHANGES fixes (B1/B2/B3)
-
-### B1 — bus_drift
-- `--mark-ready --force --scope-override` ejecutado: emitio STATE_CHANGED READY_FOR_REVIEW al bus del destino.
-- Validate destino post-mark-ready: 0 errors / 1 warning scope.
-- Warning scope residual ESPERADO: delivery_authority=repo_motor; el diff del destino toca solo
-  archivos de colaboracion (execution_log, work_plan, STATE, TURN) que estan en la excludelist del
-  scope gate por diseno. El gate autoritativo es el del motor (0/0). No es un bug — es el limite
-  de diseno del scope gate del destino para tickets repo_motor.
-
-### B2 — callsites adicionales de parse_files_likely_touched
-- Linea ~1549 (_check_implementation_evidence best-effort check): parcheada.
-- Linea ~3494 (staging/mark-ready path): parcheada.
-- Motor commit: 9b7666f. Ruff + suite green.
-
-### B3 — preflight enforcement
-- orchestrator_pipeline.md seccion 3.b: claim explicitado como "protocolo de prompt obligatorio";
-  enforcement runtime en launcher/supervisor es follow-up, no deliverable de este ticket.
-- Motor commit: 9b7666f.
-
-### Validate final B1/B2/B3
-
-- Motor validate: 0 errors / 0 warnings (exit 0) — gate autoritativo.
-- Motor git status: limpio (9b7666f clean).
-- Destino validate: 0 errors / 1 warning scope (esperado, delivery_authority=repo_motor).
-- Motor HEADs: 440e878 (feat) + 9b7666f (fix CHANGES).
-
-Reporte final: Motor commits 440e878 + 9b7666f. Motor validate: exit code 0, 0 errors, 0 warnings.
-
-
-Manager approved canonical closeout for WOT-2026-009a
+Parser 5: scripts/pip_audit_policy.py:32 `_parse_files_likely_touched`
+- Retorna paths relativos para decidir si correr pip-audit.
+- No participa en validate ni scope gate.
+- No afectado por topologia motor/destino.
+- Criterio de salida 009d: unificar solo si pip-audit comienza a fallar
+  por no encontrar manifiestos en FLT namespaced.

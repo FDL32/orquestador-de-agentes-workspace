@@ -1,143 +1,155 @@
-# Work Plan: WOT-2026-009a
+# Work Plan: WOT-2026-009b
 
 ## Metadata
 
-- **ID:** WOT-2026-009a
-- **Contract ID:** T-009A-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-009b
+- **Contract ID:** T-009B-001
+- **Estado:** APPROVED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-008a (COMPLETED)
+- **Depends on:** WOT-2026-009a (COMPLETED)
 
 ## Objetivo
 
-Bloquear mecanicamente el arranque de Builder si el contrato del ticket no valida
-limpio en modo equivalente al handoff. El gate debe respetar `deliverable_type` y
-aceptar las superficies documentales canonicas (`Builder`, `Read/inspect only`,
-`Manager-only`) en tickets `analysis`, `documentation` y `research` sin producir
-warnings spurios.
+Hacer que validate/pre-handoff/mark-ready resuelvan el root productivo correcto
+segun `delivery_authority`, usando `## Files Likely Touched` con subsecciones
+opcionales `### repo_motor` / `### repo_destino`.
 
-Root cause del WOT-2026-008a: `scope_gate.parse_files_likely_touched` busca
-`## Files Likely Touched` literalmente; tickets documentales usan `## Builder` /
-`## Read/inspect only` / `## Manager-only` en su lugar, devolviendo whitelist vacia
--> warning `No Files Likely Touched section in work_plan.md` solo visible en
-handoff, cuando ya es tarde.
+Root cause: `_parse_raw_flt_paths` en motor_checkpoint.py y los parsers de
+pre_handoff_guard.py mezclan todas las rutas bajo `## Files Likely Touched` sin
+distinguir namespace. En tickets `delivery_authority: repo_motor`, el diff
+productivo esta en motor pero el validate corre desde el destino, generando
+warnings falsos o bloqueando cuando las rutas del motor no se resuelven contra
+PROJECT_ROOT del destino.
 
 ## Non-goals
 
-- No introducir el estado `READY_FOR_BUILDER` en la state machine (statechange
-  amplia; diferida a ticket posterior si se necesita).
-- No relajar warnings globalmente.
-- No crear override Markdown; el override es evento auditable del bus.
+- No introducir guardias reciprocas amplias (eso es 009c).
+- No crear secciones `External Scope` ni `Operational Surfaces`.
+- No reemplazar `delivery_authority` por `target_repository`.
+- No invertir globalmente `get_changed_files`.
+- No implementar 009d (consolidacion de parsers) mas alla del inventario.
+- No tocar state machine ni TicketState.
+
+## Inventario de parsers FLT (pre-implementacion)
+
+Resultado del grep preflight:
+
+1. `scope_gate.py:98` — `parse_files_likely_touched` (canonical, deliverable-aware
+   desde 009a). Recibe project_root. Retorna paths resueltos absolutos.
+2. `agent_controller.py:318` — wrapper que delega en scope_gate con PROJECT_ROOT.
+3. `motor_checkpoint.py:130` — `parse_raw_flt_paths`: retorna paths relativos raw
+   sin resolver (para comparar con motor_uncommitted_productive). NO acepta namespace.
+4. `scripts/pre_handoff_guard.py:272` — parser propio independiente. Lee work_plan
+   desde project_root. NO delega en scope_gate. NO acepta namespace.
+5. `scripts/pip_audit_policy.py:32` — `_parse_files_likely_touched`: retorna paths
+   relativos sin resolver. Solo usado para decidir si correr pip-audit.
+
+Parsers que necesitan actualizacion en 009b: (3) y (4).
+Parser (5) pip_audit_policy es scope-insensible por diseno; inventariado como
+deuda 009d con criterio: unificar solo si pip-audit comienza a fallar por topologia.
+
+`_check_scope_for_validate` existe en agent_controller.py:3857 — llama a
+`check_scope_gate` que delega en scope_gate. Se actualiza via cambios en (2).
+
+## Diseno
+
+### Contrato de FLT namespaced
+
+```markdown
+## Files Likely Touched
+
+### repo_motor
+- .agent/scope_gate.py
+- .agent/agent_controller.py
+
+### repo_destino
+- .agent/docs/foo.md
+```
+
+- Rutas planas (sin subseccion) son backward-compatible: se resuelven contra
+  el root de autoridad del ticket (motor o destino).
+- Rutas bajo `### repo_motor` se resuelven SIEMPRE contra motor_root.
+- Rutas bajo `### repo_destino` se resuelven SIEMPRE contra project_root (destino).
+- Un namespace desconocido emite warning; no bloquea.
+
+### Cambios por modulo
+
+**scope_gate.py** — funcion nueva `parse_flt_namespaced`:
+- Recibe `work_plan_content`, `motor_root`, `project_root`, `delivery_authority`.
+- Retorna `dict[str, set[str]]` con claves `"motor"` y `"destino"`.
+- Backward-compat: rutas planas van al bucket de la autoridad del ticket.
+- `parse_files_likely_touched` NO cambia de firma (backward compat con tests).
+- Nueva funcion separada para no romper callers existentes.
+
+**agent_controller.py** wrappers:
+- Nuevo wrapper `parse_flt_namespaced(plan_content)` que llama a scope_gate.
+- `_check_scope_for_validate` actualiza para usar diff correcto segun autoridad:
+  si `delivery_authority == repo_motor`, diff viene de motor_root; si destino,
+  del destino. Usa `get_productive_changed_files(delivery_authority)` nuevo.
+- `get_productive_changed_files(delivery_authority)`: wrapper nuevo sobre
+  `scope_gate.get_changed_files` que elige el root segun autoridad.
+
+**motor_checkpoint.py** — `parse_raw_flt_paths`:
+- Extender para que reconozca `### repo_motor` / `### repo_destino`.
+- Cuando hay namespace: rutas bajo `### repo_motor` van al set de retorno;
+  rutas bajo `### repo_destino` se ignoran (no son paths del motor).
+- Cuando no hay namespace: comportamiento actual (backward compat).
+
+**scripts/pre_handoff_guard.py** — `parse_files_likely_touched`:
+- Actualizar para delegar en `scope_gate.parse_files_likely_touched` con
+  project_root correcto segun delivery_authority.
+- Si delivery_authority == repo_motor: resolver rutas motor contra motor_root.
+- Recibe `delivery_authority` y `motor_root` como parametros opcionales.
+
+### Resolucion de diff en validate
+
+`_check_scope_for_validate` actualmente siempre llama `get_changed_files()`
+que usa PROJECT_ROOT (destino). Para tickets motor:
+- Diff productivo: `get_changed_files(project_root=motor_root, motor_root=None)`
+- Las superficies operativas del destino siguen excluidas por excludelist.
+- El gate valida el diff motor contra la whitelist de rutas motor.
 
 ## Files Likely Touched
 
-> Nota: delivery_authority=repo_motor. Los archivos a continuacion son rutas del
-> repo_motor (commit 440e878). El scope gate del destino no puede resolver estas
-> rutas; el validate del motor pasa 0/0 y es el gate autoritativo para este ticket.
+### repo_motor
+- `.agent/scope_gate.py`
+- `.agent/agent_controller.py`
+- `.agent/motor_checkpoint.py`
+- `scripts/pre_handoff_guard.py`
+- `tests/unit/test_scope_gate_topology.py`
 
-- `.agent/collaboration/execution_log.md`
+### repo_destino
 - `.agent/collaboration/work_plan.md`
-
-## Decision Arquitectonica
-
-El cambio mas localizado y fail-safe es extender `parse_files_likely_touched` para
-aceptar un `deliverable_type` opcional: cuando vale `analysis/documentation/research`
-y no existe `## Files Likely Touched`, parsear `## Builder` como la lista de archivos
-declarados del Builder. Esto hace que `check_scope_gate` reciba una whitelist real,
-no vacia, y pueda verificar cobertura real en lugar de emitir el warning spurio.
-
-El preflight en el pipeline (documentado en `orchestrator_pipeline.md`) debe correr
-`--validate --json --project-root <destino>` antes de lanzar Builder y fallar si hay
-errors o warnings no aceptados por el contrato del ticket.
-
-## Implementacion
-
-### Paso 1: `.agent/scope_gate.py`
-
-Extender la firma de `parse_files_likely_touched`:
-
-```python
-def parse_files_likely_touched(
-    work_plan_content: str,
-    *,
-    project_root: Path,
-    deliverable_type: str = "code",
-) -> set[str]:
-```
-
-Logica adicional: si `deliverable_type in {"analysis", "documentation", "research"}`
-y la busqueda de `## Files Likely Touched` devuelve conjunto vacio, intentar parsear
-`## Builder` con la misma logica de extraccion de paths. La seccion `## Builder`
-termina en el siguiente heading `## ` igual que `## Files Likely Touched`.
-
-Extender `check_scope_gate` para aceptar y pasar `deliverable_type`:
-
-```python
-def check_scope_gate(
-    work_plan_content: str,
-    changed_files: set[str] | None,
-    exclude_files: set[str],
-    *,
-    parse_files_likely_touched_fn,
-    deliverable_type: str = "code",
-) -> dict:
-```
-
-### Paso 2: `.agent/agent_controller.py`
-
-En los wrappers `parse_files_likely_touched` y `check_scope_gate`, leer
-`deliverable_type` del `work_plan_content` y pasarlo a scope_gate.
-
-### Paso 3: `prompts/orchestrator_pipeline.md`
-
-Anadir seccion de preflight gate antes de lanzar Builder. El orquestador debe
-correr `--validate --json --project-root <destino>` y verificar `errors == 0` y
-`warnings == {}` antes de materializar TURN.md con `ROL=BUILDER`. Si falla, el
-pipeline se detiene con `PIPELINE_BLOCKED` y el plan necesita correccion.
-
-### Paso 4: `prompts/launch_builder.md`
-
-Anadir nota: el Builder arranca solo si el preflight de validate paso 0/0; si
-llego aqui con warnings pendientes, detener y reportar al Orquestador.
-
-## Tests (tests/unit/test_scope_gate_deliverable_aware.py)
-
-- **Negativo A:** `analysis` sin `## Files Likely Touched` ni `## Builder` ->
-  warning `No Files Likely Touched section`, no bloqueo (backward compat).
-- **Positivo A:** `analysis` con `## Builder` que lista `.agent/docs/foo.md` ->
-  whitelist contiene la ruta; sin warning cuando esa ruta aparece en diff.
-- **Positivo B:** `code` con `## Builder` pero sin `## Files Likely Touched` ->
-  NO parsea `## Builder` (solo para doc types); sigue devolviendo vacio y warning.
-- **Positivo C:** `analysis` con `## Files Likely Touched` (legacy) ->
-  comportamiento sin cambio, usa FLT.
+- `.agent/collaboration/execution_log.md`
 
 ## Criterios Binarios
 
-- [ ] Test negativo: `analysis` sin superficies Builder falla con warning backward compat.
-- [ ] Test positivo A: `analysis` con `## Builder: - .agent/docs/foo.md` -> whitelist
-      contiene la ruta y check_scope_gate no emite warning si el archivo esta en diff.
-- [ ] Test positivo B: `code` con `## Builder` NO parsea la seccion.
-- [ ] Test positivo C: `analysis` con `## Files Likely Touched` -> comportamiento intacto.
+- [ ] Test positivo: ticket `delivery_authority: repo_motor` con `### repo_motor`
+      valida 0/0 con diff motor dentro de scope.
+- [ ] Test/parser: `parse_flt_namespaced` retorna paths motor y destino en sets
+      separados; no mezcla.
+- [ ] Test negativo: diff motor fuera de `### repo_motor` emite warning accionable.
+- [ ] Test negativo: ticket motor sin namespace FLT valido con diff productivo
+      en motor NO pasa limpio (emite warning de scope).
+- [ ] Test negativo: solo `### repo_destino` no cubre diff productivo del motor.
+- [ ] Test legacy: FLT plano sin namespace conserva comportamiento actual.
 - [ ] `ruff check .` exit 0.
 - [ ] `python scripts/run_pytest_safe.py` exit 0.
-- [ ] `python .agent/agent_controller.py --validate --json --project-root
-      C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace` exit 0, 0/0.
-- [ ] `orchestrator_pipeline.md` documenta el preflight gate con comando ejecutable.
-- [ ] Motor `git status --short` vacio despues del commit.
-- [ ] Commit referencia WOT-2026-009a en el motor.
+- [ ] Validate destino final 0/0.
+- [ ] Commit en motor referencia WOT-2026-009b.
 
 ## STOP conditions
 
-- Si cambiar la firma de `parse_files_likely_touched` rompe tests existentes de
-  forma no trivial, parar y reevaluar alcance.
-- No tocar state machine ni `TicketState` en este ticket.
-- No crear archivo de override Markdown.
-- No relajar el warning para `code/mixed`.
+- Si tocar state machine es necesario, parar y escalar.
+- No crear External Scope ni Operational Surfaces.
+- No invertir get_changed_files globalmente.
+- No implementar 009c ni 009d (solo inventario de deuda).
+- Si unificar pip_audit_policy parser requiere cambio mayor, solo inventariar.
 
 ## Forbidden Surfaces
 
 - `.agent/collaboration/` del motor (seed neutro).
 - `privada/` y `.env`.
-- `bus/state_machine.py` (no tocar TicketState en este ticket).
+- `bus/state_machine.py` (no tocar TicketState).
 - `events.jsonl` editado a mano.
