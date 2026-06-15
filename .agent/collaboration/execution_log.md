@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-009b
 - **Contract ID:** T-009B-001
 - **deliverable_type:** code
@@ -93,3 +93,6 @@ scripts/pip_audit_policy.py:32 _parse_files_likely_touched
 - Retorna paths relativos para decidir si correr pip-audit.
 - No participa en validate ni scope gate de topologia.
 - Criterio de salida 009d: unificar si pip-audit falla por FLT namespaced.
+
+
+Manager approved canonical closeout for WOT-2026-009b

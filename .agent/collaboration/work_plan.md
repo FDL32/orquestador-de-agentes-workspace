@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-009b
 - **Contract ID:** T-009B-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-009a (COMPLETED)
@@ -22,13 +22,17 @@ productivo esta en motor pero el validate corre desde el destino, generando
 warnings falsos o bloqueando cuando las rutas del motor no se resuelven contra
 PROJECT_ROOT del destino.
 
+## Decision Arquitectonica
+
+La validacion de scope queda anclada a `delivery_authority`: los tickets `repo_motor` comparan el diff productivo del motor contra `### repo_motor`, y los tickets `repo_destino` comparan el diff del destino contra `### repo_destino`. El `repo_destino` conserva el bus y las proyecciones operativas, pero esas superficies no cuentan como diff productivo del ticket. Esta decision evita falsos warnings de scope sin mezclar cambios de motor y destino en una lista plana.
+
 ## Non-goals
 
 - No introducir guardias reciprocas amplias (eso es 009c).
 - No crear secciones `External Scope` ni `Operational Surfaces`.
 - No reemplazar `delivery_authority` por `target_repository`.
 - No invertir globalmente `get_changed_files`.
-- No implementar 009d (consolidacion de parsers) mas alla del inventario.
+- No implementar 009d; este ticket solo inventaria `scripts/pip_audit_policy.py` como parser FLT pendiente de consolidacion.
 - No tocar state machine ni TicketState.
 
 ## Inventario de parsers FLT (pre-implementacion)
