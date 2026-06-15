@@ -60,7 +60,7 @@
 | Baja | WOT-2026-008e | Retirada versionada de shims y compat legacy | motor/skills-taxonomy | pending | WOT-2026-008d | session-2026-06-15-taxonomy |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
-| Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-009b | session-2026-06-15-contract-formation |
+| Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
 | Baja | WOT-2026-009d | Consolidar parsers Files Likely Touched restantes | motor/protocol-runtime | candidate | WOT-2026-009b | session-2026-06-15-contract-formation |
 | Media | WOT-2026-009e | Launcher Builder relaunch cleanup con $BuilderOnly + locks/session cleanup | motor/launcher-runtime | pending | WOT-2026-009b | session-2026-06-15-launcher-followup |  <!-- fuente: stash wip-launcher-builderonly-cleanup; mantener separado de 009b topology-aware -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
@@ -1252,7 +1252,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-009c - Guardias reciprocas de aislamiento repo_motor/repo_destino
 - **Prioridad:** Media
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-009b
@@ -1307,3 +1307,4 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Tests cubren FLT plano y FLT namespaced.
 - **STOP:** si un parser es solo lint/prosa y no puede compartir semantica exacta, dejar
   wrapper documentado con limites y test minimo.
+
