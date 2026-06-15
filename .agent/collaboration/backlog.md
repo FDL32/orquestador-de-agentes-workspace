@@ -1308,3 +1308,23 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **STOP:** si un parser es solo lint/prosa y no puede compartir semantica exacta, dejar
   wrapper documentado con limites y test minimo.
 
+---
+
+## WOT-2026-009f — Gate de publicacion pre-push para repo_destino
+
+- **Prioridad:** Media
+- **Scope:** motor/protocol-destino
+- **Estado:** candidate
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-009c (COMPLETED)
+- **Incidente de origen:** 0081fb6 (repo_destino, 2026-06-15) -- publico work_plan.md en APPROVED sin alinear execution_log/TURN/STATE; CI fallo con DRIFT: plan=APPROVED pero log=COMPLETED.
+- **Problema:** No existe gate mecanica que bloquee un push de repo_destino cuando .agent/collaboration/ tiene drift entre superficies vivas (work_plan, execution_log, TURN, STATE). La unica regla es documental, no ejecutable.
+- **Objetivo:** Antes de git push en repo_destino, el validador debe correr automaticamente y bloquear si hay errores. Un estado APPROVED pre-Builder no es publicable a main por defecto.
+- **Criterios binarios:**
+  - Gate documentada en orchestrator_pipeline.md: "antes de push, correr --validate --json; bloquear si errors > 0".
+  - Semantica explicita en AGENTS.md o protocol doc: APPROVED pre-Builder no es publicable aislado.
+  - Opcionalmente: script o hook que ejecute validate antes de push en repo_destino.
+  - Test o ejemplo que demuestre que 0081fb6-equivalent falla la gate y 9422d6e-equivalent la pasa.
+- **STOP:** si la gate mecanica requiere instalar hooks en el repo_destino sin consent del propietario del proyecto, documentar solo y dejar la gate como recomendacion en orchestrator_pipeline.md.
+
