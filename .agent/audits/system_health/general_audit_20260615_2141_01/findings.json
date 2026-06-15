@@ -1,0 +1,60 @@
+{
+  "schema": "system-health-collector/v0",
+  "generated_at": "2026-06-15T21:41:35.150846+00:00",
+  "mode": "full",
+  "degraded": false,
+  "topology": {
+    "motor_root": "<MOTOR_ROOT>",
+    "destino_root": "<DESTINO_ROOT>",
+    "motor_head": "43e80bbb5e7bddae2f4366362d1bd76f893d45a8",
+    "destino_head": "0425413c1c8c783918caea7b60990832fc042f43",
+    "destino_present": true
+  },
+  "checks": {
+    "ruff_motor": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "validate_motor": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "discover_skills_contract": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "motor_pristine_snapshot": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "ruff_destino": {
+      "exit_code": 0,
+      "ok": true
+    },
+    "validate_destino": {
+      "exit_code": 0,
+      "ok": true
+    }
+  },
+  "pytest_safe_last_run": {
+    "present": true,
+    "exit_code": 0,
+    "finished_at": "2026-06-15T21:27:40+00:00"
+  },
+  "inventory": {
+    "motor_tracked_count": 555,
+    "destino_tracked_count": 240
+  },
+  "automatic_criticals": [],
+  "note": "Collector output is [RELATO]; the agent produces the verdict (Pass B).",
+  "agent_audit_completed_at": "2026-06-15T22:00:00+00:00",
+  "agent_verdict": "SISTEMA EN ESTADO SALUDABLE",
+  "new_findings": [
+    "BUG-LOW: pre_compact_hook datetime comparison (offset-naive vs offset-aware)",
+    "UNVERIFIED-LOW: check_destino_publish_ready.py not confirmed in CI workflow"
+  ],
+  "known_risks": [
+    "RISK-MED: pytest suite is allowlist partial (~28/147 files)",
+    "RISK-LOW: BOM in skills/man-review-implementation/SKILL.md (WOT-2026-008b)"
+  ]
+}
