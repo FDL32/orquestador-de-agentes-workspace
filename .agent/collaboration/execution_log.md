@@ -27,6 +27,7 @@ El ticket desbloquea el rebase posterior de WOT-2026-007f sobre el contrato fina
 
 - `ruff check scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py` -> exit 0, All checks passed.
 - `python -m pytest tests/unit/test_validate_contract_formation.py -q` -> exit 0, 44 passed.
+- python scripts/run_pytest_safe.py -- tests/unit/test_validate_contract_formation.py -q -> exit 0, 44 passed.
 - `python -m pytest tests/unit -q` -> exit 0, 1075 passed.
 - `python scripts/validate_contract_formation.py --plan docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0, OK: 3 file(s) validated, 0 errors.
 - `python scripts/check_encoding_guard.py scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0.
