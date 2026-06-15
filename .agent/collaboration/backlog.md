@@ -54,11 +54,13 @@
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
 | Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | in_progress | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
-| Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | pending | WOT-2026-008a, WOT-2026-009a | session-2026-06-15-taxonomy |
+| Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | pending | WOT-2026-008a, WOT-2026-009b | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008c | Registry/INDEX generado de prompts y skills | motor/skills-discovery | pending | WOT-2026-008b | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | pending | WOT-2026-008c | session-2026-06-15-taxonomy |
 | Baja | WOT-2026-008e | Retirada versionada de shims y compat legacy | motor/skills-taxonomy | pending | WOT-2026-008d | session-2026-06-15-taxonomy |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | pending | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- follow-up: ningun Builder arranca con contrato que no valide en modo handoff; override debe ser evento auditable, no nota markdown -->
+| Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | pending | WOT-2026-009a | session-2026-06-15-contract-formation |
+| Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-009b | session-2026-06-15-contract-formation |
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -920,7 +922,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Estado:** pending
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-008a, WOT-2026-009a
+- **Depende de:** WOT-2026-008a, WOT-2026-009b
 - **Problema:** el manifiesto 008a detecto 29 `SKILL.md` en disco pero solo 28
   skills descubiertas. La causa verificada fue BOM UTF-8 en
   `skills/man-review-implementation/SKILL.md`, que hace que `parse_frontmatter`
@@ -1113,6 +1115,10 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 > contienen warnings, secciones incompatibles con `deliverable_type` o huecos
 > que solo aparecen al hacer handoff. El Builder implementa contratos limpios;
 > no repara contratos.
+>
+> Secuencia canonica: 009a cierra el parsing deliverable-aware inmediato; 009b
+> resuelve la topologia multi-root (`delivery_authority` + FLT namespaced);
+> 009c anade guardias reciprocas de aislamiento. No arrancar 008b hasta 009b.
 
 ### WOT-2026-009a - Pre-Builder contract gate deliverable-aware y fail-closed
 - **Prioridad:** Alta
@@ -1160,3 +1166,142 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Si el fix relaja warnings globalmente, parar: el objetivo es distinguir contrato
     valido por tipo, no permitir warnings.
   - Si el override no queda auditable por bus, no implementarlo.
+
+### WOT-2026-009b - Scope gate topology-aware por delivery_authority y FLT namespaced
+- **Prioridad:** Alta
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-009a
+- **Problema:** en tickets con `delivery_authority: repo_motor`, el estado operativo
+  vive en `repo_destino` pero el diff productivo vive en `repo_motor`. El scope gate
+  actual puede comparar el diff/whitelist contra el root equivocado y producir
+  warnings falsos (`Files Likely Touched` sin cobertura) aunque el commit del motor
+  este dentro de scope. Usar `--scope-override` oculta el mismatch en vez de resolverlo.
+- **Objetivo:** hacer que validate/pre-handoff resuelvan el root productivo segun
+  `delivery_authority` usando una unica seccion de scope: `## Files Likely Touched`
+  con namespaces `### repo_motor` / `### repo_destino`. No crear `External Scope` ni
+  `Operational Surfaces` como secciones nuevas manuales: duplicarian semantica ya
+  cubierta por FLT y por la excludelist operativa.
+- **Contrato propuesto en `work_plan.md`:**
+  - `delivery_authority` sigue siendo el campo canonico.
+  - `## Files Likely Touched` admite subsecciones opcionales:
+    - `### repo_motor` para rutas productivas relativas a `repo_motor`.
+    - `### repo_destino` para rutas productivas relativas a `repo_destino`.
+  - Rutas sin namespace mantienen backward compatibility y se resuelven contra el root
+    de autoridad del ticket.
+  - Las superficies operativas del destino no se declaran manualmente: se excluyen por
+    la excludelist existente y el gate las reporta como `excluded_operational` en su
+    diagnostico.
+- **Files Likely Touched:**
+  - `.agent/scope_gate.py`
+  - `.agent/agent_controller.py`
+  - `scripts/pre_handoff_guard.py`
+  - `scripts/delivery_hygiene_check.py` si participa en validate/preflight
+  - tests unitarios de scope/topologia
+  - prompts/plantillas de contrato solo si necesitan documentar FLT namespaced
+- **Callers obligatorios a revisar en 009b:**
+  - Flujo validate/caller de `check_scope_gate` en `.agent/agent_controller.py`: debe usar diff
+    productivo por autoridad, no diff monolitico del destino. No asumir que existe
+    una funcion llamada `_check_scope_for_validate`; verificar el caller real por grep.
+  - Flujo `mark-ready`/staging en `.agent/agent_controller.py`: debe usar el mismo
+    dispatch por autoridad.
+  - `scripts/pre_handoff_guard.py`: verificar existencia y contenido antes de tocar codigo.
+    Si mantiene parser propio de FLT, debe delegar en
+    `scope_gate.parse_files_likely_touched` o recibir `delivery_authority` + roots
+    equivalentes. No puede seguir resolviendo siempre contra `project_root`.
+- **Criterios binarios:**
+  - Test positivo: ticket `delivery_authority: repo_motor` con diff en motor declarado
+    bajo `## Files Likely Touched / ### repo_motor` y solo superficies operativas en
+    destino valida 0/0.
+  - Test/parser: `## Files Likely Touched` distingue subsecciones `### repo_motor` y
+    `### repo_destino`; no mezcla rutas de ambos namespaces en un unico set.
+  - Test negativo: ticket `delivery_authority: repo_motor` con diff en motor fuera de
+    `### repo_motor` bloquea o emite warning/error accionable.
+  - Test negativo: ticket `delivery_authority: repo_motor` sin namespace ni FLT valido
+    pero con diff productivo en motor NO pasa como limpio.
+  - Test negativo: un plan que solo declara `### repo_destino` no cubre diff productivo
+    del motor.
+  - Test legacy/backward-compatible: ticket sin namespaces y autoridad destino conserva
+    comportamiento actual o emite warning de migracion documentado.
+  - `Files Likely Touched` plano sigue funcionando para tickets simples de destino.
+  - El validador no exige que rutas del motor existan bajo `repo_destino`.
+  - El resultado del gate incluye, cuando aplique, `excluded_operational` informativo
+    para superficies vivas ignoradas por excludelist; no requiere mantener una segunda
+    lista manual en el plan.
+  - El error indica que repo/root se valido, que subseccion falta y como revalidar.
+  - `ruff`, tests focales y validate destino final pasan con evidencia real.
+- **STOP:**
+  - No introducir guardias reciprocas amplias en este ticket; eso es 009c.
+  - No crear secciones nuevas `External Scope` ni `Operational Surfaces` salvo que la
+    auditoria demuestre que FLT namespaced no puede cubrir el caso.
+  - No reemplazar `delivery_authority` por `target_repository`; si se necesita alias,
+    debe ser backward-compatible y documentado como derivado.
+  - No invertir globalmente la prioridad de `get_changed_files`; crear/usar una ruta
+    explicita tipo `get_productive_changed_files(delivery_authority, roots)` para scope.
+  - No usar `accepted_health_exception` permanente para warnings de topologia.
+  - No relajar scope global: el objetivo es validar contra el root correcto.
+  - Primer paso obligatorio de 009b: `rg "parse_files_likely_touched|Files Likely Touched" .agent scripts bus tests` para inventariar callsites/parsers antes de editar.
+  - Verificar explicitamente si existe `_check_scope_for_validate`; si no existe, documentar el caller real de validate que invoca `check_scope_gate`.
+  - No anadir otro parser FLT. Si no se pueden unificar todos los parsers en este ticket,
+    inventariar los restantes como deuda con criterio de salida.
+
+### WOT-2026-009c - Guardias reciprocas de aislamiento repo_motor/repo_destino
+- **Prioridad:** Media
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-009b
+- **Problema:** resolver el root correcto evita falsos warnings, pero aun falta una
+  barrera explicita contra contaminacion cruzada: tickets de motor no deben dejar
+  cambios productivos en destino, y tickets de destino no deben mutar el motor salvo
+  contrato topology-aware explicito.
+- **Objetivo:** implementar guardias de aislamiento reciproco apoyadas en
+  `delivery_authority`, FLT namespaced y la excludelist operativa existente, con
+  diagnosticos self-service y tests bidireccionales.
+- **Files Likely Touched:**
+  - `.agent/agent_controller.py`
+  - `.agent/scope_gate.py`
+  - `scripts/pre_handoff_guard.py`
+  - `scripts/delivery_hygiene_check.py`
+  - tests unitarios/integracion de aislamiento multi-root
+- **Criterios binarios:**
+  - Ticket `repo_motor`: cambios productivos no-operativos en `repo_destino` bloquean.
+  - Ticket `repo_motor`: cambios en `repo_destino` excluidos por la excludelist operativa
+    pasan y se reportan como `excluded_operational`, sin contarse como entrega productiva.
+  - Ticket `repo_destino`: cambios productivos en `repo_motor` bloquean salvo contrato
+    explicito y validado que declare ambos roots.
+  - Ticket mixto/topologico: solo pasa si declara ambos namespaces y sus superficies.
+  - Los mensajes distinguen `contaminacion productiva`, `superficie operativa excluida`
+    y `scope externo no declarado`.
+  - Tests demuestran que cada guardia falla sin la mejora y pasa con ella.
+  - No se toca state machine salvo que sea imprescindible; si lo es, separar ticket.
+- **STOP:**
+  - Si la implementacion exige cambiar eventos de bus o estados canonicos, abrir ticket
+    separado antes de tocar runtime amplio.
+  - Si una guardia bloquea superficies vivas (`work_plan`, `execution_log`, `STATE`,
+    bus runtime) cubiertas por excludelist, ajustar el modelo antes de cerrar.
+  - Si no hay fixture multi-root realista, no aprobar solo con mocks monoliticos.
+
+### WOT-2026-009d - Consolidar parsers Files Likely Touched restantes
+- **Prioridad:** Baja
+- **Scope:** motor/protocol-runtime
+- **Estado:** candidate
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-009b
+- **Problema:** hay multiples parsers de `Files Likely Touched` en el motor
+  (`scope_gate`, `agent_controller`, `motor_checkpoint`, `pre_handoff_guard`,
+  `pip_audit_policy`, `graph_context`, `validate_ticket_prose`). Cada nueva semantica
+  de FLT (namespaces, authority, warnings) amplifica la deriva si no se centraliza.
+- **Objetivo:** reducir los parsers activos a una fuente canonica o dejar wrappers
+  delgados con tests de paridad.
+- **Criterios binarios:**
+  - Inventario actualizado de parsers FLT con consumidor y semantica.
+  - Los parsers operativos delegan en una funcion canonica o tienen test de paridad.
+  - Ningun parser nuevo se introduce sin justificar por que no puede delegar.
+  - Tests cubren FLT plano y FLT namespaced.
+- **STOP:** si un parser es solo lint/prosa y no puede compartir semantica exacta, dejar
+  wrapper documentado con limites y test minimo.
