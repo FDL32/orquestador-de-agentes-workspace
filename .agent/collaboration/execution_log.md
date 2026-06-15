@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-007g
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
@@ -47,3 +47,6 @@ El ticket desbloquea el rebase posterior de WOT-2026-007f sobre el contrato fina
 - Primera revision: CHANGES por mark-ready no canonico, parseo por posicion y runtime untracked.
 - Fix Builder: commit motor `ce83621`; commit destino `03efad4`; mark-ready canonico emitio BUILDER_EXIT + STATE_CHANGED.
 - Reparacion Manager: normaliza `work_plan.md` y `execution_log.md` al ticket 007g para eliminar warnings reparables antes del cierre.
+
+
+Manager approved canonical closeout for WOT-2026-007g

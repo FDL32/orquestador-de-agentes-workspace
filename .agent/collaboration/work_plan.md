@@ -3,7 +3,7 @@
 ## Metadata
 
 - **ID:** WOT-2026-007g
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-007c (COMPLETED), WOT-2026-007e (COMPLETED)
