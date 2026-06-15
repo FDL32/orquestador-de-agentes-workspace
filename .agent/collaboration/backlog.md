@@ -951,8 +951,16 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - La DEC compara al menos cuatro opciones: registry central, manifest por skill
     (`manifest.json`), `.claude-plugin/plugin.json` compatible y discovery
     recursivo sin manifest.
+  - La DEC evalua un esquema minimo de campos: `public_id`, `source`
+    (`motor|host`), `canonical_source`, `path`, `trigger`, `role`, `status`
+    (`active|deprecated|draft`), `deliverable_types`, `deprecated_by`,
+    `compat_until` y, solo si aporta valor demostrado, `deliverable_profile`.
   - El contrato declara que el registry/manifest define la API publica activa,
     mientras el layout fisico puede contener docs, tests, deprecated o in-progress.
+  - El contrato declara como se integra host-first: un posible
+    `<repo_destino>/.agent/registry.json` puede extender/overridear el registry del
+    motor, pero nunca contaminar `repo_motor`; la precedencia host local sigue
+    siendo superior al fallback read-only del motor.
   - Si se adopta manifest-first, el manifest controla que esta activo; carpetas
     `deprecated/` o `in-progress/` solo son layout, no API publica.
   - Aunque se adopte manifest-first, hay barrera separada para `SKILL.md` con BOM
@@ -987,6 +995,8 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     manual que pueda derivar.
   - Incluye prompts, skills, templates/references relevantes y scripts consumidores
     declarados por 008a.
+  - Incluye owner/source (`motor|host`) y `canonical_source` para distinguir
+    extensiones del destino, overrides y componentes canonicos del motor.
   - Distingue API publica, layout fisico y shims.
   - Distingue componentes activos de `deprecated`/`in-progress`; presencia en disco
     no implica disponibilidad para agentes.
@@ -1008,7 +1018,9 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   `bui-version-changelog`), pero renombrar sin registry y shims rompe triggers,
   docs, memoria y agentes externos.
 - **Objetivo:** ejecutar solo los renames aprobados por DEC de 008a/008b, con shims
-  temporales, warnings de deprecacion y pruebas de compatibilidad.
+  temporales, warnings de deprecacion y pruebas de compatibilidad. Tambien evaluar
+  progressive disclosure para prompts grandes: routers pequenos con referencias
+  relativas a documentos de fase, cargados on-demand.
 - **Files Likely Touched:**
   - prompts/skills afectados por renames aprobados
   - registry/manifest/INDEX
@@ -1023,6 +1035,9 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - `rg` de nombres antiguos solo aparece en shims/deprecation docs permitidos.
   - No se fusionan prompts/skills solo por similitud de nombre; debe haber mejora
     demostrada de descubribilidad o reduccion de duplicacion.
+  - Si se divide un prompt grande, queda un router canonico estable, referencias
+    relativas validables y test/check de enlaces; no se duplican reglas entre
+    router y subdocumentos.
 - **STOP:**
   - Si un rename no puede tener shim, requiere aprobacion humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
