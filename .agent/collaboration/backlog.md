@@ -958,9 +958,17 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - DEC de discovery resuelta: mantener `triggers` como API propia, migrar a
     discovery por `description` estilo Claude, o soportar hibrido. La decision
     declara compatibilidad, coste de migracion y efecto en prompts/skills actuales.
-  - Matriz `agents.json` allowlist vs triggers reales de `SKILL.md`: todo trigger
-    permitido por rol debe resolver a una skill real, y toda skill critica de
-    Builder/Manager debe estar alcanzable por su rol o documentar por que no.
+  - Matriz `agents.json` allowlist vs triggers reales de `SKILL.md`: antes de
+    clasificar ghosts, reparar BOM/discovery y re-ejecutar discovery. El caso
+    `/review` se trata como `BOM/discovery casualty` verificado
+    (`man-review-implementation`) y NO se retira de la allowlist solo porque hoy
+    sea invisible. Los ghosts se separan en `BOM/discovery casualty` vs
+    `invented/retired`; lista inicial a verificar en implementacion:
+    `/impl`, `/test`, `/fix`, `/orchestrate`, `/archive`, `/report`, `/audit`,
+    `/validate`. Todo trigger permitido por rol debe resolver a una skill real
+    tras el fix de discovery, o quedar documentado como retirada intencional; toda
+    skill critica de Builder/Manager debe estar alcanzable por su rol o documentar
+    por que no.
   - Si se adopta discovery por `description` o hibrido, las descriptions siguen un
     patron verificable tipo `Use when ...`; se mide longitud y claridad antes de
     convertirlo en contrato obligatorio.
@@ -1067,6 +1075,10 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - La opcion `deprecated/` se prefiere a borrar recursos legacy cuando aun hay
     referencias historicas o riesgo de compatibilidad; debe incluir README/registry
     que marque no uso.
+  - DEC de longitud/progressive-disclosure resuelta con evidencia: no adoptar el
+    limite de 100 lineas como contrato inicial (23/29 skills lo superan). Mantener
+    o endurecer primero el umbral existente de 250 lineas (6/29 skills lo superan)
+    y exigir migracion gradual a docs/references antes de cualquier rewrite masivo.
 - **STOP:**
   - Si un rename no puede tener shim, requiere aprobacion humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
