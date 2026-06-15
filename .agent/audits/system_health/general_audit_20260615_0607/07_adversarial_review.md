@@ -90,4 +90,11 @@ Proximos pasos: 007g (desbloqueado), luego rebase de 007f con contrato final.
 
 ## Validate post-patch
 
-(pendiente: ejecutar post-commit de este parche)
+Commit: f929434 (docs-only patch).
+
+```
+python .agent/agent_controller.py --project-root <destino> --validate
+=> [OK] Todos los archivos de estado son validos.
+```
+
+Exit: 0 errors / 0 warnings. Confirmado: commits 5e483de y f929434 no alteran superficies validadas.
