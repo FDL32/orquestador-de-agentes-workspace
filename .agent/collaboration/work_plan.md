@@ -16,7 +16,7 @@ segun `delivery_authority`, usando `## Files Likely Touched` con subsecciones
 opcionales `### repo_motor` / `### repo_destino`.
 
 Root cause: `_parse_raw_flt_paths` en motor_checkpoint.py y los parsers de
-pre_handoff_guard.py mezclan todas las rutas bajo `## Files Likely Touched` sin
+pre_handoff_guard.py mezclan rutas `repo_motor` y `repo_destino` bajo `## Files Likely Touched` sin
 distinguir namespace. En tickets `delivery_authority: repo_motor`, el diff
 productivo esta en motor pero el validate corre desde el destino, generando
 warnings falsos o bloqueando cuando las rutas del motor no se resuelven contra
