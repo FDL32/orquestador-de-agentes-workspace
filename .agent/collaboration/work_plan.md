@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-008a
 - **Contract ID:** T-008A-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_destino
 - **Depends on:** WOT-2026-007d (COMPLETED 11e7ad8)
@@ -33,6 +33,11 @@ permite probar primero las limitaciones reales de discovery y contratos.
 
 - Crear `.agent/docs/taxonomy_migration_WOT-2026-008a.md`.
 - Registrar comandos, resultados y decisiones en `execution_log.md`.
+
+## Files Likely Touched
+
+- `.agent/docs/taxonomy_migration_WOT-2026-008a.md`
+- `.agent/collaboration/execution_log.md`
 
 ## Read/inspect only
 

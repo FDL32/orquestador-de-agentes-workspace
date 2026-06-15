@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- **Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-008a
 - **Contract ID:** T-008A-001
 - **deliverable_type:** analysis
@@ -146,3 +146,17 @@ status --short EMPTY; validate destino 0/0 (ver linea final).
   o (c) se corrige el scope-gate para honrar analysis (ticket motor aparte).
 
 **Estado:** READY_FOR_REVIEW (handoff canonico en bus; 1 warning clasificado).
+
+
+## Manager patch: pre-review contract cleanup -- 2026-06-15
+
+- Decision: no cerrar 008a con `accepted_health_exception` para un warning
+  reparable. Se anadio una seccion minima `Files Likely Touched` al work_plan
+  con las superficies reales del ticket analysis.
+- Razon: el Builder debe recibir contratos que pueden cerrar 0/0; las
+  excepciones quedan para warnings no reparables, no para gaps documentales.
+- Follow-up registrado en backlog: WOT-2026-009a para hacer el pre-Builder
+  contract gate deliverable-aware, fail-closed y auditable.
+
+
+Manager approved canonical closeout for WOT-2026-008a

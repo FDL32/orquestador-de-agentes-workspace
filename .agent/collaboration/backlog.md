@@ -54,6 +54,7 @@
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
 | Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | in_progress | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
+| Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | pending | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- follow-up: ningun Builder arranca con contrato que no valide en modo handoff; override debe ser evento auditable, no nota markdown -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -902,3 +903,52 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 > infraestructura discovery, migracion de prompts, migracion de skills y retirada
 > de shims se crean solo despues de aprobar el manifiesto. No se permite un rename
 > masivo ni anidar skills mientras discovery/collision sigan siendo planos.
+
+## Plan WOT-2026-009 - Contract gates antes del Builder
+
+> Objetivo de familia: impedir que el Builder arranque con contratos que ya
+> contienen warnings, secciones incompatibles con `deliverable_type` o huecos
+> que solo aparecen al hacer handoff. El Builder implementa contratos limpios;
+> no repara contratos.
+
+### WOT-2026-009a - Pre-Builder contract gate deliverable-aware y fail-closed
+- **Prioridad:** Alta
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008a
+- **Problema:** WOT-2026-008a llego a Builder con un `work_plan.md` semanticamente
+  claro para humanos, pero incompleto para el scope-gate mecanico. El warning solo
+  aparecio en el cierre/handoff, cuando ya era tarde para tratarlo como preflight.
+- **Objetivo:** bloquear mecanicamente el lanzamiento de Builder si el contrato del
+  ticket no valida limpio en el mismo modo en que fallaria durante handoff. El gate
+  debe respetar `deliverable_type` y aceptar las superficies documentales canonicas
+  (`Builder`, `Read/inspect only`, `Manager-only`) en tickets `analysis`,
+  `documentation` y `research`.
+- **Files Likely Touched:**
+  - `prompts/orchestrator_pipeline.md`
+  - `prompts/launch_builder.md`
+  - `.agent/agent_controller.py` o modulo de validacion de contratos si aplica
+  - `scripts/validate_contract_formation.py` o validador/scope-gate equivalente
+  - tests unitarios del validador/preflight
+- **Criterios binarios:**
+  - Existe un preflight mecanico antes de Builder que falla si `validate` no puede
+    cerrar 0 errors / 0 warnings en modo equivalente a handoff.
+  - El gate es `deliverable_type`-aware: para `analysis`/`documentation`/`research`
+    acepta `Builder` + `Read/inspect only` + `Manager-only` como contrato valido de
+    superficies, sin exigir una forma propia de tickets `code`.
+  - Test negativo: un ticket `analysis` sin superficie Builder ni Files Likely
+    Touched falla antes de Builder.
+  - Test positivo: un ticket `analysis` con superficies documentales canonicas pasa
+    el preflight.
+  - Test negativo: un warning que solo aparece en modo handoff bloquea el arranque.
+  - Override excepcional se modela como evento auditable del bus con owner, razon y
+    alcance; no como nota Markdown.
+  - El prompt del pipeline indica que ningun Builder arranca si falla este preflight.
+- **STOP:**
+  - Si introducir `READY_FOR_BUILDER` exige tocar state-machine amplia, separar ese
+    estado a un ticket posterior y cerrar 009a con gate previo al lanzamiento.
+  - Si el fix relaja warnings globalmente, parar: el objetivo es distinguir contrato
+    valido por tipo, no permitir warnings.
+  - Si el override no queda auditable por bus, no implementarlo.
