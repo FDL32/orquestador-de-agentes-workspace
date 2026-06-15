@@ -1,10 +1,10 @@
 # MEMORY
 
-Regenerated: 2026-06-14T20:52:29.275397+00:00
+Regenerated: 2026-06-15T21:57:38.792985+00:00
 
-Total observations: 42
+Total observations: 44
 
-- Architecture (15 observations)
+- Architecture (16 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
 - Backlog-Summary-Detail-Reconcile-After-Rescope (1 observations)
@@ -29,10 +29,11 @@ Total observations: 42
 - Scope-Gate-Path-Format (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
-- Ticket-Completion (2 observations)
+- Ticket-Completion (3 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
 ## architecture
+- Decisiones arquitectonicas documentadas en WOT-2026-009d
 - Decisiones arquitectonicas documentadas en WOT-2026-003d
 - Decisiones arquitectonicas documentadas en WOT-2026-005d
 - Decisiones arquitectonicas documentadas en WOT-2026-005c
@@ -42,7 +43,6 @@ Total observations: 42
 - Decisiones arquitectonicas documentadas en WOT-2026-003e
 - Decisiones arquitectonicas documentadas en WOT-2026-004b
 - Decisiones arquitectonicas documentadas en WOT-2026-002c
-- Decisiones arquitectonicas documentadas en WOT-2026-002b
 
 ## atomic-requeue-claim
 - Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super

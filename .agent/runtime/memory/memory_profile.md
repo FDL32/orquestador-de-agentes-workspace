@@ -1,14 +1,14 @@
 # Memory Profile (L3)
 
-Total observations: 42
+Total observations: 44
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
-- bus-architecture: 19 observations
+- bus-architecture: 20 observations
+- delivery-hygiene: 9 observations
 - review-quality: 8 observations
-- delivery-hygiene: 8 observations
 - builder-contract: 5 observations
 - testing: 1 observations
 - collaboration: 1 observations
@@ -28,6 +28,7 @@ High-level profile of project memory for quick context loading. This is the firs
 - WOT-2026-005b
 - WOT-2026-005c
 - WOT-2026-005d
+- WOT-2026-009d
 - WOT-AUDIT-A2a
 - WOT-AUDIT-A2b
 - WOT-AUDIT-CI
@@ -46,6 +47,8 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
+- [ticket-completion] Ticket WOT-2026-009d completado: Unknown (deliverable_type=code) (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-009d (session-close)
 - [session-close-may-need-final-memory-commit] After the canonical session-close pipeline runs on a tracked destination, it can legitimately leave versioned memory artifacts dirty (`MEMORY.md`, `me (session-close)
 - [backlog-summary-detail-reconcile-after-rescope] When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout (session-close)
 - [ticket-completion] Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra rutas git-trackeadas del repo_destino (deliverable_type=code) (session-close)
@@ -54,5 +57,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-005c (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-005b (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-005a (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-003f (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-003e (session-close)
