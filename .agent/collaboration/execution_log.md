@@ -122,3 +122,19 @@ Segundo review independiente sobre los commits del rework. 3 blockers validos:
 Gates #2: suite 2710 passed, 19 skipped, exit 0. ruff verde. Motor limpio post-suite.
 
 **Estado:** IN_PROGRESS (rework #2 completo; pendiente re-review breve + push motor/destino).
+
+---
+
+## Remediacion final Manager #3 -- barrera anti-leak fail-closed
+
+- Motor commit: `ece7524` (`test(WOT-2026-007f): fail closed on motor bus leaks`).
+- `tests/conftest.py`: la barrera restaura `events.jsonl` y falla el test contaminante con su `nodeid`; ya no oculta la fuga tras una suite verde.
+- `tests/unit/test_motor_bus_isolation_barrier.py`: prueba restauracion de archivo existente, eliminacion de archivo nuevo, ausencia de falso positivo y fallo observable de la barrera.
+- Tests focales: `46 passed in 0.57s`.
+- Suite canonica: `2713 passed, 19 skipped, 5 deselected`, exit 0 (`last-run.json` confirma `exit_code: 0`).
+- Ruff: `All checks passed!`.
+- Encoding guard: exit 0.
+- Validate repo_destino: 0 errors / 0 warnings.
+- Post-suite: motor sin cambios runtime; solo los commits productivos ahead de origin.
+
+**Estado:** IN_PROGRESS (fix completo; listo para handoff canonico mediante controller).
