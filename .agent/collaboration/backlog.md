@@ -61,8 +61,9 @@
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
 | Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
-| Baja | WOT-2026-009d | Consolidar parsers Files Likely Touched restantes | motor/protocol-runtime | candidate | WOT-2026-009b | session-2026-06-15-contract-formation |
+| Baja | WOT-2026-009d | Consolidar parsers Files Likely Touched restantes | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor 43e80bb; parse_flt_raw_buckets canonico en scope_gate; 3 consumidores delegando; 64 tests; cierre canonico manager-approve; validate 0/0 -->
 | Media | WOT-2026-009e | Launcher Builder relaunch cleanup con $BuilderOnly + locks/session cleanup | motor/launcher-runtime | completed | WOT-2026-009b | session-2026-06-15-launcher-followup |  <!-- motor cf12068 + docs hardening follow-up; cierre canonico manager-approve; validate 0/0 -->
+| Media | WOT-2026-009f | Gate de publicacion pre-push para repo_destino | motor/protocol-destino | completed | WOT-2026-009c | session-2026-06-15-contract-formation |  <!-- motor a5c2d94+scripts/check_destino_publish_ready.py; exit1=drift/exit2=APPROVED/exit0=OK; orchestrator_pipeline seccion gate; 8 tests; cierre canonico manager-approve; validate 0/0 -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1314,7 +1315,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/protocol-destino
-- **Estado:** candidate
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-009c (COMPLETED)
