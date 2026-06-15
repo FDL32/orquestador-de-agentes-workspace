@@ -61,10 +61,10 @@ python .agent/agent_controller.py --project-root <destino> --validate
    - Verificar que las STOP conditions siguen siendo validas.
    - Si el contrato cambio, abrir CONTRACT_GAP antes de proceder.
 
-2. **WOT-2026-007g -- needs-work-plan (bloqueado pendiente DoD):**
+2. **WOT-2026-007g -- ready-to-start (work_plan 0782b06):**
    Extender validate_plan_graph para enforce paralelizable en {yes, no, after PLAN-00x}
    y presencia de Merge Regression Audit section.
-   Bloqueado: ejemplos y fixtures tienen 'no -- unico plan'; decision tomada: valor estricto
+   Preparado: ejemplos y fixtures con 'no -- unico plan' quedan cubiertos por work_plan 007g; decision tomada: valor estricto
    (paralelizable: no) con campo separado parallelism_notes para comentarios.
    Requiere work_plan.md con DoD binario antes de lanzar Builder.
 
