@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- **Estado:** IN_PROGRESS
+- **Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-008a
 - **Contract ID:** T-008A-001
 - **deliverable_type:** analysis
@@ -127,3 +127,22 @@ Gates tras remediacion: encoding guard del entregable exit 0; repo_motor git
 status --short EMPTY; validate destino 0/0 (ver linea final).
 
 **Estado:** READY_FOR_REVIEW (handoff canonico emitido al bus; pendiente re-review).
+
+
+## Validate post-handoff: 0 errors / 1 warning (clasificado)
+
+- validate destino: errors=0, warnings=1.
+- Warning unico: scope -> "No Files Likely Touched section in work_plan.md".
+- Naturaleza: FALSO POSITIVO para deliverable_type=analysis. El work_plan usa la
+  convencion documental de CLAUDE.md (secciones ## Builder / ## Read/inspect only /
+  ## Manager-only) en vez de "Files Likely Touched" (heading propio de tickets code).
+  Evidencia: work_plan.md headings = Builder(L32), Read/inspect only(L37),
+  Manager-only(L48); el contrato declara superficies via esas secciones.
+- Clasificacion: accepted_health_exception. Propietario: scope-gate del validador
+  (no respeta deliverable_type para esta seccion) + materializacion del Manager.
+- NO se edita work_plan.md (Forbidden Surface del Builder). NO se hackea para
+  forzar 0/0. Se surfacea a la re-review para decision: (a) el Manager anade
+  "Files Likely Touched" al work_plan, o (b) se acepta el exception documentado,
+  o (c) se corrige el scope-gate para honrar analysis (ticket motor aparte).
+
+**Estado:** READY_FOR_REVIEW (handoff canonico en bus; 1 warning clasificado).
