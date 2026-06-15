@@ -55,3 +55,34 @@ Se declara ya, en vez de diferir, para no bloquear 007b.
 - WOT-2026-007a COMPLETED.
 - Contrato documental v0 queda provisional hasta ratificacion/correccion en WOT-2026-007b.
 - Siguiente ticket recomendado: WOT-2026-007b (validacion vertical idea -> contrato -> backlog -> Builder sin aclaraciones).
+
+---
+
+# WOT-2026-007g — Extender validate_plan_graph (paralelizable estricto + Merge Regression Audit)
+
+## Quality Gates
+
+- `ruff check scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0, All checks passed
+- `python -m pytest tests/unit/test_validate_contract_formation.py -v` -> 43/43 passed
+- `python -m pytest tests/unit/ -v` -> 1075/1075 passed
+- `python scripts/check_encoding_guard.py scripts/validate_contract_formation.py tests/unit/test_validate_contract_formation.py docs/contract_formation/templates/plan_graph.md docs/contract_formation/examples/python_service_minimal/plan_graph.md tests/fixtures/contract_formation/valid/plan_graph.md` -> exit 0 (clean)
+- No nuevas dependencias introducidas (stdlib-only)
+
+## Cambios realizados
+
+1. `scripts/validate_contract_formation.py`: Nueva funcion `_validate_paralelizable_values()` + extended `validate_plan_graph()` con validacion estricta de `paralelizable` (yes/no/after PLAN-\\d+) y chequeo de seccion `## Merge Regression Audit`.
+2. `tests/unit/test_validate_contract_formation.py`: 7 nuevos tests (6 para plan_graph + 1 template regression).
+3. `docs/contract_formation/templates/plan_graph.md`: Valor formal `yes` en celda de ejemplo.
+4. `docs/contract_formation/examples/python_service_minimal/plan_graph.md`: Migrado `no -- unico plan` -> `no`.
+5. `tests/fixtures/contract_formation/valid/plan_graph.md`: Migrado `no -- unico plan` -> `no` + anadida seccion `## Merge Regression Audit`.
+
+## DoD cumplido
+
+- [x] `validate_plan_graph` rechaza `paralelizable: no -- unico plan` con error explicito
+- [x] `validate_plan_graph` acepta yes, no, after PLAN-001, after PLAN-002 (tests positivos)
+- [x] `validate_plan_graph` rechaza ausencia de `## Merge Regression Audit`
+- [x] Ejemplo canonico pasa el validador actualizado
+- [x] Template muestra valores formales en columna Paralelizable
+- [x] `ruff check .` exit 0
+- [x] `pytest` suite verde (1075/1075)
+- [x] Sin dependencias nuevas (stdlib-only)
