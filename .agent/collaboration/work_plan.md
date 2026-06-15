@@ -47,16 +47,19 @@ campo en work_plan.md) porque:
 
 ## Files Likely Touched
 
-- Builder: bus/event_bus.py
-- Builder: .agent/agent_controller.py
-- Builder: bus/state_machine.py
-- Builder: .agent/state_validation.py
-- Builder: tests/conftest.py (barrera anti-leak solicitada en review)
-- Builder: tests/unit/test_contract_gap_integration.py (nuevo)
-- Builder: tests/unit/test_motor_bus_isolation_barrier.py (nuevo)
-- Read/consume only: scripts/state_projection_sync.py
-- Read only: docs/contract_formation/templates/contract_gap.md
-- Read only: scripts/validate_contract_formation.py
+- `bus/event_bus.py`
+- `.agent/agent_controller.py`
+- `bus/state_machine.py`
+- `.agent/state_validation.py`
+- `tests/conftest.py`
+- `tests/unit/test_contract_gap_integration.py`
+- `tests/unit/test_motor_bus_isolation_barrier.py`
+
+## Read/inspect only
+
+- `scripts/state_projection_sync.py`
+- `docs/contract_formation/templates/contract_gap.md`
+- `scripts/validate_contract_formation.py`
 
 ## Criterios Binarios (DoD)
 
