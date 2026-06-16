@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-009g
 - **Contract ID:** T-009G-001
 - **deliverable_type:** code
@@ -96,3 +96,6 @@ python -m pytest [70 focales]  # 70 passed in 29.30s
 ```
 
 Commit motor: 4b61b4b fix(WOT-2026-009g): fail-closed work_plan guard
+
+
+Manager approved canonical closeout for WOT-2026-009g

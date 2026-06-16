@@ -6,7 +6,7 @@
 
 - **ID:** WOT-2026-009g
 - **Contract ID:** T-009G-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-008b (handoff incident origin), WOT-2026-009b (scope gate runtime)
