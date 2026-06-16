@@ -57,3 +57,30 @@
 - ruff format: aplicado.
 - pytest tests/test_pre_handoff_guard.py: 25 passed.
 - pytest controller + mark-ready: 121 passed (propagacion verificada).
+
+## Ronda 2 - Manager CHANGES (diag propagation)
+
+Manager review WOT-2026-010c: CHANGES (MEDIO). El bloqueo se propagaba pero el
+DIAGNOSTICO estructurado de canonical_suite no llegaba a --mark-ready. Mi claim
+"agent_controller.py no requeria cambio" fue IMPRECISO: verifique propagacion de
+valid=False, no del diag. Corregido.
+
+### Fix (motor, ronda 2)
+- .agent/agent_controller.py:_fail_closeout("pre_handoff_guard_failed", ...) ahora
+  incluye "canonical_suite" en el payload (HANDOFF_BLOCKED del bus lo lleva).
+- .agent/agent_controller.py:_run_pre_handoff_guard salida humana (no-json) ahora
+  imprime "Canonical suite not fresh-green: <reason>" + canonical_suite_error +
+  "Fix: <remediation>" cuando bloquea (excluye fresh_green/deliverable_type_skip).
+- tests/test_pre_handoff_guard.py: TestCanonicalSuiteDiagPropagation verifica que
+  el CLI --json emite canonical_suite con reason/remediation/last_run_json/
+  canonical_suite_error cuando la suite no es fresh-green.
+
+### Gates ronda 2
+- pytest tests/test_pre_handoff_guard.py: 26 passed.
+- pytest controller + mark-ready + productive: 137 passed (no regresion).
+- ruff check + format: All checks passed.
+
+### Deuda separada (sugerencia Manager, NO 010c)
+- tag checkpoint/review-none (237e563) es artefacto de un ticket previo con
+  plan_id="none". No bloquea 010c. Candidato a limpieza en ticket separado;
+  fuera de scope de 010c (seria scope creep tocarlo aqui).
