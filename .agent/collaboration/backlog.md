@@ -1397,8 +1397,23 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - `PLAN_WT-<ID>.md` -> `STRATEGY_WOT-<ID>.md` (estrategia tecnica del ticket; libera "PLAN" para familia).
   - `AUDIT_WT-<ID>.md` -> `AUDIT_WOT-<ID>.md` (solo prefijo WT->WOT).
   - `prompts/audit_plan.md` -> `prompts/audit_ticket_contract.md` (audita el contrato/plan operativo del ticket ANTES de Builder; nombre preciso para no confundir con review de implementacion, bus, cierre o publicacion).
+- **Generadores activos (corregir PRIMERO, antes que consumidores/validadores):**
+  Son skills/prompts que CREAN o ENSEÑAN IDs/artefactos con prefijo viejo. El
+  mas peligroso es `skills/man-create-work-plan/SKILL.md:79` (`ID: WP-[YYYY]-[NNN]`):
+  si alguien usa esa skill antes de 010a, regenera nomenclatura antigua por la
+  puerta principal. VERIFICADO 2026-06-16: el patron `WP/WT/PLAN_WP/PLAN_WT/AUDIT_WT`
+  aparece en 23 archivos activos de `skills/` + `prompts/` (NO 7; lista manual
+  quedaria incompleta — usar la gate grep como fuente, no una enumeracion fija).
+  Foco prioritario confirmado: `skills/man-create-work-plan/SKILL.md` +
+  `references/plan-template.md` / `plan-quality-checklist.md`, `prompts/session_bootstrap.md`,
+  `prompts/launch_builder.md`, `skills/deep-research/`, `skills/_shared/ticket-anti-patterns.md`.
+- **Orden de ejecucion:** (1) generadores activos -> (2) consumidores/validadores
+  -> (3) mantener WP/WT solo como legacy documentado y etiquetado.
 - **Criterios binarios:**
   - Glosario canonico creado (en AGENTS.md o doc dedicado): familia/plan / ticket / work_plan.md / STRATEGY_ / AUDIT_ / prefijo WOT / WP-WT legacy.
+  - Ningun prompt/template/skill activo genera `WP-[YYYY]`, `WT-[YYYY]`, `PLAN_WP`, `PLAN_WT`, `AUDIT_WT` salvo en seccion marcada explicitamente como legacy/compat.
+  - Gate grep de aceptacion: buscar esos patrones en `prompts/`, `skills/`, `scripts/` y clasificar cada hit como `canonical`, `legacy-compat` o `bug`. La gate falla si queda algun hit no clasificado fuera de seccion legacy.
+  - Corregir texto del backlog/docs que aun describe el motor como `WP-YYYY-NNN` -> `WOT-YYYY-NNNx` canonico; WP/WT = legacy historico.
   - Renames aplicados con alias de compat; primera linea del alias apunta al nombre nuevo.
   - Referencias canonicas actualizadas: las 2 de `audit_plan` (`orchestrator_pipeline.md`, `orchestrate-pipeline/SKILL.md`) + consumidores de patrones `PLAN_WT-`/`AUDIT_WT-`.
   - Consumidores de codigo a revisar (VERIFICADO 2026-06-16): `scripts/archive_collaboration_artifacts.py`, `scripts/pre_handoff_guard.py`, `bus/review_bridge.py`, `.agent/motor_checkpoint.py`, `scripts/validate_ticket_prose.py`. Los 5 consumen el patron `PLAN_WT-`/`AUDIT_WT-`. `validate_ticket_prose.py` SI entra en scope de 010a (ver STOP de orden).
