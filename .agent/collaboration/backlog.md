@@ -53,11 +53,12 @@
 | Alta | WOT-2026-007b | Validacion vertical: idea -> contrato -> backlog -> Builder sin aclaraciones | motor/protocol-validation | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor bb60532; clarification_rate=0; prueba destructiva bloqueada; 007a ratificado -->
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
-| Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | in_progress | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
+| Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | completed | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; cerrado canonico (bus: REVIEW_DECISION approve -> COMPLETED -> SUPERVISOR_CLOSED, commit 2e74fce); artefacto .agent/docs/taxonomy_migration_WOT-2026-008a.md; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
 | Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | pending | WOT-2026-008a, WOT-2026-009b | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008c | Registry/INDEX generado de prompts y skills | motor/skills-discovery | pending | WOT-2026-008b | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | pending | WOT-2026-008c | session-2026-06-15-taxonomy |
 | Baja | WOT-2026-008e | Retirada versionada de shims y compat legacy | motor/skills-taxonomy | pending | WOT-2026-008d | session-2026-06-15-taxonomy |
+| Media | WOT-2026-008f | Gate de integracion destino-motor y lifecycle operativo | motor/protocol-destino | pending | WOT-2026-008c | session-2026-06-16-taxonomy-review |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
 | Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
@@ -928,12 +929,13 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Depende de:** WOT-2026-008a, WOT-2026-009b
 - **Problema:** el manifiesto 008a detecto 29 `SKILL.md` en disco pero solo 28
   skills descubiertas. La causa verificada fue BOM UTF-8 en
-  `skills/man-review-implementation/SKILL.md`, que hace que `parse_frontmatter`
-  vea `NO_FRONTMATTER` y omita la skill.
-- **Objetivo:** barrer BOMs historicos en skills/prompts, hacer
-  `discover_skills.py` tolerante o fail-closed ante BOM/frontmatter roto, y
-  decidir el modelo canonico de registro: manifest-first explicito vs discovery
-  por glob/recursivo/description. No mover ni renombrar skills.
+  `skills/man-review-implementation/SKILL.md`: `discover_skills.py` no tolera
+  BOM y devuelve `NO_FRONTMATTER`, mientras `check_skill_collisions.py` si lo
+  tolera. El resultado actual es falso verde: `discover_skills.py --check-contract`
+  puede pasar aunque una skill critica quede invisible.
+- **Objetivo:** corregir el falso verde de discovery/frontmatter/BOM y cerrar la
+  DEC de modelo de registry sin implementar todavia el registry completo, sin
+  mover, renombrar ni crear shims.
 - **Evidencia externa a evaluar:** `mattpocock/skills` usa skill-as-package,
   namespaces de dominio y un manifest/plugin registry explicito minimo
   (`plugin.json` lista paths). Tomar como patron de diseno, no como plantilla a
@@ -945,68 +947,66 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - `scripts/check_skill_collisions.py`
   - `scripts/check_encoding_guard.py` si el gap real esta en su cobertura
   - tests de discovery/collision/encoding
-  - documentacion minima del contrato de registry si se adopta manifest-first
+  - documentacion minima del contrato de registry si se adopta registry-first
 - **Criterios binarios:**
-  - Test reproduce el fallo: un `SKILL.md` con BOM no puede desaparecer
-    silenciosamente del discovery.
+  - Test reproduce el fallo actual: un `SKILL.md` con BOM no puede desaparecer
+    silenciosamente del discovery mientras `--check-contract` queda verde.
+  - `discover_skills.py --check-contract` y `check_skill_collisions.py` cubren el
+    caso `man-review-implementation`; si una skill con frontmatter roto queda
+    invisible, el diagnostico es accionable.
+  - Existe una semantica canonica o test de paridad para frontmatter entre
+    discovery/collision/contract-check; no quedan parsers operativos con
+    comportamiento incompatible sin cobertura explicita.
   - Barrido unico de BOMs historicos en `skills/**/SKILL.md`, prompts relevantes
     y referencias de skill; el resultado queda documentado con rutas exactas.
-  - Se aclara la diferencia entre `scripts/check_encoding_guard.py` (bloquea BOM,
-    pero normalmente sobre archivos explicitos/staged) y cualquier script hermano
-    de encoding; si hay inconsistencia CLI, queda corregida o ticketizada.
-  - El sistema falla con diagnostico accionable o normaliza BOM de forma
-    deliberada; no hay omision silenciosa.
-  - `discover_skills.py --check-contract` y `check_skill_collisions.py` cubren el
-    caso `man-review-implementation`.
-  - DEC de registry resuelta: manifest-first explicito, glob recursivo o hibrido,
-    con tradeoffs y compatibilidad.
+  - Se aclara la diferencia entre `scripts/check_encoding_guard.py` y cualquier
+    script hermano de encoding; si hay inconsistencia CLI, queda corregida o
+    ticketizada.
+  - DEC de registry resuelta: registry-first explicito, glob recursivo o hibrido,
+    con tradeoffs y compatibilidad. Si se adopta registry-first, el contrato
+    declara `registry.json` como autoridad logica de API activa/despacho y
+    `INDEX.md` como proyeccion generada, nunca como fuente manual.
   - DEC de discovery resuelta: mantener `triggers` como API propia, migrar a
     discovery por `description` estilo Claude, o soportar hibrido. La decision
     declara compatibilidad, coste de migracion y efecto en prompts/skills actuales.
-  - Matriz `agents.json` allowlist vs triggers reales de `SKILL.md`: antes de
-    clasificar ghosts, reparar BOM/discovery y re-ejecutar discovery. El caso
-    `/review` se trata como `BOM/discovery casualty` verificado
-    (`man-review-implementation`) y NO se retira de la allowlist solo porque hoy
-    sea invisible. Los ghosts se separan en `BOM/discovery casualty` vs
-    `invented/retired`; lista inicial a verificar en implementacion:
-    `/impl`, `/test`, `/fix`, `/orchestrate`, `/archive`, `/report`, `/audit`,
-    `/validate`. Todo trigger permitido por rol debe resolver a una skill real
-    tras el fix de discovery, o quedar documentado como retirada intencional; toda
-    skill critica de Builder/Manager debe estar alcanzable por su rol o documentar
-    por que no.
-  - Si se adopta discovery por `description` o hibrido, las descriptions siguen un
-    patron verificable tipo `Use when ...`; se mide longitud y claridad antes de
-    convertirlo en contrato obligatorio.
+  - Matriz `agents.json` allowlist vs triggers reales de `skills/**/SKILL.md`:
+    antes de clasificar ghosts, reparar BOM/discovery y re-ejecutar discovery.
+    La lista de triggers se deriva exhaustivamente de las allowlists vivas en
+    `.agent/config/agents.json` y del frontmatter real de skills; no se mantiene
+    una lista manual. El caso `/review` se trata como `BOM/discovery casualty`
+    verificado (`man-review-implementation`) y NO se retira de la allowlist solo
+    porque hoy sea invisible.
   - La DEC compara al menos cuatro opciones: registry central, manifest por skill
     (`manifest.json`), `.claude-plugin/plugin.json` compatible y discovery
     recursivo sin manifest.
   - La DEC evalua un esquema minimo de campos: `public_id`, `source`
     (`motor|host`), `canonical_source`, `path`, `trigger`, `role`, `status`
     (`active|deprecated|draft`), `deliverable_types`, `deprecated_by`,
-    `compat_until` y, solo si aporta valor demostrado, `deliverable_profile`.
-    `deliverable_profile` no se adopta por defecto: primero se contrasta contra
-    `run_gates_dispatch.py` para evitar duplicar `deliverable_type`.
-  - Registry/manifest rico queda atribuido como diseno propio (OKF/CEM/host-extends),
-    no como patron probado por `mattpocock/skills`, que solo valida lista explicita
-    de paths.
+    `compat_until`, `aliases` y, solo si aporta valor demostrado,
+    `deliverable_profile`.
+  - Registry/manifest rico queda atribuido como diseno propio
+    (OKF/CEM/host-extends), no como patron probado por `mattpocock/skills`, que
+    solo valida lista explicita de paths.
   - El contrato declara que el registry/manifest define la API publica activa,
     mientras el layout fisico puede contener docs, tests, deprecated o in-progress.
   - El contrato declara como se integra host-first: un posible
-    `<repo_destino>/.agent/registry.json` puede extender/overridear el registry del
-    motor, pero nunca contaminar `repo_motor`; la precedencia host local sigue
+    `<repo_destino>/.agent/registry.json` puede extender/overridear el registry
+    del motor, pero nunca contaminar `repo_motor`; la precedencia host local sigue
     siendo superior al fallback read-only del motor.
-  - Si se adopta manifest-first, el manifest controla que esta activo; carpetas
-    `deprecated/` o `in-progress/` solo son layout, no API publica.
-  - Aunque se adopte manifest-first, hay barrera separada para `SKILL.md` con BOM
+  - La DEC declara si aliases/deprecations se modelan como metadatos logicos del
+    registry antes que como archivos shim fisicos; cualquier shim fisico futuro
+    requiere evidencia de referencia hardcoded que no pueda resolverse por registry.
+  - Aunque se adopte registry-first, hay barrera separada para `SKILL.md` con BOM
     o frontmatter roto, porque el agente aun debe leer semantica on-demand.
-  - No hay renames, moves ni cambios de trigger.
+  - No hay renames, moves, cambios de trigger, implementacion completa de registry,
+    aliases runtime ni shims en 008b.
 - **STOP:**
   - Si el fix requiere reorganizar carpetas, abrir 008d; no mezclar.
-  - Si el registry introduce fuente de verdad manual no validada, bloquear. Por
-    defecto el registry debe ser generado/validado desde frontmatter/filesystem;
-    los overrides host-first son la excepcion explicita.
+  - Si el registry introduce fuente de verdad manual no validada, bloquear.
+  - Si 008b intenta implementar el registry completo, `agent_controller` dispatch,
+    aliases o shims, bloquear y moverlo a 008c/008d.
   - Si la propuesta intenta crear `skills/domain/...` o `prompts/system/...` en
-    008b, bloquear y moverlo a 008d tras registry + shims.
+    008b, bloquear y moverlo a 008d tras registry + aliases/shims.
 
 ### WOT-2026-008c - Registry/INDEX generado de prompts y skills
 - **Prioridad:** Media
@@ -1016,59 +1016,69 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008b
 - **Problema:** los agentes descubren prompts/skills por memoria, glob o nombres
-  humanos. Eso escala mal cuando haya categorias, shims o deprecated entries.
-- **Objetivo:** crear un registry/INDEX generado y validable de prompts y skills
-  con rutas canonicas, triggers, rol, tipo de artefacto y estado activo/deprecated.
-  Si 008b adopta manifest-first, el INDEX es proyeccion generada del manifest; no
-  una segunda fuente de verdad.
+  humanos. Eso escala mal cuando haya categorias, aliases, shims o deprecated
+  entries.
+- **Objetivo:** crear un `registry.json` generado/validable como autoridad logica
+  de prompts y skills (rutas canonicas, triggers, rol, tipo de artefacto, estado
+  activo/deprecated/draft y aliases). El `INDEX.md` es solo una proyeccion generada
+  del registry; no una segunda fuente de verdad.
 - **Files Likely Touched:**
   - script generador/validador de registry
-  - `skills/INDEX.md` o manifest equivalente generado
+  - `registry.json` o manifest equivalente generado
+  - `skills/INDEX.md` o indice equivalente generado
   - docs de contrato del registry
   - tests
 - **Criterios binarios:**
-  - El INDEX/registry se genera desde fuente canonica validada; no es una tabla
-    manual que pueda derivar.
+  - `registry.json`/manifest es la autoridad logica validada de API activa;
+    `INDEX.md` es proyeccion generada y falla si queda stale.
   - Incluye prompts, skills, templates/references relevantes y scripts consumidores
     declarados por 008a.
   - Incluye owner/source (`motor|host`) y `canonical_source` para distinguir
     extensiones del destino, overrides y componentes canonicos del motor.
-  - Distingue API publica, layout fisico y shims.
-  - Distingue componentes activos de `deprecated`/`in-progress`; presencia en disco
-    no implica disponibilidad para agentes.
-  - Check de CI/pre-commit o gate local falla si el registry generado esta stale.
+  - Distingue API publica, layout fisico, aliases logicos y shims fisicos
+    excepcionales.
+  - Distingue componentes activos de `deprecated`/`in-progress`/`draft`; presencia
+    en disco no implica disponibilidad para agentes.
+  - Check de CI/pre-commit o gate local falla si el registry o INDEX generado
+    esta stale.
+  - El discovery/dispatch que se toque consulta el registry para `active`,
+    `deprecated`, `draft` y aliases en vez de inferir solo por presencia en disco.
   - No mueve carpetas ni renombra archivos.
 - **STOP:**
   - Si el INDEX exige mantenimiento manual, redisenar.
   - Si se detectan colisiones de trigger/nombre, abrir ticket dedicado antes de
     migrar.
+  - Si el registry duplica logica de frontmatter sin test de paridad, bloquear.
 
-### WOT-2026-008d - Migracion de naming audit/version con shims
+### WOT-2026-008d - Migracion de naming audit/version con aliases y shims
 - **Prioridad:** Media
 - **Scope:** motor/skills-taxonomy
 - **Estado:** pending
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008c
-- **Problema:** hay hipotesis de mejora de naming (`aud-*`, `manager_review_rubric`,
-  `bui-version-changelog`), pero renombrar sin registry y shims rompe triggers,
-  docs, memoria y agentes externos.
-- **Objetivo:** ejecutar solo los renames aprobados por DEC de 008a/008b, con shims
-  temporales, warnings de deprecacion y pruebas de compatibilidad. Tambien evaluar
-  progressive disclosure para prompts grandes: routers pequenos con referencias
-  relativas a documentos de fase, cargados on-demand.
+- **Problema:** hay hipotesis de mejora de naming (`aud-*`,
+  `manager_review_rubric`, `bui-version-changelog`), pero renombrar sin registry,
+  aliases y compatibilidad rompe triggers, docs, memoria y agentes externos.
+- **Objetivo:** ejecutar solo los renames aprobados por DEC de 008a/008b, usando
+  aliases logicos del registry como mecanismo por defecto de compatibilidad. Los
+  shims fisicos son excepcion, solo si un `rg` de referencias hardcoded demuestra
+  que el alias logico no puede preservar compatibilidad. Tambien evaluar progressive
+  disclosure para prompts grandes: routers pequenos con referencias relativas a
+  documentos de fase, cargados on-demand.
 - **Files Likely Touched:**
   - prompts/skills afectados por renames aprobados
   - registry/manifest/INDEX
   - docs y referencias
-  - tests discovery/collision
+  - tests discovery/collision/registry
 - **Criterios binarios:**
   - Cada rename tiene DEC aprobada, motivo, compatibilidad y fecha de retirada.
-  - Los triggers antiguos siguen resolviendo mediante shim durante la ventana
-    declarada.
+  - Los triggers antiguos siguen resolviendo mediante alias logico del registry
+    durante la ventana declarada; shim fisico solo con evidencia de necesidad.
   - `discover_skills.py --check-contract`, collision check, registry check y
     encoding pasan.
-  - `rg` de nombres antiguos solo aparece en shims/deprecation docs permitidos.
+  - `rg` de nombres antiguos solo aparece en aliases/deprecation docs permitidos
+    o en shims fisicos justificados por referencia hardcoded no resoluble.
   - No se fusionan prompts/skills solo por similitud de nombre; debe haber mejora
     demostrada de descubribilidad o reduccion de duplicacion.
   - Si se divide un prompt grande, queda un router canonico estable, referencias
@@ -1084,33 +1094,72 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     limite de 100 lineas como contrato inicial (23/29 skills lo superan). Mantener
     o endurecer primero el umbral existente de 250 lineas (6/29 skills lo superan)
     y exigir migracion gradual a docs/references antes de cualquier rewrite masivo.
-    Endurecer significa CABLEAR un gate con test (un SKILL.md de 251 lineas falla),
-    no mantener el numero en prosa: hoy el 250 vive solo en create-agent-skill/SKILL.md
-    sin enforcement (6/29 violadores silenciosos), mismo patron que la funcion BOM
-    de 006b (definida pero no llamada). Sin gate+test no cuenta como cerrado.
+    Endurecer significa cablear un gate con test (un SKILL.md de 251 lineas falla),
+    no mantener el numero en prosa.
 - **STOP:**
-  - Si un rename no puede tener shim, requiere aprobacion humana explicita.
+  - Si un rename no puede tener alias logico ni shim seguro, requiere aprobacion
+    humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
+  - Si la migracion intenta resolver lifecycle/onboarding del destino, moverlo a 008f.
 
-### WOT-2026-008e - Retirada versionada de shims y compat legacy
+### WOT-2026-008e - Retirada versionada de aliases/shims y compat legacy
 - **Prioridad:** Baja
 - **Scope:** motor/skills-taxonomy
 - **Estado:** pending
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008d
-- **Problema:** los shims ayudan a migrar, pero si no tienen retirada versionada se
-  convierten en deuda permanente.
-- **Objetivo:** retirar shims ya caducados tras verificar que no quedan referencias
-  vivas, con changelog y rollback claro.
+- **Problema:** aliases o shims ayudan a migrar, pero si no tienen retirada
+  versionada se convierten en deuda permanente.
+- **Objetivo:** retirar aliases legacy y cualquier shim fisico caducado tras
+  verificar con escaneo reproducible que no quedan referencias vivas, con changelog
+  y rollback claro.
 - **Criterios binarios:**
   - `rg` no encuentra consumidores vivos de nombres legacy fuera de changelog/docs
     historicos.
+  - Un scan reproducible (por ejemplo `scripts/check_alias_usage.py`) revisa
+    backlog, execution logs vivos/archivados, docs y commits recientes configurados
+    y confirma 0 usos bloqueantes de aliases/triggers legacy.
   - Registry no lista entradas legacy como activas.
-  - Tests de discovery/collision/registry pasan sin shims.
+  - Tests de discovery/collision/registry pasan sin aliases legacy ni shims.
   - CHANGELOG documenta retirada y ruta nueva.
 - **STOP:**
-  - Si cualquier destino activo sigue usando el shim, aplazar y registrar evidencia.
+  - Si cualquier destino activo sigue usando el alias/shim, aplazar y registrar evidencia.
+
+### WOT-2026-008f - Gate de integracion destino-motor y lifecycle operativo
+- **Prioridad:** Media
+- **Scope:** motor/protocol-destino
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-008c
+- **Problema:** el ajuste de un `repo_destino` al motor y su preparacion para Git
+  estan cubiertos por piezas separadas (`install_agent_system.py`,
+  `destination_bootstrap`, `destination-preflight`, `check_destino_publish_ready.py`,
+  `audit_git_publication`, `system-health-audit`), pero no existe un gate integrado
+  que verifique que el destino quedo engranado de punta a punta.
+- **Objetivo:** crear un wrapper/gate de integracion que orqueste checks existentes
+  antes de inventar validadores nuevos. Debe validar link motor-destino,
+  version/manifest compatible, settings/guard fail-closed, resolucion de registry
+  desde contexto destino, estado operativo pre-push y riesgos de publicacion cuando
+  aplique.
+- **Files Likely Touched:**
+  - script wrapper de integracion (nombre a decidir, p.ej. `scripts/check_integration.py`)
+  - docs/prompts de lifecycle destino si se decide consolidar router
+  - tests del wrapper sobre fixtures motor/destino
+- **Criterios binarios:**
+  - El wrapper reutiliza checks existentes cuando existan; no duplica logica de
+    `classify_publication.py`, `check_destino_publish_ready.py`,
+    `destination_context.py` ni settings portability.
+  - Valida que `motor_destination_link.json` apunta a un motor con contrato compatible.
+  - Verifica que el registry del motor resuelve triggers desde el contexto del destino.
+  - Verifica guard/settings fail-closed con fixture o prueba no destructiva.
+  - Distingue gate operativo pre-push de auditoria de primera publicacion.
+  - Produce diagnostico self-service y exit codes documentados.
+- **STOP:**
+  - Si el wrapper reimplementa scanners de secretos o validate en vez de delegar, bloquear.
+  - Si requiere escribir en repo_destino para probar guard_paths, usar fixture/tmp o
+    modo dry-run; no mutar un destino real.
 
 ## Plan WOT-2026-009 - Contract gates antes del Builder
 
