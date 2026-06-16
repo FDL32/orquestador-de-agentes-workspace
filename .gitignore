@@ -92,3 +92,6 @@ orquestador_de_agentes/
 # Session artifacts from agent_system installed copy
 agent_system/.agent/collaboration/.session_state.json
 agent_system/.agent/context/
+
+# IDE
+.vscode/
