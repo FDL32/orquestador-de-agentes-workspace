@@ -1,4 +1,4 @@
-# Backlog
+﻿# Backlog
 
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
@@ -54,7 +54,7 @@
 | Media | WOT-2026-007c | Validador de contratos de ticket y planning docs | motor/quality-gates | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor b29a8da+5dafbc7; validador+36 tests; suite 2676 passed; revision independiente Manager (CHANGES->B1+B2 fixed); aprobado humano; cierre canonico via reconcile_ticket+BUILDER_EXIT; validate 0/0 -->
 | Media | WOT-2026-007d | Skills/prompts de auditoria de idea, plan y ticket | motor/protocol-docs | completed | WOT-2026-007a | session-2026-06-14-contract-formation |  <!-- motor 11e7ad8; 3 prompts audit_cf_* (charter/plan_graph/ticket) + routing en pipeline/README; rutan audit_agent_output 2.b/2.c sin duplicar; encoding 0 -->
 | Baja | WOT-2026-008a | Manifiesto de taxonomia y migracion de prompts/skills | system/docs-coherence | completed | WOT-2026-007d | session-2026-06-15-contract-formation |  <!-- analysis en repo_destino; cerrado canonico (bus: REVIEW_DECISION approve -> COMPLETED -> SUPERVISOR_CLOSED, commit 2e74fce); artefacto .agent/docs/taxonomy_migration_WOT-2026-008a.md; contrato enmendado tras CHANGES: inventario ampliado a templates/references/_shared/llms/tools + DEC-008-004 manifest-first; cero moves/edits en repo_motor -->
-| Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | pending | WOT-2026-008a, WOT-2026-009b | session-2026-06-15-taxonomy |
+| Alta | WOT-2026-008b | Discovery/frontmatter hardening: BOM y registry decision | motor/skills-discovery | completed | WOT-2026-008a, WOT-2026-009b | session-2026-06-15-taxonomy |  <!-- motor 869b920; BOM false-green fixed, discovery visible 29/29, DEC-008B registry model closed -->
 | Media | WOT-2026-008c | Registry/INDEX generado de prompts y skills | motor/skills-discovery | pending | WOT-2026-008b | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | pending | WOT-2026-008c | session-2026-06-15-taxonomy |
 | Baja | WOT-2026-008e | Retirada versionada de shims y compat legacy | motor/skills-taxonomy | pending | WOT-2026-008d | session-2026-06-15-taxonomy |
@@ -66,7 +66,7 @@
 | Media | WOT-2026-009e | Launcher Builder relaunch cleanup con $BuilderOnly + locks/session cleanup | motor/launcher-runtime | completed | WOT-2026-009b | session-2026-06-15-launcher-followup |  <!-- motor cf12068 + docs hardening follow-up; cierre canonico manager-approve; validate 0/0 -->
 | Media | WOT-2026-009f | Gate de publicacion pre-push para repo_destino | motor/protocol-destino | completed | WOT-2026-009c | session-2026-06-15-contract-formation |  <!-- motor a5c2d94+scripts/check_destino_publish_ready.py; exit1=drift/exit2=APPROVED/exit0=OK; orchestrator_pipeline seccion gate; 8 tests; cierre canonico manager-approve; validate 0/0 -->
 | Alta | WOT-2026-009g | Pre-handoff: work_plan.md debe estar commiteado al handoff | motor/protocol-runtime | completed | WOT-2026-008b, WOT-2026-009b | session-2026-06-16-handoff-hardening |  <!-- motor d245ba5+4b61b4b; helper assert_work_plan_committed fail-closed; cubre --mark-ready + --pre-handoff; Manager APROBADO; validate 0/0; cierre publicado -->
-| Media | WOT-2026-010a | Glosario de nomenclatura + rename PLAN_WT->STRATEGY_WOT / audit_plan->audit_ticket_contract | motor/protocol-docs | pending | WOT-2026-008b, WOT-2026-009g | session-2026-06-16-naming-debt |  <!-- reservar PLAN para familia; ticket=WOT; STRATEGY_WOT-<ID> estrategia tecnica; AUDIT_WOT-<ID>; audit_ticket_contract.md; WP/WT legacy sin migracion; toca 5 archivos codigo; validate_ticket_prose.py SI se toca en 010a pero solo tras cerrar 009g -->
+| Media | WOT-2026-010a | Glosario de nomenclatura + rename PLAN_WT->STRATEGY_WOT / audit_plan->audit_ticket_contract | motor/protocol-docs | completed | WOT-2026-008b, WOT-2026-009g | session-2026-06-16-naming-debt |  <!-- motor cac2648+842184a+585fadb; gate nomenclature classify history/generator; closeout canonico 2026-06-16 -->  <!-- reservar PLAN para familia; ticket=WOT; STRATEGY_WOT-<ID> estrategia tecnica; AUDIT_WOT-<ID>; audit_ticket_contract.md; WP/WT legacy sin migracion; toca 5 archivos codigo; validate_ticket_prose.py SI se toca en 010a pero solo tras cerrar 009g -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -925,7 +925,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-008b - Discovery/frontmatter hardening: BOM y registry decision
 - **Prioridad:** Alta
 - **Scope:** motor/skills-discovery
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008a, WOT-2026-009b
@@ -1362,7 +1362,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 ---
 
-## WOT-2026-009f — Gate de publicacion pre-push para repo_destino
+## WOT-2026-009f â€” Gate de publicacion pre-push para repo_destino
 
 - **Prioridad:** Media
 - **Scope:** motor/protocol-destino
@@ -1381,14 +1381,14 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **STOP:** si la gate mecanica requiere instalar hooks en el repo_destino sin consent del propietario del proyecto, documentar solo y dejar la gate como recomendacion en orchestrator_pipeline.md.
 
 
-## WOT-2026-010a — Glosario de nomenclatura + rename de artefactos de ticket
+## WOT-2026-010a â€” Glosario de nomenclatura + rename de artefactos de ticket
 
 - **Scope:** motor/protocol-docs
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008b, WOT-2026-009g (no arrancar hasta que ambos cierren; 008b por si descubre mas casos de naming durante su implementacion, 009g por el conflicto de superficie con validate_ticket_prose.py)
-- **Origen:** Revision de nomenclatura (2026-06-16). El Manager señaló `audit_plan.md` como nombre ambiguo. Inspeccion de codigo revela deuda mas profunda: dos prefijos en paralelo (`WP-` 161 archivos, `WT-` 72) y uso de "PLAN" tanto para familia como para artefacto de ticket.
+- **Origen:** Revision de nomenclatura (2026-06-16). El Manager seÃ±alÃ³ `audit_plan.md` como nombre ambiguo. Inspeccion de codigo revela deuda mas profunda: dos prefijos en paralelo (`WP-` 161 archivos, `WT-` 72) y uso de "PLAN" tanto para familia como para artefacto de ticket.
 - **Decision de nomenclatura (fijada por el propietario):**
   - `WOT-` es el prefijo canonico de ticket (tres letras). `WP-`/`WT-` = legacy historico, SIN migracion masiva.
   - "Plan" se reserva para el plan/familia completo (ej. `WOT-2026-009` = familia). NO para el artefacto de un ticket.
@@ -1398,12 +1398,12 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - `AUDIT_WT-<ID>.md` -> `AUDIT_WOT-<ID>.md` (solo prefijo WT->WOT).
   - `prompts/audit_plan.md` -> `prompts/audit_ticket_contract.md` (audita el contrato/plan operativo del ticket ANTES de Builder; nombre preciso para no confundir con review de implementacion, bus, cierre o publicacion).
 - **Generadores activos (corregir PRIMERO, antes que consumidores/validadores):**
-  Son skills/prompts que CREAN o ENSEÑAN IDs/artefactos con prefijo viejo. El
+  Son skills/prompts que CREAN o ENSEÃ‘AN IDs/artefactos con prefijo viejo. El
   mas peligroso es `skills/man-create-work-plan/SKILL.md:79` (`ID: WP-[YYYY]-[NNN]`):
   si alguien usa esa skill antes de 010a, regenera nomenclatura antigua por la
   puerta principal. VERIFICADO 2026-06-16: el patron `WP/WT/PLAN_WP/PLAN_WT/AUDIT_WT`
   aparece en 23 archivos activos de `skills/` + `prompts/` (NO 7; lista manual
-  quedaria incompleta — usar la gate grep como fuente, no una enumeracion fija).
+  quedaria incompleta â€” usar la gate grep como fuente, no una enumeracion fija).
   Foco prioritario confirmado: `skills/man-create-work-plan/SKILL.md` +
   `references/plan-template.md` / `plan-quality-checklist.md`, `prompts/session_bootstrap.md`,
   `prompts/launch_builder.md`, `skills/deep-research/`, `skills/_shared/ticket-anti-patterns.md`.
@@ -1423,4 +1423,6 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - NO romper consumidores que esperan los patrones viejos sin alias de transicion.
   - Antes de tocar `scripts/validate_ticket_prose.py`, verificar en preflight que WOT-2026-009g esta cerrado/publicado y que no hay cambios vivos en esa superficie. En 010a SI puede tocarse; el STOP de orden queda levantado por cierre de 009g.
   - Si el rename de `audit_plan.md` rompe el dispatch de skills/prompts, dejar alias y documentar.
+
+
 

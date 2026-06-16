@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-008c
 - **Contract ID:** T-008C-001
 - **deliverable_type:** mixed
