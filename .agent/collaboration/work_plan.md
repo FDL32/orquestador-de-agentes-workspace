@@ -39,7 +39,7 @@ existieran; ahora no existe ninguno, asi que no se crea ni migra nada.
 - `canonical`: `STRATEGY_WOT-*`, `AUDIT_WOT-*`
 - `legacy-compat`: `PLAN_WT-*`, `PLAN_WP-*`, `AUDIT_WT-*`, `AUDIT_WP-*`
 
-El rename es semantico/operativo, no arqueologico. Los consumidores AÃ‘ADEN los
+El rename es semantico/operativo, no arqueologico. Los consumidores ANADEN los
 patrones canonicos SIN eliminar los legacy (alias de transicion).
 
 **audit_plan.md:** `audit_ticket_contract.md` es la fuente real. `audit_plan.md`
@@ -49,9 +49,9 @@ contiene contrato operativo duplicado.
 ## Orden de ejecucion (obligatorio)
 
 1. Glosario canonico (doc).
-2. Generadores activos (skills/prompts que CREAN o ENSEÃ‘AN IDs/artefactos).
+2. Generadores activos (skills/prompts que CREAN o ENSENAN IDs/artefactos).
 3. Rename `audit_plan.md` -> `audit_ticket_contract.md` + stub alias + 2 refs.
-4. Consumidores/validadores de codigo (aÃ±adir canonical, conservar legacy-compat).
+4. Consumidores/validadores de codigo (anadir canonical, conservar legacy-compat).
 5. Gate grep clasificatoria.
 
 ## Files Likely Touched
@@ -128,7 +128,8 @@ Notas (no son parte del FLT parseable):
       sin contrato operativo duplicado. `audit_ticket_contract.md` es la fuente.
 - [ ] Las 2 refs canonicas de audit_plan (orchestrator_pipeline.md,
       orchestrate-pipeline/SKILL.md) apuntan al nombre nuevo.
-- [ ] encoding guard OK en Markdown/prompts/skills tocados.`r`n- [ ] `python scripts/check_ticket_nomenclature.py` exit 0 (sin generadores legacy; historia/legacy-tagged permitidos).
+- [ ] encoding guard OK en Markdown/prompts/skills tocados.
+- [ ] `python scripts/check_ticket_nomenclature.py` exit 0 (sin generadores legacy; historia/legacy-tagged permitidos).
 - [ ] `ruff check .` exit 0.
 - [ ] tests focales de consumidores/validadores tocados exit 0.
 - [ ] `validate --json` destino 0/0 al cierre.
