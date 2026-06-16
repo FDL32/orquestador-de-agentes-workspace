@@ -57,3 +57,42 @@ python .agent/agent_controller.py --validate     # 0 errors / 0 warnings
 ## Commit motor
 
 d245ba5 feat(WOT-2026-009g): add work_plan commit guard to pre-handoff
+
+
+Scope override: 5 existing test setups updated to commit work_plan.md as required precondition by WOT-2026-009g new guard; all files are test files adjusting for the new behaviour enforced by the ticket. Affected files: .agent/agent_controller.py, .agent/motor_checkpoint.py, scripts/pre_handoff_guard.py, tests/test_agent_controller.py, tests/test_mark_ready_motor_scope.py, tests/test_pre_handoff_guard.py, tests/test_pre_handoff_motor_productive_changes.py, tests/test_pre_handoff_multirepo.py, tests/unit/test_motor_checkpoint.py
+## Ronda 2 — Manager CHANGES (fail-closed)
+
+Manager review WOT-2026-009g: CHANGES. 2 hallazgos.
+
+### ALTO (corregido) — guard silenciaba fallos del helper
+Causa: `except (ImportError, Exception): pass` en run_guard (copiado del
+patron best-effort de 009c). Para un ticket que cierra falso verde, un
+guard roto que pasa en silencio ES un falso verde.
+
+Fix (motor 4b61b4b):
+- pre_handoff_guard.run_guard: en excepcion del helper -> valid=False +
+  work_plan_guard_error (sin silent pass).
+- _handle_pre_handoff: wrap del helper; en excepcion -> bloquea +
+  HANDOFF_BLOCKED(reason=work_plan_guard_error).
+- 2 tests fail-closed nuevos (monkeypatch helper que lanza): ambas
+  puertas bloquean.
+
+### MEDIO (corregido) — validate no era 0/0
+3 warnings, dos causas:
+1. FLT scope: rutas `### repo_motor` con comentarios parenteticos inline
+   no parseaban (patron conocido: FLT bare paths). Fix: rutas desnudas +
+   notas separadas. Ademas declarados los 4 test files ajustados.
+2. contaminacion_productiva PLAN/AUDIT_WOT-2026-008b.md: residuo del
+   cierre de 008b (archivado a _archive/plan_audit sin commitear).
+   Reconciliado en destino f4b235d (rename 100%, contenido identico
+   verificado por diff vs HEAD).
+
+Validate tras fix: 0 errors / 0 warnings (esperado tras recommit work_plan).
+
+### Gates ronda 2
+```
+ruff check .                  # exit 0
+python -m pytest [70 focales]  # 70 passed in 29.30s
+```
+
+Commit motor: 4b61b4b fix(WOT-2026-009g): fail-closed work_plan guard

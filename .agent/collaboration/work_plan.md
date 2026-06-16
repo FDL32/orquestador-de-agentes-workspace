@@ -99,11 +99,24 @@ una sola fuente git.
 ## Files Likely Touched
 
 ### repo_motor
-- `.agent/motor_checkpoint.py` (helper `assert_work_plan_committed`)
-- `scripts/pre_handoff_guard.py` (invocar helper, bloquear mark-ready)
-- `.agent/agent_controller.py` (invocar helper en `_handle_pre_handoff`)
-- `tests/test_pre_handoff_guard.py` (existente — no duplicar en tests/unit/)
-- `tests/unit/test_motor_checkpoint.py` (nuevo o existente)
+- `.agent/motor_checkpoint.py`
+- `scripts/pre_handoff_guard.py`
+- `.agent/agent_controller.py`
+- `tests/test_pre_handoff_guard.py`
+- `tests/unit/test_motor_checkpoint.py`
+- `tests/test_pre_handoff_multirepo.py`
+- `tests/test_mark_ready_motor_scope.py`
+- `tests/test_pre_handoff_motor_productive_changes.py`
+- `tests/test_agent_controller.py`
+
+Notas (no son parte del FLT parseable):
+- `.agent/motor_checkpoint.py`: helper `assert_work_plan_committed`.
+- `scripts/pre_handoff_guard.py`: invocar helper, bloquear mark-ready, fail-closed.
+- `.agent/agent_controller.py`: invocar helper en `_handle_pre_handoff`, fail-closed.
+- `tests/test_pre_handoff_guard.py`: existente, no duplicar en tests/unit/.
+- `tests/unit/test_motor_checkpoint.py`: nuevo.
+- Los 4 ultimos test files: actualizar setups para commitear work_plan.md
+  como precondicion correcta del nuevo guard (no regresion).
 
 ### Read/inspect only
 - `.agent/scope_gate.py::get_changed_files` (FUENTE A REUSAR; no reimplementar)
