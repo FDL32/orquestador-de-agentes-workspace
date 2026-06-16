@@ -74,7 +74,7 @@ Notas (no son parte del FLT parseable):
 
 ## Manager-only
 
-- Ejecutar `python scripts/run_pytest_safe.py --project-root <repo_destino>` completo y leer hasta `0 failed`.
+- Ejecutar `python scripts/run_pytest_safe.py -- -m "not integration and not slow"` desde `repo_motor` y leer hasta `0 failed`. (El runner no acepta `--project-root`: corre sobre el motor. El filtro `not slow` excluye el test flaky no-determinista `test_scan_current_project`, ver execution_log.)
 - Ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` final 0/0.
 - Verificar review packet con commit visible del ticket y tree limpio antes de `--mark-ready` / handoff.
 
