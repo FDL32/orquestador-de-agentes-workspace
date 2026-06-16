@@ -68,7 +68,8 @@
 | Alta | WOT-2026-009g | Pre-handoff: work_plan.md debe estar commiteado al handoff | motor/protocol-runtime | completed | WOT-2026-008b, WOT-2026-009b | session-2026-06-16-handoff-hardening |  <!-- motor d245ba5+4b61b4b; helper assert_work_plan_committed fail-closed; cubre --mark-ready + --pre-handoff; Manager APROBADO; validate 0/0; cierre publicado -->
 | Media | WOT-2026-010a | Glosario de nomenclatura + rename PLAN_WT->STRATEGY_WOT / audit_plan->audit_ticket_contract | motor/protocol-docs | completed | WOT-2026-008b, WOT-2026-009g | session-2026-06-16-naming-debt |  <!-- motor cac2648+842184a+585fadb; gate nomenclature classify history/generator; closeout canonico 2026-06-16 -->  <!-- reservar PLAN para familia; ticket=WOT; STRATEGY_WOT-<ID> estrategia tecnica; AUDIT_WOT-<ID>; audit_ticket_contract.md; WP/WT legacy sin migracion; toca 5 archivos codigo; validate_ticket_prose.py SI se toca en 010a pero solo tras cerrar 009g -->
 | Alta | WOT-2026-010c | Gate de cierre: exigir evidencia literal "0 failed" de run_pytest_safe antes de mark-ready | motor/quality-gates | pending | WOT-2026-010b | session-2026-06-16-canonical-close-debt |  <!-- Origen: 010a se publico con suite canonica ROJA (test_no_inline_ticket_regex); CI GitHub Quality Gates fallo en 842184a y 585fadb. Causa raiz VERIFICADA: focal verde != canonica verde; el cierre cito "N passed" sin cruzar "1 failed". 010b lo arreglo (69d53c1) pero la grieta de proceso sigue: nada bloquea mark-ready si run_pytest_safe tiene failed>0. Objetivo: el handoff (mark-ready / pre-handoff) exige evidencia literal de run_pytest_safe con 0 failed leida hasta el final, no solo passed. Barrera verificada: con una suite roja simulada, mark-ready debe bloquear. Ver memoria canonical-close-read-failed-not-only-passed. Scope: pre_handoff_guard / agent_controller mark-ready path + test. NO confundir con scope gate ni con work_plan-committed (009g). -->
-| Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- Estado canonico PAUSED; artefacto paused/<ticket>.json legible; bus_last_seq_global + ticket_last_seq; diff_stat y changed_paths antes de stash; stash_ref solo si hay diff; status PAUSED/ABORTED; una pausa activa maximo; resume fail-closed; pre_handoff bloquea pausa ajena; test de corte pause->sesion nueva->detecta pausa. Orden recomendado: 010c -> 010d -> 008d. -->
+| Media | WOT-2026-010e | Encoding early-detection tras Write/Edit/MultiEdit de agentes | motor/devex-encoding | pending | WOT-2026-010b | session-2026-06-16-encoding-early-detection |  <!-- Los agentes escriben casi todo el codigo; la extension VS Code no cubre la tuberia real. Objetivo: PostToolUse Write/Edit/MultiEdit ejecuta guard sobre archivos texto recien escritos; detecta BOM/mojibake en el punto de escritura; diagnostico self-service; tests: mojibake/BOM falla, Unicode valido/ASCII pasa, binario skip. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
+| Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- Estado canonico PAUSED; artefacto paused/<ticket>.json legible; bus_last_seq_global + ticket_last_seq; diff_stat y changed_paths antes de stash; stash_ref solo si hay diff; status PAUSED/ABORTED; una pausa activa maximo; resume fail-closed; pre_handoff bloquea pausa ajena; test de corte pause->sesion nueva->detecta pausa. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1426,6 +1427,55 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Antes de tocar `scripts/validate_ticket_prose.py`, verificar en preflight que WOT-2026-009g esta cerrado/publicado y que no hay cambios vivos en esa superficie. En 010a SI puede tocarse; el STOP de orden queda levantado por cierre de 009g.
   - Si el rename de `audit_plan.md` rompe el dispatch de skills/prompts, dejar alias y documentar.
 
+
+## WOT-2026-010e - Encoding early-detection tras escritura de agentes
+
+- **Prioridad:** Media
+- **Scope:** motor/devex-encoding
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010b
+- **Orden recomendado:** WOT-2026-010c -> WOT-2026-010e -> WOT-2026-010d -> WOT-2026-008d
+- **Origen:** En varias sesiones los agentes perdieron tiempo detectando tarde BOM/mojibake en `backlog.md`, artefactos de ticket y ficheros generados. La extension de VS Code ayuda a ediciones humanas, pero no cubre la tuberia real: agentes escribiendo por Write/Edit/MultiEdit, scripts o heredocs.
+- **Problema:** `scripts/check_encoding_guard.py` existe y funciona como autoridad de cierre, pero se ejecuta demasiado tarde. El agente puede escribir contenido corrupto y descubrirlo al final del ticket, cuando el coste de reparar y separar scope ya es mayor.
+- **Objetivo:** ejecutar una deteccion temprana de encoding justo despues de escrituras de agentes sobre archivos texto, con diagnostico self-service y sin convertir el IDE en dependencia.
+- **Decision de producto:** no recomendar extension VS Code como infraestructura canonica. Puede ser conveniencia personal, pero el contrato operativo vive en hooks/gates versionados.
+- **Arquitectura propuesta:**
+  - Mantener `scripts/check_encoding_guard.py` como autoridad de cierre.
+  - Anadir un hook versionado, por ejemplo `.agent/hooks/encoding_post_write_hook.py`, invocado desde `.claude/settings.json` en `PostToolUse` para `Write|Edit|MultiEdit`.
+  - El hook extrae paths del JSON del tool call, filtra solo archivos texto versionables y ejecuta el guard sobre esos paths.
+  - El hook reporta diagnostico al agente con ruta, tipo de problema, snippet y comando de reproduccion.
+- **Files Likely Touched:**
+  - Builder: `.claude/settings.json`.
+  - Builder: `.agent/hooks/encoding_post_write_hook.py` (nuevo) o extension equivalente del hook nativo si encaja mejor.
+  - Builder: `scripts/check_encoding_guard.py` solo si necesita modo helper/path-friendly; no duplicar detector.
+  - Builder: tests unitarios/integracion del hook y del parser de payload PostToolUse.
+  - Builder: `AGENTS.md` o doc de convenciones para preferir herramientas Write/Edit sobre heredocs cuando haya contenido no ASCII.
+- **Criterios binarios:**
+  - `.claude/settings.json` incluye `PostToolUse` para `Write|Edit|MultiEdit` sin romper el `PreToolUse` fail-closed existente.
+  - El hook delega en `scripts/check_encoding_guard.py` o en `scripts.encoding_guard`; no reimplementa una segunda lista divergente de codepoints sospechosos.
+  - El hook solo evalua extensiones texto: `.md`, `.py`, `.json`, `.jsonl`, `.toml`, `.yaml`, `.yml`, `.sh`, `.txt`, y salta binarios/no-text con mensaje auditable si aplica.
+  - Archivo recien escrito con BOM falla inmediatamente con diagnostico self-service.
+  - Archivo recien escrito con mojibake real (`\u00c3`, `\u00c2`, `\u00e2`, `\ufffd`, etc.) falla inmediatamente.
+  - Markdown con ASCII limpio pasa.
+  - Markdown con Unicode valido que no sea codepoint sospechoso pasa; si se decide politica ASCII-only para docs, debe ser decision separada, no falso positivo accidental.
+  - Si el payload PostToolUse no contiene path resoluble, el hook no bloquea por defecto: reporta `encoding_guard_skipped_no_path` y deja al cierre canonico capturar problemas.
+  - Tests cubren: BOM detectado, mojibake detectado, archivo limpio pasa, binario/no-text skip, payload sin path skip, multiples paths con uno corrupto falla.
+  - `python scripts/check_encoding_guard.py <archivos_tocados>` exit 0 al cierre.
+  - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` exit 0, 0 errors.
+- **STOP:**
+  - No instalar ni declarar extensiones VS Code como requisito del repo.
+  - No confiar en `files.autoGuessEncoding`/settings del IDE como garantia de agentes.
+  - No meter heredocs largos dentro de `.claude/settings.json`; delegar a script versionado.
+  - No bloquear escrituras por no poder parsear payload si el archivo no es identificable; diagnosticar y dejar que la gate final cubra.
+  - No duplicar `SUSPICIOUS_CODEPOINTS` en otro modulo sin extraer fuente compartida.
+  - No ampliar este ticket a saneo masivo de mojibake historico; solo deteccion temprana y convencion.
+- **Notas para documentacion canonica posterior:**
+  - Frase guia: "Si los agentes escriben el 100% del codigo, la prevencion debe vivir en la tuberia de escritura del agente, no en el editor humano."
+  - Relacion con WOT-2026-010c: 010c protege cierre; 010e reduce el coste de llegar a cierre limpio detectando antes.
+  - Relacion con WOT-2026-010d: 010e es independiente de lifecycle y puede ejecutarse antes de 010d para bajar friccion operativa.
+
 ## WOT-2026-010d - Pausar/reanudar ticket activo con bus canonico
 
 - **Prioridad:** Alta
@@ -1434,7 +1484,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
-- **Orden recomendado:** WOT-2026-010c -> WOT-2026-010d -> WOT-2026-008d
+- **Orden recomendado:** WOT-2026-010c -> WOT-2026-010e -> WOT-2026-010d -> WOT-2026-008d
 - **Origen:** Durante WOT-2026-008c hubo que pausar el ticket para abrir el hotfix WOT-2026-010b. Se hizo a mano con stash path-limited y funciono, pero el estado de pausa vivia en relato + stash, no en bus ni en artefacto recuperable.
 - **Problema:** Los seguros actuales protegen handoff/cierre, pero hacen torpe resolver un blocker externo durante una implementacion. Sin estado canonico de pausa, un corte de sesion entre stash y resume deja trabajo oculto y no auditable.
 - **Objetivo:** introducir lifecycle minimo `IN_PROGRESS -> PAUSED -> IN_PROGRESS` con razon obligatoria, eventos de bus, artefacto legible, recuperacion fail-closed y bloqueo de cierres incompatibles.
