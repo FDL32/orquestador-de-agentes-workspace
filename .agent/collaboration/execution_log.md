@@ -1,77 +1,59 @@
-# Execution Log: WOT-2026-008b - Discovery/frontmatter hardening
+# Execution Log: WOT-2026-009g - Pre-handoff work_plan commit guard
 
 ## Metadata
 
 **Estado:** READY_FOR_REVIEW
-- **ID:** WOT-2026-008b
-- **Contract ID:** T-008B-001
-- **deliverable_type:** mixed
+- **ID:** WOT-2026-009g
+- **Contract ID:** T-009G-001
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Rol activo:** MANAGER
-- **Accion:** CREATE_PLAN
+- **Rol activo:** BUILDER
+- **Accion:** IMPLEMENT
 
 ## Baseline
 
-- Motor HEAD: 7848018 (docs: align destination lifecycle setup guidance)
-- Destino HEAD: 32d4581 (docs: refine 008 taxonomy backlog contract)
-- Validate previo: 0/0 (VERIFICADO 2026-06-16)
-- BOM confirmado: `skills/man-review-implementation/SKILL.md` (efbbbf)
-- Discovery gap: 28/29 SKILL.md visibles; --check-contract exit 0 (falso verde)
+- Motor HEAD: 869b920 (WOT-2026-008b cerrado/publicado)
+- Destino HEAD: 303d313 (backlog 009g/010a debt)
+- Validate previo: 0/0
+- Causa raiz verificada: work_plan.md en LIVE_SURFACES_REL de pre_handoff_guard.py:39 y motor_checkpoint.py:35 (dos puertas)
 
-## Plan creado
+## Implementacion
 
-- `work_plan.md`: APPROVED
-- `PLAN_WOT-2026-008b.md`: estrategia tecnica completa
-- `AUDIT_WOT-2026-008b.md`: TP Check + STOP conditions + checklist adversarial
-- Validate post-plan: pendiente (ejecutar tras bootstrap-ticket)
+### Barrier pre-fix (VERIFICADO)
+```
+python -m pytest tests/unit/test_motor_checkpoint.py -x -q
+# FAILED: AttributeError: module has no attribute 'assert_work_plan_committed'
+# 1 failed in 0.34s
+```
 
-## Phase 3: Tests de regresion (TDD — barrera primero)
+### Cambios realizados (motor HEAD: d245ba5)
 
-- Archivo: `tests/unit/test_discover_skills_bom.py` (nuevo, repo_motor)
-- 7 tests: 4 FAILED pre-fix (barrera verificada), 7 PASSED post-fix
-- TestBomVisibility: test_bom_skill_is_discovered, test_bom_skill_not_lost_in_multi_skill_dir, test_parse_frontmatter_handles_bom
-- TestCheckContractBom: test_check_contract_detects_bom_skill_with_missing_prompt, test_check_contract_passes_for_bom_skill_without_contract_fields
-- TestBomBarridoReal: test_no_bom_in_skill_files, test_no_bom_in_prompts
+- .agent/motor_checkpoint.py: helper assert_work_plan_committed() delegando en scope_gate.get_changed_files; detecta unstaged/staged/untracked/deleted; diag con uncommitted_work_plan:true + path + remediation
+- scripts/pre_handoff_guard.py: puerta 1 - run_guard() invoca helper; bloquea con uncommitted_work_plan:True + remediation
+- .agent/agent_controller.py: puerta 2 - _handle_pre_handoff invoca helper antes de 3 return 0 (docs bypass, motor auto-commit, idempotent); emite HANDOFF_BLOCKED al bus
+- tests/unit/test_motor_checkpoint.py (NUEVO): 9 tests
+- tests/test_pre_handoff_guard.py::TestWorkPlanCommitGuard: 3 tests integracion
+- 5 test setups actualizados con precondicion correcta (commit work_plan.md)
 
-## Phase 1: Fix discover_skills.py
+### Quality Gates
 
-- Archivo: `scripts/discover_skills.py:72` (repo_motor)
-- Cambio: `encoding="utf-8"` → `encoding="utf-8-sig"` en `parse_frontmatter()`
-- Efecto: BOM consumido transparentemente; `content.startswith("---")` ahora True para archivos BOM
+```
+ruff check .                                     # exit 0
+python -m pytest [68 tests focales]              # 68 passed in 27.34s
+python .agent/agent_controller.py --validate     # 0 errors / 0 warnings
+```
 
-## Phase 2: Eliminar BOM de SKILL.md
+### Criterios binarios
 
-- Archivo: `skills/man-review-implementation/SKILL.md` (repo_motor)
-- BOM pre-fix: bytes `efbbbf` al inicio (detectado via `open(path,'rb').read()[:3]`)
-- BOM post-fix: primeros bytes = `2d2d2d` = `---` (frontmatter correcto)
-- Discovery post-fix: 29/29 SKILL.md visibles; `--check-contract` exit 0 correcto
+- [x] Helper assert_work_plan_committed en motor_checkpoint.py delegando en scope_gate.get_changed_files
+- [x] pre_handoff_guard.py bloquea con uncommitted_work_plan:true + ruta + remediation
+- [x] _handle_pre_handoff invoca helper antes de los 3 return 0 exitosos
+- [x] work_plan.md SIGUE en ambas LIVE_SURFACES_REL
+- [x] Barrera 008b: test_barrier_008b_false_green_is_closed PASS post-fix
+- [x] Tests 4 estados porcelain: unstaged, staged, untracked, deleted
+- [x] Test control: live surfaces dirty no bloquea
+- [x] ruff exit 0, tests focales 68 passed, validate 0/0
 
-## Phase 4: Barrido BOM
+## Commit motor
 
-- Barrido `skills/**/SKILL.md`: 29 archivos. BOM encontrado: ninguno post-fix.
-  El unico BOM era `skills/man-review-implementation/SKILL.md` (eliminado en Phase 2).
-- Barrido `prompts/*.md`: todos sin BOM. test_no_bom_in_prompts PASSED confirma.
-- Evidencia: `TestBomBarridoReal::test_no_bom_in_skill_files PASSED` y
-  `TestBomBarridoReal::test_no_bom_in_prompts PASSED` (2026-06-16)
-
-## Phase 5: Clasificacion ghost triggers
-
-Fuentes: `agents.json` skill_allowlists (destino) + `discover_skills.py --json` post-fix.
-
-- Vivos (trigger en FM): /implement, /tdd, /debug, /refactor, /review, /compare, /schedule — 7 triggers
-- BOM-casualty restaurado: /review (era invisible por BOM; ahora vivo en man-review-implementation)
-- Ghost-pending (allowlist, sin skill FM): /impl, /test, /fix, /validate, /inspect, /orchestrate, /archive, /report — 8 triggers
-- Ghost-partial: /audit (self-audit tiene `audit` sin slash en FM; allowlist usa /audit con slash)
-- Deuda documentada: 8 ghost-pending + 1 ghost-partial. Accion: tickets 008e/008f o nuevo ticket.
-  No bloquea cierre de 008b.
-
-Artefacto: `docs/decisions/DEC-008B-002-discovery-triggers.md` — tabla completa derivada.
-
-## Phase 6: DECs
-
-- `docs/decisions/DEC-008B-001-registry-model.md`: 4 opciones comparadas; DECIDED: discovery recursivo sin manifest (opcion 4 — estado actual)
-- `docs/decisions/DEC-008B-002-discovery-triggers.md`: 3 opciones comparadas; DECIDED: triggers en frontmatter como API propia (opcion A)
-- Ambos artefactos existen en disco, repo_motor. Verificable con ls.
-
-
-Scope override: docs/decisions/ DEC files are declared in work_plan under Files Likely Touched as DEC-008B-001-registry-model.md and DEC-008B-002-discovery-triggers.md; skills/man-review-implementation/SKILL.md and tests/unit/test_discover_skills_bom.py are explicitly listed; all 5 files are within the declared scope of WOT-2026-008b. Affected files: docs/decisions/DEC-008B-001-registry-model.md, docs/decisions/DEC-008B-002-discovery-triggers.md, skills/man-review-implementation/SKILL.md, tests/unit/test_discover_skills_bom.py
+d245ba5 feat(WOT-2026-009g): add work_plan commit guard to pre-handoff
