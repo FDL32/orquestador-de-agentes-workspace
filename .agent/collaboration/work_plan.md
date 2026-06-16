@@ -53,7 +53,15 @@ Frase guia: "La pausa no es un stash; es un estado canonico recuperable tras cor
 - `tests/test_pre_handoff_guard.py`
 - `tests/unit/test_state_projection_probe.py`
 
+### repo_destino (packaging del handoff)
+- `.gitignore`
+
 Notas (no son parte del FLT parseable):
+- `.gitignore` (repo_destino): enmienda de contrato durante el handoff. El
+  pre-handoff guard bloqueaba por `.vscode/` sin trackear (config del IDE, no
+  artefacto del ticket). Se anadio `.vscode/` al ignore del destino (commit
+  0f5418a) para limpiar el dirty tree. Superficie minima de packaging, no afecta
+  al codigo del motor ni al lifecycle de pausa.
 - `agent_controller.py` concentra parser CLI, escritura/lectura del artefacto `paused/<ticket>.json`, emision `TICKET_PAUSED` / `TICKET_RESUMED`, y sync de proyecciones.
 - `bus/state_machine.py`, `state_validation.py`, `supervisor.py` y `builder_locks.py` deben quedar coherentes con `PAUSED` como estado legitimo no terminal.
 - `runtime/ui_state_projector.py` solo se toca para exponer correctamente el nuevo estado en la proyeccion UI.
