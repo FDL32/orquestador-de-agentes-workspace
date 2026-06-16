@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-008c
 - **Contract ID:** T-008C-001
 - **deliverable_type:** mixed
@@ -298,3 +298,6 @@ validate_agent_config.py, run_gates_dispatch.py, bus/skill_resolver.py ni los 3
 tests existentes. La integracion minima via el seam central (discover_skills.py)
 propago la autoridad logica sin reescribir consumidores. FLT es whitelist, no
 obligacion; el mandato pedia "no reescribir mas consumidores de los necesarios".
+
+
+Manager approved canonical closeout for WOT-2026-008c
