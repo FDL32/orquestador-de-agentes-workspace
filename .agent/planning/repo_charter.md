@@ -22,6 +22,8 @@ referencias publicadas.
   version objetivo explicita.
 - No se asume soporte de carpetas anidadas: se prueba contra el discovery real.
 - El registro explicito de recursos (manifest-first) se evalua como alternativa a discovery por glob antes de proponer migraciones fisicas.
+- Los lifecycle tickets del motor deben derivar estado operativo desde el bus;
+  `TURN.md` y `STATE.md` son proyecciones, no autoridad de lectura.
 
 ## Non-Goals
 
@@ -75,6 +77,16 @@ referencias publicadas.
   - se retiran rutas legacy antes de verificar consumidores reales.
 - related_plans: [PLAN-001]
 
+### OBJ-004 -- Interrupcion canonica y recuperable del lifecycle
+- description: permitir pausar y reanudar un ticket activo sin perder trazabilidad,
+  sin stash opaco y sin romper las garantias de cierre canonico.
+- success_criteria: la pausa vive en bus + artefacto legible + resume fail-closed.
+- failure_modes:
+  - el trabajo pausado queda solo en relato o stash no trazable;
+  - `resume` reabre un ticket con eventos posteriores sin detectarlo;
+  - `STATE.md` y `TURN.md` aparentan un ticket distinto al que el bus considera activo.
+- related_plans: [PLAN-010D-001]
+
 ## Negative Audit Checklist
 
 - [ ] El analisis modifica alguna ruta del repo_motor.
@@ -83,6 +95,7 @@ referencias publicadas.
 - [ ] Un shim futuro tendria dos fuentes canonicas editables.
 - [ ] La migracion exige al usuario editar archivos tecnicos.
 - [ ] Se crea una taxonomia mas profunda que el ahorro de contexto que aporta.
+- [ ] Un ticket de lifecycle lee `TURN.md` o `STATE.md` como autoridad primaria.
 
 ## Decisiones pendientes
 

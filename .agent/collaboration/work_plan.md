@@ -1,160 +1,128 @@
-# Work Plan: WOT-2026-010c
+# Work Plan: WOT-2026-010d
 
-> Origen: 010a se publico con la suite canonica ROJA (test_no_inline_ticket_regex)
-> porque el cierre cito "N passed" sin cruzar "0 failed". CI GitHub Quality Gates
-> fallo en 842184a y 585fadb. 010b lo arreglo (69d53c1); 010c cierra la grieta
-> de proceso que lo permitio.
+> Origen: durante WOT-2026-008c hubo que pausar el ticket para abrir el hotfix
+> WOT-2026-010b. La pausa se resolvio a mano con stash path-limited y relato,
+> pero no con estado canonico, evento de bus ni artefacto recuperable.
 
 ## Metadata
 
-- **ID:** WOT-2026-010c
-- **Contract ID:** T-010C-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-010d
+- **Contract ID:** T-010D-001
+- **Estado:** READY_TO_START
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010b
+- **Depends on:** WOT-2026-010c (cerrado/COMPLETED)
+
+## Pre-launch note
+
+- `STATE.md` sigue mostrando `WOT-2026-010c / COMPLETED` porque 010d todavia NO ha emitido `STATE_CHANGED` al bus.
+- `TURN.md` debe leerse como preparacion de packet / arranque pendiente, no como prueba de ticket activo.
+- El arranque canonico de 010d ocurre despues de esta auditoria, no durante la preparacion del packet.
 
 ## Objetivo
 
-Convertir en barrera ejecutable la leccion de 010a: el handoff (`--mark-ready`)
-debe exigir evidencia FRESCA y literal de que `run_pytest_safe` cerro con
-`0 failed`, no solo que existe la palabra "passed" en el log. Una suite canonica
-roja NUNCA debe poder pasar a READY_FOR_REVIEW.
+Introducir lifecycle minimo `IN_PROGRESS -> PAUSED -> IN_PROGRESS` para el ticket activo, con razon obligatoria, evento de bus, artefacto legible en el `repo_destino`, recuperacion fail-closed y bloqueo de handoffs incompatibles.
 
-Root cause viva (VERIFICADO en codigo 2026-06-16):
-- `agent_controller.py::_check_log_has_quality_gate_evidence` (linea 1436, de
-  WT-2026-203) busca markers `("pytest", "ruff", "passed", ...)` en
-  execution_log.md. Buscar "passed" NO implica "0 failed": un log con
-  "2801 passed, 1 failed" contiene "passed" y pasaria el check actual.
-- No hay ninguna verificacion de que `run_pytest_safe` haya corrido con
-  exit_code 0 fresco antes del handoff.
+Frase guia: "La pausa no es un stash; es un estado canonico recuperable tras corte de sesion, con artefacto legible, bus coherente y resume fail-closed."
 
 ## Decision Arquitectonica
 
-- **Fuente de evidencia canonica (VERIFICADO):** `run_pytest_safe.py` persiste
-  `<motor>/.agent/runtime/pytest-safe/last-run.json` con campos
-  `exit_code`, `status`, `finished_at`, `command` (linea 480/499/526). NO se
-  parsea stdout fragil: la gate lee el JSON canonico que el runner ya garantiza.
-- **Criterio doble de la gate:**
-  - `status == "finished"` (no "started"/"dry-run"/crash): el run llego al final.
-  - `exit_code == 0`: en pytest, exit_code != 0 significa fallo, error o "no
-    tests collected"; el runner fuerza exit 1 si detecta state-leak
-    (linea 512-514). status finished + exit_code 0 == 0 failed real.
-- **Frescura por `tested_commit_sha` (NO por timestamp):** VERIFICADO que
-  `last-run.json` hoy NO captura el commit testeado. Scope ampliado (autorizado
-  por el propietario 2026-06-16) para que `run_pytest_safe.py` escriba
-  `tested_commit_sha = git rev-parse HEAD` en el summary. La gate compara
-  `tested_commit_sha == HEAD actual del repo de entrega`. Robusto: no depende de
-  relojes ni de orden temporal. Un run de un commit anterior queda detectado por
-  SHA distinto, no por timestamp. Cambio minimo: un campo en el summary, sin
-  parsing de stdout ni cambio de comportamiento del runner.
-- **Skip auditable por deliverable_type:** la gate SOLO aplica a `code`/`mixed`.
-  Para `documentation`/`research`/`analysis` produce un skip AUDITABLE
-  (`canonical_suite: skipped=true, reason=deliverable_type=<x>`), no un bloqueo.
-  Respeta el dispatch por deliverable_type ya existente.
-- **Punto de integracion:** la gate vive en `scripts/pre_handoff_guard.py`
-  (donde ya estan las barreras de handoff de 009g/009c) y la invoca
-  `agent_controller._handle_mark_ready` via `_run_pre_handoff_guard`. Asi cubre
-  la puerta `--mark-ready` sin duplicar logica.
-- **Fail-closed (barrera, no best-effort):** si `last-run.json` no existe, no es
-  parseable, `status != finished`, `exit_code != 0`, o `tested_commit_sha !=
-  HEAD`, la gate BLOQUEA con diagnostico self-service. No silenciar excepciones
-  (leccion guard-helper-must-fail-closed).
-- **Diagnostico self-service estructurado:** al bloquear, el dict expone
-  `canonical_suite` con: `last_run_json` (ruta), `reason` (cual criterio fallo),
-  `remediation` (`python scripts/run_pytest_safe.py` + commitear antes), y
-  `canonical_suite_error` (mensaje human-readable). Log a revisar:
-  `.agent/runtime/pytest-safe/last-run.log`.
-- **NO confundir con:** scope gate (archivos fuera de FLT) ni con la barrera
-  work_plan-committed de 009g. Esta es una barrera ADICIONAL y separada:
-  "la suite canonica cerro en verde fresco contra el commit que se va a entregar".
-
-## Orden de ejecucion (obligatorio)
-
-1. Test de barrera PRIMERO (TDD): con `last-run.json` exit_code=1, la gate
-   bloquea; con exit_code=0 fresco, permite. Debe FALLAR sin el fix.
-2. Helper `assert_canonical_suite_green(motor_root, head_ts) -> (bool, diag)` en
-   `pre_handoff_guard.py`.
-3. Wire en `run_guard` (puerta `--mark-ready`).
-4. Diagnostico self-service (que falto, como rerun, que log revisar).
-5. Gates + cierre canonico (incluida la propia gate sobre si misma).
+- **DEC-010D-001 / T1a:** el bus es la autoridad de lectura. La pausa/reanudacion deriva el estado desde el event bus y usa `TURN.md` / `STATE.md` como proyecciones. No leer solo markdown para decidir si un resume es valido.
+- **CLI nueva en `.agent/agent_controller.py`.** V1 introduce `--pause-ticket`, `--resume-ticket` y `--abort-paused-ticket`. El flag de abort debe existir en esta ronda; si el camino `ABORTED` no queda completo, la salida minima aceptable es fail-closed con diagnostico explicito y follow-up declarado.
+- **Estado nuevo `PAUSED` canonico.** Debe vivir en `bus/state_machine.py`, en los validadores de `.agent/state_validation.py`, en las rutas del supervisor que escanean tickets no terminales y en cualquier guard que hoy enumera estados.
+- **Artefacto canonico por ticket:** `repo_destino/.agent/collaboration/paused/<ticket>.json` con `ticket_id`, `status`, `reason`, `timestamp`, `repo`, `changed_paths`, `diff_stat`, `stash_ref`, `wip_commit`, `bus_last_seq_global`, `ticket_last_seq`, `state_snapshot`, `turn_snapshot`, `resume_instructions`, `abort_reason`, `aborted_at`, `aborted_by`.
+- **DEC-010D-002 / T1a:** una sola pausa activa en v1. Cuando ya hay una pausa activa, otro `--pause-ticket` falla con diagnostico self-service.
+- **DEC-010D-003 / T1a:** no vaciar `ACTIVE_TICKET`. `STATE.md` conserva el ticket activo y cambia solo `STATUS: PAUSED`.
+- **DEC-010D-004 / T2:** cuando `changed_paths=[]`, no crear stash y guardar `stash_ref=null`. Cuando hay diff, capturar `changed_paths` + `diff_stat` antes de guardar un stash path-limited o ref estable equivalente; nunca usar `stash@{n}` como fuente de verdad.
+- **Resume fail-closed.** `--resume-ticket` debe localizar el JSON, verificar que la ref guardada siga resoluble, comparar `ticket_last_seq` contra el bus del mismo ticket y fallar si hubo eventos posteriores para ese ticket. El avance global por otros tickets se permite, pero debe reportarse usando `bus_last_seq_global`.
+- **Nada de autoresolucion de conflictos.** Si `git stash apply` o restauracion equivalente encuentra conflicto, el comando falla sin dejar el arbol a medias.
+- **Handoff y review protegidos.** `scripts/pre_handoff_guard.py` y el flujo `--mark-ready` bloquean ante una pausa activa ajena o corrupta.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `scripts/pre_handoff_guard.py`
 - `.agent/agent_controller.py`
-- `scripts/run_pytest_safe.py`
+- `.agent/state_validation.py`
+- `bus/state_machine.py`
+- `bus/supervisor.py`
+- `bus/builder_locks.py`
+- `scripts/pre_handoff_guard.py`
+- `runtime/ui_state_projector.py`
+- `tests/unit/test_pause_ticket.py`
+- `tests/unit/test_resume_ticket.py`
 - `tests/test_pre_handoff_guard.py`
+- `tests/unit/test_state_projection_probe.py`
 
 Notas (no son parte del FLT parseable):
-- `scripts/pre_handoff_guard.py`: helper `assert_canonical_suite_green` +
-  campo `canonical_suite` en el dict de `run_guard`, fail-closed.
-- `.agent/agent_controller.py`: que `_handle_mark_ready` propague el bloqueo
-  (ya invoca el guard via `_run_pre_handoff_guard`; verificar que el nuevo
-  campo bloquea).
-- `scripts/run_pytest_safe.py`: CAMBIO MINIMO autorizado - escribir
-  `tested_commit_sha = git rev-parse HEAD` en el summary. SIN parsing de stdout,
-  SIN otro cambio de comportamiento del runner.
-- `tests/test_pre_handoff_guard.py`: tests de barrera (ausente/corrupto/
-  status!=finished/exit!=0/stale-sha/fresco-verde bloquean o permiten segun
-  corresponda; doc/research/analysis skip auditable; mark-ready propaga diag).
+- `agent_controller.py` concentra parser CLI, escritura/lectura del artefacto `paused/<ticket>.json`, emision `TICKET_PAUSED` / `TICKET_RESUMED`, y sync de proyecciones.
+- `bus/state_machine.py`, `state_validation.py`, `supervisor.py` y `builder_locks.py` deben quedar coherentes con `PAUSED` como estado legitimo no terminal.
+- `runtime/ui_state_projector.py` solo se toca para exponer correctamente el nuevo estado en la proyeccion UI.
 
 ## Read/inspect only
 
-- `scripts/run_pytest_safe.py` (FUENTE del `last-run.json`; no reimplementar;
-  VERIFICADO: escribe exit_code/status/finished_at).
-- `.agent/agent_controller.py` funcion `_check_log_has_quality_gate_evidence`
-  (el check debil actual; la nueva gate lo complementa, no lo sustituye).
+- `bus/event_bus.py` (API real de emision y secuencias)
+- `.agent/agent_controller.py::_handle_resume_human_gate` (modelo de flag de recuperacion ya existente)
+- `INTERACTION_MODES.md` y `QUICKSTART.md` como referencia documental del lifecycle
 
 ## Manager-only
 
-- Ejecutar `run_pytest_safe` completo leido hasta `0 failed`.
-- Ejecutar `validate --json` final 0/0.
+- Ejecutar `python scripts/run_pytest_safe.py --project-root <repo_destino>` completo y leer hasta `0 failed`.
+- Ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` final 0/0.
+- Verificar review packet con commit visible del ticket y tree limpio antes de `--mark-ready` / handoff.
+
+## Tests Esperados
+
+- `--pause-ticket` falla si el ticket activo no coincide.
+- `--pause-ticket` falla si falta `--reason`.
+- pausa con tree limpio: crea JSON, no crea stash, emite `TICKET_PAUSED`.
+- pausa con dirty tree: captura `changed_paths` + `diff_stat` antes del stash y persiste ref estable en el JSON.
+- pausa unica: segunda pausa activa falla.
+- resume correcto: restaura cambios, emite `TICKET_RESUMED`, vuelve a `IN_PROGRESS`.
+- resume conflictivo: fail-closed, sin working tree parcialmente mutado.
+- bus advance del mismo ticket tras pausa: bloquea resume.
+- bus advance de otro ticket: permite resume pero reporta drift global.
+- `--abort-paused-ticket` fail-closed o stub auditable: existe test explicito y no deja estado parcial.
+- crash/restart: nueva sesion detecta pausa activa y no deja abrir/ejecutar otro ticket sin resolverla.
+- `pre_handoff_guard` bloquea con pausa activa ajena o pausa corrupta.
+- `validate --json` distingue `paused_ticket_active` y `paused_ticket_corrupt`.
+- `STATE.md` mantiene `ACTIVE_TICKET` y proyecta `STATUS: PAUSED`.
 
 ## Criterios Binarios
 
-- [ ] `run_pytest_safe.py` escribe `tested_commit_sha = git rev-parse HEAD` en
-      `last-run.json` (cambio minimo, sin tocar comportamiento del runner).
-- [ ] Helper `assert_canonical_suite_green` existe en `pre_handoff_guard.py`,
-      lee `last-run.json` y delega en su shape canonico (NO parsea stdout).
-- [ ] `last-run.json` ausente -> BLOQUEA (fail-closed).
-- [ ] `last-run.json` corrupto/no parseable -> BLOQUEA (fail-closed).
-- [ ] `status != "finished"` -> BLOQUEA.
-- [ ] `exit_code != 0` -> BLOQUEA.
-- [ ] `tested_commit_sha != HEAD` actual (run stale) -> BLOQUEA.
-- [ ] `status == finished` + `exit_code == 0` + `tested_commit_sha == HEAD` ->
-      PERMITE avanzar.
-- [ ] `deliverable_type` documentation/research/analysis -> skip AUDITABLE
-      (`canonical_suite.skipped == true`), NO bloqueo.
-- [ ] Diagnostico self-service estructurado: `last_run_json`, `reason`,
-      `remediation`, `canonical_suite_error`. Log: `last-run.log`.
-- [ ] Barrera verificada: test con exit_code=1 confirma bloqueo y con
-      exit_code=0 fresco confirma paso. Debe FALLAR sin el helper.
-- [ ] La gate NO duplica scope gate ni work_plan-committed (009g); NO sustituye
-      `_check_log_has_quality_gate_evidence` (coexisten).
+- [ ] Existen las tres flags nuevas en `.agent/agent_controller.py` con parser y mensajes de uso coherentes con el contrato.
+- [ ] `PAUSED` es un estado reconocido por `bus/state_machine.py` y por `.agent/state_validation.py`.
+- [ ] `--pause-ticket` falla si el ticket activo no coincide o falta `--reason`.
+- [ ] Antes de guardar stash/ref WIP, captura `changed_paths` y `diff_stat`.
+- [ ] Cuando no hay diff, `stash_ref=null`; no se crean stashes vacios.
+- [ ] Cuando hay diff, la ref persistida no depende de `stash@{n}`.
+- [ ] `--pause-ticket` escribe `paused/<ticket>.json`, emite `TICKET_PAUSED`, proyecta `STATE=PAUSED` y deja `ACTIVE_TICKET` intacto.
+- [ ] Solo se permite una pausa activa en v1.
+- [ ] La resolucion de `repo_destino` desde `motor_destination_link.json` usa la clave `destination_root` (NO `motor_root`). Leccion de WOT-2026-010e: `_resolve_destino` devolvio `motor_root` y dejo la ruta multi-root via link incorrecta. El test debe cubrir la ruta por link, no solo por `AGENT_PROJECT_ROOT`.
+- [ ] `--resume-ticket` verifica artefacto, ref resoluble y ausencia de eventos posteriores del mismo ticket antes de restaurar.
+- [ ] El avance global del bus por otros tickets se reporta, pero no bloquea por si solo.
+- [ ] `--resume-ticket` restaura de forma atomica o falla sin dejar tree a medias.
+- [ ] `--abort-paused-ticket` tiene al menos un test de fail-closed o stub auditable.
+- [ ] `pre_handoff_guard` / `--mark-ready` bloquean pausa activa ajena o corrupta.
+- [ ] Test de corte `pause -> nueva sesion -> detecta pausa activa` existe y pasa.
+- [ ] Tests demuestran pause limpio, pause dirty, no-stash, resume correcto, resume conflictivo, bus advance mismo ticket, bus advance otro ticket, pausa unica, abort fail-closed y bloqueo de handoff.
 - [ ] `ruff check .` exit 0.
 - [ ] Tests focales exit 0.
 - [ ] `run_pytest_safe` completo leido hasta `0 failed`.
-- [ ] `validate --json` destino 0/0 al cierre.
+- [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` exit 0, 0 errors, 0 warnings.
 
 ## Non-goals
 
-- NO sustituir `_check_log_has_quality_gate_evidence`: la nueva gate es
-  adicional (defensa en profundidad). Tocarlo seria scope creep.
-- NO parsear el stdout/texto del log como fuente primaria: el JSON es canonico.
-- NO crear un segundo runner ni un gate paralelo de pytest.
-- NO bloquear tickets documentation/research/analysis por esta gate si su
-  deliverable_type no exige pytest (respetar dispatch por deliverable_type).
-- NO tocar el scope gate, la barrera work_plan-committed, ni `bus/state_machine.py`.
+- NO implementar pausas anidadas en v1.
+- NO usar stash global ni `stash@{n}` como autoridad.
+- NO vaciar `ACTIVE_TICKET` durante la pausa.
+- NO permitir autoresolucion de conflictos en resume.
+- NO mezclar con la gate `0 failed` de WOT-2026-010c ni con el hook de encoding de WOT-2026-010e.
+- NO tocar `QUICKSTART.md` ni `INTERACTION_MODES.md` en esta ronda; si la feature requiere documentacion para cerrar, abrir follow-up en vez de colarla en v1.
+- NO redisenar toda la state-machine mas alla de lo necesario para `PAUSED`.
 
 ## Forbidden Surfaces
 
-- `scripts/run_pytest_safe.py`: SOLO el cambio minimo autorizado
-  (`tested_commit_sha`). NADA de parsing de stdout, NADA de cambio de
-  comportamiento del runner, NO reimplementar su shape.
-- `bus/state_machine.py`.
-- `_check_log_has_quality_gate_evidence` (no sustituir; la gate coexiste).
-- `privada/` y `.env`.
-- Scope de 010d, 010e, 008d.
-- `scripts/validate_ticket_prose.py`.
+- `privada/` y `.env`
+- `.agent/runtime/memory/`
+- tickets `WOT-2026-010e`, `WOT-2026-010f`, `WOT-2026-010g`, `WOT-2026-010h`, `WOT-2026-010i`, `WOT-2026-008d`
+- scripts o docs no ligados al lifecycle de pausa/reanudacion

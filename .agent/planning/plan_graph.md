@@ -17,19 +17,54 @@
   - MANIFEST.distribute y MANIFEST.workspace (read-only)
   - AGENTS.md, PROJECT.md, QUICKSTART.md, llms*.txt y tests (read-only)
 
+## PLAN-010D-001 -- Lifecycle canonico de pausa/reanudacion
+
+- objetivo: producir la capacidad minima de `pause/resume` canonicos para tickets
+  activos del motor sin stash opaco y con recuperacion fail-closed.
+- tickets: [WOT-2026-010d]
+- depends_on: [WOT-2026-010c]
+- superficies_archivo:
+  - repo_motor/.agent/agent_controller.py
+  - repo_motor/.agent/state_validation.py
+  - repo_motor/bus/state_machine.py
+  - repo_motor/bus/supervisor.py
+  - repo_motor/bus/builder_locks.py
+  - repo_motor/scripts/pre_handoff_guard.py
+  - repo_motor/runtime/ui_state_projector.py
+  - repo_motor/tests/unit/test_pause_ticket.py
+  - repo_motor/tests/unit/test_resume_ticket.py
+  - repo_motor/tests/test_pre_handoff_guard.py
+  - repo_motor/tests/unit/test_state_projection_probe.py
+  - repo_destino/.agent/collaboration/paused/<ticket>.json (artefacto runtime producido por la feature)
+- interfaces:
+  - CLI `agent_controller.py --pause-ticket|--resume-ticket|--abort-paused-ticket`
+  - event bus `TICKET_PAUSED`, `TICKET_RESUMED`, `STATE_CHANGED`
+  - proyecciones `TURN.md`, `STATE.md`, `execution_log.md`
+- shared_dependencies:
+  - EventBus y secuencias cross-ticket
+  - runtime multi-root (`repo_motor` + `repo_destino`)
+  - `pre_handoff_guard.py` y `--mark-ready`
+  - `run_pytest_safe.py` / `validate --json` como gates de cierre
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
 |------|-------------|-------------|--------------------|------------|---------------|
 | PLAN-001 | un manifiesto nuevo en repo_destino | contratos prompt-skill y discovery del motor en lectura | inventario obsoleto si otro ticket mueve prompts/skills durante el analisis | congelar HEAD inicial y repetir inventario antes del handoff | no |
+| PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
-que mueva o renombre prompts, skills, manifests o discovery.
+que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
+en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
+state projection, pre-handoff o lifecycle runtime.
 
 ## Forbidden Surfaces por plan
 
 - PLAN-001: todo el repo_motor es read-only; no tocar prompts/, skills/, scripts/,
   tests/, MANIFEST.*, AGENTS.md, PROJECT.md, QUICKSTART.md ni llms*.txt.
+- PLAN-010D-001: no tocar `privada/`, `.env`, `.agent/runtime/memory/`, tickets
+  010e/010f/010g/010h/010i/008d ni documentacion general (`QUICKSTART.md`,
+  `INTERACTION_MODES.md`) en v1.
 - No tocar bus/controller/runtime del destino salvo proyecciones producidas por
   el controller.
 
@@ -39,3 +74,7 @@ No hay merge productivo en 008a. Antes de cerrar, repetir el inventario contra e
 mismo HEAD o registrar el nuevo HEAD y reconciliar cualquier drift. Los tickets
 posteriores deben ejecutar discovery, collision check, contract check y suite
 completa sobre la union de cambios.
+
+Para 010d, cualquier merge con otro ticket que toque bus/controller/supervisor
+requiere revalidar la union con `run_pytest_safe`, `validate --json --project-root <repo_destino>`
+y una auditoria especifica de secuencias/eventos de pausa y resume.
