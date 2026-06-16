@@ -1,54 +1,74 @@
-# Execution Log: WOT-2026-009d - Consolidar parsers FLT
+# Execution Log: WOT-2026-008b - Discovery/frontmatter hardening
 
 ## Metadata
 
-**Estado:** COMPLETED
-- **ID:** WOT-2026-009d
-- **Contract ID:** T-009D-001
-- **deliverable_type:** code
+**Estado:** IN_PROGRESS
+- **ID:** WOT-2026-008b
+- **Contract ID:** T-008B-001
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Rol activo:** BUILDER
-- **Accion:** IMPLEMENT
+- **Rol activo:** MANAGER
+- **Accion:** CREATE_PLAN
 
 ## Baseline
 
-- Motor HEAD: cf12068 (feat 009e)
-- Destino HEAD: c485ef6 (close 009e)
-- Validate previo: 0/0
+- Motor HEAD: 7848018 (docs: align destination lifecycle setup guidance)
+- Destino HEAD: 32d4581 (docs: refine 008 taxonomy backlog contract)
+- Validate previo: 0/0 (VERIFICADO 2026-06-16)
+- BOM confirmado: `skills/man-review-implementation/SKILL.md` (efbbbf)
+- Discovery gap: 28/29 SKILL.md visibles; --check-contract exit 0 (falso verde)
 
-## Implementacion
+## Plan creado
 
-### Cambios aplicados (motor commit 43e80bb)
+- `work_plan.md`: APPROVED
+- `PLAN_WOT-2026-008b.md`: estrategia tecnica completa
+- `AUDIT_WOT-2026-008b.md`: TP Check + STOP conditions + checklist adversarial
+- Validate post-plan: pendiente (ejecutar tras bootstrap-ticket)
 
-1. **.agent/scope_gate.py** -- nueva funcion canonica `parse_flt_raw_buckets`:
-   - Parsea FLT en buckets raw (motor/destino) sin resolver rutas absolutas.
-   - Permite que consumidores elijan su propia raiz.
-   - Nueva funcion auxiliar `read_delivery_authority` y `_normalize_raw_flt_path`.
+## Phase 3: Tests de regresion (TDD — barrera primero)
 
-2. **.agent/motor_checkpoint.py** -- `parse_raw_flt_paths` delega a scope_gate:
-   - Elimina ~40 lineas de parsing duplicado.
-   - Llama `scope_gate.parse_flt_raw_buckets` y retorna union motor+destino.
+- Archivo: `tests/unit/test_discover_skills_bom.py` (nuevo, repo_motor)
+- 7 tests: 4 FAILED pre-fix (barrera verificada), 7 PASSED post-fix
+- TestBomVisibility: test_bom_skill_is_discovered, test_bom_skill_not_lost_in_multi_skill_dir, test_parse_frontmatter_handles_bom
+- TestCheckContractBom: test_check_contract_detects_bom_skill_with_missing_prompt, test_check_contract_passes_for_bom_skill_without_contract_fields
+- TestBomBarridoReal: test_no_bom_in_skill_files, test_no_bom_in_prompts
 
-3. **scripts/pip_audit_policy.py** -- delega a scope_gate para extraccion FLT.
+## Phase 1: Fix discover_skills.py
 
-4. **scripts/graph_context.py** -- delega a scope_gate para extraccion FLT.
+- Archivo: `scripts/discover_skills.py:72` (repo_motor)
+- Cambio: `encoding="utf-8"` → `encoding="utf-8-sig"` en `parse_frontmatter()`
+- Efecto: BOM consumido transparentemente; `content.startswith("---")` ahora True para archivos BOM
 
-5. **tests/unit/test_scope_gate_topology.py** -- tests FLT plano y namespaced.
-6. **tests/unit/test_pip_audit_policy.py** -- tests de paridad FLT para pip_audit.
-7. **tests/unit/test_graph_context.py** -- tests de paridad FLT para graph_context.
+## Phase 2: Eliminar BOM de SKILL.md
 
-### Gates finales (evidencia literal)
+- Archivo: `skills/man-review-implementation/SKILL.md` (repo_motor)
+- BOM pre-fix: bytes `efbbbf` al inicio (detectado via `open(path,'rb').read()[:3]`)
+- BOM post-fix: primeros bytes = `2d2d2d` = `---` (frontmatter correcto)
+- Discovery post-fix: 29/29 SKILL.md visibles; `--check-contract` exit 0 correcto
 
-**ruff:**
-  Comando: python -m ruff check .
-  Resultado: All checks passed! exit 0
+## Phase 4: Barrido BOM
 
-**Tests focales 009d:**
-  Comando: python scripts/run_pytest_safe.py -- tests/unit/test_scope_gate_topology.py tests/unit/test_pip_audit_policy.py tests/unit/test_graph_context.py -v
-  Resultado: 64 passed in 0.36s, exit 0 (2026-06-15)
+- Barrido `skills/**/SKILL.md`: 29 archivos. BOM encontrado: ninguno post-fix.
+  El unico BOM era `skills/man-review-implementation/SKILL.md` (eliminado en Phase 2).
+- Barrido `prompts/*.md`: todos sin BOM. test_no_bom_in_prompts PASSED confirma.
+- Evidencia: `TestBomBarridoReal::test_no_bom_in_skill_files PASSED` y
+  `TestBomBarridoReal::test_no_bom_in_prompts PASSED` (2026-06-16)
 
-**Motor commit productivo:**
-  43e80bb feat(WOT-2026-009d): consolidate FLT parser consumers
+## Phase 5: Clasificacion ghost triggers
 
+Fuentes: `agents.json` skill_allowlists (destino) + `discover_skills.py --json` post-fix.
 
-Manager approved canonical closeout for WOT-2026-009d
+- Vivos (trigger en FM): /implement, /tdd, /debug, /refactor, /review, /compare, /schedule — 7 triggers
+- BOM-casualty restaurado: /review (era invisible por BOM; ahora vivo en man-review-implementation)
+- Ghost-pending (allowlist, sin skill FM): /impl, /test, /fix, /validate, /inspect, /orchestrate, /archive, /report — 8 triggers
+- Ghost-partial: /audit (self-audit tiene `audit` sin slash en FM; allowlist usa /audit con slash)
+- Deuda documentada: 8 ghost-pending + 1 ghost-partial. Accion: tickets 008e/008f o nuevo ticket.
+  No bloquea cierre de 008b.
+
+Artefacto: `docs/decisions/DEC-008B-002-discovery-triggers.md` — tabla completa derivada.
+
+## Phase 6: DECs
+
+- `docs/decisions/DEC-008B-001-registry-model.md`: 4 opciones comparadas; DECIDED: discovery recursivo sin manifest (opcion 4 — estado actual)
+- `docs/decisions/DEC-008B-002-discovery-triggers.md`: 3 opciones comparadas; DECIDED: triggers en frontmatter como API propia (opcion A)
+- Ambos artefactos existen en disco, repo_motor. Verificable con ls.
