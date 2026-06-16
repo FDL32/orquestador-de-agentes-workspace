@@ -1,4 +1,4 @@
-# Work Plan: WOT-2026-010a
+﻿# Work Plan: WOT-2026-010a
 
 > Origen: revision de nomenclatura (2026-06-16). Depende de WOT-2026-008b y
 > WOT-2026-009g (ambos cerrados/publicados, motor 4b61b4b).
@@ -39,7 +39,7 @@ existieran; ahora no existe ninguno, asi que no se crea ni migra nada.
 - `canonical`: `STRATEGY_WOT-*`, `AUDIT_WOT-*`
 - `legacy-compat`: `PLAN_WT-*`, `PLAN_WP-*`, `AUDIT_WT-*`, `AUDIT_WP-*`
 
-El rename es semantico/operativo, no arqueologico. Los consumidores AÑADEN los
+El rename es semantico/operativo, no arqueologico. Los consumidores AÃ‘ADEN los
 patrones canonicos SIN eliminar los legacy (alias de transicion).
 
 **audit_plan.md:** `audit_ticket_contract.md` es la fuente real. `audit_plan.md`
@@ -49,9 +49,9 @@ contiene contrato operativo duplicado.
 ## Orden de ejecucion (obligatorio)
 
 1. Glosario canonico (doc).
-2. Generadores activos (skills/prompts que CREAN o ENSEÑAN IDs/artefactos).
+2. Generadores activos (skills/prompts que CREAN o ENSEÃ‘AN IDs/artefactos).
 3. Rename `audit_plan.md` -> `audit_ticket_contract.md` + stub alias + 2 refs.
-4. Consumidores/validadores de codigo (añadir canonical, conservar legacy-compat).
+4. Consumidores/validadores de codigo (aÃ±adir canonical, conservar legacy-compat).
 5. Gate grep clasificatoria.
 
 ## Files Likely Touched
@@ -75,6 +75,25 @@ contiene contrato operativo duplicado.
 - `bus/review_bridge.py`
 - `.agent/motor_checkpoint.py`
 - `scripts/validate_ticket_prose.py`
+- `scripts/check_ticket_nomenclature.py`
+- `scripts/create_checkpoint.py`
+- `scripts/graph_context.py`
+- `scripts/launch_agent_terminals.ps1`
+- `scripts/session_close_observations.py`
+- `scripts/session_closeout.py`
+- `scripts/state_projection_probe.py`
+- `scripts/ticket_activity_monitor.py`
+- `skills/_shared/ap-schema.md`
+- `skills/bui-implement-from-plan/references/code-rules.md`
+- `skills/deep-research/references/research-template.md`
+- `skills/man-review-implementation/references/verdict-format.md`
+- `skills/memory-consolidate/SKILL.md`
+- `skills/project-finalize/SKILL.md`
+- `skills/refactor-manager/SKILL.md`
+- `skills/repo-compare/references/output-format.md`
+- `skills/session-close-observations/SKILL.md`
+- `skills/session-close-observations/references/filter-rules.md`
+- `skills/session-close-observations/references/schema.md`
 
 Notas (no son parte del FLT parseable):
 - Generadores: man-create-work-plan + references, session_bootstrap,
@@ -90,7 +109,7 @@ Notas (no son parte del FLT parseable):
 - `_archive/plan_audit/` (historicos; NO tocar)
 
 ### Manager-only
-- Ejecutar gate grep de aceptacion y validar clasificacion.
+- Ejecutar gate grep de aceptacion y validar clasificacion (`scripts/check_ticket_nomenclature.py`).
 - Ejecutar `validate --json` final 0/0.
 
 ## Criterios Binarios
@@ -109,7 +128,7 @@ Notas (no son parte del FLT parseable):
       sin contrato operativo duplicado. `audit_ticket_contract.md` es la fuente.
 - [ ] Las 2 refs canonicas de audit_plan (orchestrator_pipeline.md,
       orchestrate-pipeline/SKILL.md) apuntan al nombre nuevo.
-- [ ] encoding guard OK en Markdown/prompts/skills tocados.
+- [ ] encoding guard OK en Markdown/prompts/skills tocados.`r`n- [ ] `python scripts/check_ticket_nomenclature.py` exit 0 (sin generadores legacy; historia/legacy-tagged permitidos).
 - [ ] `ruff check .` exit 0.
 - [ ] tests focales de consumidores/validadores tocados exit 0.
 - [ ] `validate --json` destino 0/0 al cierre.
@@ -136,3 +155,4 @@ Notas (no son parte del FLT parseable):
 - Scope de cualquier otro ticket.
 - NO eliminar patrones legacy de los consumidores (romperia archivado/guard de
   tickets historicos sin alias).
+

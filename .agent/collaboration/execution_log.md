@@ -1,4 +1,4 @@
-# Execution Log: WOT-2026-010a - Glosario nomenclatura + renames de artefactos
+﻿# Execution Log: WOT-2026-010a - Glosario nomenclatura + renames de artefactos
 
 ## Metadata
 
@@ -91,9 +91,9 @@ launch_builder.md: solo ref historica WT-2026-257a (mojibake example) = legacy, 
 Patrones WP-[YYYY]/WT-[YYYY]/PLAN_WP/PLAN_WT/AUDIT_WT/audit_plan.md en
 prompts/ skills/ scripts/ (sin __pycache__/sandbox). Cada hit clasificado:
 - canonical: audit_ticket_contract.md (5), audit_complete_motor_destination.md (1),
-  deep-research/SKILL.md (2) — todos usan STRATEGY_WOT-/AUDIT_WOT- con nota legacy.
+  deep-research/SKILL.md (2) â€” todos usan STRATEGY_WOT-/AUDIT_WOT- con nota legacy.
 - legacy-compat: audit_plan.md stub (1), archive_collaboration_artifacts.py (3),
-  pre_handoff_guard.py (6), validate_ticket_prose.py (4) — todos etiquetados.
+  pre_handoff_guard.py (6), validate_ticket_prose.py (4) â€” todos etiquetados.
 - bug: 0.
 - no clasificado fuera de seccion legacy: 0.
 Generadores de ID legacy activos (Plan ID/ID con WP-/WT-): CERO.
@@ -111,3 +111,33 @@ python .agent/agent_controller.py --validate --json --project-root <destino>  # 
 
 
 Scope override: 23 motor files: nomenclature glossary (AGENTS.md) + generators (skills/prompts) + audit_plan->audit_ticket_contract rename with stub + code consumers (canonical+legacy-compat) + 2 barrier test files. All declared in work_plan FLT; scope gate is exact-match vs prose.. Affected files: skills/bui-implement-from-plan/references/log-format.md, skills/man-resolve-escalation/SKILL.md, skills/man-review-implementation/SKILL.md, skills/man-review-implementation/references/verdict-format.md, tests/test_review_bridge.py, tests/unit/test_archive_collaboration_artifacts.py
+
+## Ronda 2 - Correcciones post-review
+
+### Correcciones aplicadas
+- Gate de nomenclatura ampliada: `scripts/check_ticket_nomenclature.py` clasifica `generator`, `history` y `legacy-tagged`.
+- Historia de commit con IDs legacy se conserva como `legacy-compat` implicito; no se reescribe a `WOT-` para no falsear trazabilidad.
+- Generadores/ejemplos vivos convertidos a `WOT-` en prompts/skills/scripts tocados de esta ronda.
+- `work_plan.md` actualizado para incluir el scope real de la segunda pasada y la nueva gate ejecutable.
+- Artefacto transitorio `.agent/runtime/pytest-safe/` eliminado del arbol para no contaminar el handoff.
+- `scripts/check_ticket_nomenclature.py` ajustado para pasar `ruff` (sin `ERA001`).
+
+Commit motor ronda 2: `842184a` (fix(WOT-2026-010a): classify legacy history and align scope)
+
+### Gates ronda 2
+
+```
+python scripts/check_ticket_nomenclature.py --verbose        # exit 0
+python scripts/check_encoding_guard.py [docs tocados]        # exit 0
+ruff check [python tocado]                                   # exit 0
+python -m pytest [focales de nomenclatura/consumidores]      # 99 passed
+python scripts/discover_skills.py --check-contract           # exit 0
+python .agent/agent_controller.py --validate --json --project-root <destino>  # 0/0
+```
+
+### Nota de cierre
+- La suite completa via `scripts/run_pytest_safe.py` excedio el timeout local del Manager en review previa; no se usa como evidencia de esta ronda.
+- El cierre de WOT-2026-010a debe apoyarse en gates focales verificadas + validate 0/0 + diff dentro del FLT actualizado.
+
+
+
