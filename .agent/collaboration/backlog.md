@@ -1618,7 +1618,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010e
-- **Origen:** La review Manager de WOT-2026-010e detecto cuatro clases de fallo que el contrato describia pero el sistema aun no bloquea con suficiente precision: packet sin commit visible al review, touch de Forbidden Surfaces sin gate automatica, test de fallback con falso verde y bug semantico de campo leido vs campo retornado en _resolve_destino().
+- **Origen:** La review Manager de WOT-2026-010e detecto cuatro clases de fallo que el contrato describia pero el sistema aun no bloquea con suficiente precision: packet sin commit visible al review, touch de Forbidden Surfaces sin gate automatica, test de fallback con falso verde y bug semantico de campo leido vs campo retornado en _resolve_destino(). NOTA (verificado 2026-06-17): el bug de _resolve_destino() YA esta corregido en encoding_post_write_hook.py:54 (lee `destination_root`); esta linea se conserva como test de regresion que blinda el fix, NO como bug vivo a arreglar.
 - **Problema:** El contrato actual detecta estos fallos en review humana, pero demasiado tarde. Falta convertirlos en barreras mecanicas previas al handoff o en tests utiles que fallen exactamente por la semantica equivocada.
 - **Objetivo:** endurecer el sistema para que estos fallos de packaging, scope y contrato semantico fallen automaticamente antes de Manager o durante la propia suite focal.
 - **Lineas de trabajo:**
@@ -1629,9 +1629,9 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Criterios binarios:**
   - Existe una barrera automatica que falla si el diff toca una ruta declarada en Forbidden Surfaces.
   - --mark-ready o su guard equivalente falla para tickets code y mixed si no hay commit visible del ticket o si el packet no es revisable.
-  - Al menos un test de contrato semantico falla si _resolve_destino() devuelve motor_root cuando el link declara destination_root.
+  - Test de regresion (blinda el fix ya hecho): falla si _resolve_destino() volviera a devolver motor_root cuando el link declara destination_root. El fix ya esta en encoding_post_write_hook.py:54; el test impide la regresion futura.
   - Al menos un test de fallback falla si la rama fallback no se ejecuta realmente aunque el test pretenda cubrirla.
-  - alidate --json y gates del ticket quedan 0/0 al cierre.
+  - validate --json y gates del ticket quedan 0/0 al cierre.
 - **Non-goals:**
   - No reabrir ni mezclar el cierre funcional de WOT-2026-010e con este hardening.
   - No convertir cualquier dirty tree en bloqueo continuo fuera del handoff.
