@@ -43,11 +43,11 @@ Patron de guard DEBIL duplicado a lo largo de `.agent/agent_controller.py`. Solo
   Dos formas equivalentes del mismo defecto:
   - `plan_id == "N/A"` / `current_plan_id == "N/A"` (9 ocurrencias).
   - `ticket_id == "N/A"` (8 ocurrencias).
-  Todas dejan pasar `"none"` y `"unknown"` (solo bloquean `""` y `"N/A"`).
+  Las 17 dejan pasar `"none"` y `"unknown"` (solo bloquean `""` y `"N/A"`).
   Conteo verificado: `grep -c 'plan_id == "N/A"'` = 9, `grep -c 'ticket_id ==
   "N/A"'` = 8 -> 17 debiles + 1 fuerte (linea 1780) = 18 sitios de validacion.
   El Builder debe localizar las 17 por grep en el momento de implementar (los
-  numeros de linea se desplazan al editar) y migrarlas TODAS.
+  numeros de linea se desplazan al editar) y migrar las 17.
 
 `get_plan_id` (`.agent/state_validation.py:62`) devuelve el texto tras `**ID:**`
 o `"N/A"`. El seed neutro del motor documenta `ID=none` (state_validation.py:95,
@@ -105,8 +105,8 @@ usarla en 1 de 18 sitios dejaria el codigo en estado peor (inconsistente).
   mutacion de estado). En las rutas query, el cambio solo refuerza el early-return
   sin cambiar el resultado para tickets validos.
 - **No tocar checkpoints validos:** un ticket real nunca esta en
-  `INVALID_PLAN_IDS`; `checkpoint/review-<ticket>` y todas las rutas con ticket
-  valido conservan su comportamiento exacto.
+  `INVALID_PLAN_IDS`; `checkpoint/review-<ticket>` y cada ruta con ticket
+  valido conserva su comportamiento exacto.
 - **Limpieza del tag existente:** `checkpoint/review-none` se elimina SOLO tras
   verificar que no es referenciado por bus, backlog ni archive. Es un tag local
   (no hay evidencia de push); borrado con `git tag -d checkpoint/review-none`.
@@ -125,7 +125,7 @@ usarla en 1 de 18 sitios dejaria el codigo en estado peor (inconsistente).
    cambiar comportamiento).
 4. Reemplazar las 17 ocurrencias del guard debil por `is_invalid_plan_id(...)`.
    Mecanico: 9 con `plan_id`/`current_plan_id` + 8 con `ticket_id`. Localizar por
-   grep `== "N/A"` en el momento de editar; migrarlas todas (grep final == 0).
+   grep `== "N/A"` en el momento de editar; migrar las 17 (grep final == 0).
 5. Limpiar el tag `checkpoint/review-none` tras verificar cero referencias vivas.
 6. Gates + cierre canonico.
 
@@ -137,7 +137,7 @@ usarla en 1 de 18 sitios dejaria el codigo en estado peor (inconsistente).
 - `tests/unit/test_pre_handoff_checkpoint.py`
 
 Notas (no son parte del FLT parseable):
-- `.agent/agent_controller.py`: migrar TODOS los guards debiles
+- `.agent/agent_controller.py`: migrar los 17 guards debiles
   `(plan_id|ticket_id|current_plan_id) == "N/A"` a `is_invalid_plan_id()`
   (localizar por grep, NO por numero de linea; son 17 + el fuerte de 1780). No
   tocar la logica de creacion de tag/eventos mas alla del guard previo.
