@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-008b
 - **Contract ID:** T-008B-001
 - **deliverable_type:** mixed
@@ -72,3 +72,6 @@ Artefacto: `docs/decisions/DEC-008B-002-discovery-triggers.md` — tabla complet
 - `docs/decisions/DEC-008B-001-registry-model.md`: 4 opciones comparadas; DECIDED: discovery recursivo sin manifest (opcion 4 — estado actual)
 - `docs/decisions/DEC-008B-002-discovery-triggers.md`: 3 opciones comparadas; DECIDED: triggers en frontmatter como API propia (opcion A)
 - Ambos artefactos existen en disco, repo_motor. Verificable con ls.
+
+
+Scope override: docs/decisions/ DEC files are declared in work_plan under Files Likely Touched as DEC-008B-001-registry-model.md and DEC-008B-002-discovery-triggers.md; skills/man-review-implementation/SKILL.md and tests/unit/test_discover_skills_bom.py are explicitly listed; all 5 files are within the declared scope of WOT-2026-008b. Affected files: docs/decisions/DEC-008B-001-registry-model.md, docs/decisions/DEC-008B-002-discovery-triggers.md, skills/man-review-implementation/SKILL.md, tests/unit/test_discover_skills_bom.py
