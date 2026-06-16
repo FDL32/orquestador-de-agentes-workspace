@@ -70,6 +70,7 @@
 | Alta | WOT-2026-010c | Gate de cierre: exigir evidencia literal "0 failed" de run_pytest_safe antes de mark-ready | motor/quality-gates | pending | WOT-2026-010b | session-2026-06-16-canonical-close-debt |  <!-- Origen: 010a se publico con suite canonica ROJA (test_no_inline_ticket_regex); CI GitHub Quality Gates fallo en 842184a y 585fadb. Causa raiz VERIFICADA: focal verde != canonica verde; el cierre cito "N passed" sin cruzar "1 failed". 010b lo arreglo (69d53c1) pero la grieta de proceso sigue: nada bloquea mark-ready si run_pytest_safe tiene failed>0. Objetivo: el handoff (mark-ready / pre-handoff) exige evidencia literal de run_pytest_safe con 0 failed leida hasta el final, no solo passed. Barrera verificada: con una suite roja simulada, mark-ready debe bloquear. Ver memoria canonical-close-read-failed-not-only-passed. Scope: pre_handoff_guard / agent_controller mark-ready path + test. NO confundir con scope gate ni con work_plan-committed (009g). -->
 | Media | WOT-2026-010e | Encoding early-detection tras Write/Edit/MultiEdit de agentes | motor/devex-encoding | pending | WOT-2026-010c | session-2026-06-16-encoding-early-detection |  <!-- Los agentes escriben casi todo el codigo; la extension VS Code no cubre la tuberia real. Objetivo: PostToolUse Write/Edit/MultiEdit ejecuta guard sobre archivos texto recien escritos; `TEXT_EXTENSIONS` compartida; soporta repo_motor/repo_destino; detecta BOM/mojibake; diagnostico self-service; tests: mojibake/BOM falla, Unicode valido/ASCII pasa, binario skip. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
 | Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- Estado canonico PAUSED; artefacto paused/<ticket>.json legible; bus_last_seq_global + ticket_last_seq; diff_stat y changed_paths antes de stash; stash_ref solo si hay diff; status PAUSED/ABORTED; una pausa activa maximo; resume fail-closed; pre_handoff bloquea pausa ajena; test de corte pause->sesion nueva->detecta pausa. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
+| Baja | WOT-2026-010f | Limpieza/investigacion de checkpoint/review-none | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-review-none-checkpoint |  <!-- Origen: Manager review de WOT-2026-010c detecto tag extra `checkpoint/review-none` apuntando a HEAD junto a `checkpoint/review-WOT-2026-010c`. No bloqueo 010c porque la gate canonica usa el tag correcto, pero `review-none` indica que algun flujo previo pudo resolver plan_id="none" al crear checkpoint. Objetivo: investigar origen, reproducir si existe ruta viva, eliminar/evitar tags `checkpoint/review-none` sin tocar checkpoints validos. Barrera: un intento de checkpoint sin ticket valido debe fallar fail-closed o no crear tag; la suite debe demostrar que `checkpoint/review-<ticket>` sigue funcionando. Scope: agent_controller/pre_handoff checkpoint path + tests si se confirma ruta viva; no mezclar con 010d/010e. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1550,3 +1551,25 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Relacion con WOT-2026-010c: 010c protege cierres; 010d permite interrumpir implementaciones sin romper esas garantias.
   - Relacion con WOT-2026-008d: 008d debe arrancar despues de 010d si queremos una valvula formal para blockers externos durante cambios de taxonomy/naming.
 
+
+## WOT-2026-010f - Limpieza/investigacion de checkpoint/review-none
+
+- **Prioridad:** Baja
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** analysis/mixed (analysis si solo se confirma deuda; mixed si hay fix de runtime)
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010c
+- **Origen:** Durante la review final de WOT-2026-010c se verifico que HEAD tenia dos tags M3: `checkpoint/review-WOT-2026-010c` y `checkpoint/review-none`. El tag correcto no esta afectado, pero `checkpoint/review-none` sugiere una ruta previa que creo un checkpoint con `plan_id="none"`.
+- **Problema:** Un checkpoint con ticket `none` es ruido operativo y puede ocultar drift de bus o de bootstrap si se normaliza. No bloqueo WOT-2026-010c porque la barrera valida el checkpoint del ticket correcto y la suite canonica verde fresca.
+- **Objetivo:** investigar el origen de `checkpoint/review-none`, decidir si es artefacto historico unico o ruta viva, y dejar barrera/fix minimo si existe riesgo de repeticion.
+- **Criterios binarios:**
+  - Inventario de tags `checkpoint/review-*` y evidencia de si `checkpoint/review-none` es unico o reproducible.
+  - Si existe ruta viva: test que falle antes y pase despues demostrando que no se crea `checkpoint/review-none` cuando no hay ticket valido.
+  - Si es solo historico: documentar decision y limpiar tag solo con evidencia de que no es referenciado por bus/backlog/archive.
+  - Confirmar que `checkpoint/review-<ticket>` sigue funcionando.
+  - `validate --json` 0/0 tras la accion elegida.
+- **Non-goals:**
+  - No tocar WOT-2026-010e ni WOT-2026-010d.
+  - No reescribir la politica M3 completa.
+  - No borrar tags sin verificar referencias vivas.
