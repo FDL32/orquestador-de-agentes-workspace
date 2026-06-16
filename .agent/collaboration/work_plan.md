@@ -1,167 +1,138 @@
-# Work Plan: WOT-2026-009g
+# Work Plan: WOT-2026-010a
 
-> Origen: incidente de handoff de WOT-2026-008b (cerrado/publicado, motor 869b920).
+> Origen: revision de nomenclatura (2026-06-16). Depende de WOT-2026-008b y
+> WOT-2026-009g (ambos cerrados/publicados, motor 4b61b4b).
 
 ## Metadata
 
-- **ID:** WOT-2026-009g
-- **Contract ID:** T-009G-001
-- **Estado:** COMPLETED
-- **deliverable_type:** code
+- **ID:** WOT-2026-010a
+- **Contract ID:** T-010A-001
+- **Estado:** APPROVED
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-008b (handoff incident origin), WOT-2026-009b (scope gate runtime)
+- **Depends on:** WOT-2026-008b, WOT-2026-009g
 
 ## Objetivo
 
-Cerrar el falso verde de handoff detectado en WOT-2026-008b: el `work_plan.md`
-del ticket activo pudo llegar a READY_FOR_REVIEW sin estar commiteado, porque
-ambas verificaciones de árbol limpio lo excluyen deliberadamente.
+Glosario canonico de nomenclatura de ticket + renames de artefactos, atacando la
+causa VIVA (generadores que crean nombres + consumidores que los validan), sin
+migracion arqueologica de historicos.
 
-`work_plan.md` debe estar commiteado en el instante del handoff (HEAD == working
-tree para esa ruta). NO es dirty genérico: es commit-state obligatorio del
-contrato activo. Sin sacar `work_plan.md` de las live surfaces generales.
-
-**Causa raíz verificada en código (2026-06-16):**
-- `scripts/pre_handoff_guard.py:39` incluye `.agent/collaboration/work_plan.md`
-  en `LIVE_SURFACES_REL` → excluido del dirty check.
-- `.agent/motor_checkpoint.py:35` incluye la misma ruta en su propia
-  `LIVE_SURFACES_REL` (lista duplicada en otro módulo).
-- `_handle_mark_ready` (agent_controller.py:3006) invoca `_run_pre_handoff_guard`
-  → usa la lista de `pre_handoff_guard.py`.
-- `_handle_pre_handoff` (agent_controller.py:3411) verifica con
-  `_build_live_surface_sets` ← `motor_checkpoint.LIVE_SURFACES_REL`.
-- Resultado: DOS puertas (`--mark-ready` y `--pre-handoff` standalone), ambas
-  excluyen `work_plan.md`. Cerrar solo una deja la otra como falso verde latente.
+Decisiones canonicas (fijadas por el propietario):
+- `WOT-` es el prefijo canonico de ticket (tres letras). `WP-`/`WT-` = legacy
+  historico, SIN migracion masiva.
+- "Plan" se reserva para el plan/familia completo (ej. `WOT-2026-009` familia).
+  NO para el artefacto de un ticket.
+- `work_plan.md` permanece como contrato operativo del ticket activo (sin cambio).
+- `PLAN_WT-<ID>.md` -> `STRATEGY_WOT-<ID>.md` (estrategia tecnica; libera "PLAN").
+- `AUDIT_WT-<ID>.md` -> `AUDIT_WOT-<ID>.md` (solo prefijo WT->WOT).
+- `prompts/audit_plan.md` -> `prompts/audit_ticket_contract.md` con stub alias.
 
 ## Decision Arquitectonica
 
-Helper compartido en `.agent/motor_checkpoint.py` (módulo común a ambas rutas):
+**Alcance de rename (confirmado por el propietario):** solo generadores +
+consumidores. NO renombrar ni un solo archivo historico fisico
+(`_archive/plan_audit/`). Solo renombrar artefactos VIVOS del ticket activo si
+existieran; ahora no existe ninguno, asi que no se crea ni migra nada.
 
-```
-assert_work_plan_committed(project_root, motor_root) -> tuple[bool, dict]
-```
+**Consumidores de codigo aceptan dos clases:**
+- `canonical`: `STRATEGY_WOT-*`, `AUDIT_WOT-*`
+- `legacy-compat`: `PLAN_WT-*`, `PLAN_WP-*`, `AUDIT_WT-*`, `AUDIT_WP-*`
 
-**El helper NO parsea git. Delega en la fuente canónica existente**
-`scope_gate.get_changed_files(project_root=..., motor_root=...)`
-(VERIFICADO en código, .agent/scope_gate.py:295):
+El rename es semantico/operativo, no arqueologico. Los consumidores AÑADEN los
+patrones canonicos SIN eliminar los legacy (alias de transicion).
 
-- `get_changed_files` ya usa `git status --porcelain -z` y ya cubre la semántica
-  completa requerida: staged, unstaged, untracked, rename (rama `R`) y deletion
-  (rama genérica `changed.add(path)`). Devuelve **rutas absolutas resueltas**.
-- El helper resuelve la ruta absoluta de `.agent/collaboration/work_plan.md`
-  contra el git root activo y comprueba si está en el set devuelto por
-  `get_changed_files`. Si está → no commiteado → `committed = False`.
-- PROHIBIDO crear un parser de `git status` nuevo en `motor_checkpoint.py`.
-  Existen ya dos (`scope_gate.get_changed_files`, `pre_handoff_guard
-  .get_changed_files`); añadir un tercero reabre el patrón de drift que este
-  ticket combate. Reutilizar `scope_gate.get_changed_files` es obligatorio.
-- Retorna `(committed, diag)` con diagnóstico accionable. `diag` DEBE incluir:
-  - campo `uncommitted_work_plan: true` cuando bloquea.
-  - mensaje con la ruta literal `.agent/collaboration/work_plan.md`.
-  - remediación: `git add .agent/collaboration/work_plan.md && git commit -m "..."`.
-- `work_plan.md` PERMANECE en ambas `LIVE_SURFACES_REL` (sigue exento del
-  dirty-tree genérico). El helper es una regla ADICIONAL y separada: "exento del
-  dirty genérico" + "obligatoriamente commiteado al handoff" conviven en planos
-  distintos.
+**audit_plan.md:** `audit_ticket_contract.md` es la fuente real. `audit_plan.md`
+queda como stub alias breve cuya primera linea apunta al nombre nuevo. NO
+contiene contrato operativo duplicado.
 
-Invocaciones (ambas puertas, sin dejar rama descubierta):
-- `scripts/pre_handoff_guard.py`: llama al helper; si no commiteado → bloquea
-  `--mark-ready` con exit 1 + JSON `uncommitted_work_plan: true`.
-- `.agent/agent_controller.py::_handle_pre_handoff`: el check debe ejecutarse
-  **una vez, después de resolver `project_root`/git_root y ANTES de estos tres
-  retornos exitosos** de la función: (1) rama documentation/research/analysis,
-  (2) rama motor auto-commit, (3) rama idempotent no-op. El check NO puede
-  colocarse dentro de una sola rama, o la cobertura vuelve a ser parcial.
-  Colocarlo en el punto común previo a los tres `return 0` listados.
+## Orden de ejecucion (obligatorio)
 
-Razón de no reusar solo `get_changed_files()` del guard: `_handle_pre_handoff`
-no pasa por el script, usa `motor_checkpoint`. El helper debe vivir en el módulo
-común y delegar en `scope_gate` para cubrir ambas puertas con una sola regla y
-una sola fuente git.
-
-## Non-goals
-
-- NO sacar `work_plan.md` de `LIVE_SURFACES_REL` (re-rompería ciclos donde el
-  runtime reescribe el plan legítimamente).
-- NO unificar las dos copias de `LIVE_SURFACES_REL` (pre_handoff_guard vs
-  motor_checkpoint). Es deuda real pero abre blast radius; queda anotada para
-  ticket posterior, fuera de 009g.
-- NO añadir el mismo check duro para STATE.md, TURN.md, execution_log.md,
-  notifications.md, backlog.md (el runtime los reescribe; no son el contrato).
-- NO automatizar la barrera de regresión "pre-fix falla / post-fix pasa" como
-  gate. Eso es refuerzo manual del Manager en review_manager.md, posible
-  follow-up doc, no parte de 009g.
-- NO tocar scope de otros tickets.
-- NO corregir nomenclatura WP/WT/PLAN_*; queda para WOT-2026-010a.
-- El borrador `PLAN_WOT-2026-009g.md` es artefacto transicional (se renombrara
-  a STRATEGY_WOT en 010a); NO es precedente canonico de nombre.
+1. Glosario canonico (doc).
+2. Generadores activos (skills/prompts que CREAN o ENSEÑAN IDs/artefactos).
+3. Rename `audit_plan.md` -> `audit_ticket_contract.md` + stub alias + 2 refs.
+4. Consumidores/validadores de codigo (añadir canonical, conservar legacy-compat).
+5. Gate grep clasificatoria.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `.agent/motor_checkpoint.py`
+- `AGENTS.md`
+- `skills/man-create-work-plan/SKILL.md`
+- `skills/man-create-work-plan/references/plan-template.md`
+- `skills/man-create-work-plan/references/plan-quality-checklist.md`
+- `prompts/session_bootstrap.md`
+- `prompts/launch_builder.md`
+- `skills/deep-research/SKILL.md`
+- `skills/_shared/ticket-anti-patterns.md`
+- `prompts/audit_plan.md`
+- `prompts/audit_ticket_contract.md`
+- `prompts/orchestrator_pipeline.md`
+- `skills/orchestrate-pipeline/SKILL.md`
+- `prompts/audit_complete_motor_destination.md`
+- `scripts/archive_collaboration_artifacts.py`
 - `scripts/pre_handoff_guard.py`
-- `.agent/agent_controller.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/unit/test_motor_checkpoint.py`
-- `tests/test_pre_handoff_multirepo.py`
-- `tests/test_mark_ready_motor_scope.py`
-- `tests/test_pre_handoff_motor_productive_changes.py`
-- `tests/test_agent_controller.py`
+- `bus/review_bridge.py`
+- `.agent/motor_checkpoint.py`
+- `scripts/validate_ticket_prose.py`
 
 Notas (no son parte del FLT parseable):
-- `.agent/motor_checkpoint.py`: helper `assert_work_plan_committed`.
-- `scripts/pre_handoff_guard.py`: invocar helper, bloquear mark-ready, fail-closed.
-- `.agent/agent_controller.py`: invocar helper en `_handle_pre_handoff`, fail-closed.
-- `tests/test_pre_handoff_guard.py`: existente, no duplicar en tests/unit/.
-- `tests/unit/test_motor_checkpoint.py`: nuevo.
-- Los 4 ultimos test files: actualizar setups para commitear work_plan.md
-  como precondicion correcta del nuevo guard (no regresion).
+- Generadores: man-create-work-plan + references, session_bootstrap,
+  launch_builder, deep-research, ticket-anti-patterns.
+- Renames con alias: audit_plan -> audit_ticket_contract (+ stub), refs en
+  orchestrator_pipeline y orchestrate-pipeline.
+- Consumidores codigo: archive/pre_handoff_guard/review_bridge/motor_checkpoint/
+  validate_ticket_prose anaden STRATEGY_WOT-/AUDIT_WOT- conservando legacy.
+- `prompts/audit_complete_motor_destination.md`: ref a AUDIT_WT-* a clasificar.
 
 ### Read/inspect only
-- `.agent/scope_gate.py::get_changed_files` (FUENTE A REUSAR; no reimplementar)
-- `.agent/agent_controller.py::_handle_mark_ready` / `_run_pre_handoff_guard`
-  (confirmar ruta de invocación — VERIFICADO: mark-ready pasa por el guard)
+- `bus/ticket_id.py` (TICKET_ID_PATTERN ya acepta `[A-Z]{3}` -> WOT; no tocar)
+- `_archive/plan_audit/` (historicos; NO tocar)
 
 ### Manager-only
-- Reproducir barrera: caso 008b (work_plan.md dirty + READY_FOR_REVIEW) →
-  gate actual pasa / gate nuevo falla. Verificar en worktree, no por relato.
-- Ejecutar `validate --json` final.
+- Ejecutar gate grep de aceptacion y validar clasificacion.
+- Ejecutar `validate --json` final 0/0.
 
 ## Criterios Binarios
 
-- [ ] Preflight antes de Builder: AGENT_PROJECT_ROOT, repo_motor, repo_destino,
-      ticket activo y árbol destino limpio salvo artefactos esperados verificados.
-- [ ] Helper `assert_work_plan_committed` existe en `motor_checkpoint.py` y
-      **delega en `scope_gate.get_changed_files`** (NO parsea git directamente,
-      NO crea un tercer parser de `git status`).
-- [ ] `pre_handoff_guard.py` invoca el helper y bloquea `--mark-ready` con
-      `uncommitted_work_plan: true` + ruta literal
-      `.agent/collaboration/work_plan.md` + remediación accionable.
-- [ ] `_handle_pre_handoff` invoca el helper en el punto común previo a los tres
-      `return 0` (después de resolver project_root/git_root): rama
-      documentation/research/analysis, rama motor auto-commit, rama idempotent
-      no-op.
-- [ ] `work_plan.md` SIGUE en ambas `LIVE_SURFACES_REL` (sin regresión de
-      runtime: STATE/TURN/execution_log dirty NO bloquean).
-- [ ] Barrera de regresión, demostrada de forma NO destructiva (fixture de repo
-      git temporal o worktree; NO manipular el árbol principal): con la
-      condición 008b reproducida (work_plan.md modificado vs HEAD + resto
-      limpio), el comportamiento PRE-helper pasa (falso verde) y el
-      POST-helper falla con `uncommitted_work_plan: true`.
-- [ ] Tests del helper sobre fixture git: detecta unstaged, staged, untracked
-      y deletion de `work_plan.md` (4 estados porcelain).
-- [ ] Test control: work_plan.md commiteado + STATE/TURN/execution_log dirty
-      → NO falla por work_plan (no-regresión de runtime).
-- [ ] `ruff check .` exit 0 en repo_motor.
-- [ ] Tests focales pasan con exit 0.
+- [ ] Glosario canonico creado (familia/plan / ticket / work_plan.md /
+      STRATEGY_ / AUDIT_ / prefijo WOT / WP-WT legacy).
+- [ ] Ningun prompt/template/skill activo genera `WP-[YYYY]`, `WT-[YYYY]`,
+      `PLAN_WP`, `PLAN_WT`, `AUDIT_WT` salvo en seccion marcada como legacy/compat.
+- [ ] Gate grep: cada hit de `WP-[YYYY]`/`WT-[YYYY]`/`PLAN_WP`/`PLAN_WT`/
+      `AUDIT_WT`/`audit_plan.md` en `prompts/`+`skills/`+`scripts/` clasificado
+      como `canonical`, `legacy-compat` o `bug`. La gate falla si queda algun
+      hit no clasificado fuera de seccion legacy/compat.
+- [ ] Consumidores de codigo aceptan `STRATEGY_WOT-*`/`AUDIT_WOT-*` (canonical)
+      Y conservan `PLAN_WT-*`/`PLAN_WP-*`/`AUDIT_WT-*`/`AUDIT_WP-*` (legacy-compat).
+- [ ] `audit_plan.md` es stub alias (primera linea -> audit_ticket_contract.md),
+      sin contrato operativo duplicado. `audit_ticket_contract.md` es la fuente.
+- [ ] Las 2 refs canonicas de audit_plan (orchestrator_pipeline.md,
+      orchestrate-pipeline/SKILL.md) apuntan al nombre nuevo.
+- [ ] encoding guard OK en Markdown/prompts/skills tocados.
+- [ ] `ruff check .` exit 0.
+- [ ] tests focales de consumidores/validadores tocados exit 0.
 - [ ] `validate --json` destino 0/0 al cierre.
+
+## Non-goals
+
+- NO migrar los 161+72 archivos historicos `WP-`/`WT-` (es otra familia de
+  tickets, no este).
+- NO renombrar archivos en `_archive/plan_audit/` ni ningun historico fisico.
+- NO eliminar los patrones legacy de los consumidores: se conservan como
+  legacy-compat con alias de transicion (romperlos dejaria sin archivar los
+  tickets historicos).
+- NO tocar `bus/ticket_id.py`: el patron ya acepta el prefijo de tres letras
+  (WOT); reabrirlo esta fuera de scope.
+- NO crear artefactos `STRATEGY_WOT-`/`AUDIT_WOT-` para tickets que no existen;
+  el rename es de generadores/consumidores, no de creacion arqueologica.
 
 ## Forbidden Surfaces
 
-- `.agent/collaboration/` del motor (seed neutro).
+- `_archive/plan_audit/` y cualquier historico `PLAN_WP-`/`PLAN_WT-`/`AUDIT_WP-`/
+  `AUDIT_WT-` (NO renombrar archivos historicos).
+- `bus/ticket_id.py` (el patron ya acepta WOT; no reabrir).
 - `privada/` y `.env`.
-- `bus/state_machine.py`.
-- `scripts/validate_ticket_prose.py`.
-- Las dos `LIVE_SURFACES_REL` NO se fusionan ni se les quita `work_plan.md`.
 - Scope de cualquier otro ticket.
+- NO eliminar patrones legacy de los consumidores (romperia archivado/guard de
+  tickets historicos sin alias).
