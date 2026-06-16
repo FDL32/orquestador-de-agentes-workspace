@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-010d
 - **Contract ID:** T-010D-001
 - **deliverable_type:** code
@@ -122,3 +122,6 @@ pre-existentes: verificado con `git stash` que fallan sin los cambios de 010d
   tree que bloqueaba el pre-handoff guard. Ver review CHANGES: superficie no
   declarada en el FLT de 010d; resuelto declarandola en el contrato (work_plan
   Files Likely Touched + nota de scope), no como follow-up.
+
+
+Manager approved canonical closeout for WOT-2026-010d
