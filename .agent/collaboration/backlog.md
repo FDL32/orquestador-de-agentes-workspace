@@ -1,4 +1,4 @@
-﻿# Backlog
+# Backlog
 
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
@@ -68,6 +68,7 @@
 | Alta | WOT-2026-009g | Pre-handoff: work_plan.md debe estar commiteado al handoff | motor/protocol-runtime | completed | WOT-2026-008b, WOT-2026-009b | session-2026-06-16-handoff-hardening |  <!-- motor d245ba5+4b61b4b; helper assert_work_plan_committed fail-closed; cubre --mark-ready + --pre-handoff; Manager APROBADO; validate 0/0; cierre publicado -->
 | Media | WOT-2026-010a | Glosario de nomenclatura + rename PLAN_WT->STRATEGY_WOT / audit_plan->audit_ticket_contract | motor/protocol-docs | completed | WOT-2026-008b, WOT-2026-009g | session-2026-06-16-naming-debt |  <!-- motor cac2648+842184a+585fadb; gate nomenclature classify history/generator; closeout canonico 2026-06-16 -->  <!-- reservar PLAN para familia; ticket=WOT; STRATEGY_WOT-<ID> estrategia tecnica; AUDIT_WOT-<ID>; audit_ticket_contract.md; WP/WT legacy sin migracion; toca 5 archivos codigo; validate_ticket_prose.py SI se toca en 010a pero solo tras cerrar 009g -->
 | Alta | WOT-2026-010c | Gate de cierre: exigir evidencia literal "0 failed" de run_pytest_safe antes de mark-ready | motor/quality-gates | pending | WOT-2026-010b | session-2026-06-16-canonical-close-debt |  <!-- Origen: 010a se publico con suite canonica ROJA (test_no_inline_ticket_regex); CI GitHub Quality Gates fallo en 842184a y 585fadb. Causa raiz VERIFICADA: focal verde != canonica verde; el cierre cito "N passed" sin cruzar "1 failed". 010b lo arreglo (69d53c1) pero la grieta de proceso sigue: nada bloquea mark-ready si run_pytest_safe tiene failed>0. Objetivo: el handoff (mark-ready / pre-handoff) exige evidencia literal de run_pytest_safe con 0 failed leida hasta el final, no solo passed. Barrera verificada: con una suite roja simulada, mark-ready debe bloquear. Ver memoria canonical-close-read-failed-not-only-passed. Scope: pre_handoff_guard / agent_controller mark-ready path + test. NO confundir con scope gate ni con work_plan-committed (009g). -->
+| Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- Estado canonico PAUSED; artefacto paused/<ticket>.json legible; bus_last_seq_global + ticket_last_seq; diff_stat y changed_paths antes de stash; stash_ref solo si hay diff; status PAUSED/ABORTED; una pausa activa maximo; resume fail-closed; pre_handoff bloquea pausa ajena; test de corte pause->sesion nueva->detecta pausa. Orden recomendado: 010c -> 010d -> 008d. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1363,7 +1364,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 ---
 
-## WOT-2026-009f â€” Gate de publicacion pre-push para repo_destino
+## WOT-2026-009f -- Gate de publicacion pre-push para repo_destino
 
 - **Prioridad:** Media
 - **Scope:** motor/protocol-destino
@@ -1382,14 +1383,14 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **STOP:** si la gate mecanica requiere instalar hooks en el repo_destino sin consent del propietario del proyecto, documentar solo y dejar la gate como recomendacion en orchestrator_pipeline.md.
 
 
-## WOT-2026-010a â€” Glosario de nomenclatura + rename de artefactos de ticket
+## WOT-2026-010a -- Glosario de nomenclatura + rename de artefactos de ticket
 
 - **Scope:** motor/protocol-docs
 - **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008b, WOT-2026-009g (no arrancar hasta que ambos cierren; 008b por si descubre mas casos de naming durante su implementacion, 009g por el conflicto de superficie con validate_ticket_prose.py)
-- **Origen:** Revision de nomenclatura (2026-06-16). El Manager seÃ±alÃ³ `audit_plan.md` como nombre ambiguo. Inspeccion de codigo revela deuda mas profunda: dos prefijos en paralelo (`WP-` 161 archivos, `WT-` 72) y uso de "PLAN" tanto para familia como para artefacto de ticket.
+- **Origen:** Revision de nomenclatura (2026-06-16). El Manager senalo `audit_plan.md` como nombre ambiguo. Inspeccion de codigo revela deuda mas profunda: dos prefijos en paralelo (`WP-` 161 archivos, `WT-` 72) y uso de "PLAN" tanto para familia como para artefacto de ticket.
 - **Decision de nomenclatura (fijada por el propietario):**
   - `WOT-` es el prefijo canonico de ticket (tres letras). `WP-`/`WT-` = legacy historico, SIN migracion masiva.
   - "Plan" se reserva para el plan/familia completo (ej. `WOT-2026-009` = familia). NO para el artefacto de un ticket.
@@ -1399,12 +1400,12 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - `AUDIT_WT-<ID>.md` -> `AUDIT_WOT-<ID>.md` (solo prefijo WT->WOT).
   - `prompts/audit_plan.md` -> `prompts/audit_ticket_contract.md` (audita el contrato/plan operativo del ticket ANTES de Builder; nombre preciso para no confundir con review de implementacion, bus, cierre o publicacion).
 - **Generadores activos (corregir PRIMERO, antes que consumidores/validadores):**
-  Son skills/prompts que CREAN o ENSEÃ‘AN IDs/artefactos con prefijo viejo. El
+  Son skills/prompts que CREAN o ENSENAN IDs/artefactos con prefijo viejo. El
   mas peligroso es `skills/man-create-work-plan/SKILL.md:79` (`ID: WP-[YYYY]-[NNN]`):
   si alguien usa esa skill antes de 010a, regenera nomenclatura antigua por la
   puerta principal. VERIFICADO 2026-06-16: el patron `WP/WT/PLAN_WP/PLAN_WT/AUDIT_WT`
   aparece en 23 archivos activos de `skills/` + `prompts/` (NO 7; lista manual
-  quedaria incompleta â€” usar la gate grep como fuente, no una enumeracion fija).
+  quedaria incompleta -- usar la gate grep como fuente, no una enumeracion fija).
   Foco prioritario confirmado: `skills/man-create-work-plan/SKILL.md` +
   `references/plan-template.md` / `plan-quality-checklist.md`, `prompts/session_bootstrap.md`,
   `prompts/launch_builder.md`, `skills/deep-research/`, `skills/_shared/ticket-anti-patterns.md`.
@@ -1425,5 +1426,59 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - Antes de tocar `scripts/validate_ticket_prose.py`, verificar en preflight que WOT-2026-009g esta cerrado/publicado y que no hay cambios vivos en esa superficie. En 010a SI puede tocarse; el STOP de orden queda levantado por cierre de 009g.
   - Si el rename de `audit_plan.md` rompe el dispatch de skills/prompts, dejar alias y documentar.
 
+## WOT-2026-010d - Pausar/reanudar ticket activo con bus canonico
 
+- **Prioridad:** Alta
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010c
+- **Orden recomendado:** WOT-2026-010c -> WOT-2026-010d -> WOT-2026-008d
+- **Origen:** Durante WOT-2026-008c hubo que pausar el ticket para abrir el hotfix WOT-2026-010b. Se hizo a mano con stash path-limited y funciono, pero el estado de pausa vivia en relato + stash, no en bus ni en artefacto recuperable.
+- **Problema:** Los seguros actuales protegen handoff/cierre, pero hacen torpe resolver un blocker externo durante una implementacion. Sin estado canonico de pausa, un corte de sesion entre stash y resume deja trabajo oculto y no auditable.
+- **Objetivo:** introducir lifecycle minimo `IN_PROGRESS -> PAUSED -> IN_PROGRESS` con razon obligatoria, eventos de bus, artefacto legible, recuperacion fail-closed y bloqueo de cierres incompatibles.
+- **Comandos propuestos:**
+  - `python .agent/agent_controller.py --pause-ticket <ticket> --reason <texto>`
+  - `python .agent/agent_controller.py --resume-ticket <ticket>`
+  - `python .agent/agent_controller.py --abort-paused-ticket <ticket> --force --reason <texto>` (contrato/slot v1; si no se implementa, dejar NotImplemented/follow-up explicito)
+- **Estado/artefactos canonicos:**
+  - `STATE.md`: conserva `ACTIVE_TICKET: <ticket>` y `STATUS: PAUSED`.
+  - `TURN.md`: puede pasar a `MANAGER / CREATE_PLAN` para abrir hotfix.
+  - Evento bus `TICKET_PAUSED` con reason, repo, dirty surfaces, diff_stat, stash_ref/wip_commit, `bus_last_seq_global`, `ticket_last_seq`.
+  - Evento bus `TICKET_RESUMED` tras restauracion completa y validate limpio.
+  - Artefacto `repo_destino/.agent/collaboration/paused/<ticket>.json` con: `ticket_id`, `status` (`PAUSED|ABORTED`), `reason`, `timestamp`, `repo`, `changed_paths`, `diff_stat`, `stash_ref` nullable, `wip_commit` nullable, `bus_last_seq_global`, `ticket_last_seq`, `state_snapshot`, `turn_snapshot`, `resume_instructions`, `abort_reason`, `aborted_at`, `aborted_by`.
+- **Files Likely Touched:**
+  - Builder: `.agent/agent_controller.py`.
+  - Builder: `.agent/scope_gate.py` solo si validate necesita reconocer pausas activas.
+  - Builder: `scripts/pre_handoff_guard.py`.
+  - Builder: tests unitarios/integracion de pause/resume/pre-handoff.
+  - Builder: docs/prompts de lifecycle si el contrato requiere documentar comandos.
+- **Criterios binarios:**
+  - `--pause-ticket` falla si el ticket activo no coincide o falta `--reason`.
+  - Antes de stash/commit WIP, captura `changed_paths` + `diff_stat`.
+  - Si `changed_paths=[]`, no crea stash y guarda `stash_ref=null`.
+  - Si `changed_paths!=[]`, crea stash path-limited/ref estable `pause/<ticket>/<timestamp>` o commit WIP no publicable, y guarda la ref en JSON.
+  - `--pause-ticket` emite `TICKET_PAUSED`, escribe `STATE=PAUSED`, actualiza `TURN=MANAGER/CREATE_PLAN` y crea `.agent/collaboration/paused/<ticket>.json` legible.
+  - Profundidad v1 = una pausa activa. Si existe `paused/*.json` activo, otro `--pause-ticket` falla con diagnostico self-service.
+  - `--resume-ticket` localiza artefacto por ticket, verifica stash/ref resoluble y aplicable, compara `ticket_last_seq` contra ultimo evento actual del ticket, y falla si el ticket recibio eventos posteriores a la pausa.
+  - El avance global del bus por otros tickets se permite pero se reporta comparando `bus_last_seq_global`.
+  - `--resume-ticket` restaura de forma atomica o falla sin dejar working tree parcialmente mutado.
+  - Test de corte: pause -> nueva invocacion/sesion -> detecta pausa activa y no permite abrir/ejecutar otro ticket sin resolverla.
+  - `pre_handoff_guard`/mark-ready bloquea si existe pausa activa ajena o pausa corrupta.
+  - `validate --json` distingue pausa legitima de drift con diagnosticos `paused_ticket_active`, `paused_ticket_corrupt`, etc.
+  - `--abort-paused-ticket`, si entra en v1, exige `--force` + razon y registra evento bus auditable; si queda pospuesto, el JSON ya soporta `status=ABORTED` y campos `abort_reason`, `aborted_at`, `aborted_by`.
+  - Tests demuestran pause limpio, pause con dirty tree declarado, no-stash si no hay diff, resume correcto, resume conflictivo fail-closed, bus advance del mismo ticket bloqueado, bus advance de otro ticket reportado, pausa unica, crash/restart y bloqueo de handoff con pausa ajena.
+- **STOP:**
+  - No implementar pausas anidadas en v1.
+  - No usar stash global ni indices `stash@{n}` como fuente de verdad.
+  - No crear stashes vacios.
+  - No vaciar `ACTIVE_TICKET` durante la pausa.
+  - No permitir que `resume` resuelva conflictos automaticamente o deje arbol a medias.
+  - No mezclar con la gate `0 failed` de WOT-2026-010c; 010d depende de ella.
+  - Si el modelo exige cambiar la state-machine amplia o eventos incompatibles, parar y separar DEC antes de tocar runtime.
+- **Notas para documentacion canonica posterior:**
+  - Frase guia: "La pausa no es un stash; es un estado canonico recuperable tras corte de sesion, con artefacto legible, bus coherente y resume fail-closed."
+  - Relacion con WOT-2026-010c: 010c protege cierres; 010d permite interrumpir implementaciones sin romper esas garantias.
+  - Relacion con WOT-2026-008d: 008d debe arrancar despues de 010d si queremos una valvula formal para blockers externos durante cambios de taxonomy/naming.
 
