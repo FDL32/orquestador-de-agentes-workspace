@@ -7,7 +7,7 @@
 
 - **ID:** WOT-2026-010a
 - **Contract ID:** T-010A-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-008b, WOT-2026-009g
