@@ -9,7 +9,7 @@
 
 - **ID:** WOT-2026-010c
 - **Contract ID:** T-010C-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010b
