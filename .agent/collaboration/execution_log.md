@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-010a
 - **Contract ID:** T-010A-001
 - **deliverable_type:** mixed
@@ -108,3 +108,6 @@ python -m pytest [barrera canonical, 75 tests]     # 75 passed
 python scripts/discover_skills.py --check-contract # exit 0 (rename no rompe dispatch)
 python .agent/agent_controller.py --validate --json --project-root <destino>  # 0/0
 ```
+
+
+Scope override: 23 motor files: nomenclature glossary (AGENTS.md) + generators (skills/prompts) + audit_plan->audit_ticket_contract rename with stub + code consumers (canonical+legacy-compat) + 2 barrier test files. All declared in work_plan FLT; scope gate is exact-match vs prose.. Affected files: skills/bui-implement-from-plan/references/log-format.md, skills/man-resolve-escalation/SKILL.md, skills/man-review-implementation/SKILL.md, skills/man-review-implementation/references/verdict-format.md, tests/test_review_bridge.py, tests/unit/test_archive_collaboration_artifacts.py
