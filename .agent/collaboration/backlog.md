@@ -71,6 +71,7 @@
 | Media | WOT-2026-010e | Encoding early-detection tras Write/Edit/MultiEdit de agentes | motor/devex-encoding | pending | WOT-2026-010c | session-2026-06-16-encoding-early-detection |  <!-- Los agentes escriben casi todo el codigo; la extension VS Code no cubre la tuberia real. Objetivo: PostToolUse Write/Edit/MultiEdit ejecuta guard sobre archivos texto recien escritos; `TEXT_EXTENSIONS` compartida; soporta repo_motor/repo_destino; detecta BOM/mojibake; diagnostico self-service; tests: mojibake/BOM falla, Unicode valido/ASCII pasa, binario skip. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
 | Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- Estado canonico PAUSED; artefacto paused/<ticket>.json legible; bus_last_seq_global + ticket_last_seq; diff_stat y changed_paths antes de stash; stash_ref solo si hay diff; status PAUSED/ABORTED; una pausa activa maximo; resume fail-closed; pre_handoff bloquea pausa ajena; test de corte pause->sesion nueva->detecta pausa. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
 | Baja | WOT-2026-010f | Limpieza/investigacion de checkpoint/review-none | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-review-none-checkpoint |  <!-- Origen: Manager review de WOT-2026-010c detecto tag extra `checkpoint/review-none` apuntando a HEAD junto a `checkpoint/review-WOT-2026-010c`. No bloqueo 010c porque la gate canonica usa el tag correcto, pero `review-none` indica que algun flujo previo pudo resolver plan_id="none" al crear checkpoint. Objetivo: investigar origen, reproducir si existe ruta viva, eliminar/evitar tags `checkpoint/review-none` sin tocar checkpoints validos. Barrera: un intento de checkpoint sin ticket valido debe fallar fail-closed o no crear tag; la suite debe demostrar que `checkpoint/review-<ticket>` sigue funcionando. Scope: agent_controller/pre_handoff checkpoint path + tests si se confirma ruta viva; no mezclar con 010d/010e. -->
+| Media | WOT-2026-010g | Auditoria y clasificacion de prompts/skills legacy | motor/protocol-docs | pending | WOT-2026-010c | session-2026-06-16-legacy-prompts-skills |  <!-- Objetivo: inventariar prompts/skills como canonical, alias-compat, legacy-retained, deprecated-removable o destination-only antes de mover/eliminar. Origen: cierre de sesion detecto audit_plan.md stub alias, quickstart-checklist legacy, Goose/Claw deprecated y refactor-manager con piezas Goose. Regla: tooling portable permanece en repo_motor; historia operativa especifica del destino vive en repo_destino; alias de compat se conservan hasta demostrar cero consumidores. Barrera: rg de consumidores vivos antes de cualquier move/delete; no reescribir historia fiel. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1573,3 +1574,36 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - No tocar WOT-2026-010e ni WOT-2026-010d.
   - No reescribir la politica M3 completa.
   - No borrar tags sin verificar referencias vivas.
+
+## WOT-2026-010g - Auditoria y clasificacion de prompts/skills legacy
+
+- **Prioridad:** Media
+- **Scope:** motor/protocol-docs
+- **Estado:** pending
+- **deliverable_type:** analysis/mixed (analysis si solo inventaria; mixed si ajusta aliases/docs)
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010c
+- **Origen:** En el cierre de sesion se detectaron artefactos con semantica legacy/deprecated: `prompts/audit_plan.md` como stub alias, `skills/setup-agent-system/references/quickstart-checklist.md` como legacy, Goose/Claw deprecated en `AGENTS.md` y piezas Goose dentro de `skills/refactor-manager/`.
+- **Objetivo:** clasificar prompts, skills y referencias antes de mover, archivar o eliminar cualquier pieza legacy.
+- **Clasificacion requerida:**
+  - `canonical`: fuente viva del motor portable.
+  - `alias-compat`: stub o alias necesario para compatibilidad.
+  - `legacy-retained`: historia o referencia conservada deliberadamente.
+  - `deprecated-removable`: candidato a retirada tras demostrar cero consumidores.
+  - `destination-only`: artefacto que pertenece a historia operativa del `repo_destino`, no al motor portable.
+- **Reglas:**
+  - Si ayuda a instalar/operar cualquier destino, vive en `repo_motor`.
+  - Si documenta una sesion/ticket concreto de este destino, vive en `repo_destino`.
+  - Si es compatibilidad de nombres antiguos, se conserva como stub/alias hasta que una gate confirme cero consumidores.
+  - Si es historia fiel, no se reescribe ni se moderniza.
+- **Criterios binarios:**
+  - Inventario completo de `prompts/` y `skills/` con estado por archivo o familia.
+  - `rg` de consumidores vivos antes de proponer move/delete.
+  - Lista de candidatos a mover al `repo_destino` con justificacion `destination-only`.
+  - Lista de candidatos a archivar en `repo_motor` con rollback.
+  - Cero cambios destructivos sin ticket de follow-up explicito.
+  - `validate --json` 0/0 y encoding guard limpio si se modifican docs.
+- **Non-goals:**
+  - No mover/eliminar archivos en la fase de inventario salvo autorizacion explicita.
+  - No migrar referencias historicas `WP-/WT-` ni comentarios de historia fiel.
+  - No mezclar con WOT-2026-010e, WOT-2026-010d ni WOT-2026-008d.
