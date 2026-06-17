@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **ID:** WOT-2026-010n
 - **Contract ID:** T-010N-001
 - **deliverable_type:** code
@@ -242,3 +242,6 @@ hechos: su "Required Resolution" ("Corregir
 `scripts/check_deliverables_exist.py`... Reintentar el cierre canonico de
 `010j` sin duplicar el reporte") esta cumplida y verificada con evidencia
 directa, no con relato.
+
+
+Manager approved canonical closeout for WOT-2026-010n
