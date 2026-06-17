@@ -8,7 +8,7 @@
 
 - **ID:** WOT-2026-010q
 - **Contract ID:** T-010Q-001
-- **Estado:** READY_TO_START
+- **Estado:** APPROVED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010o (cerrado)

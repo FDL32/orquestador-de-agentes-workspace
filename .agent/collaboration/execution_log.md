@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_TO_START
+**Estado:** IN_PROGRESS
 - **ID:** WOT-2026-010q
 - **Contract ID:** T-010Q-001
 - **deliverable_type:** code
@@ -24,6 +24,10 @@ El Builder debe confirmar antes de editar:
 - modulo exacto que implementa el fresh-green de pytest-safe
 - campos existentes en `last-run.json`
 - tests existentes de `pre_handoff_guard` que se deben extender
+
+## Estado actual
+
+- Current state: WOT-2026-010q IN_PROGRESS
 
 ## Gates esperados
 
