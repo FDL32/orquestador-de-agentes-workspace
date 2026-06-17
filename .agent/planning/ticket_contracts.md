@@ -139,7 +139,7 @@
 - **Integracion cross-ticket:** 010j es gate de premisa para 010k, 010l y 010m. Ninguno de esos tickets debe arrancar sin leer el reporte final de 010j.
 - **CONTRACT_GAP behavior:** si la medicion no puede ejecutarse de forma reproducible, el reporte no puede quedar durable en `repo_motor`, o la suite no produce datos suficientes para decidir el siguiente ticket, emitir `CG-WOT-2026-010j.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder no decide politica de gates ni optimizaciones; solo mide y reporta.
-- **STOP conditions:** parar si el ticket exige tocar codigo del motor para "facilitar" la medicion; parar si la unica forma de obtener datos requiere activar cache/sharding/xdist; parar si el reporte acabaría en `repo_destino` en vez de `repo_motor`; parar si `validate` deja warnings nuevos sin resolver.
+- **STOP conditions:** parar si el ticket exige tocar codigo del motor para "facilitar" la medicion; parar si la unica forma de obtener datos requiere activar cache/sharding/xdist; parar si el reporte acabaria en `repo_destino` en vez de `repo_motor`; parar si `validate` deja warnings nuevos sin resolver.
 - **Depende de:** WOT-2026-010c (COMPLETED).
 
 ## T-010N-001 -- Gate de deliverables namespaced por delivery_authority
@@ -211,3 +211,44 @@
 - **Builder clarification budget:** 0. El Builder no debe reabrir la hipotesis vieja de `git/subprocess` sin evidencia nueva.
 - **STOP conditions:** parar si la mejora exige cache, paralelizacion, sharding o selector focal; parar si el candidato optimizado deja de validar el comportamiento real que el test protege; parar si la medicion before/after no es comparable.
 - **Depende de:** WOT-2026-010j (COMPLETED), WOT-2026-010n (COMPLETED).
+
+## T-010I-001 -- Hardening de review packet, Forbidden Surfaces y tests semanticos
+
+- **ticket_id:** WOT-2026-010i
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010I-001
+- **Plan-Link:** PLAN-010I-001
+- **Premise:** la review de WOT-2026-010e detecto fallos que llegaron tarde al Manager: packet sin commit visible, Forbidden Surfaces solo contractuales, test de fallback con falso verde y regresion semantica sobre campo leido frente a campo retornado. El bug funcional de `_resolve_destino()` ya esta corregido; este ticket lo blinda con barreras y tests reutilizables.
+- **Premise Re-check (read-only):**
+  - inspeccionar `scripts/pre_handoff_guard.py`, `scripts/scope_gate.py` y `scripts/check_deliverables_exist.py`;
+  - confirmar como `--mark-ready` obtiene diff, commit visible y estado de packet;
+  - confirmar que `_resolve_destino()` usa `destination_root` cuando existe `motor_destination_link.json`;
+  - confirmar que `WOT-2026-010q` ya cubre suite canonica real y no debe reimplementarse aqui.
+- **Context Baseline Evidence:** depends_on=WOT-2026-010e,WOT-2026-010q; motor_commits_010e=fec2766+b0248b1; motor_commit_010q=849e7d5; generated_at=2026-06-17.
+- **Files Likely Touched:**
+  - Builder: `scripts/pre_handoff_guard.py`
+  - Builder: `scripts/scope_gate.py`
+  - Builder: `scripts/check_deliverables_exist.py`
+  - Builder: `scripts/encoding_post_write_hook.py`
+  - Builder: `tests/test_pre_handoff_guard.py`
+  - Builder: `tests/unit/test_scope_gate.py`
+  - Builder: `tests/unit/test_check_deliverables_exist.py`
+  - Builder: `tests/unit/test_encoding_post_write_hook.py`
+  - Builder: `docs/protocol/review_packet_hardening_WOT-2026-010i.md`
+  - Read/inspect only: `prompts/launch_builder.md`, `prompts/review_manager.md`, `prompts/audit_ticket_contract.md`, `.agent/runtime/pytest-safe/last-run.json`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; cache pytest; xdist/sharding; politica de cierre Manager fuera del handoff; bus editado manualmente; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Un diff que toque una ruta de `Forbidden Surfaces` bloquea `--pre-handoff` o `--mark-ready` con diagnostico que nombre la ruta.
+  - [ ] Un ticket `code` o `mixed` sin commit visible del ticket bloquea handoff con remediacion accionable.
+  - [ ] Tickets `documentation`, `research` o `analysis` conservan el flujo documental cuando no tocan codigo.
+  - [ ] Un test semantico prueba que `_resolve_destino()` retorna `destination_root`, no `motor_root`, cuando ambos campos difieren.
+  - [ ] Un test de fallback observa el fallback real o su efecto, no un truco de entorno que el codigo anula internamente.
+  - [ ] Diagnosticos de barrera son self-service.
+  - [ ] Tests focales, ruff cuando aplique, encoding guard y validate 0/0 pasan al cierre.
+- **Integracion cross-ticket:** desbloquea WOT-2026-010l; no mezclar con selector focal ni performance.
+- **CONTRACT_GAP behavior:** si la barrera exige redisenar el contrato FLT completo, si rompe tickets documentales o si requiere cambiar `run_pytest_safe.py`, emitir CONTRACT_GAP y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar ante necesidad de relajar gates existentes, tocar bus manualmente, cambiar schema de `last-run.json`, o bloquear dirty tree fuera del handoff.
+- **Depende de:** WOT-2026-010e (COMPLETED), WOT-2026-010q (COMPLETED).

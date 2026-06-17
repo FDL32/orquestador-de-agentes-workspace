@@ -68,20 +68,20 @@
 | Alta | WOT-2026-009g | Pre-handoff: work_plan.md debe estar commiteado al handoff | motor/protocol-runtime | completed | WOT-2026-008b, WOT-2026-009b | session-2026-06-16-handoff-hardening |  <!-- motor d245ba5+4b61b4b; helper assert_work_plan_committed fail-closed; cubre --mark-ready + --pre-handoff; Manager APROBADO; validate 0/0; cierre publicado -->
 | Media | WOT-2026-010a | Glosario de nomenclatura + rename PLAN_WT->STRATEGY_WOT / audit_plan->audit_ticket_contract | motor/protocol-docs | completed | WOT-2026-008b, WOT-2026-009g | session-2026-06-16-naming-debt |  <!-- motor cac2648+842184a+585fadb; gate nomenclature classify history/generator; closeout canonico 2026-06-16 -->  <!-- reservar PLAN para familia; ticket=WOT; STRATEGY_WOT-<ID> estrategia tecnica; AUDIT_WOT-<ID>; audit_ticket_contract.md; WP/WT legacy sin migracion; toca 5 archivos codigo; validate_ticket_prose.py SI se toca en 010a pero solo tras cerrar 009g -->
 | Alta | WOT-2026-010c | Gate de cierre: exigir evidencia literal "0 failed" de run_pytest_safe antes de mark-ready | motor/quality-gates | completed | WOT-2026-010b | session-2026-06-16-canonical-close-debt |  <!-- Origen: 010a se publico con suite canonica ROJA (test_no_inline_ticket_regex); CI GitHub Quality Gates fallo en 842184a y 585fadb. Causa raiz VERIFICADA: focal verde != canonica verde; el cierre cito "N passed" sin cruzar "1 failed". 010b lo arreglo (69d53c1) pero la grieta de proceso sigue: nada bloquea mark-ready si run_pytest_safe tiene failed>0. Objetivo: el handoff (mark-ready / pre-handoff) exige evidencia literal de run_pytest_safe con 0 failed leida hasta el final, no solo passed. Barrera verificada: con una suite roja simulada, mark-ready debe bloquear. Ver memoria canonical-close-read-failed-not-only-passed. Scope: pre_handoff_guard / agent_controller mark-ready path + test. NO confundir con scope gate ni con work_plan-committed (009g). -->
-| Media | WOT-2026-010e | Encoding early-detection tras Write/Edit/MultiEdit de agentes | motor/devex-encoding | pending | WOT-2026-010c | session-2026-06-16-encoding-early-detection |  <!-- Los agentes escriben casi todo el codigo; la extension VS Code no cubre la tuberia real. Objetivo: PostToolUse Write/Edit/MultiEdit ejecuta guard sobre archivos texto recien escritos; `TEXT_EXTENSIONS` compartida; soporta repo_motor/repo_destino; detecta BOM/mojibake; diagnostico self-service; tests: mojibake/BOM falla, Unicode valido/ASCII pasa, binario skip. Orden recomendado: 010c -> 010e -> 010d -> 008d. -->
+| Media | WOT-2026-010e | Encoding early-detection tras Write/Edit/MultiEdit de agentes | motor/devex-encoding | completed | WOT-2026-010c | session-2026-06-16-encoding-early-detection |  <!-- verificado: motor fec2766+b0248b1; bus seq 1103-1108; cierre canonico 2026-06-16; hook encoding post-write + 18 tests focales; validate 0/0. -->
 | Alta | WOT-2026-010d | Pausar/reanudar ticket activo con bus canonico y resume fail-closed | motor/protocol-runtime | done | WOT-2026-010c | session-2026-06-16-pause-lifecycle |  <!-- verificado: motor eda918f (impl: PAUSED enum + flags pause/resume/abort + artefacto paused/<ticket>.json) + f4e5502 (fix regresion enum READY_TO_CLOSE/UNKNOWN + NON_TERMINAL_STATES). Cierre canonico 2026-06-17: REVIEW_DECISION approve->READY_TO_CLOSE->CLOSE_CONFIRMED->COMPLETED->SUPERVISOR_CLOSED (seq 1114-1118). Suite 0 failed (-m "not integration and not slow"); validate 0/0. -->
-| Baja | WOT-2026-010f | Limpieza/investigacion de checkpoint/review-none | motor/protocol-runtime | pending | WOT-2026-010c | session-2026-06-16-review-none-checkpoint |  <!-- Origen: Manager review de WOT-2026-010c detecto tag extra `checkpoint/review-none` apuntando a HEAD junto a `checkpoint/review-WOT-2026-010c`. No bloqueo 010c porque la gate canonica usa el tag correcto, pero `review-none` indica que algun flujo previo pudo resolver plan_id="none" al crear checkpoint. Objetivo: investigar origen, reproducir si existe ruta viva, eliminar/evitar tags `checkpoint/review-none` sin tocar checkpoints validos. Barrera: un intento de checkpoint sin ticket valido debe fallar fail-closed o no crear tag; la suite debe demostrar que `checkpoint/review-<ticket>` sigue funcionando. Scope: agent_controller/pre_handoff checkpoint path + tests si se confirma ruta viva; no mezclar con 010d/010e. -->
+| Baja | WOT-2026-010f | Limpieza/investigacion de checkpoint/review-none | motor/protocol-runtime | completed | WOT-2026-010c | session-2026-06-16-review-none-checkpoint |  <!-- verificado: motor ec4526b; bus seq 1119-1127; cierre canonico 2026-06-17; INVALID_PLAN_IDS y no checkpoint/review-none; validate 0/0. -->
 | Media | WOT-2026-010g | Auditoria y clasificacion de prompts/skills legacy | motor/protocol-docs | pending | WOT-2026-010c | session-2026-06-16-legacy-prompts-skills |  <!-- Objetivo: inventariar prompts/skills como canonical, alias-compat, legacy-retained, deprecated-removable o destination-only antes de mover/eliminar. Origen: cierre de sesion detecto audit_plan.md stub alias, quickstart-checklist legacy, Goose/Claw deprecated y refactor-manager con piezas Goose. Regla: tooling portable permanece en repo_motor; historia operativa especifica del destino vive en repo_destino; alias de compat se conservan hasta demostrar cero consumidores. Barrera: rg de consumidores vivos antes de cualquier move/delete; no reescribir historia fiel. -->
 | Media | WOT-2026-010h | Propagar regla de prefijo per-project a bootstrap y auditorias | motor/protocol-docs | pending | WOT-2026-010a | session-2026-06-16-prefix-per-project |  <!-- Origen: la regla "el <PREFIX> de ticket es per-project, no universal" esta fijada en codigo (bus/ticket_id.py: (?:WP|WT|[A-Z]{3})) y parcialmente en session_bootstrap.md (lineas 59,88), pero NO explicita ni consistente en los prompts de arranque/auditoria. Un agente en otro repo_destino podria asumir WOT- erroneamente. Scope: prompts/session_bootstrap.md, prompts/destination_bootstrap.md, prompts/audit_complete_motor_destination.md, prompts/audit_post_change_system_health.md. Criterios binarios: (1) cada prompt dice explicitamente que el <PREFIX> se lee del contrato del repo activo, con ORDEN DE FUENTE: primario = AGENTS.md/CLAUDE.md autocargado del destino; cuando el sistema exige "Ticket prefix: XXX", verificar via agent_controller --validate (no fiarse de una linea suelta de PROJECT.md sobre validate); (2) WOT- se describe SOLO como prefijo del motor/dogfooding, no universal; (3) los 4 prompts no se contradicen entre si; (4) no se generan ejemplos vivos nuevos con WP-/WT-; (5) check_ticket_nomenclature.py + encoding guard + validate pasan. deliverable_type: documentation. NO mezclar con 010g (010g = clasificacion/retirada de legacy; 010h = endurecer nomenclatura de prefijo). Ver memoria ticket-nomenclature-canonical. -->
 | Media | WOT-2026-010i | Hardening de review packet, forbidden surfaces y tests semanticos | motor/protocol-runtime | pending | WOT-2026-010e | session-2026-06-16-review-hardening |  <!-- Origen: review de 010e detecto packet sin commit visible al review, Forbidden Surfaces solo contractual, test de fallback capaz de dar falso verde y bug semantico de campo leido vs campo retornado en _resolve_destino. Objetivo: endurecer packaging pre-review/mark-ready, gate de Forbidden Surfaces y barreras de tests semanticos para resolutores/parsers y ramas de fallback. -->
-| Media | WOT-2026-010j | Baseline de performance de suite: durations y hotspots subprocess/git | motor/test-performance | pending | WOT-2026-010c | session-2026-06-17-suite-performance |  <!-- Analysis puro. Origen: suite canonica ~2896 tests tarda varios minutos; -m not integration/slow apenas ahorra 6 tests; run_pytest_safe ya acepta args focales; pytest-cache esta deshabilitado por contrato; sospecha principal = coste difuso por subprocess/git. Objetivo: medir antes de cambiar politica de gates. -->
-| Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
+| Media | WOT-2026-010j | Baseline de performance de suite: durations y hotspots subprocess/git | motor/test-performance | completed-via-010n | WOT-2026-010c | session-2026-06-17-suite-performance |  <!-- verificado: motor c05dbfe; reporte en repo_motor; CONTRACT_GAP de deliverables resuelto por 010n; 010j no requirio cierre independiente segun cierre de 010n. -->
+| Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | completed | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- verificado: motor 55d84bb; bus seq 1151-1161; cierre canonico aaaff65; dos hotspots reducidos; validate 0/0. -->
 | Baja | WOT-2026-010o | Tests deterministas para evidence-gate real (manager_review_bridge/review_bridge sin acoplar a repo_destino vivo) | motor/test-determinism | completed | WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- verificado: motor 591bec5; closeout canonico b087ef5; suite --level all 2910 passed, level=all/default_discovery, validate 0/0. -->
-| Baja | WOT-2026-010p | Medir varianza de run_pytest_safe --level all y aislar outliers inestables | motor/test-performance | pending | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- Origen: durante 010o la suite canonica --level all paso de ~28min (010k) a 42m47s sin cambios productivos ni carga humana aparente. Objetivo: medir con --durations=50 en corridas repetidas, comparar top outliers y clasificar si la varianza es entorno/I-O, tests inestables o nuevo hotspot. No cambiar politica de runner ni optimizar en el mismo ticket. -->
+| Baja | WOT-2026-010p | Medir varianza de run_pytest_safe --level all y aislar outliers inestables | motor/test-performance | completed | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- verificado: motor e5d4a9d; bus seq 1186-1194; cierre canonico 2026-06-17; C1 5m34s, C2 5m29s, conclusion entorno/I-O. -->
 | Alta | WOT-2026-010q | Pre-handoff: exigir suite canonica real en last-run.json (level=all + default_discovery) | motor/quality-gates | completed | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- verificado: motor 849e7d5; guard exige level=all + args_mode=default_discovery; tests barrera 41 passed; suite --level all 2913 passed; validate 0/0; cierre canonico 2026-06-17. -->
 | Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i, WOT-2026-010q | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. Solo habilitado para iteracion Builder; 010q debe impedir handoff con evidencia focal. -->
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
-| Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- Bug follow-up de 010j. Origen: check_deliverables_exist.py valida Builder artefacts solo relativo a --project-root y no resuelve namespaces repo_motor/repo_destino del FLT; bloquea tickets analysis/documentation con entrega legitima en repo_motor. -->
+| Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- verificado: motor b355cb0+453967d+c7249b8; bus seq 1140-1150; cierre canonico c5368b4; deliverables namespaced resueltos. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1444,7 +1444,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/devex-encoding
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
@@ -1567,7 +1567,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Baja
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** analysis/mixed (analysis si solo se confirma deuda; mixed si hay fix de runtime)
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
@@ -1649,7 +1649,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/test-performance
-- **Estado:** pending
+- **Estado:** completed-via-010n
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
@@ -1676,7 +1676,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/test-performance
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010j
@@ -1745,7 +1745,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010j
@@ -1902,7 +1902,7 @@ preparados deliberadamente) en vez de resolver
   detener y evaluar si esto debe ser un ticket `code` mas amplio en vez de
   un ticket de test-determinism.
 - Si el repo git temporal en `tmp_path` no puede reproducir fielmente la
-  señal real que el evidence-gate necesita (por ejemplo dependencias de
+  senal real que el evidence-gate necesita (por ejemplo dependencias de
   configuracion global de git no disponibles en sandbox), documentar el
   blocker concreto en vez de forzar un mock que vacie el test de contenido
   real.
@@ -1911,7 +1911,7 @@ preparados deliberadamente) en vez de resolver
 
 - **Prioridad:** Baja
 - **Scope:** motor/test-performance
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010o

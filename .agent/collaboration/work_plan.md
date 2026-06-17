@@ -1,127 +1,135 @@
-# Work Plan: WOT-2026-010p
+# Work Plan: WOT-2026-010i
 
-> Origen: durante `WOT-2026-010o` se confundio tiempo real de pytest con espera
-> operativa del agente en modo background. El objetivo es medir y documentar,
-> no alterar tiempos de suite ni cambiar gates.
+> Origen: la review de `WOT-2026-010e` detecto fallos de proceso que el sistema
+> solo encontro tarde: packet sin commit visible, Forbidden Surfaces protegidas
+> solo por contrato, test de fallback con falso verde y una regresion semantica
+> que debe quedar blindada aunque el bug vivo ya este corregido.
 
 ## Metadata
 
-- **ID:** WOT-2026-010p
-- **Contract ID:** T-010P-001
+- **ID:** WOT-2026-010i
+- **Contract ID:** T-010I-001
 - **Estado:** APPROVED
-- **deliverable_type:** analysis
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010o, WOT-2026-010q (cerrados)
+- **Depends on:** WOT-2026-010e (cerrado), WOT-2026-010q (cerrado)
 
 ## Objetivo
 
-Ejecutar exactamente una corrida de
-`python scripts/run_pytest_safe.py --level all -- --durations=50` y registrar:
-comando, wall-clock total en minutos y segundos, `exit_code`,
-`tested_commit_sha`, `level`, `args_mode` y top durations. Si esa primera
-corrida termina en menos de 10 minutos wall-clock, ejecutar una segunda corrida
-del mismo comando y registrar el delta absoluto y porcentual entre ambas; si
-termina en 10 minutos o mas, registrar el STOP literal
-`segunda_corrida_omitida_por_coste`. Escribir el resultado en
-`docs/test_performance/test_performance_variance_WOT-2026-010p.md` y anadir a
-`INTERACTION_MODES.md` esta regla literal: suites con duracion esperada menor
-de 10 minutos van en foreground; background solo se usa con progreso
-verificable. El ticket no cambia codigo de runner, gates, cache, xdist ni
-selector focal.
+Endurecer el pre-handoff y la evidencia de review para que tres fallos queden
+bloqueados mecanicamente antes del Manager: diff que toca una Forbidden Surface
+del `work_plan.md`, packet code/mixed sin commit visible del ticket, y test
+semantico que no demuestra el campo leido frente al campo retornado. El cambio
+debe producir barreras reutilizables con diagnostico self-service y tests que
+fallen sin la proteccion correspondiente.
 
 ## Hechos verificados
 
-- `010o` produjo una observacion falsa de `~43min` por espera/polling de modo
-  background, mientras la corrida directa real fue de minutos.
-- `010q` ya blindo el handoff para exigir `level=all` y
-  `args_mode=default_discovery`.
-- El siguiente cambio de politica (`010l`) debe esperar a un reporte que
-  incluya una categoria literal final entre: `entorno/I-O`,
-  `test inestable`, `nuevo hotspot verificable`, `no concluyente`, mas el
-  wall-clock observado y el delta entre corridas cuando exista segunda corrida.
+- `WOT-2026-010e` esta cerrado canonicamente: bus seq 1103-1108.
+- El bug de `_resolve_destino()` ya esta corregido: la lectura debe usar
+  `destination_root`; `010i` lo blinda con test de regresion, no lo reabre.
+- `WOT-2026-010q` ya exige suite canonica real al handoff; `010i` no relaja esa
+  barrera ni cambia `run_pytest_safe.py`.
+- `WOT-2026-010l` depende de este hardening antes de introducir selector focal.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de escribir el reporte:
+Confirmar antes de editar codigo:
 
-- ubicacion y formato de `docs/test_performance/`
-- evidencia disponible de `010j`, `010k`, `010o` y `010q`
-- comando exacto para capturar `--durations=50` mediante `run_pytest_safe`
-- superficie canonica donde documentar regla foreground/background
+- funcion o script que valida scope en `--pre-handoff` y `--mark-ready`;
+- parser canonico de `Forbidden Surfaces` en `work_plan.md`, o ausencia de uno;
+- fuente actual de commits visibles del ticket en repo_motor y como se compara
+  contra el packet de review;
+- tests existentes para `pre_handoff_guard`, `check_deliverables_exist`,
+  `encoding_post_write_hook` y parsers FLT/contract;
+- estado actual de `_resolve_destino()` y fixture minimo que demuestra que
+  `destination_root` es el valor retornado.
 
 Registrar en `execution_log.md`:
 
-- si se ejecutan una o dos corridas
-- tiempo wall-clock, `exit_code`, `tested_commit_sha`, `level`, `args_mode`
-- decision binaria sobre segunda corrida:
-  ejecutar segunda corrida solo si la primera termina en menos de 10 minutos
-  wall-clock; si tarda 10 minutos o mas, registrar STOP con motivo
-  `segunda_corrida_omitida_por_coste`
+- seams exactos confirmados;
+- decision de implementacion para cada barrera;
+- cualquier superficie fuera del FLT antes de tocarla.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `docs/test_performance/test_performance_variance_WOT-2026-010p.md`
-- `INTERACTION_MODES.md`
+- `scripts/pre_handoff_guard.py`
+- `scripts/scope_gate.py`
+- `scripts/check_deliverables_exist.py`
+- `scripts/encoding_post_write_hook.py`
+- `tests/test_pre_handoff_guard.py`
+- `tests/unit/test_scope_gate.py`
+- `tests/unit/test_check_deliverables_exist.py`
+- `tests/unit/test_encoding_post_write_hook.py`
+- `docs/protocol/review_packet_hardening_WOT-2026-010i.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010p.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010p.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010i.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010i.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 
 ## Read/inspect only
 
-- `scripts/run_pytest_safe.py`
-- `pytest.ini`
-- `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
-- `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+- `prompts/launch_builder.md`
+- `prompts/review_manager.md`
+- `prompts/audit_ticket_contract.md`
+- `docs/test_performance/test_performance_variance_WOT-2026-010p.md`
 - `.agent/runtime/pytest-safe/last-run.json`
 
 ## Manager-only
 
-- `validate --json --project-root <repo_destino>` final en 0/0
-- revisar que el reporte no propone cambios de politica sin ticket nuevo
+- revisar que el diff real no toca Forbidden Surfaces declaradas;
+- verificar que el commit productivo contiene `WOT-2026-010i`;
+- `validate --json --project-root <repo_destino>` final en 0/0.
 
 ## Decision Arquitectonica
 
-- `010p` es analysis/documentation: no optimiza tests.
-- Foreground/background es disciplina operativa, no un nuevo flag.
-- Si las mediciones no son concluyentes, el resultado correcto es decir
-  `no concluyente` y abrir follow-up focal, no inventar una optimizacion.
+- Forbidden Surfaces se tratan como contrato ejecutable en handoff, no solo como
+  texto de auditoria.
+- Packet visible significa commit del repo_motor con el ticket en el mensaje o
+  una razon CEM explicita; un dirty tree code/mixed no puede pasar a review.
+- Tests semanticos deben observar el valor de salida o efecto real, no solo que
+  una rama parezca cubierta por entorno.
+- `010i` no cambia politica de suite canonica, no introduce selector focal y no
+  modifica el schema de `last-run.json`.
 
 ## Criterios Binarios
 
-- [ ] Existe `docs/test_performance/test_performance_variance_WOT-2026-010p.md`.
-- [ ] El reporte registra al menos una corrida `run_pytest_safe --level all`
-      con `--durations=50`, o documenta STOP si no puede completarse.
-- [ ] Si hay dos corridas, compara top outliers; si hay una, registra de forma
-      literal si la segunda se omitio por `segunda_corrida_omitida_por_coste`
-      (primera corrida >=10 min) o por otro STOP concreto nombrado.
-- [ ] Cada corrida registrada incluye wall-clock, `exit_code`,
-      `tested_commit_sha`, `level` y `args_mode`.
-- [ ] Documenta la regla foreground/background en `INTERACTION_MODES.md`:
-      suites esperadas <10 min en foreground; background solo con polling o
-      progreso verificable.
-- [ ] Clasifica la conclusion como `entorno/I-O`, `test inestable`,
-      `nuevo hotspot verificable` o `no concluyente`.
-- [ ] No toca `scripts/run_pytest_safe.py`, `run_gates_dispatch.py`, cache,
-      xdist, sharding ni politica de cierre.
-- [ ] `validate --json --project-root <repo_destino>` termina 0/0.
+- [ ] Un diff que toque una ruta listada en `Forbidden Surfaces` bloquea
+      `--pre-handoff` o `--mark-ready` con diagnostico que nombre la ruta.
+- [ ] Un ticket `code` o `mixed` sin commit visible del ticket bloquea handoff
+      con remediacion accionable.
+- [ ] Un ticket `documentation`, `research` o `analysis` conserva el flujo
+      documental existente y no exige commit de codigo si no toca codigo.
+- [ ] Existe test semantico que prueba que `_resolve_destino()` retorna
+      `destination_root` desde `motor_destination_link.json`, no `motor_root`.
+- [ ] Existe test negativo que demuestra que un test de fallback no puede pasar
+      sin observar el fallback real o su efecto de subprocess.
+- [ ] El diagnostico de cada barrera es self-service: incluye que fallo, ruta o
+      campo implicado y comando o accion de remediacion.
+- [ ] No toca `scripts/run_pytest_safe.py`, cache, xdist, sharding ni politica
+      Builder/Manager fuera del handoff.
+- [ ] Tests focales del area tocada pasan, `ruff check` aplica sobre Python
+      tocado, encoding guard pasa sobre artefactos Markdown/Python tocados y
+      `validate --json --project-root <repo_destino>` termina 0/0.
 
 ## Non-goals
 
-- NO alterar tiempos de tests.
-- NO activar cache, xdist, sharding ni selector focal.
-- NO modificar `scripts/run_pytest_safe.py`.
-- NO bloquear retroactivamente `010o` o `010q`.
+- NO reabrir funcionalmente `WOT-2026-010e`.
+- NO implementar selector focal de tests.
+- NO cambiar `run_pytest_safe.py` ni el schema de `last-run.json`.
+- NO convertir cualquier dirty tree en bloqueo continuo durante iteracion.
+- NO relajar gates existentes para pasar handoff.
 
 ## Forbidden Surfaces
 
 - `scripts/run_pytest_safe.py`
-- `scripts/run_gates_dispatch.py`
 - cache pytest
 - xdist/sharding
-- politica Builder/Manager
+- politica de cierre Manager fuera del handoff
 - bus editado manualmente
+- `privada/`
+- `.env`
