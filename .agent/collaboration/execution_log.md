@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** COMPLETED
 - **ID:** WOT-2026-010g
 - **Contract ID:** T-010G-001
 - **deliverable_type:** analysis
@@ -77,3 +77,6 @@ Confirmado: no se ejecuto ningun move/delete/rename en el motor. `git -C <repo_m
   para no dejar delete+untracked (incidente reconciliado en 010l).
 - Preflight esperado para Builder: runtime bootstrap + `validate --json` 0/0
   antes de tocar nada.
+
+
+Manager approved canonical closeout for WOT-2026-010g

@@ -11,7 +11,7 @@
 
 - **ID:** WOT-2026-010g
 - **Contract ID:** T-010G-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_destino
 - **Depends on:** WOT-2026-010c (completed)
