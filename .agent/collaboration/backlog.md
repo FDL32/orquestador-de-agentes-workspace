@@ -77,6 +77,7 @@
 | Media | WOT-2026-010j | Baseline de performance de suite: durations y hotspots subprocess/git | motor/test-performance | pending | WOT-2026-010c | session-2026-06-17-suite-performance |  <!-- Analysis puro. Origen: suite canonica ~2896 tests tarda varios minutos; -m not integration/slow apenas ahorra 6 tests; run_pytest_safe ya acepta args focales; pytest-cache esta deshabilitado por contrato; sospecha principal = coste difuso por subprocess/git. Objetivo: medir antes de cambiar politica de gates. -->
 | Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
 | Baja | WOT-2026-010o | Tests deterministas para evidence-gate real (manager_review_bridge/review_bridge sin acoplar a repo_destino vivo) | motor/test-determinism | pending | WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Origen: review de 010k detecto 6 fallos transitorios en test_manager_review_bridge.py/test_review_bridge.py al correr la suite completa, causados por estos tests ejercitar el evidence-gate real contra el repo_destino real via .agent/config/motor_destination_link.json (gitignored, local-only) en vez de un fixture controlado. Objetivo: mockear o fixturizar el estado de repo_destino que consume el evidence-gate para que estos tests sean deterministas e independientes del estado de git del repo_destino vivo en el momento de la corrida. NO scope de 010k (fuera de su FLT y de sus Forbidden Surfaces). -->
+| Baja | WOT-2026-010p | Medir varianza de run_pytest_safe --level all y aislar outliers inestables | motor/test-performance | pending | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- Origen: durante 010o la suite canonica --level all paso de ~28min (010k) a 42m47s sin cambios productivos ni carga humana aparente. Objetivo: medir con --durations=50 en corridas repetidas, comparar top outliers y clasificar si la varianza es entorno/I-O, tests inestables o nuevo hotspot. No cambiar politica de runner ni optimizar en el mismo ticket. -->
 | Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. No sustituye la suite canonica de handoff hasta tener evidencia. -->
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
 | Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- Bug follow-up de 010j. Origen: check_deliverables_exist.py valida Builder artefacts solo relativo a --project-root y no resuelve namespaces repo_motor/repo_destino del FLT; bloquea tickets analysis/documentation con entrega legitima en repo_motor. -->
@@ -1904,3 +1905,61 @@ preparados deliberadamente) en vez de resolver
   configuracion global de git no disponibles en sandbox), documentar el
   blocker concreto en vez de forzar un mock que vacie el test de contenido
   real.
+
+## WOT-2026-010p - Medir varianza de run_pytest_safe --level all y aislar outliers inestables
+
+- **Prioridad:** Baja
+- **Scope:** motor/test-performance
+- **Estado:** pending
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010o
+- **Origen:** session-2026-06-17-suite-performance
+
+### Problema
+
+Durante `WOT-2026-010o`, una corrida `python scripts/run_pytest_safe.py
+--level all` tardo `42m47s`, frente a los `~28min` observados durante
+`WOT-2026-010k`. El diff de `010o` fue una linea en un test y no toca runner,
+CI, cache ni codigo productivo, por lo que el aumento no puede asumirse como
+regresion del ticket sin medicion adicional. Tampoco debe ignorarse: una
+varianza de este tamano erosiona la utilidad del cierre canonico.
+
+### Objetivo
+
+Medir la varianza real de `run_pytest_safe --level all` con evidencia
+reproducible, usando `--durations=50` en corridas repetidas, para distinguir
+entre carga/entorno, I/O inestable, tests que compiten por estado temporal o
+nuevos hotspots reales. El ticket produce diagnostico y recomendacion; no
+optimiza ni cambia politica de gates.
+
+### Files Likely Touched
+
+- Builder: `docs/test_performance/test_performance_variance_WOT-2026-010p.md`
+- Builder: `.agent/collaboration/execution_log.md`
+- Read/inspect only: `scripts/run_pytest_safe.py`, `pytest.ini`,
+  `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`,
+  `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+
+### Criterios binarios
+
+- Ejecuta al menos dos corridas comparables de
+  `python scripts/run_pytest_safe.py --level all -- --durations=50`, o documenta
+  un STOP si el coste total impide completar ambas en una sesion razonable.
+- Cada corrida registra tiempo wall-clock total, `exit_code`, `tested_commit_sha`
+  y top-50 de `--durations`.
+- El reporte compara si los mismos tests dominan ambas corridas o si el top
+  cambia sustancialmente.
+- La recomendacion final clasifica el problema como `entorno/I-O`,
+  `test inestable`, `nuevo hotspot verificable` o `no concluyente`, con
+  evidencia.
+- No toca `run_gates_dispatch.py`, `scripts/run_pytest_safe.py`, cache pytest,
+  xdist ni politica de cierre.
+- `validate --json --project-root <repo_destino>` termina 0/0.
+
+### Non-goals
+
+- No optimizar tests en este ticket.
+- No activar cache, xdist, sharding ni selector focal.
+- No usar la medicion para bloquear retroactivamente `010o` si su diff y gates
+  propios son correctos.
