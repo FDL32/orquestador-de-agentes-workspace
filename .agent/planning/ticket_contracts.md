@@ -104,3 +104,40 @@
 - **Builder clarification budget:** 0. Si el Builder necesita decidir semantica de lifecycle o que autoridad manda entre bus y markdown, el contrato fallo.
 - **STOP conditions:** parar si aparece otro ticket activo no terminal en el bus; parar si la unica forma de persistir pausa depende de `stash@{n}`; parar si `PAUSED` obliga a redisenar la state-machine mas alla de un cambio localizado; parar si se descubre que la documentacion general es necesaria para cerrar v1.
 - **Depende de:** WOT-2026-010c (COMPLETED), WOT-2026-010e (COMPLETED, no dependencia funcional).
+
+## T-010J-001 -- Baseline de performance de suite
+
+- **ticket_id:** WOT-2026-010j
+- **status:** frozen
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010J-001
+- **Plan-Link:** PLAN-010J-001
+- **Premise:** la suite canonica tarda varios minutos y hoy no existe una baseline reproducible que separe tiempo total, hotspots reales y peso relativo de `subprocess`/`git` frente a otros costes. La hipotesis "git/subprocess domina" es una inferencia por inspeccion de tests, NO un hecho medido.
+- **Premise Re-check (read-only):**
+  - verificar que `scripts/run_pytest_safe.py` acepta `--level all` y argumentos extra para pytest;
+  - verificar que `pytest-cache` sigue deshabilitado en `pytest.ini` / runner;
+  - verificar que `pytest-xdist` no esta instalado en `pyproject.toml` o lockfile;
+  - verificar que `integration`/`slow` son una fraccion pequena de la suite;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** motor_head=dirty-local; destino_state=WOT-2026-010f COMPLETED; validate_result=0 errors / 0 warnings; generated_at=2026-06-17.
+- **Files Likely Touched:**
+  - Builder: `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+  - Builder: `.agent/collaboration/work_plan.md`
+  - Read/inspect only: `scripts/run_pytest_safe.py`, `scripts/run_gates_dispatch.py`, `pytest.ini`, `pyproject.toml`, `tests/`, `.agent/agent_controller.py`, `.agent/runtime/pytest-safe/`
+- **Forbidden Surfaces:** cualquier archivo productivo Python del motor; `.agent/agent_controller.py`; `scripts/run_pytest_safe.py`; `scripts/run_gates_dispatch.py`; `pytest.ini`; `pyproject.toml`; `uv.lock`; `privada/`; `.env`; bus editado manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Ejecuta `python scripts/run_pytest_safe.py --level all -- --durations=50` o documenta con evidencia por que no fue viable.
+  - [ ] El reporte durable existe en `repo_motor/docs/test_performance/test_performance_baseline_WOT-2026-010j.md`.
+  - [ ] El reporte incluye tiempo total, top tests lentos, top modulos lentos y peso relativo de `subprocess`/`git`.
+  - [ ] El reporte separa hechos verificados de inferencias y confirma o refuta la hipotesis `git/subprocess`.
+  - [ ] El reporte cuenta archivos/tests que usan `subprocess`, `git`, filesystem real, controller/bus y marcas `integration`/`slow`.
+  - [ ] El reporte recomienda el siguiente ticket ejecutable con evidencia, no por intuicion.
+  - [ ] `git diff` del `repo_motor` se limita al artefacto documental del ticket.
+  - [ ] `check_encoding_guard.py` pasa sobre el reporte y los artefactos de packet tocados.
+  - [ ] `validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+- **Integracion cross-ticket:** 010j es gate de premisa para 010k, 010l y 010m. Ninguno de esos tickets debe arrancar sin leer el reporte final de 010j.
+- **CONTRACT_GAP behavior:** si la medicion no puede ejecutarse de forma reproducible, el reporte no puede quedar durable en `repo_motor`, o la suite no produce datos suficientes para decidir el siguiente ticket, emitir `CG-WOT-2026-010j.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0. El Builder no decide politica de gates ni optimizaciones; solo mide y reporta.
+- **STOP conditions:** parar si el ticket exige tocar codigo del motor para "facilitar" la medicion; parar si la unica forma de obtener datos requiere activar cache/sharding/xdist; parar si el reporte acabaría en `repo_destino` en vez de `repo_motor`; parar si `validate` deja warnings nuevos sin resolver.
+- **Depende de:** WOT-2026-010c (COMPLETED).
