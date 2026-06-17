@@ -74,6 +74,10 @@
 | Media | WOT-2026-010g | Auditoria y clasificacion de prompts/skills legacy | motor/protocol-docs | pending | WOT-2026-010c | session-2026-06-16-legacy-prompts-skills |  <!-- Objetivo: inventariar prompts/skills como canonical, alias-compat, legacy-retained, deprecated-removable o destination-only antes de mover/eliminar. Origen: cierre de sesion detecto audit_plan.md stub alias, quickstart-checklist legacy, Goose/Claw deprecated y refactor-manager con piezas Goose. Regla: tooling portable permanece en repo_motor; historia operativa especifica del destino vive en repo_destino; alias de compat se conservan hasta demostrar cero consumidores. Barrera: rg de consumidores vivos antes de cualquier move/delete; no reescribir historia fiel. -->
 | Media | WOT-2026-010h | Propagar regla de prefijo per-project a bootstrap y auditorias | motor/protocol-docs | pending | WOT-2026-010a | session-2026-06-16-prefix-per-project |  <!-- Origen: la regla "el <PREFIX> de ticket es per-project, no universal" esta fijada en codigo (bus/ticket_id.py: (?:WP|WT|[A-Z]{3})) y parcialmente en session_bootstrap.md (lineas 59,88), pero NO explicita ni consistente en los prompts de arranque/auditoria. Un agente en otro repo_destino podria asumir WOT- erroneamente. Scope: prompts/session_bootstrap.md, prompts/destination_bootstrap.md, prompts/audit_complete_motor_destination.md, prompts/audit_post_change_system_health.md. Criterios binarios: (1) cada prompt dice explicitamente que el <PREFIX> se lee del contrato del repo activo, con ORDEN DE FUENTE: primario = AGENTS.md/CLAUDE.md autocargado del destino; cuando el sistema exige "Ticket prefix: XXX", verificar via agent_controller --validate (no fiarse de una linea suelta de PROJECT.md sobre validate); (2) WOT- se describe SOLO como prefijo del motor/dogfooding, no universal; (3) los 4 prompts no se contradicen entre si; (4) no se generan ejemplos vivos nuevos con WP-/WT-; (5) check_ticket_nomenclature.py + encoding guard + validate pasan. deliverable_type: documentation. NO mezclar con 010g (010g = clasificacion/retirada de legacy; 010h = endurecer nomenclatura de prefijo). Ver memoria ticket-nomenclature-canonical. -->
 | Media | WOT-2026-010i | Hardening de review packet, forbidden surfaces y tests semanticos | motor/protocol-runtime | pending | WOT-2026-010e | session-2026-06-16-review-hardening |  <!-- Origen: review de 010e detecto packet sin commit visible al review, Forbidden Surfaces solo contractual, test de fallback capaz de dar falso verde y bug semantico de campo leido vs campo retornado en _resolve_destino. Objetivo: endurecer packaging pre-review/mark-ready, gate de Forbidden Surfaces y barreras de tests semanticos para resolutores/parsers y ramas de fallback. -->
+| Media | WOT-2026-010j | Baseline de performance de suite: durations y hotspots subprocess/git | motor/test-performance | pending | WOT-2026-010c | session-2026-06-17-suite-performance |  <!-- Analysis puro. Origen: suite canonica ~2896 tests tarda varios minutos; -m not integration/slow apenas ahorra 6 tests; run_pytest_safe ya acepta args focales; pytest-cache esta deshabilitado por contrato; sospecha principal = coste difuso por subprocess/git. Objetivo: medir antes de cambiar politica de gates. -->
+| Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
+| Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. No sustituye la suite canonica de handoff hasta tener evidencia. -->
+| Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1637,3 +1641,97 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - No convertir cualquier dirty tree en bloqueo continuo fuera del handoff.
   - No introducir marcadores runtime permanentes solo para tests si un spy o artefacto temporal verificable basta.
   - No tocar la logica de negocio del hook de encoding salvo lo necesario para exponer barreras de sistema reutilizables.
+## WOT-2026-010j - Baseline de performance de suite: durations y hotspots subprocess/git
+
+- **Prioridad:** Media
+- **Scope:** motor/test-performance
+- **Estado:** pending
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010c
+- **Origen:** Discusion de 2026-06-17 sobre coste de suite completa. Verificado: `run_pytest_safe.py` ya acepta argumentos focales; `pytest-cache` esta deshabilitado por contrato; `integration`/`slow` apenas reducen la suite. Hipotesis previa al ticket: el coste podria estar distribuido en unitarios y en tests que invocan `subprocess`/`git`; esta hipotesis es INFERENCIA por grep y 010j debe confirmarla o refutarla con medicion, no tratarla como hecho.
+- **Problema:** Se proponen optimizaciones como cache, sharding o selector focal sin baseline objetiva. Eso arriesga cambiar el contrato de calidad sin saber donde esta el coste real.
+- **Objetivo:** producir un reporte accionable de performance de la suite antes de tocar runtime, gates o politica Builder/Manager.
+- **Files Likely Touched:**
+  - Builder: `docs/test_performance/test_performance_baseline_WOT-2026-010j.md` en `repo_motor`.
+  - Read/inspect only: `scripts/run_pytest_safe.py`, `scripts/run_gates_dispatch.py`, `pytest.ini`, `pyproject.toml`, `tests/`, `.agent/agent_controller.py`.
+- **Criterios binarios:**
+  - Ejecuta la medicion canonica con `python scripts/run_pytest_safe.py --level all -- --durations=50` o documenta con evidencia por que no fue viable.
+  - Reporta tiempo total, top tests lentos, top modulos lentos y peso relativo de `subprocess`/`git` con tiempo observado.
+  - Cuenta archivos/tests que usan `subprocess`, `git`, filesystem real, controller/bus y marcas `integration`/`slow`.
+  - Clasifica propuestas en: quick wins de tests, cambios de fixtures, cambios de politica de gates, y paralelizacion/CI.
+  - Verifica existencia real del reporte en `repo_motor` con lectura o check compatible con el entorno; el encoding guard no sustituye esta verificacion.
+  - Recomienda el siguiente ticket ejecutable con evidencia, no por intuicion.
+  - `validate --json` 0 errors / 0 warnings al cierre.
+- **Non-goals:**
+  - No modificar `run_pytest_safe.py`, `run_gates_dispatch.py`, `pytest.ini` ni politica de gates.
+  - No activar cache, xdist, sharding ni selector focal.
+  - No cambiar tests productivos salvo que sea necesario para generar el reporte y quede justificado.
+
+## WOT-2026-010k - Reducir coste de tests git/subprocess sin cambiar politica de gates
+
+- **Prioridad:** Media
+- **Scope:** motor/test-performance
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010j
+- **Origen:** Follow-up condicionado por la baseline de 010j. Sospecha inicial: muchos tests unitarios pagan coste de `subprocess.run(["git", ...])` y creacion repetida de repos temporales.
+- **Objetivo:** reducir tiempo de suite atacando hotspots verificados de git/subprocess sin relajar la suite canonica ni cambiar cuando se ejecuta. Si 010j no confirma git/subprocess como hotspot dominante, este ticket se re-scopea o se descarta antes de implementar.
+- **Criterios binarios:**
+  - Solo optimiza tests o fixtures identificados por 010j como hotspots reales.
+  - Mantiene tests de contrato que validan git real donde git sea el comportamiento bajo prueba.
+  - Cada fixture/mock de git nuevo o endurecido queda cubierto por al menos un smoke test de integracion real sin mockear que confirme que la API/CLI de Git usada por el sistema no ha derivado.
+  - Usa helpers/fixtures realistas o monkeypatch solo donde el test no pretende validar git real.
+  - Demuestra mejora con medicion antes/despues bajo condiciones comparables del mismo entorno y suite focal verde.
+  - No reduce cobertura semantica ni convierte tests utiles en mocks cosmeticos.
+- **Non-goals:**
+  - No tocar `run_gates_dispatch.py` ni politica Builder/Manager.
+  - No introducir cache de resultados pytest.
+  - No paralelizar la suite.
+
+## WOT-2026-010l - Selector focal por diff para run_pytest_safe con fail-open a suite canonica
+
+- **Prioridad:** Media
+- **Scope:** motor/quality-gates
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010j, WOT-2026-010i
+- **Origen:** `run_pytest_safe.py` ya acepta argumentos focales manuales; falta derivar el subset desde diff/FLT de forma conservadora.
+- **Objetivo:** crear un selector focal por diff que proponga tests candidatos para iteracion rapida, con fail-open a suite canonica cuando no pueda demostrar cobertura suficiente.
+- **Files Likely Touched:**
+  - Builder: `scripts/run_pytest_safe.py` o script/helper nuevo del selector en `repo_motor`.
+  - Builder: tests focales del selector en `tests/` segun el modulo elegido (`scope_gate`, `pre_handoff_guard` o helper dedicado).
+  - Read/inspect only: `pytest.ini`, `pyproject.toml`, `.agent/agent_controller.py`, `scripts/run_gates_dispatch.py`.
+- **Criterios binarios:**
+  - Consume diff real o `get_changed_files`/`scope_gate` y produce una lista de tests candidatos reproducible.
+  - Si no hay mapeo seguro, si `git diff` falla, si hay cambios en archivos troncales de configuracion (`pyproject.toml`, `pytest.ini`, `.agent/**`) o si el set de tests resuelto es vacio, falla abierto a la suite canonica completa con razon auditable.
+  - No sustituye por defecto la suite canonica de handoff hasta que un ticket posterior cambie explicitamente la politica.
+  - Incluye tests que demuestran fail-open ante archivos compartidos, cambios en controller/bus/gates, mapeos incompletos, `git diff` con exit code no-cero y resolucion vacia.
+  - Documenta como usar el selector con `run_pytest_safe.py -- <subset>`.
+- **Non-goals:**
+  - No cambiar el contrato de cierre de WOT-2026-010c.
+  - No depender de herramientas IA externas ni servicios SaaS.
+  - No activar cache de resultados.
+
+## WOT-2026-010m - Piloto xdist/sharding en CI para subset unitario aislado
+
+- **Prioridad:** Baja
+- **Scope:** motor/ci-performance
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010j, WOT-2026-010k
+- **Origen:** Paralelizar puede reducir tiempo wall-clock, pero el repo tiene estado compartido sensible (`.agent`, cwd, tmp_path, locks). Debe probarse como piloto aislado, no como cambio por defecto.
+- **Objetivo:** evaluar xdist/sharding solo sobre un subset unitario puro y demostrar que no introduce state-leak ni flakiness. La premisa de paralelizacion no arranca hasta leer el reporte final de 010j.
+- **Nota de dependencia:** `pytest-xdist` NO esta instalado hoy. Si el piloto sigue adelante, anadir `pytest-xdist` como dependencia de desarrollo forma parte del ticket; si el piloto se descarta, revertir esa dependencia.
+- **Criterios binarios:**
+  - Define subset piloto aislado y justifica por que es paralelizable; excluye tests que mutan variables de entorno globales, usan `os.chdir()` o leen/escriben en `.agent/collaboration`.
+  - Ejecuta comparacion serial vs paralelo con tiempos y resultados, arrancando con `-n 2` para el runner objetivo actual y sin subir el paralelismo sin medicion adicional.
+  - Demuestra que no pisa `.agent/collaboration`, tmp runtime, cwd ni locks.
+  - Si falla o es flaky, documenta `no-go` sin activar el cambio.
+- **Non-goals:**
+  - No activar paralelizacion para toda la suite.
+  - No modificar la suite canonica local por defecto.
+  - No ocultar flakiness bajo retries.

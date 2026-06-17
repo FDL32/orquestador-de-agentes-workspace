@@ -1,95 +1,92 @@
-# Execution Log: WOT-2026-010f - Limpieza/investigacion de checkpoint/review-none
+# Execution Log: WOT-2026-010j - Baseline de performance de suite
 
 ## Metadata
 
-**Estado:** READY_FOR_REVIEW
-- **ID:** WOT-2026-010f
-- **Contract ID:** T-010F-001
-- **deliverable_type:** mixed
+**Estado:** IN_PROGRESS
+- **ID:** WOT-2026-010j
+- **Contract ID:** T-010J-001
+- **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Rol activo:** BUILDER
 - **Accion:** IMPLEMENT
 
 ## Baseline
 
-- Motor HEAD pre-ticket: f4e5502 (WOT-2026-010d cerrado/publicado).
-- Contrato 010f commiteado en repo_destino: 3fe6e9b + 745a840 (post Manager
-  CHANGES B1 -> APROBADO; opcion (a): migrar 17 guards debiles).
-- Bootstrap bus: STATE_CHANGED -> IN_PROGRESS para WOT-2026-010f.
+- Packet contractual preparado en `repo_destino`:
+  - `work_plan.md`
+  - `STRATEGY_WOT-2026-010j.md`
+  - `AUDIT_WOT-2026-010j.md`
+- Bootstrap canonico emitido en bus:
+  - `STATE_CHANGED -> IN_PROGRESS` para `WOT-2026-010j`
+- Proyecciones activas alineadas para arranque Builder:
+  - `STATE.md` -> `WOT-2026-010j / IN_PROGRESS`
+  - `TURN.md` -> `BUILDER / IMPLEMENT`
 
-## Fase 0 - Diagnostico (seams confirmados)
+## Fase 0 - Diagnostico (seams confirmados en codigo)
 
-- 18 sitios de validacion de id en agent_controller.py: 1 guard fuerte
-  (1782, CONTRACT_GAP) + 17 debiles (`== "N/A"`). Verificado por grep:
-  `grep -c 'plan_id == "N/A"'`=9, `grep -c 'ticket_id == "N/A"'`=8.
-- get_plan_id (state_validation.py:62) devuelve "N/A" si no hay ID.
-- Seed neutro del motor usa ID=none (is_seed_neutral_state).
-- Tag checkpoint/review-none -> objeto 8352c64 -> commit eda918f (ruta viva).
+- `LEVEL_CHOICES = {"unit", "integration", "all"}` en `run_pytest_safe.py:82`;
+  `--level all` existe.
+- `normalize_pytest_args` (`run_pytest_safe.py:409-420`): `level == "all"` no
+  inyecta ningun `-m`; los otros niveles si filtran. Confirmado leyendo codigo.
+- `pytest.ini:11` -> `addopts = -p no:cacheprovider`. pytest-cache deshabilitado
+  por contrato, confirmado.
+- `python -c "import xdist"` -> `ModuleNotFoundError: No module named 'xdist'`.
+  pytest-xdist no instalado hoy, confirmado.
+- Grep de `selector_focal|focal_select` en `scripts/` y `bus/` -> 0 resultados.
+  Selector focal por diff no existe como flujo canonico activo, confirmado.
+- Conteos auxiliares (grep `-rl` sobre `tests/*.py`):
+  - `subprocess`: 53 archivos.
+  - `git`/`git_init`/`GIT_DIR`: 32 archivos.
+  - `tmp_path`/`tmpdir` (filesystem real): 119 archivos.
+  - `agent_controller`/`bus`: 185 archivos.
+  - marca `integration`: 5/2922 tests (`pytest --collect-only -m integration`).
+  - marca `slow`: 1/2922 tests (`pytest --collect-only -m slow`).
+- Sin desviaciones de scope detectadas en esta fase.
 
-## Fase 1 - Tests de barrera PRIMERO (TDD Red)
+## Fase 1 - Medicion canonica
 
-- Creado tests/unit/test_pre_handoff_checkpoint.py (21 tests).
-- Ejecucion sin fix: 4 failed (test_invalid_plan_ids_no_inline_literal +
-  test_pre_handoff_blocks_invalid_plan_id_no_tag[none/None/unknown]).
-  Demostrado: con plan_id="none" el guard debil deja pasar y pre-handoff
-  retorna success creando checkpoint/review-none. RED confirmado.
+- Comando: `python scripts/run_pytest_safe.py --level all -- --durations=50`
+  desde `repo_motor`.
+- Exit code real: `0` (leido de `.agent/runtime/pytest-safe/last-run.json`,
+  campo `exit_code`, no del pipe de consola que enmascararia el codigo real).
+- Resultado pytest: `2902 passed, 20 skipped in 479.12s (0:07:59)`.
+- Top-7 outliers de `--durations=50` suman `377.25s` de `479.12s` (~78.7% del
+  tiempo en 0.24% de los tests). El test mas lento (`test_scan_current_project`,
+  162.29s) y el segundo (`test_repo_has_no_live_retired_topology_terms`,
+  61.99s) son escaneo de filesystem real, no subprocess/git.
+- **Hipotesis subprocess/git: REFUTADA como causa dominante.** Solo
+  `67.41s` (~14% del tiempo total) de los outliers son atribuibles a archivos
+  con `subprocess`; el escaneo de filesystem aporta `224.28s` (~46.8%), mas
+  del triple.
+- Conteos auxiliares (grep sobre `tests/*.py`): `subprocess` 53 archivos,
+  `git` 32 archivos, `tmp_path`/`tmpdir` 119 archivos, `agent_controller`/`bus`
+  185 archivos, marca `integration` 5/2922, marca `slow` 1/2922.
+- Reporte durable creado en
+  `repo_motor/docs/test_performance/test_performance_baseline_WOT-2026-010j.md`.
+- Existencia verificada por lectura directa (no solo confirmacion de la
+  herramienta de escritura): `test -f` -> existe, 9438 bytes, contenido
+  inspeccionado con `head -3`.
+- Recomendacion del reporte: re-scopear `WOT-2026-010k` (su premisa de origen
+  subprocess/git no es el hotspot dominante); mantener `WOT-2026-010l` y
+  `WOT-2026-010m` sin cambios de prioridad.
+- Sin desviaciones de scope. No se toco codigo del runner, gates ni politica
+  de ejecucion.
 
-## Fase 2 - Implementacion (TDD Green)
+## Quality gates
 
-- state_validation.py: anadida constante INVALID_PLAN_IDS = frozenset({"",
-  "n/a", "none", "unknown"}) + helper is_invalid_plan_id(plan_id) con
-  normalizacion strip().lower() y manejo de None. Docstring 3-fases.
-- agent_controller.py: alias modulo `is_invalid_plan_id = state_validation.
-  is_invalid_plan_id`. Migrados los 18 sitios:
-  - 9 `plan_id == "N/A"` -> is_invalid_plan_id(plan_id)
-  - 8 `ticket_id == "N/A"` -> is_invalid_plan_id(ticket_id)
-  - 1 fuerte `ticket_id.lower() in (...)` -> is_invalid_plan_id(ticket_id)
-  grep final del patron debil == 0.
-- Ejecucion con fix: 20/20 (luego 21/21 con el test de interaccion BOM).
-
-## Fase 2b - Decision de diseno: BOM autocorrect (autorizada por el propietario)
-
-- Problema detectado al correr la suite: 3 tests de
-  test_opencode_config_stability.py fallaban. El BOM-autocorrect de
-  .opencode/opencode.json corria ANTES bajo el seed neutro (plan_id="none");
-  el guard nuevo lo bloqueaba.
-- Decision (aprobada): el BOM-autocorrect es higiene de un archivo del motor,
-  independiente del ticket. Se MOVIO el bloque (WT-2026-248a) a ANTES del guard
-  de plan_id en _handle_pre_handoff, usando _MOTOR_ROOT.resolve() para el
-  git show. Resto de pre-handoff intacto.
-- Barrera nueva: test_bom_hygiene_runs_even_with_invalid_plan_id verifica que
-  con plan_id="none" + BOM drift: el BOM se limpia Y el ticket sigue bloqueado
-  (rc != 0, sin tag).
-
-## Fase 2c - Tests colaterales actualizados
-
-- test_get_closeout_skip.py (8 tests): dependian de que el seed "none" llegara
-  a la logica del bus. _invoke_handler ahora inyecta un plan_id valido por
-  defecto (su intencion es testear la derivacion de estado del bus, no el
-  guard). test_skip_false_no_active_plan parametrizado para cubrir
-  none/None/unknown/N/A/"" como reason=no_active_plan (refuerza la barrera).
-
-## Fase 3 - Limpieza del tag
-
-- Verificado: 0 referencias operativas a "review-none" en events.jsonl de motor
-  y destino (las menciones son documentales: artefactos del propio 010f).
-- `git tag -d checkpoint/review-none` (era 8352c64). 66 tags review-* validos
-  intactos.
-
-## Quality gates (verificado)
-
-- ruff check (4 archivos): All checks passed.
-- ruff format: 3 files left unchanged (aplicado).
-- check_encoding_guard (4 archivos): exit 0.
-- Tests focales: tests/unit/test_pre_handoff_checkpoint.py 21 passed;
-  test_get_closeout_skip.py 20 passed; test_opencode_config_stability.py 6 passed.
-- Suite canonica `run_pytest_safe -- -m "not integration and not slow"`:
-  2896 passed, 20 skipped, 6 deselected. last-run.json exit_code=0,
-  status=finished.
-- validate --json --project-root <repo_destino>: 0 errors / 0 warnings.
+- `check_encoding_guard.py docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+  (desde `repo_motor`): exit 0.
+- `validate --json --project-root <repo_destino>`: confirmado 0 errors / 0
+  warnings antes del arranque de esta fase (ver turno previo del Orquestador).
+  Re-ejecucion final delegada a Manager-only segun plan.
 
 ## Entrega
 
-- Commit motor: ec4526b (agent_controller.py, state_validation.py,
-  test_pre_handoff_checkpoint.py [nuevo], test_get_closeout_skip.py).
-- pre-commit hooks: todos en verde (ruff, encoding, claude-settings, etc.).
+- Bitacora resembrada para `WOT-2026-010j` antes del arranque Builder.
+- Commit motor: `c05dbfe` — "docs(WOT-2026-010j): baseline de performance de
+  suite con medicion real". Archivo unico:
+  `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+  (146 insertions, archivo nuevo).
+- Diff motor confirmado limpio de scope creep: `git status --short` tras el
+  commit solo muestra `prompts/audit_agent_output.md` modificado (pre-existente,
+  fuera del FLT de `010j`, no tocado por este ticket).

@@ -1,226 +1,185 @@
-# Work Plan: WOT-2026-010f
+# Work Plan: WOT-2026-010j
 
-> Origen: durante la review final de WOT-2026-010c se detecto que HEAD tenia un
-> tag extra `checkpoint/review-none` junto al M3 correcto. No bloqueo 010c
-> porque la gate valida el tag del ticket correcto, pero `review-none` indica una
-> ruta que crea checkpoints con `plan_id="none"`. Investigacion 2026-06-17
-> confirma que la ruta SIGUE VIVA: el tag se recreo durante el handoff de 010d.
+> Origen: la suite canonica del motor tiene una latencia suficiente para
+> degradar el feedback del ciclo Builder/Manager y hoy no existe una baseline
+> reproducible con tiempo total, top-50 por `--durations`, distribucion por
+> familias y contraste entre `subprocess`/`git` y otros grupos reales de coste.
+> Antes de cambiar gates, selector focal o paralelizacion, toca medir y dejar
+> un artefacto durable.
 
 ## Metadata
 
-- **ID:** WOT-2026-010f
-- **Contract ID:** T-010F-001
+- **ID:** WOT-2026-010j
+- **Contract ID:** T-010J-001
 - **Estado:** READY_TO_START
-- **deliverable_type:** mixed
+- **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010c (cerrado/COMPLETED)
 
 ## Pre-launch note
 
-- `STATE.md` mostrara `WOT-2026-010d / COMPLETED` hasta que 010f emita
-  `STATE_CHANGED` al bus. El arranque canonico ocurre tras esta auditoria.
-- `TURN.md` debe leerse como preparacion de packet, no como ticket activo.
+- `STATE.md` y `TURN.md` siguen reflejando el cierre de `010f`; este packet no
+  arranca el bus ni cambia el ticket activo. El bootstrap canonico ocurre al
+  iniciar la sesion formal del Builder.
+- La hipotesis `subprocess`/`git` es **INFERENCIA** previa al ticket. `010j`
+  debe confirmarla o refutarla con medicion, no repetirla como hecho.
 
 ## Objetivo
 
-Eliminar la creacion de tags `checkpoint/review-none` cerrando la ruta viva que
-los produce, sin tocar checkpoints validos. Dejar barrera que falle si un
-checkpoint M3 se intenta crear con un `plan_id` no valido (`none`, `n/a`,
-`unknown`, vacio).
+Producir una baseline durable y reproducible de performance de la suite del
+motor para elegir entre `010k`, `010l`, `010m` o re-scope segun dos criterios
+medidos: mayor porcentaje del tiempo total atribuible al hotspot dominante y
+mayor riesgo de falso-verde o deriva contractual si ese hotspot no se aborda.
+La baseline debe capturar como minimo: tiempo total de ejecucion, top-50 tests
+mas lentos, agrupacion por modulos/familias y conteos auxiliares de
+`subprocess`, `git`, filesystem real, controller/bus, `integration` y `slow`.
+El deliverable es analitico: un reporte en `repo_motor` y un packet trazable,
+sin tocar la politica de ejecucion todavia.
 
-Frase guia: "Un checkpoint con ticket `none` es ruido operativo que puede
-ocultar drift de bus o bootstrap; el handoff debe fallar fail-closed antes de
-crear un tag sin ticket valido."
+Frase guia: "Medir primero, decidir despues con metrica; si la premisa cambia,
+cambia el siguiente ticket."
 
-## Root cause (VERIFICADO en codigo 2026-06-17, ampliado tras Manager CHANGES B1)
+## Metricas de salida exigidas
 
-Patron de guard DEBIL duplicado a lo largo de `.agent/agent_controller.py`. Solo
-**un** guard es fuerte; el resto son debiles.
+- **Tiempo total:** duracion wall-clock de `python scripts/run_pytest_safe.py --level all -- --durations=50`.
+- **Ranking lento:** lista top-50 emitida por pytest `--durations=50`.
+- **Agrupacion por familias:** resumen por modulo o archivo de test cuando el
+  output permita agruparlos sin inferencia fuerte.
+- **Conteos auxiliares:** numero de archivos o tests que referencian
+  `subprocess`, `git`, filesystem real, controller/bus, `integration`, `slow`.
+- **Decision del siguiente ticket:** recomendacion priorizada (`010k`, `010l`,
+  `010m` o re-scope) basada en los datos anteriores y no en intuicion.
 
-- **Guard FUERTE (unico):** linea 1780 (validacion CONTRACT_GAP) rechaza
-  `ticket_id.lower() in ("n/a", "none", "unknown", "")`.
-- **Guards DEBILES: 17 ubicaciones** (verificado por grep `== "N/A"`, no 2 ni 9).
-  Dos formas equivalentes del mismo defecto:
-  - `plan_id == "N/A"` / `current_plan_id == "N/A"` (9 ocurrencias).
-  - `ticket_id == "N/A"` (8 ocurrencias).
-  Las 17 dejan pasar `"none"` y `"unknown"` (solo bloquean `""` y `"N/A"`).
-  Conteo verificado: `grep -c 'plan_id == "N/A"'` = 9, `grep -c 'ticket_id ==
-  "N/A"'` = 8 -> 17 debiles + 1 fuerte (linea 1780) = 18 sitios de validacion.
-  El Builder debe localizar las 17 por grep en el momento de implementar (los
-  numeros de linea se desplazan al editar) y migrar las 17.
+## Hechos verificados (no asumir)
 
-`get_plan_id` (`.agent/state_validation.py:62`) devuelve el texto tras `**ID:**`
-o `"N/A"`. El seed neutro del motor documenta `ID=none` (state_validation.py:95,
-`is_seed_neutral_state`). Por tanto, con un work_plan `**ID:** none`,
-`plan_id="none"` pasa el guard debil. En `_handle_pre_handoff` (3314) eso llega a
-la creacion de tag (`tag_name = f"checkpoint/review-{plan_id}"`, linea 3659;
-creado en 3767) y materializa `checkpoint/review-none`.
+- `scripts/run_pytest_safe.py` ya acepta `--level all` y argumentos extra para
+  pytest; con `level=all` no anade filtro `-m`.
+- `pytest-cache` sigue deshabilitado por contrato (`pytest.ini` + runner).
+- `integration` y `slow` son una porcion pequena de la suite; excluirlas no
+  cambia sustancialmente el coste total.
+- `pytest-xdist` no esta instalado hoy; no se introduce en este ticket.
+- `run_pytest_safe.py` ya acepta subsets manuales, pero el selector por diff
+  aun no existe.
 
-Clasificacion de riesgo de los 18 guards debiles por tipo de efecto:
+## Decision de alcance
 
-| Linea | Funcion | Tipo | Riesgo si plan_id="none" pasa |
-|------|---------|------|-------------------------------|
-| 2778 | `_handle_mark_ready` | Creacion (eventos/artefactos) | Alto |
-| 3173 | `_handle_bootstrap_ticket` | Creacion (bus events) | Alto |
-| 3314 | `_handle_pre_handoff` | Creacion (checkpoint tag) | Alto (este ticket) |
-| 3879 | `_check_bus_drift` | Query | Bajo |
-| 3988 | `_check_invariants` | Query | Bajo |
-| 4273/4287 | `_handle_manager_approve` | Mutacion/cierre | Alto |
-| 4499/4509 | `_handle_escalate_human_gate` | Mutacion | Medio |
-| 4566 | `_handle_resume_human_gate` | Mutacion | Medio |
-| 4636 | `_handle_pause_ticket` | Mutacion | Medio |
-| 4819 | `_handle_resume_ticket` | Mutacion | Medio |
-| 4949 | `_handle_abort_paused_ticket` | Mutacion | Medio |
-| 5035 | `_handle_reopen_terminal_ticket` | Mutacion | Medio |
-| 5189/5201 | `_handle_request_changes` | Mutacion | Medio |
-| 5755 | `_handle_get_closeout_skip` | Query | Bajo |
+- **Analisis durable, no runtime:** el reporte vive en
+  `repo_motor/docs/test_performance/` para que sea comparable y versionable.
+- **Medicion canonica completa:** usar `python scripts/run_pytest_safe.py --level all -- --durations=50`.
+- **Separar hechos de inferencias:** cualquier conclusion sobre `subprocess`,
+  `git`, import-time, fixtures de controller o estado compartido debe venir del
+  reporte, no del relato previo.
+- **Sin cambios de politica:** este ticket no activa cache, xdist, selector
+  focal ni modificaciones de gates.
 
-Evidencia de ruta viva: `checkpoint/review-none` (objeto tag `8352c64`) apunta al
-commit `eda918f` ("WOT-2026-010d: Final formatting and linting"), del ciclo de
-010d. Es ruta viva recreada en este ciclo, no artefacto historico unico.
+## Orden de ejecucion (obligatorio)
 
-## Decision de alcance (Manager CHANGES B1 -> opcion (a))
-
-Se adopta la **opcion (a)**: este ticket reemplaza las **18** ocurrencias del
-guard debil con `is_invalid_plan_id()`, consumiendo la constante compartida
-`INVALID_PLAN_IDS`. Es un refactor mecanico que NO cambia el comportamiento de
-las rutas con ticket valido (un ticket real nunca esta en `INVALID_PLAN_IDS`),
-pero blinda como efecto colateral beneficioso las rutas de creacion/mutacion
-(mark-ready, bootstrap, manager-approve, pause/resume/abort, request-changes).
-La barrera de test PRINCIPAL sigue siendo la ruta de checkpoint (pre-handoff);
-se anade ademas un test de no-regresion para `_handle_mark_ready` con
-`plan_id="none"`. Se descarta la opcion (b) porque importar la constante y
-usarla en 1 de 18 sitios dejaria el codigo en estado peor (inconsistente).
-
-## Decision Arquitectonica
-
-- **Fuente unica de verdad:** extraer el conjunto de IDs invalidos a una
-  constante compartida `INVALID_PLAN_IDS = frozenset({"", "n/a", "none",
-  "unknown"})` en `state_validation.py`, con helper `is_invalid_plan_id(pid)`
-  que normaliza (`pid.strip().lower()`). La duplicacion del literal fue la causa
-  raiz; la constante la elimina.
-- **Fail-closed en los 18 guards:** reemplazar cada guard debil
-  (`if not X or X == "N/A":`) por `if is_invalid_plan_id(X):`. En las rutas de
-  creacion/mutacion, salir con error ANTES de cualquier efecto (tag, evento,
-  mutacion de estado). En las rutas query, el cambio solo refuerza el early-return
-  sin cambiar el resultado para tickets validos.
-- **No tocar checkpoints validos:** un ticket real nunca esta en
-  `INVALID_PLAN_IDS`; `checkpoint/review-<ticket>` y cada ruta con ticket
-  valido conserva su comportamiento exacto.
-- **Limpieza del tag existente:** `checkpoint/review-none` se elimina SOLO tras
-  verificar que no es referenciado por bus, backlog ni archive. Es un tag local
-  (no hay evidencia de push); borrado con `git tag -d checkpoint/review-none`.
-- **NO confundir con:** la gate de suite-green (010c), el scope gate, ni la
-  barrera work_plan-committed (009g). Esta es una correccion de la ruta de
-  creacion de checkpoint, independiente de esas gates.
-
-## Orden de ejecucion (obligatorio, TDD)
-
-1. **Tests de barrera PRIMERO:** (a) con work_plan `**ID:** none`,
-   `_handle_pre_handoff` debe FALLAR fail-closed y NO crear tag; (b)
-   `_handle_mark_ready` con `plan_id="none"` no emite eventos de bus. Ambos deben
-   fallar sin el fix.
-2. Extraer `INVALID_PLAN_IDS` + `is_invalid_plan_id` en `state_validation.py`.
-3. Refactorizar el guard fuerte de linea 1780 para consumir el helper (sin
-   cambiar comportamiento).
-4. Reemplazar las 17 ocurrencias del guard debil por `is_invalid_plan_id(...)`.
-   Mecanico: 9 con `plan_id`/`current_plan_id` + 8 con `ticket_id`. Localizar por
-   grep `== "N/A"` en el momento de editar; migrar las 17 (grep final == 0).
-5. Limpiar el tag `checkpoint/review-none` tras verificar cero referencias vivas.
-6. Gates + cierre canonico.
+1. Verificar estado previo: `validate --json --project-root <repo_destino>`
+   antes de medir; registrar si aparecen `ticket_prose`, `bus_drift` o
+   `invariants` previos al arranque.
+2. Ejecutar la medicion canonica con `--level all -- --durations=50`.
+3. Complementar la medicion con seis conteos verificables:
+   `subprocess`, `git`, filesystem real, controller/bus, `integration`, `slow`.
+4. Redactar el reporte durable en `repo_motor/docs/test_performance/`.
+5. Verificar existencia real del reporte y encoding limpio.
+6. Recomendar el siguiente ticket ejecutable con evidencia, explicando:
+   hipotesis evaluada, metrica observada, criterio de prioridad medido
+   (`%` del tiempo total atribuible al hotspot y/o riesgo de falso-verde
+   evitado) y ticket descartado si aplica.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `.agent/agent_controller.py`
-- `.agent/state_validation.py`
-- `tests/unit/test_pre_handoff_checkpoint.py`
-- `tests/test_get_closeout_skip.py`
+- `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
 
-Notas (no son parte del FLT parseable):
-- `tests/test_get_closeout_skip.py`: test colateral. _handle_get_closeout_skip
-  (linea ~5756) es uno de los 17 guards migrados; sus tests dependian de que el
-  seed neutro "none" llegara a la logica del bus. Se actualizan para inyectar un
-  plan_id valido (su intencion es testear la derivacion del bus, no el guard) y
-  se parametriza el caso de id invalido. Tocar este test es consecuencia directa
-  del fix, no scope creep.
-- `.agent/agent_controller.py`: migrar los 17 guards debiles
-  `(plan_id|ticket_id|current_plan_id) == "N/A"` a `is_invalid_plan_id()`
-  (localizar por grep, NO por numero de linea; son 17 + el fuerte de 1780). No
-  tocar la logica de creacion de tag/eventos mas alla del guard previo.
-- `.agent/state_validation.py`: anadir constante `INVALID_PLAN_IDS` y helper
-  `is_invalid_plan_id(pid)`. Nota de nomenclatura: el helper recibe tanto
-  `plan_id` como `ticket_id`; el nombre mantiene la nomenclatura de la constante
-  `INVALID_PLAN_IDS` ya establecida, su semantica real es "cualquier ID de
-  ticket/plan que no designa un ticket real". No renombrar para no romper la
-  convencion.
-- `tests/unit/test_pre_handoff_checkpoint.py` (nuevo): barreras que demuestran
-  que `plan_id` invalido no crea tag (pre-handoff) ni emite eventos (mark-ready).
+### repo_destino
+- `.agent/collaboration/work_plan.md`
+
+Notas (no forman parte del FLT parseable):
+- Los scripts y tests inspeccionados (`scripts/run_pytest_safe.py`,
+  `scripts/run_gates_dispatch.py`, `pytest.ini`, `pyproject.toml`, `tests/`,
+  `.agent/agent_controller.py`) son **read/inspect only**.
+- Si el Builder detecta que necesita tocar codigo del motor para poder medir,
+  debe emitir `CONTRACT_GAP`; eso queda fuera de `010j`.
 
 ## Read/inspect only
 
-- `scripts/create_checkpoint.py` (`MILESTONE_TAGS["M3"]`; consumidor del
-  ticket_id, NO reimplementar).
-- `scripts/pre_handoff_guard.py` (valida M3 existente; no es quien lo crea con
-  plan_id none).
-- `git tag -l "checkpoint/review-*"` como inventario de referencia.
+- `scripts/run_pytest_safe.py`
+- `scripts/run_gates_dispatch.py`
+- `pytest.ini`
+- `pyproject.toml`
+- `tests/`
+- `.agent/agent_controller.py`
+- `.agent/runtime/pytest-safe/`
 
 ## Manager-only
 
-- Ejecutar `python scripts/run_pytest_safe.py -- -m "not integration and not slow"`
-  desde `repo_motor` y leer hasta `0 failed`.
 - Ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
   final 0/0.
-- Verificar que `git tag -l "checkpoint/review-none"` no devuelve nada al cierre.
+- Verificar existencia real del reporte durable en `repo_motor`.
+- Verificar que el diff productivo del motor se limita al artefacto documental
+  del ticket.
 
-## Tests Esperados (en `tests/unit/test_pre_handoff_checkpoint.py`)
+## Expected Evidence
 
-- Con `plan_id="none"`, `_handle_pre_handoff` NO crea tag y falla fail-closed
-  (barrera principal: hoy crea `review-none`).
-- Parametrizado: `plan_id` en `"N/A"`, `""`, `"unknown"` -> igualmente bloqueado.
-- Con `plan_id` valido (`WOT-2026-999z`): `checkpoint/review-<ticket>` se crea
-  normalmente (no-regresion).
-- `_handle_mark_ready` con `plan_id="none"` NO emite eventos de bus (test de
-  no-regresion de la 2da ruta de creacion de alto riesgo; sugerencia Manager).
-- `is_invalid_plan_id`: tabla de verdad (`none/N/A/""/unknown/" None "` -> True;
-  `WOT-2026-001a` -> False). Verifica normalizacion `strip().lower()`.
-- `INVALID_PLAN_IDS` es la unica fuente: test que importa la constante y
-  verifica contenido; el literal `== "N/A"` ya no aparece inline en
-  `agent_controller.py` (grep == 0 ocurrencias del patron debil).
+- Comando de medicion exacto:
+  `python scripts/run_pytest_safe.py --level all -- --durations=50`
+- Reporte con:
+  - tiempo total,
+  - top tests lentos,
+  - top modulos lentos,
+  - peso relativo de `subprocess`/`git`,
+  - conteos de tests/archivos por categoria relevante,
+  - recomendacion del siguiente ticket ejecutable con metrica, razon y orden.
+- Verificacion de existencia real del reporte por lectura o check compatible con
+  el entorno, mas verificacion separada de encoding. El encoding guard no
+  sustituye la prueba de existencia.
+
+## Decision Arquitectonica
+
+- Este ticket produce un artefacto `analysis` en `repo_motor` porque la baseline
+  debe ser durable, comparable entre sesiones y reutilizable por `010k`, `010l`
+  y `010m`.
+- La medicion se hace con `run_pytest_safe.py --level all` para conservar el
+  contrato real del runner seguro. Medir con subsets, cache o paralelizacion
+  cambiaria la pregunta del ticket.
+- El packet no arranca el bus: la preparacion contractual ocurre antes del
+  bootstrap formal del Builder. Por eso `bus_drift` e `invariants` previos al
+  ticket se documentan como esperables hasta que el supervisor abra `010j`.
 
 ## Criterios Binarios
 
-- [ ] Existe `INVALID_PLAN_IDS` + `is_invalid_plan_id` en `state_validation.py`.
-- [ ] Las **17** ubicaciones del guard debil consumen `is_invalid_plan_id(...)`;
-      el patron `(plan_id|ticket_id|current_plan_id) == "N/A"` ya no aparece
-      inline en `agent_controller.py` (grep == 0). El guard fuerte (1780) tambien
-      lo consume.
-- [ ] `--pre-handoff` con `plan_id` invalido (`none/n/a/unknown/""`) falla
-      fail-closed ANTES de crear ningun tag.
-- [ ] `_handle_mark_ready` con `plan_id="none"` no emite eventos de bus.
-- [ ] Test de barrera: con `plan_id="none"` no se crea tag; FALLA sin el fix.
-- [ ] `checkpoint/review-<ticket>` con ticket valido sigue creandose (no-regresion).
-- [ ] `checkpoint/review-none` eliminado tras verificar cero referencias en
-      bus/backlog/archive.
-- [ ] `git tag -l "checkpoint/review-none"` vacio al cierre.
-- [ ] `ruff check .` exit 0.
-- [ ] Tests focales exit 0.
-- [ ] `run_pytest_safe -- -m "not integration and not slow"` leido hasta `0 failed`.
-- [ ] `validate --json --project-root <repo_destino>` exit 0, 0 errors.
+- [ ] Se ejecuto `python scripts/run_pytest_safe.py --level all -- --durations=50`
+      o existe evidencia verificable de por que no fue viable.
+- [ ] Existe `repo_motor/docs/test_performance/test_performance_baseline_WOT-2026-010j.md`.
+- [ ] El reporte incluye tiempo total, top tests lentos, top modulos lentos y
+      peso relativo de `subprocess`/`git`.
+- [ ] El reporte distingue hechos verificados de inferencias y confirma o
+      refuta la hipotesis `subprocess`/`git`.
+- [ ] El reporte cuenta archivos/tests con `subprocess`, `git`, filesystem real,
+      controller/bus y marcas `integration`/`slow`.
+- [ ] El reporte recomienda el siguiente ticket ejecutable con evidencia, no
+      por intuicion.
+- [ ] `check_encoding_guard.py` pasa sobre el reporte y los artefactos de packet
+      tocados.
+- [ ] `validate --json --project-root <repo_destino>` exit 0, 0 errors, 0 warnings.
 
 ## Non-goals
 
-- NO reescribir la politica M3 completa ni el resto de milestones (M0/M1/M2/M4).
-- NO tocar la gate de suite-green (010c), scope gate ni work_plan-committed (009g).
-- NO borrar otros tags `checkpoint/review-*` validos.
-- NO tocar WOT-2026-010d, 010e, 010g, 010h, 010i ni 008d.
-- NO normalizar `plan_id="none"` a otra cosa: el contrato es RECHAZARLO, no
-  traducirlo.
+- NO modificar `run_pytest_safe.py`, `run_gates_dispatch.py`, `pytest.ini`,
+  `pyproject.toml` ni la politica Builder/Manager.
+- NO activar cache, xdist, sharding ni selector focal.
+- NO tocar tests productivos salvo que la medicion documental lo exija y el
+  contrato se rehaga.
+- NO tratar la hipotesis `subprocess`/`git` como conclusion previa.
 
 ## Forbidden Surfaces
 
-- `scripts/create_checkpoint.py` salvo lectura (no reimplementar M3).
-- `scripts/pre_handoff_guard.py` (valida, no crea; fuera de scope).
-- `bus/state_machine.py`.
-- `privada/` y `.env`.
-- Scope de 010d, 010e, 010g, 010h, 010i, 008d.
+- `scripts/run_pytest_safe.py`
+- `scripts/run_gates_dispatch.py`
+- `pytest.ini`
+- `pyproject.toml`
+- `uv.lock`
+- cualquier modulo Python productivo del motor
+- `privada/` y `.env`
+- bus editado manualmente
