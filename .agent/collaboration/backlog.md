@@ -2101,4 +2101,37 @@ Auditoria adversarial de 3 recomendaciones (via `prompts/audit_agent_output.md`)
   documentation/research/analysis/mixed (exit 1 si falta el deliverable declarado
   en FLT). Barrera viva, verificada. NO se añade a 010r (seria duplicar gate).
   Sub-matiz real (NO blocker de 010r): ese check valida EXISTENCIA, no CONTENIDO;
-  follow-up de otra naturaleza si alguna vez se quiere validar contenido minimo.
+  la barrera de contenido para analysis vive en review_bridge (deliverable_type
+  =analysis), no en check_deliverables_exist. Follow-up de otra naturaleza si
+  alguna vez se quiere validar contenido minimo.
+
+## Segunda auditoria adversarial (Manager, 2026-06-17) — 2 refinamientos + 1 mejora nueva
+
+Verificado en codigo tras pasada de revision:
+
+- **REC#1, salvedad de rigor:** "comando reproducible citado" en markdown es
+  evidencia manual, no barrera automatica. Para no quedar en reproducibilidad
+  nominal, el MANAGER-REVIEW de 010r debe EJECUTAR el comando una vez y registrar
+  exit code + conteo en `execution_log.md`. La automatizacion (gate permanente)
+  sigue siendo 010s.
+- **REC#2, gate ya vive (refuerza, no añade):** `scripts/validate_ticket_prose.py`
+  (regla TP-PROSE-10, lineas 399-413) ya FALLA si falta la seccion
+  `## Decision Arquitectonica`. Por tanto 010r no "exige" nada nuevo: solo debe
+  USAR esa seccion existente para documentar la decision hibrido/break-glass +
+  trade-offs + implicacion para 010s. El `decision_artifact`
+  (`bus/decision_parser.py:39`, consumido por review_bridge:2193) es distinto de
+  `DEC-*` de contract formation; no confundir.
+- **MEJORA NUEVA — Impact Simulation faltante (--check-contract):** VERIFICADO:
+  `scripts/run_gates_dispatch.py:157` corre `discover_skills.py --check-contract`
+  (validacion bidireccional prompt<->skill: source_prompt/contract_id/ancla
+  inversa) INDEPENDIENTE de deliverable_type. Implicacion: si 010r decide
+  rename/adopcion de skills mattpocock, 010s tocara frontmatter
+  (source_prompt/contract_id) y DEBE mantener `--check-contract` verde.
+  Accion: SERIALIZAR 010r -> 010s (no paralelo) y declarar `--check-contract`
+  como gate que 010s no puede romper. Citar en el plan de 010s.
+
+Aprendizaje reusable: antes de proponer "exigir X en un ticket", grep el motor.
+Patron recurrente esta sesion (7->6 consumidores, _validate_host_project_prefix,
+F1 010g, 2 de 3 REC, y ahora TP-PROSE-10 + --check-contract): el motor ya tiene
+mas barreras vivas de las que parece; el valor esta en confirmar cuales existen
+antes de construir otra.
