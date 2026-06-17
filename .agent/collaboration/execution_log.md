@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-010l
 - **Contract ID:** T-010L-001
 - **deliverable_type:** mixed
@@ -155,3 +155,21 @@
 - 5 archivos: `scripts/test_selection.py` (nuevo), `scripts/run_pytest_safe.py`,
   `tests/unit/test_run_pytest_safe.py`, `tests/test_pre_handoff_guard.py`,
   `docs/test_performance/test_selection_WOT-2026-010l.md`.
+
+## Ronda 2 - Reconciliacion post-review (Manager CHANGES)
+
+- **Veredicto R1:** CHANGES. El codigo de 010l y la evidencia focal quedaron
+  confirmados; el unico blocker era `validate --json` en 0 errors / **2 warnings**
+  de `contaminacion_productiva` en repo_destino: `AUDIT_WOT-2026-010i.md` y
+  `STRATEGY_WOT-2026-010i.md` quedaron como delete+untracked (archivado del
+  ticket anterior movido fisicamente a `_archive/plan_audit/` pero sin commit).
+- **Causa:** archivado incompleto de artefactos de 010i; NO es bug del selector.
+- **Correccion:** verificado byte-identico (pure move) entre el original
+  borrado y la copia en `_archive/plan_audit/`; registrado el move como rename
+  en commit `6de40a4` (repo_destino). Sin perdida de datos.
+- **Revalidacion:** `validate --json --project-root <repo_destino>` ->
+  **0 errors / 0 warnings**.
+- **Motor intacto:** HEAD sigue en `915d2be`; `last-run.json` sigue valido
+  (`level=all`, `args_mode=default_discovery`, `exit_code=0`, `sha=915d2be==HEAD`).
+  No se requiere nueva corrida de suite canonica: el commit de reconciliacion
+  fue solo en repo_destino y no toco codigo del motor.
