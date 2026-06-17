@@ -146,10 +146,9 @@ misma variable de entorno que el codigo de produccion ya consulta
   con `AGENT_PROJECT_ROOT` sin definir, HEAD 8e83b3d):
   2910 passed, 20 skipped, 0 failed — 42m47s.
 - Commit productivo: `591bec5` — pre-commit hooks todos verdes.
-- `python scripts/run_pytest_safe.py --level all` (post-commit, HEAD 591bec5):
-  cancelado por el Manager antes de completar; aceptado como evidencia la
-  corrida baseline pre-fix (2910 passed, 0 failed) + corrida focal post-commit
-  (193 passed, 0 failed).
+- `python scripts/run_pytest_safe.py --level all` (post-commit, HEAD 591bec5,
+  segunda pasada post-CHANGES): 2910 passed, 20 skipped, 0 failed — 5m44s.
+  last-run.json: level=all, exit_code=0, tested_commit_sha=591bec5, status=finished.
 - `validate --json`: 0 errors / 0 warnings.
 
 ### Nota: fix solo en capa de test, sin cambio de politica del evidence-gate
