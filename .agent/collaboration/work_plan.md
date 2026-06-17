@@ -17,12 +17,19 @@
 ## Objetivo
 
 Reducir tiempo de suite atacando dos hotspots reales de filesystem/scan:
-`tests/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project`
-y `tests/test_no_legacy_topology_terms.py::test_repo_has_no_live_retired_topology_terms`,
+`tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project`
+y `tests/unit/test_no_legacy_topology_terms.py::test_repo_has_no_live_retired_topology_terms`,
 sin relajar la suite canonica, sin cambiar politica de gates y sin convertir
 tests utiles en atajos cosmeticos. La mejora debe quedar medida como delta de
 tiempo wall-clock de esos dos tests y de su suite focal directa, comparando
 before/after en el mismo entorno y con el mismo comando.
+
+> Nota de saneamiento (post-review Builder): el objetivo y el FLT
+> originales del prompt de lanzamiento citaban `tests/test_project_scanner.py`
+> y `tests/test_no_legacy_topology_terms.py` (rutas obsoletas). Los archivos
+> reales viven en `tests/unit/`, confirmado via `find` antes de editar. Esta
+> seccion se corrige para que el contrato declarado coincida con el commit
+> real `55d84bb` y con el FLT de la seccion siguiente.
 
 ## Hechos verificados
 
@@ -52,8 +59,8 @@ Registrar en `execution_log.md`:
 ## Files Likely Touched
 
 ### repo_motor
-- `tests/test_project_scanner.py`
-- `tests/test_no_legacy_topology_terms.py`
+- `tests/unit/test_project_scanner.py`
+- `tests/unit/test_no_legacy_topology_terms.py`
 - helper o fixture compartida nueva solo si elimina setup repetido de esos dos
   tests concretos
 - `docs/test_performance/test_performance_followup_WOT-2026-010k.md`

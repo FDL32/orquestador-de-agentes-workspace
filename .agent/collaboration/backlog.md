@@ -76,6 +76,7 @@
 | Media | WOT-2026-010i | Hardening de review packet, forbidden surfaces y tests semanticos | motor/protocol-runtime | pending | WOT-2026-010e | session-2026-06-16-review-hardening |  <!-- Origen: review de 010e detecto packet sin commit visible al review, Forbidden Surfaces solo contractual, test de fallback capaz de dar falso verde y bug semantico de campo leido vs campo retornado en _resolve_destino. Objetivo: endurecer packaging pre-review/mark-ready, gate de Forbidden Surfaces y barreras de tests semanticos para resolutores/parsers y ramas de fallback. -->
 | Media | WOT-2026-010j | Baseline de performance de suite: durations y hotspots subprocess/git | motor/test-performance | pending | WOT-2026-010c | session-2026-06-17-suite-performance |  <!-- Analysis puro. Origen: suite canonica ~2896 tests tarda varios minutos; -m not integration/slow apenas ahorra 6 tests; run_pytest_safe ya acepta args focales; pytest-cache esta deshabilitado por contrato; sospecha principal = coste difuso por subprocess/git. Objetivo: medir antes de cambiar politica de gates. -->
 | Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
+| Baja | WOT-2026-010o | Tests deterministas para evidence-gate real (manager_review_bridge/review_bridge sin acoplar a repo_destino vivo) | motor/test-determinism | pending | WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Origen: review de 010k detecto 6 fallos transitorios en test_manager_review_bridge.py/test_review_bridge.py al correr la suite completa, causados por estos tests ejercitar el evidence-gate real contra el repo_destino real via .agent/config/motor_destination_link.json (gitignored, local-only) en vez de un fixture controlado. Objetivo: mockear o fixturizar el estado de repo_destino que consume el evidence-gate para que estos tests sean deterministas e independientes del estado de git del repo_destino vivo en el momento de la corrida. NO scope de 010k (fuera de su FLT y de sus Forbidden Surfaces). -->
 | Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. No sustituye la suite canonica de handoff hasta tener evidencia. -->
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
 | Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- Bug follow-up de 010j. Origen: check_deliverables_exist.py valida Builder artefacts solo relativo a --project-root y no resuelve namespaces repo_motor/repo_destino del FLT; bloquea tickets analysis/documentation con entrega legitima en repo_motor. -->
@@ -1775,3 +1776,131 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - No duplicar artefactos entre `repo_motor` y `repo_destino` para satisfacer el gate.
   - No convertir el gate en pass-open.
   - No mezclar optimizaciones de runner ni cambios ajenos de politica de closeout.
+
+## WOT-2026-010o - Tests deterministas para evidence-gate real (manager_review_bridge/review_bridge sin acoplar a repo_destino vivo)
+
+- **Prioridad:** Baja
+- **Scope:** motor/test-determinism
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010k
+- **Origen:** session-2026-06-17-suite-performance
+
+### Problema
+
+Durante la implementacion de `WOT-2026-010k` (optimizacion de dos hotspots de
+filesystem/scan, sin relacion funcional con este hallazgo), una corrida
+intermedia de `python scripts/run_pytest_safe.py --level all` mostro 6 fallos
+en `tests/test_manager_review_bridge.py` y `tests/test_review_bridge.py`. El
+fallo observado fue del tipo:
+
+```
+AssertionError: assert ReviewDecision.CHANGES == ReviewDecision.APPROVE
+```
+
+con un mensaje de evidence-gate real adjunto, de la forma:
+
+```
+[evidence-gate] REJECTED: Ticket WP-2026-072: all changes are
+collaboration-only artifacts...
+```
+
+Se investigo exhaustivamente para descartar que fuera una regresion
+introducida por el diff de `010k` (que solo tocaba
+`tests/unit/test_project_scanner.py` y
+`tests/unit/test_no_legacy_topology_terms.py`), siguiendo esta secuencia:
+
+1. Se corrio el test fallido en aislamiento -> seguia fallando con el mismo
+   mensaje de evidence-gate.
+2. Se hizo `git stash` de los cambios de `010k` en `repo_destino` y se
+   re-corrio -> seguia fallando. Esto descarto que el propio diff de
+   `010k` en `repo_destino` (ediciones de `work_plan.md`/`execution_log.md`)
+   fuera la causa.
+3. Se uso `git worktree add /tmp/baseline-check <commit-pre-010k>` para
+   probar el commit baseline (anterior a cualquier cambio de la sesion) en un
+   working tree aislado -> el test PASO ahi. La diferencia clave: ese
+   worktree aislado no tenia el archivo
+   `.agent/config/motor_destination_link.json` (gitignored, local-only) que
+   resuelve `destination_root` al `repo_destino` real de esta maquina.
+4. Se revirtio temporalmente el contenido de los archivos de test +
+   `bus/` en el checkout real (que SI tiene el link al `repo_destino` real) a
+   sus versiones del commit baseline -> el test seguia fallando igual.
+5. Se restauraron los archivos de test a su version de HEAD -> el test volvio
+   a pasar cuando se re-corrio con el `repo_destino` real en un estado de git
+   estable (sin cambios uncommitted productivos pendientes).
+
+Conclusion: el fallo NO es una regresion de codigo introducida por `010k`.
+Es un acoplamiento de entorno preexistente: estos tests no mockean el
+evidence-gate, lo ejercitan de verdad contra el `repo_destino` real
+resuelto via `motor_destination_link.json`. Su resultado (`APPROVE` vs
+`CHANGES`) depende de si ese `repo_destino` real tiene, en el momento exacto
+de la corrida, cambios git uncommitted que el evidence-gate clasifique como
+"collaboration-only" o como "productivos". Como ese estado fluctua durante
+una sesion de trabajo activa sobre el propio `repo_destino` (exactamente lo
+que estaba ocurriendo en paralelo durante `010k`), el resultado del test
+fluctua con el, sin que el codigo bajo prueba haya cambiado.
+
+### Objetivo
+
+Hacer que `test_manager_review_bridge.py` y `test_review_bridge.py` validen
+la logica real del evidence-gate (que es valiosa y no debe debilitarse) sin
+depender del estado de git del `repo_destino` real de quien ejecuta la
+suite. La fixture debe construir o simular un estado de repo controlado
+(por ejemplo un repo git temporal en `tmp_path` con commits/diffs
+preparados deliberadamente) en vez de resolver
+`motor_destination_link.json` hacia un repo_destino vivo y mutable.
+
+### Files Likely Touched
+
+- Builder: `tests/test_manager_review_bridge.py`
+- Builder: `tests/test_review_bridge.py`
+- Builder: fixture/helper nuevo de repo git temporal si se decide esa via
+  (ubicacion a definir por el Builder, p.ej. `tests/conftest.py` o un modulo
+  de fixtures compartido existente)
+- Read/inspect only: `bus/review_bridge.py`, `bus/manager_review_bridge.py`
+  (o los modulos reales que implementan el evidence-gate; confirmar nombre
+  exacto en Fase 0 de diagnostico), `.agent/config/motor_destination_link.json`
+  (NO editar; es local-only y gitignored, solo sirve para entender el
+  mecanismo de resolucion que hay que desacoplar en el test)
+
+### Criterios binarios
+
+- Los tests de evidence-gate en ambos archivos pasan de forma reproducible
+  sin importar el estado git real (uncommitted o no) del `repo_destino` de
+  quien ejecuta la suite.
+- Existe al menos un fixture/test que demuestra el caso `APPROVE` (cambios
+  solo collaboration-only) y al menos uno que demuestra `CHANGES` (cambios
+  productivos detectados), ambos contra el repo simulado, no contra el
+  repo_destino real.
+- Correr la suite completa dos veces en el mismo checkout, con el
+  `repo_destino` real en dos estados git distintos entremedio (por ejemplo
+  con y sin un archivo nuevo sin commitear), produce el mismo resultado en
+  estos tests las dos veces.
+- No se relaja la logica real del evidence-gate: el test sigue ejercitando
+  el codigo de produccion real (`bus/review_bridge.py` o equivalente), solo
+  cambia la fuente del estado de repo que ese codigo inspecciona.
+- `ruff check`, `pytest-safe` (suite completa) y
+  `validate --json --project-root <repo_destino>` en 0/0 al cierre.
+
+### Non-goals
+
+- No mover ni redefinir el contrato canonico del evidence-gate
+  (`bus/review_bridge.py` o equivalente); este ticket es de determinismo de
+  test, no de cambio de politica de revision.
+- No tocar `.agent/config/motor_destination_link.json` ni su mecanismo de
+  resolucion en produccion; el fix vive en la capa de test/fixture.
+- No mezclar con `WOT-2026-010k` (hotspots de filesystem/scan, ya cerrado) ni
+  reabrir su scope.
+
+### STOP
+
+- Si desacoplar el test del `repo_destino` real exige cambiar la firma o el
+  contrato publico de `bus/review_bridge.py` (no solo su fixture de test),
+  detener y evaluar si esto debe ser un ticket `code` mas amplio en vez de
+  un ticket de test-determinism.
+- Si el repo git temporal en `tmp_path` no puede reproducir fielmente la
+  señal real que el evidence-gate necesita (por ejemplo dependencias de
+  configuracion global de git no disponibles en sandbox), documentar el
+  blocker concreto en vez de forzar un mock que vacie el test de contenido
+  real.
