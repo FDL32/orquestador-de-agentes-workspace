@@ -1,127 +1,98 @@
-# Execution Log: WOT-2026-010d - Pausar/reanudar ticket activo con bus canonico
+# Execution Log: WOT-2026-010f - Limpieza/investigacion de checkpoint/review-none
 
 ## Metadata
 
-**Estado:** COMPLETED
-- **ID:** WOT-2026-010d
-- **Contract ID:** T-010D-001
-- **deliverable_type:** code
+**Estado:** READY_FOR_REVIEW
+- **ID:** WOT-2026-010f
+- **Contract ID:** T-010F-001
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Rol activo:** BUILDER
 - **Accion:** IMPLEMENT
 
 ## Baseline
 
-- Motor HEAD pre-ticket: b0248b1 (WOT-2026-010e cerrado/publicado).
-- Dependencia WOT-2026-010c: cerrada/COMPLETED (suite-green gate).
-- Implementacion principal del Builder: eda918f (433 lineas controller, state
-  machine, pre_handoff_guard, 3 archivos de tests nuevos).
+- Motor HEAD pre-ticket: f4e5502 (WOT-2026-010d cerrado/publicado).
+- Contrato 010f commiteado en repo_destino: 3fe6e9b + 745a840 (post Manager
+  CHANGES B1 -> APROBADO; opcion (a): migrar 17 guards debiles).
+- Bootstrap bus: STATE_CHANGED -> IN_PROGRESS para WOT-2026-010f.
 
 ## Fase 0 - Diagnostico (seams confirmados)
 
-- `bus/state_machine.py`: `TicketState` no tenia `PAUSED` antes de 010d.
-- `.agent/agent_controller.py`: `_handle_resume_human_gate` (linea ~4553)
-  como modelo de flag de recuperacion existente.
-- `bus/builder_locks.py`: referencia `TicketState.READY_TO_CLOSE` (linea 30) y
-  `TicketState.UNKNOWN` -> ambos miembros del enum son consumidos aguas abajo.
-- `motor_destination_link.json`: clave correcta para resolver destino es
-  `destination_root` (no `motor_root`), leccion de WOT-2026-010e.
+- 18 sitios de validacion de id en agent_controller.py: 1 guard fuerte
+  (1782, CONTRACT_GAP) + 17 debiles (`== "N/A"`). Verificado por grep:
+  `grep -c 'plan_id == "N/A"'`=9, `grep -c 'ticket_id == "N/A"'`=8.
+- get_plan_id (state_validation.py:62) devuelve "N/A" si no hay ID.
+- Seed neutro del motor usa ID=none (is_seed_neutral_state).
+- Tag checkpoint/review-none -> objeto 8352c64 -> commit eda918f (ruta viva).
 
-## Fase 1 - Implementacion (Builder, commit eda918f)
+## Fase 1 - Tests de barrera PRIMERO (TDD Red)
 
-- `.agent/agent_controller.py`: +433 lineas. Flags `--pause-ticket`,
-  `--resume-ticket`, `--abort-paused-ticket`; escritura/lectura del artefacto
-  `paused/<ticket>.json`; emision `TICKET_PAUSED`/`TICKET_RESUMED`.
-- `bus/state_machine.py`: estado `PAUSED` anadido al enum.
-- `.agent/state_validation.py`: `PAUSED` en `VALID_LOG_STATES`.
-- `tests/unit/test_pause_ticket.py` (131 lineas, nuevo).
-- `tests/unit/test_resume_ticket.py` (145 lineas, nuevo).
-- `tests/unit/test_state_projection_probe.py` (104 lineas, ampliado).
-- `tests/test_pre_handoff_guard.py`: bloqueo por pausa activa ajena/corrupta.
+- Creado tests/unit/test_pre_handoff_checkpoint.py (21 tests).
+- Ejecucion sin fix: 4 failed (test_invalid_plan_ids_no_inline_literal +
+  test_pre_handoff_blocks_invalid_plan_id_no_tag[none/None/unknown]).
+  Demostrado: con plan_id="none" el guard debil deja pasar y pre-handoff
+  retorna success creando checkpoint/review-none. RED confirmado.
 
-## Fase 1b - Correccion de regresion (Builder asistido, commit f4e5502)
+## Fase 2 - Implementacion (TDD Green)
 
-**Problema detectado al reanudar:** el working tree del Builder tenia cambios
-sin commitear que ELIMINABAN `READY_TO_CLOSE` y `UNKNOWN` del enum
-`TicketState`, provocando `AttributeError: type object 'TicketState' has no
-attribute 'READY_TO_CLOSE'` en `bus/builder_locks.py:30` durante la coleccion
-de tests. La causa raiz fue un refactor incompleto del enum en el working tree,
-no en el commit eda918f (que ya contenia ambos miembros).
+- state_validation.py: anadida constante INVALID_PLAN_IDS = frozenset({"",
+  "n/a", "none", "unknown"}) + helper is_invalid_plan_id(plan_id) con
+  normalizacion strip().lower() y manejo de None. Docstring 3-fases.
+- agent_controller.py: alias modulo `is_invalid_plan_id = state_validation.
+  is_invalid_plan_id`. Migrados los 18 sitios:
+  - 9 `plan_id == "N/A"` -> is_invalid_plan_id(plan_id)
+  - 8 `ticket_id == "N/A"` -> is_invalid_plan_id(ticket_id)
+  - 1 fuerte `ticket_id.lower() in (...)` -> is_invalid_plan_id(ticket_id)
+  grep final del patron debil == 0.
+- Ejecucion con fix: 20/20 (luego 21/21 con el test de interaccion BOM).
 
-**Correccion aplicada (f4e5502, 2 archivos):**
-- `bus/state_machine.py`: restaurados `READY_TO_CLOSE` y `UNKNOWN` en el working
-  tree; anadida constante `NON_TERMINAL_STATES` (IN_PROGRESS, READY_FOR_REVIEW,
-  BLOCKED, HUMAN_GATE, READY_TO_CLOSE, CONTRACT_BLOCKED, PAUSED).
-- `bus/supervisor.py`: `NON_TERMINAL_STATES |= {PAUSED}` para que la constante
-  local del supervisor reconozca el nuevo estado no-terminal.
-- (`.agent/state_validation.py`: eliminada la constante muerta `_PAUSED_STATES`
-  y revertido un cambio erroneo de path en `pre_handoff_guard.py`
-  `.agent/collaboration/approvals` -> `.agent/runtime/approvals`. Estos quedaron
-  absorbidos en el reformat de pre-commit; el diff neto vs eda918f en
-  state_validation/pre_handoff_guard es nulo.)
+## Fase 2b - Decision de diseno: BOM autocorrect (autorizada por el propietario)
 
-## Fase 2 - Tests focales (verificado)
+- Problema detectado al correr la suite: 3 tests de
+  test_opencode_config_stability.py fallaban. El BOM-autocorrect de
+  .opencode/opencode.json corria ANTES bajo el seed neutro (plan_id="none");
+  el guard nuevo lo bloqueaba.
+- Decision (aprobada): el BOM-autocorrect es higiene de un archivo del motor,
+  independiente del ticket. Se MOVIO el bloque (WT-2026-248a) a ANTES del guard
+  de plan_id en _handle_pre_handoff, usando _MOTOR_ROOT.resolve() para el
+  git show. Resto de pre-handoff intacto.
+- Barrera nueva: test_bom_hygiene_runs_even_with_invalid_plan_id verifica que
+  con plan_id="none" + BOM drift: el BOM se limpia Y el ticket sigue bloqueado
+  (rc != 0, sin tag).
 
-```
-python -m pytest tests/unit/test_pause_ticket.py tests/unit/test_resume_ticket.py \
-  tests/unit/test_state_projection_probe.py tests/test_pre_handoff_guard.py -q
--> 79 passed, 1 skipped
-```
+## Fase 2c - Tests colaterales actualizados
 
-El test de proyeccion de pausa skippeado
-(`test_paused_state_recognized_in_state_validation`) depende de un fixture de
-validacion no presente en este entorno; el resto de la familia PAUSE
-(`test_paused_state_not_terminal_in_state_machine`,
-`test_state_md_projection_during_pause`, `test_turn_md_builder_holds_pause`)
-pasa.
+- test_get_closeout_skip.py (8 tests): dependian de que el seed "none" llegara
+  a la logica del bus. _invoke_handler ahora inyecta un plan_id valido por
+  defecto (su intencion es testear la derivacion de estado del bus, no el
+  guard). test_skip_false_no_active_plan parametrizado para cubrir
+  none/None/unknown/N/A/"" como reason=no_active_plan (refuerza la barrera).
+
+## Fase 3 - Limpieza del tag
+
+- Verificado: 0 referencias operativas a "review-none" en events.jsonl de motor
+  y destino (las menciones son documentales: artefactos del propio 010f).
+- `git tag -d checkpoint/review-none` (era 8352c64). 66 tags review-* validos
+  intactos.
 
 ## Quality gates (verificado)
 
-- `ruff check bus/state_machine.py .agent/state_validation.py bus/supervisor.py scripts/pre_handoff_guard.py`
-  -> All checks passed!
-- `python scripts/check_encoding_guard.py bus/state_machine.py .agent/state_validation.py bus/supervisor.py scripts/pre_handoff_guard.py`
-  -> exit 0 (UTF-8 limpio, sin mojibake/BOM).
-- Suite canonica `python scripts/run_pytest_safe.py -- -m "not integration and not slow"`
-  -> 2871 passed, 20 skipped, 6 deselected, exit_code=0, status=finished,
-  tested_commit_sha=f4e5502 (== HEAD). last-run.json fresh-green.
-- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-  -> 0 errors / 0 warnings (tras emitir bus de 010d).
+- ruff check (4 archivos): All checks passed.
+- ruff format: 3 files left unchanged (aplicado).
+- check_encoding_guard (4 archivos): exit 0.
+- Tests focales: tests/unit/test_pre_handoff_checkpoint.py 21 passed;
+  test_get_closeout_skip.py 20 passed; test_opencode_config_stability.py 6 passed.
+- Suite canonica `run_pytest_safe -- -m "not integration and not slow"`:
+  2896 passed, 20 skipped, 6 deselected. last-run.json exit_code=0,
+  status=finished.
+- validate --json --project-root <repo_destino>: 0 errors / 0 warnings.
 
-### Nota sobre la suite completa (sin filtro de markers)
+## Entrega
 
-Con `run_pytest_safe` por defecto (`-m "not integration"`) el test
-`tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project`
-falla por NO-DETERMINISMO: asercion `scan_project()==scan_project()` sobre el
-arbol vivo, que cambia entre ambas llamadas (p.ej. `last-run.json` se escribe
-durante el propio test). Ejecutado aislado PASA (1 passed en 112s). Es un
-defecto pre-existente del test (flaky por estado compartido), NO una regresion
-de 010d: verificado que su contenido es independiente de los archivos tocados
-por este ticket. El test esta marcado `@pytest.mark.slow`; por eso el gate de
-cierre se ejecuta con `-m "not integration and not slow"`, que da 0 failed.
-
-Los 3 fallos de `tests/test_controller_integration.py` (test_approved_pending,
-test_completed_returns, test_validate_returns_empty_arrays) tambien son
-pre-existentes: verificado con `git stash` que fallan sin los cambios de 010d
-(estan marcados `integration`, fuera de la allowlist por defecto del runner).
-
-## Handoff canonico
-
-- `--pre-handoff --force` -> M3 creado: checkpoint/review-WOT-2026-010d,
-  `{"status":"success","plan_id":"WOT-2026-010d"}`.
-- `--mark-ready --scope-override "..."` ->
-  `[OK] Pre-handoff guard passed; Motor scope: 8 files within FLT;
-  Ticket WOT-2026-010d marked as ready for review.`
-- Bus: BUILDER_EXIT (seq 1110-1111) + STATE_CHANGED (seq 1112-1113) para
-  WOT-2026-010d. Estado derivado: READY_FOR_REVIEW.
-
-## Notas de packaging
-
-- Artefactos de contrato del destino commiteados en a85ef60
-  (STRATEGY/AUDIT/decisions/plan_graph/repo_charter/ticket_contracts/work_plan).
-- `.vscode/` anadido a `.gitignore` del destino (0f5418a) para limpiar el dirty
-  tree que bloqueaba el pre-handoff guard. Ver review CHANGES: superficie no
-  declarada en el FLT de 010d; resuelto declarandola en el contrato (work_plan
-  Files Likely Touched + nota de scope), no como follow-up.
+- Commit motor: ec4526b (agent_controller.py, state_validation.py,
+  test_pre_handoff_checkpoint.py [nuevo], test_get_closeout_skip.py).
+- pre-commit hooks: todos en verde (ruff, encoding, claude-settings, etc.).
 
 
-Manager approved canonical closeout for WOT-2026-010d
+Scope override: delivery in repo_motor commit ec4526b WOT-2026-010f. Affected files: tests/test_get_closeout_skip.py

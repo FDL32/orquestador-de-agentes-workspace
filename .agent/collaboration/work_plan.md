@@ -135,8 +135,15 @@ usarla en 1 de 18 sitios dejaria el codigo en estado peor (inconsistente).
 - `.agent/agent_controller.py`
 - `.agent/state_validation.py`
 - `tests/unit/test_pre_handoff_checkpoint.py`
+- `tests/test_get_closeout_skip.py`
 
 Notas (no son parte del FLT parseable):
+- `tests/test_get_closeout_skip.py`: test colateral. _handle_get_closeout_skip
+  (linea ~5756) es uno de los 17 guards migrados; sus tests dependian de que el
+  seed neutro "none" llegara a la logica del bus. Se actualizan para inyectar un
+  plan_id valido (su intencion es testear la derivacion del bus, no el guard) y
+  se parametriza el caso de id invalido. Tocar este test es consecuencia directa
+  del fix, no scope creep.
 - `.agent/agent_controller.py`: migrar los 17 guards debiles
   `(plan_id|ticket_id|current_plan_id) == "N/A"` a `is_invalid_plan_id()`
   (localizar por grep, NO por numero de linea; son 17 + el fuerte de 1780). No
