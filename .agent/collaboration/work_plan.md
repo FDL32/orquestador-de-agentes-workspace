@@ -55,7 +55,7 @@ Registrar en `execution_log.md`:
 
 ### repo_motor
 - `scripts/pre_handoff_guard.py`
-- `scripts/scope_gate.py`
+- `.agent/scope_gate.py`
 - `scripts/check_deliverables_exist.py`
 - `scripts/encoding_post_write_hook.py`
 - `tests/test_pre_handoff_guard.py`
