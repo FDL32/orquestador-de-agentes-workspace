@@ -78,7 +78,7 @@
 | Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
 | Baja | WOT-2026-010o | Tests deterministas para evidence-gate real (manager_review_bridge/review_bridge sin acoplar a repo_destino vivo) | motor/test-determinism | completed | WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- verificado: motor 591bec5; closeout canonico b087ef5; suite --level all 2910 passed, level=all/default_discovery, validate 0/0. -->
 | Baja | WOT-2026-010p | Medir varianza de run_pytest_safe --level all y aislar outliers inestables | motor/test-performance | pending | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- Origen: durante 010o la suite canonica --level all paso de ~28min (010k) a 42m47s sin cambios productivos ni carga humana aparente. Objetivo: medir con --durations=50 en corridas repetidas, comparar top outliers y clasificar si la varianza es entorno/I-O, tests inestables o nuevo hotspot. No cambiar politica de runner ni optimizar en el mismo ticket. -->
-| Alta | WOT-2026-010q | Pre-handoff: exigir suite canonica real en last-run.json (level=all + default_discovery) | motor/quality-gates | pending | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- Origen: review de 010o detecto que pre_handoff_guard aceptaba fresh-green por status/exit_code/sha sin validar level ni args_mode. Riesgo: una corrida focal puede desbloquear --mark-ready como si fuera canonica. Objetivo: exigir level=all y args_mode=default_discovery, con tests barrera para level=unit y level=all+explicit_args. Precede a 010l. -->
+| Alta | WOT-2026-010q | Pre-handoff: exigir suite canonica real en last-run.json (level=all + default_discovery) | motor/quality-gates | completed | WOT-2026-010o | session-2026-06-17-suite-performance |  <!-- verificado: motor 849e7d5; guard exige level=all + args_mode=default_discovery; tests barrera 41 passed; suite --level all 2913 passed; validate 0/0; cierre canonico 2026-06-17. -->
 | Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i, WOT-2026-010q | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. Solo habilitado para iteracion Builder; 010q debe impedir handoff con evidencia focal. -->
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
 | Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- Bug follow-up de 010j. Origen: check_deliverables_exist.py valida Builder artefacts solo relativo a --project-root y no resuelve namespaces repo_motor/repo_destino del FLT; bloquea tickets analysis/documentation con entrega legitima en repo_motor. -->
@@ -1911,7 +1911,7 @@ preparados deliberadamente) en vez de resolver
 
 - **Prioridad:** Baja
 - **Scope:** motor/test-performance
-- **Estado:** completed
+- **Estado:** pending
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010o
@@ -1979,7 +1979,7 @@ progreso. Esta regla evita confundir tiempo real de pytest con espera del agente
 
 - **Prioridad:** Alta
 - **Scope:** motor/quality-gates
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010o

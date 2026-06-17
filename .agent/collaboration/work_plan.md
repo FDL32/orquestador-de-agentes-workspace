@@ -1,118 +1,127 @@
-# Work Plan: WOT-2026-010q
+# Work Plan: WOT-2026-010p
 
-> Origen: la review de `WOT-2026-010o` detecto que el pre-handoff podia aceptar
-> un `last-run.json` fresco y verde de una corrida focal como si fuese evidencia
-> de suite canonica completa.
+> Origen: durante `WOT-2026-010o` se confundio tiempo real de pytest con espera
+> operativa del agente en modo background. El objetivo es medir y documentar,
+> no alterar tiempos de suite ni cambiar gates.
 
 ## Metadata
 
-- **ID:** WOT-2026-010q
-- **Contract ID:** T-010Q-001
+- **ID:** WOT-2026-010p
+- **Contract ID:** T-010P-001
 - **Estado:** APPROVED
-- **deliverable_type:** code
+- **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010o (cerrado)
+- **Depends on:** WOT-2026-010o, WOT-2026-010q (cerrados)
 
 ## Objetivo
 
-Endurecer el gate de pre-handoff para que "fresh green" signifique suite
-canonica real. El handoff debe exigir que `last-run.json` corresponda a
-`python scripts/run_pytest_safe.py --level all` sin argumentos explicitos de
-tests, ademas de estar terminado, verde y apuntar al `HEAD` actual.
+Ejecutar exactamente una corrida de
+`python scripts/run_pytest_safe.py --level all -- --durations=50` y registrar:
+comando, wall-clock total en minutos y segundos, `exit_code`,
+`tested_commit_sha`, `level`, `args_mode` y top durations. Si esa primera
+corrida termina en menos de 10 minutos wall-clock, ejecutar una segunda corrida
+del mismo comando y registrar el delta absoluto y porcentual entre ambas; si
+termina en 10 minutos o mas, registrar el STOP literal
+`segunda_corrida_omitida_por_coste`. Escribir el resultado en
+`docs/test_performance/test_performance_variance_WOT-2026-010p.md` y anadir a
+`INTERACTION_MODES.md` esta regla literal: suites con duracion esperada menor
+de 10 minutos van en foreground; background solo se usa con progreso
+verificable. El ticket no cambia codigo de runner, gates, cache, xdist ni
+selector focal.
 
 ## Hechos verificados
 
-- `010o` cerro con evidencia correcta: `last-run.json` tenia `level="all"`,
-  `args_mode="default_discovery"`, `exit_code=0` y `tested_commit_sha==HEAD`.
-- Antes de ese cierre, una corrida focal reciente podia cumplir
-  `status/exit_code/sha` y aun asi no representar suite canonica.
-- `010l` queda bloqueado por este ticket: el selector focal solo es seguro para
-  iteracion Builder si el handoff rechaza evidencia focal.
+- `010o` produjo una observacion falsa de `~43min` por espera/polling de modo
+  background, mientras la corrida directa real fue de minutos.
+- `010q` ya blindo el handoff para exigir `level=all` y
+  `args_mode=default_discovery`.
+- El siguiente cambio de politica (`010l`) debe esperar a un reporte que
+  incluya una categoria literal final entre: `entorno/I-O`,
+  `test inestable`, `nuevo hotspot verificable`, `no concluyente`, mas el
+  wall-clock observado y el delta entre corridas cuando exista segunda corrida.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar en codigo antes de editar:
+Confirmar antes de escribir el reporte:
 
-- ruta exacta del guard que lee `.agent/runtime/pytest-safe/last-run.json`
-- campos actuales que escribe `scripts/run_pytest_safe.py`
-- comportamiento actual ante `level="unit"` con `exit_code=0` y SHA fresca
-- comportamiento actual ante `level="all"` con `args_mode="explicit_args"`
+- ubicacion y formato de `docs/test_performance/`
+- evidencia disponible de `010j`, `010k`, `010o` y `010q`
+- comando exacto para capturar `--durations=50` mediante `run_pytest_safe`
+- superficie canonica donde documentar regla foreground/background
 
 Registrar en `execution_log.md`:
 
-- funcion o modulo exacto que implementa `_check_canonical_suite_fresh_green`
-- fixture/test existente que conviene extender
-- resultado esperado de los dos casos barrera
+- si se ejecutan una o dos corridas
+- tiempo wall-clock, `exit_code`, `tested_commit_sha`, `level`, `args_mode`
+- decision binaria sobre segunda corrida:
+  ejecutar segunda corrida solo si la primera termina en menos de 10 minutos
+  wall-clock; si tarda 10 minutos o mas, registrar STOP con motivo
+  `segunda_corrida_omitida_por_coste`
 
 ## Files Likely Touched
 
 ### repo_motor
-- `scripts/pre_handoff_guard.py` o el modulo real que implementa
-  `_check_canonical_suite_fresh_green`
-- `tests/test_pre_handoff_guard.py`
-- `AGENTS.md` o `QUICKSTART.md` solo si hace falta documentar la semantica
-  estricta de "suite canonica"
+- `docs/test_performance/test_performance_variance_WOT-2026-010p.md`
+- `INTERACTION_MODES.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010q.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010q.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010p.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010p.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 
 ## Read/inspect only
 
 - `scripts/run_pytest_safe.py`
-- `.agent/agent_controller.py`
-- `prompts/launch_builder.md`
+- `pytest.ini`
+- `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
 - `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+- `.agent/runtime/pytest-safe/last-run.json`
 
 ## Manager-only
 
 - `validate --json --project-root <repo_destino>` final en 0/0
-- verificar que el fix no cambia `run_pytest_safe.py` ni la politica del runner
+- revisar que el reporte no propone cambios de politica sin ticket nuevo
 
 ## Decision Arquitectonica
 
-- El selector focal puede existir para iteracion, pero no puede satisfacer el
-  handoff canonico.
-- El esquema de `last-run.json` ya contiene la informacion necesaria; `010q`
-  debe consumir `level` y `args_mode`, no cambiar el schema.
-- El diagnostico del bloqueo debe ser self-service: indicar el campo invalido y
-  el comando de remediacion.
+- `010p` es analysis/documentation: no optimiza tests.
+- Foreground/background es disciplina operativa, no un nuevo flag.
+- Si las mediciones no son concluyentes, el resultado correcto es decir
+  `no concluyente` y abrir follow-up focal, no inventar una optimizacion.
 
 ## Criterios Binarios
 
-- [ ] Un `last-run.json` con `level="unit"`, `status="finished"`,
-      `exit_code=0` y `tested_commit_sha==HEAD` bloquea el handoff.
-- [ ] Un `last-run.json` con `level="all"` pero
-      `args_mode="explicit_args"` bloquea el handoff.
-- [ ] Un `last-run.json` con `level="all"`,
-      `args_mode="default_discovery"`, `status="finished"`, `exit_code=0` y
-      `tested_commit_sha==HEAD` permite el handoff si el resto de gates estan
-      satisfechos.
-- [ ] El diagnostico de bloqueo nombra una causa concreta como
-      `not_full_suite` o equivalente y remedia con
-      `python scripts/run_pytest_safe.py --level all` sin args explicitos.
-- [ ] No cambia `scripts/run_pytest_safe.py`, no cambia politica de runner y no
-      relaja ningun gate existente.
-- [ ] `ruff check`, tests focales de pre-handoff y
-      `validate --json --project-root <repo_destino>` terminan verdes.
+- [ ] Existe `docs/test_performance/test_performance_variance_WOT-2026-010p.md`.
+- [ ] El reporte registra al menos una corrida `run_pytest_safe --level all`
+      con `--durations=50`, o documenta STOP si no puede completarse.
+- [ ] Si hay dos corridas, compara top outliers; si hay una, registra de forma
+      literal si la segunda se omitio por `segunda_corrida_omitida_por_coste`
+      (primera corrida >=10 min) o por otro STOP concreto nombrado.
+- [ ] Cada corrida registrada incluye wall-clock, `exit_code`,
+      `tested_commit_sha`, `level` y `args_mode`.
+- [ ] Documenta la regla foreground/background en `INTERACTION_MODES.md`:
+      suites esperadas <10 min en foreground; background solo con polling o
+      progreso verificable.
+- [ ] Clasifica la conclusion como `entorno/I-O`, `test inestable`,
+      `nuevo hotspot verificable` o `no concluyente`.
+- [ ] No toca `scripts/run_pytest_safe.py`, `run_gates_dispatch.py`, cache,
+      xdist, sharding ni politica de cierre.
+- [ ] `validate --json --project-root <repo_destino>` termina 0/0.
 
 ## Non-goals
 
-- NO implementar selector focal.
-- NO agrupar gates ni cambiar flujo Manager.
-- NO optimizar tiempos de suite.
-- NO tocar cache, xdist o sharding.
-- NO cambiar el schema de `last-run.json`.
+- NO alterar tiempos de tests.
+- NO activar cache, xdist, sharding ni selector focal.
+- NO modificar `scripts/run_pytest_safe.py`.
+- NO bloquear retroactivamente `010o` o `010q`.
 
 ## Forbidden Surfaces
 
 - `scripts/run_pytest_safe.py`
+- `scripts/run_gates_dispatch.py`
 - cache pytest
 - xdist/sharding
 - politica Builder/Manager
-- `privada/`
-- `.env`
 - bus editado manualmente
