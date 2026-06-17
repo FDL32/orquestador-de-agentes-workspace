@@ -1,126 +1,148 @@
-# Work Plan: WOT-2026-010h
+# Work Plan: WOT-2026-010g
 
-> Origen: la regla "el `<PREFIX>` de ticket es per-project, no universal" esta
-> fijada en codigo (`bus/ticket_id.py`: `(?:WP|WT|[A-Z]{3})`) y parcialmente en
-> `session_bootstrap.md` (lineas 59,88), pero NO es explicita ni consistente en
-> los prompts de arranque/auditoria. Un agente en otro `repo_destino` podria
-> asumir `WOT-` erroneamente. Este ticket propaga la regla a esos prompts.
+> Origen: el cierre de sesion detecto artefactos con semantica legacy/deprecated
+> sin clasificar (`prompts/audit_plan.md` stub alias,
+> `skills/setup-agent-system/references/quickstart-checklist.md` legacy,
+> Goose/Claw deprecated en `AGENTS.md`, piezas Goose dentro de
+> `skills/refactor-manager/`). Antes de mover, archivar o eliminar nada, hay que
+> inventariar y clasificar.
 
 ## Metadata
 
-- **ID:** WOT-2026-010h
-- **Contract ID:** T-010H-001
-- **Estado:** COMPLETED
-- **deliverable_type:** documentation
-- **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010a (completed)
+- **ID:** WOT-2026-010g
+- **Contract ID:** T-010G-001
+- **Estado:** APPROVED
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_destino
+- **Depends on:** WOT-2026-010c (completed)
 
 ## Objetivo
 
-Propagar la regla de prefijo de ticket per-project a los prompts de arranque y
-auditoria del motor, de modo que ningun agente asuma `WOT-` como prefijo
-universal. `WOT-` debe describirse SOLO como el prefijo del motor/dogfooding; el
-prefijo real de cada `repo_destino` se lee de su propio contrato
-(`AGENTS.md`/`CLAUDE.md` autocargado) y se verifica via
-`agent_controller --validate`.
+Producir un inventario clasificado de `prompts/` y `skills/` del `repo_motor`
+ANTES de mover, archivar o eliminar cualquier pieza legacy. Esta fase es
+estrictamente de auditoria read-only: NO mueve, NO renombra y NO borra ningun
+archivo. Cualquier accion destructiva se difiere a un ticket de follow-up
+explicito.
+
+## Decision Arquitectonica
+
+Decisiones del Manager para este ticket:
+
+- **Esto es analysis, no mixed:** el deliverable unico es un reporte de
+  inventario. No se ajustan aliases ni docs en este ticket (eso seria mixed y
+  abriria scope destructivo prematuro).
+- **delivery_authority = repo_destino:** el reporte es un artefacto de auditoria
+  puntual de esta sesion (`destination-only` por su propia clasificacion), no
+  tooling portable. Sigue el precedente de `WOT-2026-008a`, cuyo analysis vivio
+  en `.agent/docs/` del `repo_destino`. Por tanto NO exige commit productivo en
+  `repo_motor` ni pytest/ruff: el cierre se basa en existencia del artefacto +
+  `validate` 0/0.
+- El motor se LEE (read-only) para inventariar; no se escribe en el.
 
 ## Hechos verificados (premise re-check read-only, 2026-06-17)
 
-- `bus/ticket_id.py` define el prefijo per-project en codigo:
-  `TICKET_ID_PATTERN = r"(?:WP|WT|[A-Z]{3})-\d{4}-[A-Za-z0-9]+"` (lineas 21,64,68).
-  La regla per-project YA es verdad en runtime; falta hacerla explicita en docs.
-- `prompts/session_bootstrap.md` lineas 59,88 ya describen parcialmente la regla
-  (motor `WOT-YYYY-NNNx` canonical/legacy `WP-`/`WT-`; destino `XXX-YYYY-NNN`
-  con `Ticket prefix: XXX` en `PROJECT.md`). Es la fuente a la que alinear.
-- Gap confirmado con evidencia (`grep -ciE "prefix|prefijo|per-project"`):
-  - `prompts/destination_bootstrap.md`: 1 mencion (parcial).
-  - `prompts/audit_complete_motor_destination.md`: **0 menciones** (gap).
-  - `prompts/audit_post_change_system_health.md`: **0 menciones** (gap).
-- `scripts/check_ticket_nomenclature.py` existe y es el gate de cierre que
-  clasifica generador/ejemplo-vivo vs historia.
+Las 4 premisas del origen siguen vigentes:
+- `prompts/audit_plan.md` existe como stub alias -> `audit_ticket_contract.md`
+  (renombrado en 010a). [candidato `alias-compat`]
+- `skills/setup-agent-system/references/quickstart-checklist.md` existe.
+  [candidato `legacy-retained` o `deprecated-removable`, decidir por consumidores]
+- `AGENTS.md` menciona Goose/Claw como deprecated (WT-2026-254a).
+  [historia/`legacy-retained`]
+- `skills/refactor-manager/` contiene `goose-skill.json` + `goose_integration.py`.
+  [candidatos `deprecated-removable`, pendiente de gate de consumidores]
+- Tamano del inventario: 20 prompts (`prompts/*.md`) + 31 skills
+  (`skills/*/`). Acotado y abordable en un solo reporte.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de editar:
+Confirmar antes de redactar:
 
-- la redaccion exacta de la regla per-project en `session_bootstrap.md`
-  (lineas 59,62,88) para no contradecirla;
-- el orden de fuente canonico: primario = `AGENTS.md`/`CLAUDE.md` autocargado del
-  destino; verificacion = `agent_controller --validate` (no fiarse de una linea
-  suelta de `PROJECT.md`);
-- que ninguno de los 4 prompts ya contradiga la regla antes de tocarlos;
-- que no se introduzcan ejemplos vivos nuevos con `WP-`/`WT-` (los romperia el
-  gate de nomenclatura).
+- la lista completa de `prompts/*.md` y `skills/*/` del `repo_motor`
+  (`ls prompts/*.md`, `ls -d skills/*/`);
+- el seam de busqueda de consumidores vivos: `rg <basename>` sobre `repo_motor`
+  (scripts, prompts, skills, tests, `.agent/`) y sobre `repo_destino` cuando
+  aplique, ANTES de proponer cualquier move/delete;
+- el precedente de artefacto analysis (`.agent/docs/` del destino, 008a).
 
-Registrar en `execution_log.md`: redaccion de referencia, gap por prompt y
-cualquier contradiccion preexistente detectada.
+Registrar en `execution_log.md`: lista inventariada, seam de consumidores usado
+y cualquier hallazgo que cambie el alcance.
+
+## Clasificacion requerida (taxonomia, una etiqueta por artefacto/familia)
+
+- `canonical`: fuente viva del motor portable.
+- `alias-compat`: stub o alias necesario para compatibilidad de nombres.
+- `legacy-retained`: historia o referencia conservada deliberadamente.
+- `deprecated-removable`: candidato a retirada tras demostrar CERO consumidores.
+- `destination-only`: pertenece a historia operativa del `repo_destino`, no al
+  motor portable.
+
+## Reglas de clasificacion
+
+- Si ayuda a instalar/operar cualquier destino -> `repo_motor` (canonical).
+- Si documenta una sesion/ticket concreto de este destino -> `repo_destino`
+  (`destination-only`).
+- Si es compatibilidad de nombres antiguos -> `alias-compat`, se conserva como
+  stub hasta que una gate confirme cero consumidores.
+- Si es historia fiel -> `legacy-retained`, NO se reescribe ni moderniza.
+- `deprecated-removable` SOLO si `rg` demuestra cero consumidores vivos; si hay
+  duda, degrada a `legacy-retained`, no a removable.
 
 ## Files Likely Touched
 
-### repo_motor
-- `prompts/session_bootstrap.md`
-- `prompts/destination_bootstrap.md`
-- `prompts/audit_complete_motor_destination.md`
-- `prompts/audit_post_change_system_health.md`
-
 ### repo_destino
+- `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md` (nuevo: el reporte)
 - `.agent/collaboration/work_plan.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 
-## Read/inspect only
+## Read/inspect only (repo_motor, NO escribir)
 
-- `bus/ticket_id.py`
+- `prompts/` (los 20 `*.md`)
+- `skills/` (las 31 carpetas)
 - `AGENTS.md`
-- `scripts/check_ticket_nomenclature.py`
-- `.agent/planning/ticket_contracts.md`
+- `scripts/discover_skills.py`, `scripts/check_skill_collisions.py`
+- cualquier consumidor encontrado via `rg`
 
 ## Manager-only
 
-- verificar que los 4 prompts no se contradicen entre si tras el cambio;
-- verificar que `WOT-` queda descrito como prefijo del motor/dogfooding, no
-  universal, en cada prompt tocado;
-- `check_ticket_nomenclature.py` + encoding guard + `validate --json` en 0/0.
-
-## Decision Arquitectonica
-
-- La regla per-project es fuente unica: los prompts la REFERENCIAN y alinean con
-  `session_bootstrap.md`; no se redefine en paralelo en cada prompt.
-- `WOT-` es ejemplo del motor, nunca plantilla universal. Cualquier ejemplo de ID
-  en estos prompts debe dejar claro que el prefijo se lee del repo activo.
-- Cambio minimo y documental: no se toca codigo, runtime, bus ni gates.
+- verificar que el inventario cubre los 20 prompts + 31 skills sin huecos;
+- verificar que cada `deprecated-removable` cita evidencia `rg` de cero
+  consumidores;
+- verificar que no se ejecuto ningun move/delete;
+- `validate --json --project-root <repo_destino>` final 0/0.
 
 ## Criterios Binarios
 
-- [ ] Cada uno de los 4 prompts dice explicitamente que el `<PREFIX>` se lee del
-      contrato del repo activo, con ORDEN DE FUENTE: primario =
-      `AGENTS.md`/`CLAUDE.md` autocargado del destino; cuando el sistema exige
-      `Ticket prefix: XXX`, verificar via `agent_controller --validate` (no
-      fiarse de una linea suelta de `PROJECT.md`).
-- [ ] `WOT-` se describe SOLO como prefijo del motor/dogfooding, no universal.
-- [ ] Los 4 prompts no se contradicen entre si.
-- [ ] No se generan ejemplos vivos nuevos con `WP-`/`WT-`.
-- [ ] `python scripts/check_ticket_nomenclature.py` pasa.
-- [ ] `python scripts/check_encoding_guard.py <md tocados>` exit 0.
-- [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-      termina 0 errors / 0 warnings.
+- [ ] Existe `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md` con un
+      inventario completo de `prompts/` y `skills/`: estado por archivo o familia
+      con una etiqueta de la taxonomia.
+- [ ] Cada candidato a move/delete cita evidencia `rg` de consumidores vivos
+      (o su ausencia) ANTES de proponerlo.
+- [ ] Lista explicita de candidatos `destination-only` (mover a `repo_destino`)
+      con justificacion.
+- [ ] Lista explicita de candidatos a archivar en `repo_motor` con nota de
+      rollback.
+- [ ] CERO cambios destructivos: ningun archivo movido/renombrado/borrado en este
+      ticket. Cualquier accion queda como follow-up con ticket propio.
+- [ ] No se migran referencias historicas `WP-`/`WT-` ni comentarios de historia
+      fiel.
+- [ ] `check_encoding_guard.py <reporte>` exit 0 y
+      `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO mezclar con `WOT-2026-010g` (010g = clasificacion/retirada de legacy;
-  010h = endurecer nomenclatura de prefijo).
-- NO tocar codigo, runtime, bus, gates ejecutables ni el regex de
-  `bus/ticket_id.py`.
-- NO reescribir historia de commits ni ejemplos legacy etiquetados.
-- NO tocar documentacion general (`QUICKSTART.md`, `INTERACTION_MODES.md`) en
-  esta ronda.
+- NO mover/eliminar/renombrar archivos en esta fase de inventario.
+- NO migrar referencias `WP-`/`WT-` ni reescribir historia fiel.
+- NO ajustar aliases ni docs (eso seria mixed; aqui es analysis puro).
+- NO mezclar con `WOT-2026-010e`, `WOT-2026-010d` ni `WOT-2026-008d`.
+- NO escribir nada en el `repo_motor`.
 
 ## Forbidden Surfaces
 
-- `bus/ticket_id.py` (codigo del regex; solo lectura)
+- cualquier move/delete/rename en `prompts/` o `skills/` del motor
+- escritura en el `repo_motor`
 - `privada/`
 - `.env`
 - `.agent/runtime/memory/`
 - bus editado manualmente
-- `QUICKSTART.md`, `INTERACTION_MODES.md`
-- codigo/tests/CLI ejecutable
+- referencias historicas `WP-`/`WT-` y comentarios de historia fiel
