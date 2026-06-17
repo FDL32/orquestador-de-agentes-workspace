@@ -85,6 +85,8 @@
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
+| Media | WOT-2026-010r | Adoptar taxonomia user-invoked/model-invoked en doctrina de skills | motor/skills-taxonomy | candidate | WOT-2026-008b, WOT-2026-010g | session-2026-06-17-mattpocock-v1 |  <!-- ORIGEN EXTERNO (candidate, sin abrir): mattpocock/skills v1.0.0 (SHA dcfc232, MIT), docs/invocation.md. Reemplaza la dicotomia Commands/Skills por user-invoked (disable-model-invocation: true, description humana, sin trigger-list) vs model-invoked (description con triggers para auto-invocacion). Encaja con: nuestro .claude/rules/03-skills-discovery.md (anclado a modelo Goose-era de 'triggers YAML max 3'); desbloquea 008d (migracion de naming). deliverable_type sugerido: analysis primero (mapear nuestras 31 skills a la taxonomia) -> mixed (ajustar frontmatter + regla). Adapted, NO ported: adoptamos la idea, no su bundle (su grafo de deps ask-matt->otras es Breaking). Inspired by: declarar en work_plan + fila CREDITS. NO mezclar con 010g (010g solo inventaria; 010r decide taxonomia). -->
+| Media | WOT-2026-010s | Portar vocabulario de diseno (deep module/seam/adapter) al review del Manager | motor/manager-review-rubric | candidate | WOT-2026-010r | session-2026-06-17-mattpocock-v1 |  <!-- ORIGEN EXTERNO (candidate, sin abrir): mattpocock/skills v1.0.0 (SHA dcfc232, MIT), skills/engineering/codebase-design (deep module, interface, seam, adapter, deletion test, 'the interface is the test surface'). Da al Manager lenguaje de review preciso que se solapa con anti-patrones vivos: zero-logic wrapper (CLAUDE.md), index/inline R-006, Test Util vs Basura. Tambien contrastar diagnosing-bugs (antes diagnose) vs nuestro skills/systematic-debugging (limite 3 intentos). deliverable_type sugerido: mixed (vocabulario en review-checklist.md/anti-patterns + nota de uso). Adapted, NO ported. Inspired by: declarar en work_plan + fila CREDITS. Depende de 010r para no duplicar la decision de taxonomia. -->
 
 ## Plan WOT-2026-007 - Contract Formation Pipeline v0
 
@@ -2054,3 +2056,23 @@ canonica completa desde `repo_motor`.
   antes de tocar codigo.
 - Si el fix requiere cambiar el esquema de `last-run.json`, detener y abrir un
   contrato mas amplio; `010q` debe consumir campos ya existentes.
+
+## Filas CREDITS candidatas (sin pegar aun)
+
+> Convencion `CREDITS.md`: una fila por WP que adopta una idea externa; el humano
+> decide cuando pegarla. Estas filas quedan PREPARADAS aqui y se mueven a
+> `CREDITS.md` (raiz del `repo_motor`) cuando se abra el ticket que adopta la idea.
+> Origen: release `mattpocock/skills v1.0.0` (2026-06-17, SHA `dcfc232`, MIT),
+> accedido via `gh`. Influencia previa: `mattpocock-skills@1.0.0`.
+
+Para WOT-2026-010r (cuando se adopte la taxonomia):
+
+```
+| WOT-2026-010r | [mattpocock/skills@dcfc232](https://github.com/mattpocock/skills/tree/dcfc2322f2f978113b1ec2dbbf50c00eda824519) | User-invoked vs model-invoked skill taxonomy (`disable-model-invocation` + description audience split), from `docs/invocation.md` | MIT | Adapted (concept only; our frontmatter/discovery model, no bundle/deps imported) |
+```
+
+Para WOT-2026-010s (cuando se porte el vocabulario de review):
+
+```
+| WOT-2026-010s | [mattpocock/skills@dcfc232](https://github.com/mattpocock/skills/tree/dcfc2322f2f978113b1ec2dbbf50c00eda824519) | Deep-module design vocabulary (module/interface/seam/adapter/depth, deletion test, "interface is the test surface"), from `skills/engineering/codebase-design` | MIT | Adapted (review-rubric vocabulary only, no code copied) |
+```
