@@ -72,7 +72,7 @@ Total directories: 31. Breakdown: 29 **skills** (tienen `SKILL.md`), 1 **support
 | 17 | `memory-consolidate` | SKILL.md | **canonical** | Memory consolidation |
 | 18 | `orchestrate-pipeline` | SKILL.md | **canonical** | Pipeline orchestration |
 | 19 | `project-finalize` | SKILL.md | **canonical** | Project finalization |
-| 20 | `refactor-manager` | SKILL.md, PROMPT_TEMPLATE.md, EXECUTION_PROMPT.md, goose-skill.json, goose_integration.py | **canonical** (skill core) + **deprecated-removable** (goose-skill.json) + **legacy-retained** (goose_integration.py) | Skill central de refactor. Contiene 2 artefactos Goose que requieren atencion (ver seccion 2c). |
+| 20 | `refactor-manager` | SKILL.md, PROMPT_TEMPLATE.md, EXECUTION_PROMPT.md, goose-skill.json, goose_integration.py | **canonical** (skill core) + **legacy-retained** (goose-skill.json, goose_integration.py) | Skill central de refactor. Contiene 2 artefactos Goose que requieren atencion (ver seccion 2c). |
 | 21 | `repo-compare` | SKILL.md | **canonical** | Repo comparison |
 | 22 | `scaffold-python-project` | SKILL.md | **canonical** | Python project scaffolding |
 | 23 | `secure-existing-project` | SKILL.md | **canonical** | Security audit |
