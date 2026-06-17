@@ -2059,8 +2059,8 @@ canonica completa desde `repo_motor`.
 
 ## Filas CREDITS candidatas (sin pegar aun)
 
-> Convencion `CREDITS.md`: una fila por WP que adopta una idea externa; el humano
-> decide cuando pegarla. Estas filas quedan PREPARADAS aqui y se mueven a
+> Convencion `CREDITS.md`: una fila por ticket que adopta una idea externa; el
+> humano decide cuando pegarla. Estas filas quedan PREPARADAS aqui y se mueven a
 > `CREDITS.md` (raiz del `repo_motor`) cuando se abra el ticket que adopta la idea.
 > Origen: release `mattpocock/skills v1.0.0` (2026-06-17, SHA `dcfc232`, MIT),
 > accedido via `gh`. Influencia previa: `mattpocock-skills@1.0.0`.
