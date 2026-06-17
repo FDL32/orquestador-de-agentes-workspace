@@ -93,6 +93,3 @@
 - Commit motor: ec4526b (agent_controller.py, state_validation.py,
   test_pre_handoff_checkpoint.py [nuevo], test_get_closeout_skip.py).
 - pre-commit hooks: todos en verde (ruff, encoding, claude-settings, etc.).
-
-
-Scope override: delivery in repo_motor commit ec4526b WOT-2026-010f. Affected files: tests/test_get_closeout_skip.py
