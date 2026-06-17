@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** READY_TO_START
+**Estado:** IN_PROGRESS
 - **ID:** WOT-2026-010o
 - **Contract ID:** T-010O-001
 - **deliverable_type:** code
@@ -23,6 +23,10 @@ El Builder debe confirmar antes de editar:
 - seam exacto entre los tests de review bridge y el `repo_destino` real
 - ruta minima para inyectar un repo controlado sin mock drift
 - por que el diff de `010k` quedo descartado como causa raiz
+
+## Estado actual
+
+- Current state: WOT-2026-010o IN_PROGRESS
 
 ## Gates esperados
 
