@@ -95,14 +95,12 @@ cambia el siguiente ticket."
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
 
-Notas (no forman parte del FLT parseable):
-- Los scripts y tests inspeccionados (`scripts/run_pytest_safe.py`,
-  `scripts/run_gates_dispatch.py`, `pytest.ini`, `pyproject.toml`, `tests/`,
-  `.agent/agent_controller.py`) son **read/inspect only**.
-- Si el Builder detecta que necesita tocar codigo del motor para poder medir,
-  debe emitir `CONTRACT_GAP`; eso queda fuera de `010j`.
-
 ## Read/inspect only
+
+Si el Builder detecta que necesita tocar codigo del motor para poder medir,
+debe emitir `CONTRACT_GAP`; eso queda fuera de `010j`. Los scripts y tests
+listados abajo son inspeccionados pero no forman parte del deliverable.
+
 
 - `scripts/run_pytest_safe.py`
 - `scripts/run_gates_dispatch.py`
