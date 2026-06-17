@@ -1,139 +1,126 @@
-# Work Plan: WOT-2026-010l
+# Work Plan: WOT-2026-010h
 
-> Origen: `run_pytest_safe.py` ya acepta subsets manuales, `010j` midio los
-> hotspots reales, `010i` endurecio el packet de review y `010q` cerro el gap
-> de handoff full-suite. Toca introducir iteracion focal rapida sin reabrir
-> falsos verdes.
+> Origen: la regla "el `<PREFIX>` de ticket es per-project, no universal" esta
+> fijada en codigo (`bus/ticket_id.py`: `(?:WP|WT|[A-Z]{3})`) y parcialmente en
+> `session_bootstrap.md` (lineas 59,88), pero NO es explicita ni consistente en
+> los prompts de arranque/auditoria. Un agente en otro `repo_destino` podria
+> asumir `WOT-` erroneamente. Este ticket propaga la regla a esos prompts.
 
 ## Metadata
 
-- **ID:** WOT-2026-010l
-- **Contract ID:** T-010L-001
+- **ID:** WOT-2026-010h
+- **Contract ID:** T-010H-001
 - **Estado:** APPROVED
-- **deliverable_type:** mixed
+- **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010j (completed-via-010n), WOT-2026-010i (completed), WOT-2026-010q (completed)
+- **Depends on:** WOT-2026-010a (completed)
 
 ## Objetivo
 
-Crear un selector focal por diff para `run_pytest_safe.py` que proponga un
-subset reproducible de tests para iteracion local del Builder y falle abierto a
-la suite canonica completa cuando no pueda demostrar cobertura segura. El cambio
-no debe alterar la politica de handoff: `010q` sigue exigiendo `level=all` +
-`args_mode=default_discovery` para `--mark-ready`.
+Propagar la regla de prefijo de ticket per-project a los prompts de arranque y
+auditoria del motor, de modo que ningun agente asuma `WOT-` como prefijo
+universal. `WOT-` debe describirse SOLO como el prefijo del motor/dogfooding; el
+prefijo real de cada `repo_destino` se lee de su propio contrato
+(`AGENTS.md`/`CLAUDE.md` autocargado) y se verifica via
+`agent_controller --validate`.
 
-## Hechos verificados
+## Hechos verificados (premise re-check read-only, 2026-06-17)
 
-- `scripts/run_pytest_safe.py` ya distingue `default_discovery` frente a
-  `explicit_args` y registra ambos en `last-run.json`.
-- `010q` ya bloquea handoff si la ultima corrida no fue `level=all` con
-  `args_mode=default_discovery`; `010l` no debe duplicar ni relajar esa barrera.
-- `010i` ya endurecio Forbidden Surfaces y commit-visible; el ticket puede
-  concentrarse en seleccion focal y fail-open.
-- `010j` ya produjo baseline durable y `010k` ya redujo hotspots reales; este
-  ticket es de ergonomia de iteracion, no de performance base.
+- `bus/ticket_id.py` define el prefijo per-project en codigo:
+  `TICKET_ID_PATTERN = r"(?:WP|WT|[A-Z]{3})-\d{4}-[A-Za-z0-9]+"` (lineas 21,64,68).
+  La regla per-project YA es verdad en runtime; falta hacerla explicita en docs.
+- `prompts/session_bootstrap.md` lineas 59,88 ya describen parcialmente la regla
+  (motor `WOT-YYYY-NNNx` canonical/legacy `WP-`/`WT-`; destino `XXX-YYYY-NNN`
+  con `Ticket prefix: XXX` en `PROJECT.md`). Es la fuente a la que alinear.
+- Gap confirmado con evidencia (`grep -ciE "prefix|prefijo|per-project"`):
+  - `prompts/destination_bootstrap.md`: 1 mencion (parcial).
+  - `prompts/audit_complete_motor_destination.md`: **0 menciones** (gap).
+  - `prompts/audit_post_change_system_health.md`: **0 menciones** (gap).
+- `scripts/check_ticket_nomenclature.py` existe y es el gate de cierre que
+  clasifica generador/ejemplo-vivo vs historia.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de editar codigo:
+Confirmar antes de editar:
 
-- donde vive hoy el parsing de args y el target por defecto en
-  `scripts/run_pytest_safe.py`;
-- que seam reutilizar para diff real (`scope_gate.get_changed_files()` o helper
-  equivalente) sin abrir un parser git paralelo;
-- que tests existentes cubren `args_mode`, fallback a suite canonica y runner
-  dispatch;
-- que archivos deben considerarse `troncales` para fail-open inmediato;
-- como dejar un reporte corto y durable del selector en
-  `docs/test_performance/test_selection_WOT-2026-010l.md`.
+- la redaccion exacta de la regla per-project en `session_bootstrap.md`
+  (lineas 59,62,88) para no contradecirla;
+- el orden de fuente canonico: primario = `AGENTS.md`/`CLAUDE.md` autocargado del
+  destino; verificacion = `agent_controller --validate` (no fiarse de una linea
+  suelta de `PROJECT.md`);
+- que ninguno de los 4 prompts ya contradiga la regla antes de tocarlos;
+- que no se introduzcan ejemplos vivos nuevos con `WP-`/`WT-` (los romperia el
+  gate de nomenclatura).
 
-Registrar en `execution_log.md`:
-
-- seams confirmados;
-- decision de mapeo archivo->tests o razon de helper nuevo;
-- cualquier desviacion de scope detectada antes de tocar codigo.
+Registrar en `execution_log.md`: redaccion de referencia, gap por prompt y
+cualquier contradiccion preexistente detectada.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `scripts/run_pytest_safe.py`
-- `scripts/test_selection.py`
-- `tests/unit/test_run_pytest_safe.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/unit/test_run_gates_dispatch.py`
-- `docs/test_performance/test_selection_WOT-2026-010l.md`
+- `prompts/session_bootstrap.md`
+- `prompts/destination_bootstrap.md`
+- `prompts/audit_complete_motor_destination.md`
+- `prompts/audit_post_change_system_health.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010l.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010l.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 
 ## Read/inspect only
 
-- `pytest.ini`
-- `pyproject.toml`
-- `.agent/agent_controller.py`
-- `scripts/run_gates_dispatch.py`
-- `.agent/scope_gate.py`
-- `scripts/pre_handoff_guard.py`
-- `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
-- `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+- `bus/ticket_id.py`
+- `AGENTS.md`
+- `scripts/check_ticket_nomenclature.py`
+- `.agent/planning/ticket_contracts.md`
 
 ## Manager-only
 
-- verificar que el diff no relaja `010q` ni el contrato de cierre canonico;
-- verificar que el selector replega a suite canonica cuando el mapeo es vacio,
-  inseguro o estructural;
-- `validate --json --project-root <repo_destino>` final en 0/0.
+- verificar que los 4 prompts no se contradicen entre si tras el cambio;
+- verificar que `WOT-` queda descrito como prefijo del motor/dogfooding, no
+  universal, en cada prompt tocado;
+- `check_ticket_nomenclature.py` + encoding guard + `validate --json` en 0/0.
 
 ## Decision Arquitectonica
 
-- El selector focal es ergonomia local de iteracion; no es evidencia valida de
-  handoff canonico por si mismo.
-- El diff real debe consumirse desde seams existentes del motor, no desde un
-  parser git paralelo improvisado.
-- Los casos inseguros fallan abierto a la suite canonica completa con razon
-  auditable.
-- Si el selector necesita heuristicas nuevas, deben ser explicables en codigo y
-  cubiertas por tests de barrera.
+- La regla per-project es fuente unica: los prompts la REFERENCIAN y alinean con
+  `session_bootstrap.md`; no se redefine en paralelo en cada prompt.
+- `WOT-` es ejemplo del motor, nunca plantilla universal. Cualquier ejemplo de ID
+  en estos prompts debe dejar claro que el prefijo se lee del repo activo.
+- Cambio minimo y documental: no se toca codigo, runtime, bus ni gates.
 
 ## Criterios Binarios
 
-- [ ] Consume diff real y produce una lista reproducible de tests candidatos.
-- [ ] Si `git diff` falla, si hay cambios en archivos troncales
-      (`pyproject.toml`, `pytest.ini`, `.agent/**`), si el mapeo seguro no
-      existe o si el set resuelto es vacio, falla abierto a la suite canonica
-      completa con razon auditable.
-- [ ] No cambia el contrato de cierre de `010c` ni debilita `010q`: el handoff
-      sigue exigiendo `level=all` y `args_mode=default_discovery`.
-- [ ] Incluye tests de barrera para diff fallido, archivo troncal,
-      resolucion vacia y mapeo parcial/inseguro.
-- [ ] Documenta como invocar el selector y como detectar cuando replega a suite
-      canonica.
-- [ ] No introduce cache pytest, xdist/sharding, servicios externos ni cambios
-      de CI.
-- [ ] Tests focales del area tocada pasan, `ruff check` aplica sobre Python
-      tocado, encoding guard pasa sobre artefactos Markdown/Python tocados y
-      `validate --json --project-root <repo_destino>` termina 0/0.
+- [ ] Cada uno de los 4 prompts dice explicitamente que el `<PREFIX>` se lee del
+      contrato del repo activo, con ORDEN DE FUENTE: primario =
+      `AGENTS.md`/`CLAUDE.md` autocargado del destino; cuando el sistema exige
+      `Ticket prefix: XXX`, verificar via `agent_controller --validate` (no
+      fiarse de una linea suelta de `PROJECT.md`).
+- [ ] `WOT-` se describe SOLO como prefijo del motor/dogfooding, no universal.
+- [ ] Los 4 prompts no se contradicen entre si.
+- [ ] No se generan ejemplos vivos nuevos con `WP-`/`WT-`.
+- [ ] `python scripts/check_ticket_nomenclature.py` pasa.
+- [ ] `python scripts/check_encoding_guard.py <md tocados>` exit 0.
+- [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
+      termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO cambiar el contrato de cierre de WOT-2026-010c.
-- NO relajar `010q` ni el schema de `last-run.json`.
-- NO activar cache de resultados, xdist, sharding ni SaaS externos.
-- NO convertir el selector focal en requisito de Manager o de closeout.
-- NO mezclar este ticket con optimizaciones de performance adicionales.
+- NO mezclar con `WOT-2026-010g` (010g = clasificacion/retirada de legacy;
+  010h = endurecer nomenclatura de prefijo).
+- NO tocar codigo, runtime, bus, gates ejecutables ni el regex de
+  `bus/ticket_id.py`.
+- NO reescribir historia de commits ni ejemplos legacy etiquetados.
+- NO tocar documentacion general (`QUICKSTART.md`, `INTERACTION_MODES.md`) en
+  esta ronda.
 
 ## Forbidden Surfaces
 
-- cache pytest
-- xdist/sharding
-- politica Manager/Builder de handoff
-- schema de `last-run.json`
-- pass-open silencioso
-- herramientas IA externas o SaaS
-- bus editado manualmente
+- `bus/ticket_id.py` (codigo del regex; solo lectura)
 - `privada/`
 - `.env`
+- `.agent/runtime/memory/`
+- bus editado manualmente
+- `QUICKSTART.md`, `INTERACTION_MODES.md`
+- codigo/tests/CLI ejecutable
