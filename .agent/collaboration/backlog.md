@@ -1677,13 +1677,14 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010j
-- **Origen:** Follow-up condicionado por la baseline de 010j. Sospecha inicial: muchos tests unitarios pagan coste de `subprocess.run(["git", ...])` y creacion repetida de repos temporales.
-- **Objetivo:** reducir tiempo de suite atacando hotspots verificados de git/subprocess sin relajar la suite canonica ni cambiar cuando se ejecuta. Si 010j no confirma git/subprocess como hotspot dominante, este ticket se re-scopea o se descarta antes de implementar.
+- **Origen:** Follow-up condicionado por la baseline de 010j. La medicion real refuto `git/subprocess` como hotspot dominante y senalo que el coste principal vive en tests de filesystem/scan y setup repetido caro.
+- **Objetivo:** reducir tiempo de suite atacando hotspots reales de filesystem/scan, setup repetido y fixtures pesadas sin relajar la suite canonica ni cambiar cuando se ejecuta.
 - **Criterios binarios:**
-  - Solo optimiza tests o fixtures identificados por 010j como hotspots reales.
-  - Mantiene tests de contrato que validan git real donde git sea el comportamiento bajo prueba.
-  - Cada fixture/mock de git nuevo o endurecido queda cubierto por al menos un smoke test de integracion real sin mockear que confirme que la API/CLI de Git usada por el sistema no ha derivado.
-  - Usa helpers/fixtures realistas o monkeypatch solo donde el test no pretende validar git real.
+  - Solo optimiza tests o fixtures identificados por 010j como hotspots reales de tiempo wall-clock.
+  - Prioriza tests de scan/filesystem real, setup repetido y recorridos de arbol grandes antes que `git/subprocess`.
+  - Mantiene tests de contrato que validan filesystem real, git real o bus real donde ese comportamiento sea la API observable bajo prueba.
+  - Cada fixture nueva o endurecida que sustituya setup caro queda cubierta por al menos un smoke test sin el shortcut, para evitar mock drift o falso-verde.
+  - Usa helpers/fixtures realistas o monkeypatch solo donde el test no pretende validar el comportamiento real del subsistema optimizado.
   - Demuestra mejora con medicion antes/despues bajo condiciones comparables del mismo entorno y suite focal verde.
   - No reduce cobertura semantica ni convierte tests utiles en mocks cosmeticos.
 - **Non-goals:**

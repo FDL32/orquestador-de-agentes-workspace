@@ -1,57 +1,62 @@
-# Work Plan: WOT-2026-010n
+# Work Plan: WOT-2026-010k
 
-> Origen: `WOT-2026-010j` quedo bloqueado canonicamente porque el gate de
-> deliverables no sabe resolver artefactos Builder que viven en `repo_motor`
-> cuando el contrato los declara via `delivery_authority` y FLT namespaced.
+> Origen: `WOT-2026-010j` midio la suite real y refuto la premisa vieja de
+> `git/subprocess` como hotspot dominante. El siguiente paso no es atacar a
+> ciegas un tiempo arbitrario, sino reducir el tiempo wall-clock medido (en
+> segundos) de hotspots reales de filesystem/scan y setup repetido.
 
 ## Metadata
 
-- **ID:** WOT-2026-010n
-- **Contract ID:** T-010N-001
+- **ID:** WOT-2026-010k
+- **Contract ID:** T-010K-001
 - **Estado:** READY_TO_START
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010j (CONTRACT_GAP confirmado)
+- **Depends on:** WOT-2026-010j, WOT-2026-010n (cerrados)
 
 ## Objetivo
 
-Corregir `scripts/check_deliverables_exist.py` para que resuelva deliverables
-Builder segun su namespace (`repo_motor`/`repo_destino`) y/o
-`delivery_authority`, sin relajar el gate a pass-open y sin obligar a duplicar
-artefactos entre repos.
+Reducir tiempo de suite atacando dos hotspots reales de filesystem/scan:
+`tests/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project`
+y `tests/test_no_legacy_topology_terms.py::test_repo_has_no_live_retired_topology_terms`,
+sin relajar la suite canonica, sin cambiar politica de gates y sin convertir
+tests utiles en atajos cosmeticos. La mejora debe quedar medida como delta de
+tiempo wall-clock de esos dos tests y de su suite focal directa, comparando
+before/after en el mismo entorno y con el mismo comando.
 
 ## Hechos verificados
 
-- `WOT-2026-010j` produjo un deliverable real en
-  `repo_motor/docs/test_performance/test_performance_baseline_WOT-2026-010j.md`.
-- El cierre de `010j` quedo bloqueado por el gate no-bypassable de existencia
-  de deliverables.
-- El workaround de duplicar el artefacto en `repo_destino` contradice la
-  Decision Arquitectonica del propio `010j`.
-- Existe follow-up contractual congelado en `T-010N-001`.
+- `010j` identifico que el coste dominante no era `git/subprocess`.
+- Los dos hotspots priorizados por este ticket son:
+  - `tests/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project`
+  - `tests/test_no_legacy_topology_terms.py::test_repo_has_no_live_retired_topology_terms`
+- `010n` ya resolvio el gate que bloqueaba tickets con artefactos en
+  `repo_motor`; no hay que mezclar ese problema aqui.
 
 ## Fase 0: Diagnostico antes del cambio
 
 Confirmar en codigo antes de editar:
 
-- como `scripts/check_deliverables_exist.py` interpreta hoy `Files Likely Touched`
-- si cada path declarado se resuelve relativo a `--project-root` sin distinguir namespace de FLT
-- como `scripts/scope_gate.py` resuelve namespaces FLT
-- que `Read/inspect only`, `Manager-only` y notas libres no deben contarse como
-  deliverables Builder
+- que esos dos tests aparecen en el reporte de `010j` con tiempos
+  `162.29s` y `61.99s`
+- que el cambio propuesto no elimina como API observable el scan real o la
+  lectura real que esos tests deben seguir validando
+- que existe una barrera roja->verde viable y una medicion before/after
+  comparable con el mismo comando, mismo entorno y mismo subset focal
 
 Registrar en `execution_log.md`:
-- seams confirmados
-- reproduccion del caso real de `010j` indicando comando, path del deliverable
-  en `repo_motor`, resultado del gate y codigo de salida
-- desvio de scope detectado, si existe, con path exacto y justificacion CEM
+- tiempo before de `test_scan_current_project`
+- tiempo before de `test_repo_has_no_live_retired_topology_terms`
+- razon de no tocar otros outliers en esta ronda
 
 ## Files Likely Touched
 
 ### repo_motor
-- `scripts/check_deliverables_exist.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/unit/test_check_deliverables_exist.py`
+- `tests/test_project_scanner.py`
+- `tests/test_no_legacy_topology_terms.py`
+- helper o fixture compartida nueva solo si elimina setup repetido de esos dos
+  tests concretos
+- `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
@@ -59,60 +64,60 @@ Registrar en `execution_log.md`:
 
 ## Read/inspect only
 
-- `scripts/scope_gate.py`
-- `.agent/agent_controller.py`
-- `scripts/pre_handoff_guard.py`
-- `.agent/planning/ticket_contracts.md`
-- `.agent/planning/contract_gaps/CG-WOT-2026-010j.md`
 - `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+- `scripts/run_pytest_safe.py`
+- `pytest.ini`
+- `.agent/agent_controller.py`
+- tests relacionados no modificados
 
 ## Manager-only
 
 - `validate --json --project-root <repo_destino>` final en 0/0
-- verificar que `010j` puede cerrar tras el fix sin duplicar el reporte en
-  `repo_destino`
+- verificar que el before y el after se midieron con el mismo comando focal,
+  mismo entorno local y mismo commit del codigo bajo prueba
 
 ## Decision Arquitectonica
 
-- El fix debe vivir en el gate de deliverables, no en `010j`, porque la causa
-  raiz es una resolucion incorrecta del namespace FLT/delivery_authority.
-- `scope_gate.py` ya distingue `repo_motor` y `repo_destino`; el gate de
-  existencia debe converger con esa misma semantica para evitar contratos
-  divergentes.
-- Duplicar artefactos entre repos para satisfacer el gate rompería la
-  arquitectura host-extends y falsearia el contrato de tickets `analysis` o
-  `documentation` con entrega legitima en `repo_motor`.
+- El ticket se re-scopea explicitamente: no persigue ya `git/subprocess` como
+  blanco principal, porque `010j` lo refuto con medicion real.
+- La optimizacion debe ser local y semanticamente conservadora: reducir el
+  tiempo (segundos wall-clock) de setup o scan donde el comportamiento
+  completo no sea la API observable del test.
+- Si para ganar tiempo hace falta cambiar politica de runner, cache, selector
+  focal o paralelizacion, eso ya no es `010k` y debe bloquearse.
 
 ## Criterios Binarios
 
-- [ ] Existe una barrera de regresion que reproduce el caso real de `010j` y
-      falla sin el fix.
-- [ ] Un deliverable Builder existente en `repo_motor` pasa el gate cuando el
-      FLT o el contrato lo resuelven a `repo_motor`.
-- [ ] Un deliverable Builder existente en `repo_destino` sigue pasando sin
-      regresion.
-- [ ] Una ruta namespaced invalida, ambigua o fuera de root falla cerrado con
-      diagnostico que menciona el path leido, el namespace esperado y el root
-      resuelto por el gate.
-- [ ] El gate ignora `Read/inspect only`, `Manager-only` y notas no parseables
-      como entregables Builder.
-- [ ] `WOT-2026-010j` puede cerrar canonicamente sin duplicar el reporte en
-      `repo_destino`.
+- [ ] Solo optimiza `test_scan_current_project`,
+      `test_repo_has_no_live_retired_topology_terms` o sus fixtures directas.
+- [ ] La optimizacion se centra en filesystem/scan o setup repetido de esos dos
+      tests; no reabre la hipotesis `git/subprocess` sin evidencia nueva.
+- [ ] Mantiene tests de contrato que validan comportamiento real del subsistema
+      optimizado cuando ese comportamiento es la API observable.
+- [ ] Cada helper/fixture nueva que sustituya setup caro queda cubierta por al
+      menos un smoke test sin el shortcut correspondiente.
+- [ ] Demuestra mejora con medicion before/after bajo condiciones comparables
+      del mismo entorno, indicando comando exacto, tiempo before, tiempo after
+      y delta wall-clock de esos dos tests o de su suite focal directa; el
+      before y el after usan el mismo comando focal, mismo entorno local y
+      mismo commit del codigo bajo prueba salvo el diff del ticket.
+- [ ] No reduce cobertura semantica ni introduce falso-verde.
 - [ ] `validate --json --project-root <repo_destino>` termina con 0 errors /
       0 warnings al handoff.
 
 ## Non-goals
 
-- NO duplicar artefactos entre `repo_motor` y `repo_destino` para satisfacer el gate.
-- NO convertir el gate en pass-open.
-- NO mezclar optimizaciones de runner ni cambios de politica fuera de
-  `scripts/check_deliverables_exist.py`, sus tests y la documentacion del gate
-  si el fix cambia la regla operativa visible.
+- NO tocar `run_gates_dispatch.py` ni politica Builder/Manager.
+- NO introducir cache de resultados pytest.
+- NO paralelizar la suite.
+- NO mezclar selector focal, sharding o cambios de CI.
 
 ## Forbidden Surfaces
 
+- `run_gates_dispatch.py`
+- politica Builder/Manager
+- cache de pytest
+- paralelizacion/xdist
 - `privada/`
 - `.env`
 - bus editado manualmente
-- el reporte productivo de `WOT-2026-010j`
-- cambios de politica de closeout fuera del gate de deliverables

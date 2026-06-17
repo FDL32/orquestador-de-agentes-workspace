@@ -176,3 +176,38 @@
 - **Builder clarification budget:** 0. El Builder no debe improvisar duplicacion de artefactos ni reinterpretar a mano el namespace correcto.
 - **STOP conditions:** parar si la unica forma de pasar el gate exige copiar el deliverable de `repo_motor` a `repo_destino`; parar si el fix rompe deliverables existentes del destino; parar si la reproduccion depende de editar el ticket `010j` mas alla de usar su evidencia real.
 - **Depende de:** WOT-2026-010j (IN_PROGRESS / CONTRACT_GAP confirmado).
+
+## T-010K-001 -- Hotspots reales de suite: filesystem/scan y setup repetido
+
+- **ticket_id:** WOT-2026-010k
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010K-001
+- **Plan-Link:** PLAN-010K-001
+- **Premise:** la baseline real de `WOT-2026-010j` refuto `git/subprocess` como hotspot dominante. El coste mayor de la suite vive en tests de filesystem/scan y en setup repetido caro; por tanto `010k` debe re-scopearse para optimizar esos hotspots reales sin cambiar la politica de gates.
+- **Premise Re-check (read-only):**
+  - releer `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`;
+  - confirmar los tests o familias lentas priorizadas por tiempo wall-clock real;
+  - verificar que los candidatos elegidos no son tests cuyo contrato observable exige precisamente scan completo o git/filesystem real;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** source_ticket=WOT-2026-010j; source_report_commit=c05dbfe; trigger_followup=WOT-2026-010k; generated_at=2026-06-17.
+- **Files Likely Touched:**
+  - Builder: tests o fixtures del `repo_motor` directamente implicados en los hotspots reales seleccionados
+  - Builder: helper o fixture compartida si elimina setup repetido de forma localizada
+  - Builder: `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+  - Read/inspect only: `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`, `scripts/run_pytest_safe.py`, `pytest.ini`, `.agent/agent_controller.py`, tests relacionados no modificados
+- **Forbidden Surfaces:** `run_gates_dispatch.py`; politica Builder/Manager; cache de pytest; paralelizacion/xdist; duplicar artefactos; `privada/`; `.env`; bus editado manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Solo optimiza tests o fixtures identificados por `010j` como hotspots reales de tiempo wall-clock.
+  - [ ] La optimizacion se centra en filesystem/scan o setup repetido; no se persigue `git/subprocess` salvo que el diff real lo justifique con medicion.
+  - [ ] Mantiene tests de contrato que validan comportamiento real del subsistema optimizado cuando ese comportamiento es la API observable.
+  - [ ] Cada helper/fixture nueva que sustituya setup caro queda cubierta por al menos un smoke test sin el shortcut correspondiente.
+  - [ ] Demuestra mejora con medicion antes/despues bajo condiciones comparables del mismo entorno.
+  - [ ] No reduce cobertura semantica ni introduce falso-verde.
+  - [ ] `validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings al cierre.
+- **Integracion cross-ticket:** usa `010j` como fuente de verdad; no debe contaminar `010l` ni `010m` con cambios de politica.
+- **CONTRACT_GAP behavior:** si los hotspots reales no admiten optimizacion local sin degradar el contrato observable, o si la mejora exige cambiar politica de gates/runner, emitir `CG-WOT-2026-010k.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0. El Builder no debe reabrir la hipotesis vieja de `git/subprocess` sin evidencia nueva.
+- **STOP conditions:** parar si la mejora exige cache, paralelizacion, sharding o selector focal; parar si el candidato optimizado deja de validar el comportamiento real que el test protege; parar si la medicion before/after no es comparable.
+- **Depende de:** WOT-2026-010j (COMPLETED), WOT-2026-010n (COMPLETED).
