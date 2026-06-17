@@ -252,3 +252,42 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar ante necesidad de relajar gates existentes, tocar bus manualmente, cambiar schema de `last-run.json`, o bloquear dirty tree fuera del handoff.
 - **Depende de:** WOT-2026-010e (COMPLETED), WOT-2026-010q (COMPLETED).
+
+
+## T-010L-001 -- Selector focal por diff con fail-open a suite canonica
+
+- **ticket_id:** WOT-2026-010l
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010L-001
+- **Plan-Link:** PLAN-010L-001
+- **Premise:** `scripts/run_pytest_safe.py` ya acepta argumentos focales manuales y `010q` ya impide cerrar handoff con una corrida no canonica. Falta un selector conservador por diff/FLT para iteracion rapida del Builder, con fail-open explicito a la suite canonica completa cuando la cobertura no pueda justificarse.
+- **Premise Re-check (read-only):**
+  - verificar en `scripts/run_pytest_safe.py` como se distinguen `default_discovery` y `explicit_args`;
+  - verificar como `scope_gate.get_changed_files()` y `pre_handoff_guard.get_changed_files()` resuelven el diff real;
+  - releer `docs/test_performance/test_performance_baseline_WOT-2026-010j.md` y `docs/test_performance/test_performance_followup_WOT-2026-010k.md`;
+  - confirmar que `010i` ya endurecio Forbidden Surfaces y commit-visible antes de introducir un atajo local;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** depends_on=WOT-2026-010j,WOT-2026-010i,WOT-2026-010q; source_report_010j=c05dbfe; hardening_010i=fdd55b6; handoff_gate_010q=849e7d5; generated_at=2026-06-17.
+- **Files Likely Touched:**
+  - Builder: `scripts/run_pytest_safe.py`
+  - Builder: `scripts/test_selection.py`
+  - Builder: `tests/unit/test_run_pytest_safe.py`
+  - Builder: `tests/test_pre_handoff_guard.py`
+  - Builder: `tests/unit/test_run_gates_dispatch.py`
+  - Builder: `docs/test_performance/test_selection_WOT-2026-010l.md`
+  - Read/inspect only: `pytest.ini`, `pyproject.toml`, `.agent/agent_controller.py`, `scripts/run_gates_dispatch.py`, `.agent/scope_gate.py`, `scripts/pre_handoff_guard.py`, `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`, `docs/test_performance/test_performance_followup_WOT-2026-010k.md`
+- **Forbidden Surfaces:** cache de pytest; xdist/sharding; politica Manager/Builder de handoff; cambios al schema de `last-run.json`; pass-open silencioso; herramientas IA externas o SaaS; `privada/`; `.env`; bus editado manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Consume diff real y produce una lista reproducible de tests candidatos para iteracion.
+  - [ ] Si `git diff` falla, si hay cambios en archivos troncales (`pyproject.toml`, `pytest.ini`, `.agent/**`), si el mapeo seguro no existe o si el conjunto resuelto es vacio, falla abierto a la suite canonica completa con razon auditable.
+  - [ ] No cambia el contrato de cierre de `010c` ni debilita `010q`: el handoff sigue exigiendo `level=all` y `args_mode=default_discovery`.
+  - [ ] Incluye tests de barrera para diff fallido, archivo troncal, resolucion vacia y mapeo parcial/inseguro.
+  - [ ] Documenta como invocar el selector y como detectar cuando replega a suite canonica.
+  - [ ] `ruff`, tests focales, encoding guard y `validate --json --project-root <repo_destino>` cierran en verde al handoff.
+- **Integracion cross-ticket:** usa `010j` como evidencia de coste, `010i` como barrera de packet/scope y `010q` como red de seguridad del handoff. No mover estas responsabilidades de sitio.
+- **CONTRACT_GAP behavior:** si el selector exige cambiar politica de closeout, ampliar el schema de `last-run.json` o relajar la suite canonica en handoff, emitir `CG-WOT-2026-010l.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el FLT requiere tocar un modulo distinto a los declarados; parar si el selector solo puede funcionar con pass-open silencioso; parar si la cobertura depende de heuristicas opacas no auditables; parar si el ticket deriva hacia cache, xdist o cambios de CI.
+- **Depende de:** WOT-2026-010j (COMPLETED-VIA-010n), WOT-2026-010i (COMPLETED), WOT-2026-010q (COMPLETED).
