@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-010n
 - **Contract ID:** T-010N-001
 - **deliverable_type:** code
@@ -103,6 +103,41 @@ Seams confirmados en codigo (lectura directa, no relato):
     descartan (no se agregan como existentes ni se asumen resueltas);
     rutas declaradas inexistentes en el namespace correcto siguen
     bloqueando con diagnostico que incluye el path resuelto.
+
+### Regresion detectada por la suite canonica y corregida (commit `453967d`)
+
+La primera version del fix delegaba integramente en
+`scope_gate.parse_flt_namespaced`, que clasifica subcabeceras por **match
+exacto** (`heading == "repo_destino"`). Al correr la suite canonica completa
+(`python scripts/run_pytest_safe.py`, no solo los tests focales) aparecio 1
+failed real:
+`tests/test_agent_controller.py::TestAgentControllerEvidence::test_documentation_ticket_detects_missing_deliverable_under_subheader`.
+
+Causa: el contrato ya vigente en esa suite usa subcabeceras **compuestas**
+(`### repo_destino - Builder`, `### repo_destino - Read/inspect only`,
+`### repo_destino - Manager only`), que `scope_gate` no reconoce (las
+clasifica como `unknown` y las descarta silenciosamente), perdiendo la
+deteccion de un deliverable faltante que el test exige.
+
+Fix aplicado: se sustituyo la delegacion completa por un scanner FLT local
+(`_flt_subheading_namespace` + `_extract_flt_paths`) que clasifica el
+namespace por **prefijo** (`repo_motor`/`repo_destino` al inicio del
+heading, insensible a sufijos), preservando el skip de
+`Read/inspect only`/`Manager only` independientemente del namespace. La
+resolucion de roots (`motor_root` via `runtime.motor_link`, `PROJECT_ROOT`
+para destino) no cambio.
+
+Re-verificado: `tests/test_pre_handoff_guard.py` +
+`tests/unit/test_check_deliverables_exist.py` +
+`tests/test_agent_controller.py` completos (153 tests) en verde, y
+`python scripts/run_pytest_safe.py` completo: `2902 passed, 20 skipped, 5
+deselected` (`last-run.json`: `exit_code: 0`, `status: finished`,
+`tested_commit_sha` == HEAD `453967d`).
+
+Leccion para memoria: nunca asumir que una funcion auxiliar "ya correcta en
+otro consumidor" generaliza al nuevo caso sin correr la suite completa --
+los tests focales (24 tests) pasaron en verde con el bug presente porque no
+cubrian el patron de subcabecera compuesta.
 
 ## Fase 2 - Tests
 
