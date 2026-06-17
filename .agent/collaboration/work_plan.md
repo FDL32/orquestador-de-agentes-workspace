@@ -67,7 +67,7 @@ Confirmar antes de redactar:
 Registrar en `execution_log.md`: lista inventariada, seam de consumidores usado
 y cualquier hallazgo que cambie el alcance.
 
-## Clasificacion requerida (taxonomia, una etiqueta por artefacto/familia)
+## Clasificacion requerida (taxonomia, una etiqueta por artefacto o grupo de archivos)
 
 - `canonical`: fuente viva del motor portable.
 - `alias-compat`: stub o alias necesario para compatibilidad de nombres.
@@ -114,8 +114,8 @@ y cualquier hallazgo que cambie el alcance.
 ## Criterios Binarios
 
 - [ ] Existe `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md` con un
-      inventario completo de `prompts/` y `skills/`: estado por archivo o familia
-      con una etiqueta de la taxonomia.
+      inventario completo de `prompts/` y `skills/`: estado por archivo o grupo
+      de archivos con una etiqueta de la taxonomia.
 - [ ] Cada candidato a move/delete cita evidencia `rg` de consumidores vivos
       (o su ausencia) ANTES de proponerlo.
 - [ ] Lista explicita de candidatos `destination-only` (mover a `repo_destino`)
