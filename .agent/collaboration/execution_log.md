@@ -191,5 +191,54 @@ resolvieron `True` (existen) contra sus roots correctos via
 - [x] Deliverable Builder en `repo_destino` sigue pasando sin regresion.
 - [x] Ruta namespaced invalida/missing falla cerrado con diagnostico (path + missing).
 - [x] `Read/inspect only` / `Manager-only` ignorados como deliverables Builder.
-- [ ] `WOT-2026-010j` puede cerrar canonicamente sin duplicar el reporte (pendiente: reintentar tras handoff de 010n).
+- [x] `WOT-2026-010j` puede cerrar canonicamente sin duplicar el reporte.
 - [x] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
+
+### Reintento del cierre real de `WOT-2026-010j` (criterio binario final)
+
+El `work_plan.md` real que bloqueo el cierre de `010j` ya no es el contrato
+activo (fue parqueado via `CONTRACT_GAP`, reemplazado por `010n`), por lo que
+no existe un `--mark-ready` literal que reinvocar sobre un ticket cerrado.
+La verificacion exigida por el criterio binario se hizo recuperando el
+contenido exacto que bloqueo el cierre y corriendo el gate corregido contra
+el:
+
+- Recuperado de `git show b264987:.agent/collaboration/work_plan.md`
+  (`repo_destino`, ultimo commit con el `work_plan.md` real de `010j` antes
+  del pivote a `010n`), con su FLT real:
+  - `### repo_motor` -> `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+  - `### repo_destino` -> `.agent/collaboration/work_plan.md`
+  - Nota narrativa "Read/inspect only" mencionando
+    `scripts/run_pytest_safe.py` entre backticks dentro de prosa.
+- Ejecutado `check_deliverables_exist.extract_paths_from_work_plan` (import
+  directo, igual que `agent_controller.py`) contra ese contenido real, con
+  `TEST_PROJECT_ROOT` = repo_destino real y `motor_root` resuelto al repo_motor
+  real:
+  - `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+    (repo_motor) -> `EXISTS`.
+  - `.agent/collaboration/work_plan.md` (repo_destino) -> `EXISTS`.
+  - Ningun falso `MISSING`.
+- Esta verificacion descubrio un **segundo bug real** (no el mismo de
+  010j/010n): la nota narrativa de "Read/inspect only" dentro de la seccion
+  FLT (no es una subcabecera `###`, es prosa con backticks) se leia como
+  deliverable Builder falso (`MISSING scripts/run_pytest_safe.py`), porque
+  `_resolve_flt_bullet_tokens` extraia *cada* substring entre backticks de la
+  linea en vez de tratar la linea completa como un solo token de path (a
+  diferencia de `scope_gate._normalize_flt_line` /
+  `_looks_like_path_token`, que correctamente rechazan cualquier linea que
+  contenga espacios tras de-quotear). Corregido en commit `c7249b8`, con test
+  de regresion rojo->verde:
+  `test_wot_010j_real_case_narrative_note_not_treated_as_deliverable`.
+- Sin el segundo fix, el reintento de `010j` habria vuelto a bloquear el
+  cierre por un `MISSING` espurio -- es decir, el criterio binario no estaba
+  realmente satisfecho con el primer fix (`453967d`) solo.
+- No se duplico el reporte en `repo_destino`: el deliverable sigue viviendo
+  unicamente en `repo_motor`, resuelto correctamente contra `motor_root`.
+
+**Conclusion:** con el gate en `c7249b8`, el caso real que bloqueaba el
+cierre de `010j` resuelve limpio (0 missing, 0 duplicacion). El `CONTRACT_GAP`
+de `010j` (`contract_gaps/CG-WOT-2026-010j.md`) queda resuelto en los
+hechos: su "Required Resolution" ("Corregir
+`scripts/check_deliverables_exist.py`... Reintentar el cierre canonico de
+`010j` sin duplicar el reporte") esta cumplida y verificada con evidencia
+directa, no con relato.
