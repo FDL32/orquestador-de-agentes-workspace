@@ -52,6 +52,7 @@ temp_output.txt
 .agent/runtime/pytest-safe/
 .agent/runtime/requeue_claims/
 .agent/runtime/events/
+.agent/runtime/events.jsonl
 .agent/runtime/memory/observations.jsonl
 .agent/runtime/memory/observations.jsonl.bak.*
 .agent/runtime/memory/CONSOLIDATION_REPORT.md
