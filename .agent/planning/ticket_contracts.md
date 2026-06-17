@@ -291,3 +291,51 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el FLT requiere tocar un modulo distinto a los declarados; parar si el selector solo puede funcionar con pass-open silencioso; parar si la cobertura depende de heuristicas opacas no auditables; parar si el ticket deriva hacia cache, xdist o cambios de CI.
 - **Depende de:** WOT-2026-010j (COMPLETED-VIA-010n), WOT-2026-010i (COMPLETED), WOT-2026-010q (COMPLETED).
+
+## T-010R-001 -- Evaluacion de mattpocock/skills v1.0.0 contra taxonomia local
+
+- **ticket_id:** WOT-2026-010r
+- **status:** frozen
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010R-001
+- **Plan-Link:** PLAN-010R-001
+- **Premise:** el release externo `mattpocock/skills@1.0.0` introduce una taxonomia `user-invoked/model-invoked` y vocabulario de diseno que pueden afectar la ruta de `WOT-2026-008c/008d`, pero adoptar esas ideas sin evaluar consumidores locales puede romper discovery, trigger_map o el flujo Builder/Manager.
+- **External Source Baseline:** GitHub release `mattpocock/skills@1.0.0`; published_at=2026-06-17 14:45 UTC; release_commit=00ff03c; primary_change_commit=47bde84 as listed by the release page; license to verify from repo before recommending adoption.
+- **Premise Re-check (read-only):**
+  - verificar el release externo por `gh` si hay auth o por fetch web si `gh` no esta autenticado;
+  - releer `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`;
+  - releer la cadena Plan 008 en `backlog.md`, en especial `008c`, `008d` y `008e`;
+  - contar consumidores reales del campo `triggers` y de discovery local con `rg`, sin promover conteos provisionales a hechos sin comando reproducible;
+  - confirmar que `disable-model-invocation` no existe aun en skills locales antes de proponer migracion.
+- **Context Baseline Evidence:** source_ticket=WOT-2026-010g completed; release_tag=mattpocock-skills@1.0.0; release_commit=00ff03c; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder: `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+  - Read/inspect only: `CREDITS.md`
+  - Read/inspect only: `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`
+  - Read/inspect only: `skills/`
+  - Read/inspect only: `prompts/`
+  - Read/inspect only: `scripts/discover_skills.py`
+  - Read/inspect only: `scripts/check_skill_collisions.py`
+  - Read/inspect only: `scripts/local_audit.py`
+  - Read/inspect only: `scripts/orquestador.py`
+  - Read/inspect only: `scripts/validate_agent_config.py`
+  - Read/inspect only: `bus/skill_resolver.py`
+  - Read/inspect only: `.agent/collaboration/backlog.md`
+  - Read/inspect only: `.agent/planning/ticket_contracts.md`
+- **Forbidden Surfaces:** modificar skills o prompts locales; modificar discovery, resolver, bus, Manager review, `CREDITS.md`, `pyproject.toml`, `uv.lock`; copiar archivos del bundle externo; instalar dependencias externas; editar bus manualmente; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md` en `repo_motor`.
+  - [ ] El reporte separa `VERIFICADO` e `INFERENCIA` para cada claim relevante del release y de consumidores locales.
+  - [ ] El reporte incluye tabla de piezas externas: `ask-matt`, `codebase-design`, `domain-modeling`, `diagnosing-bugs`, `writing-great-skills`, `resolving-merge-conflicts` y `docs/invocation.md`.
+  - [ ] El reporte mapea impacto sobre `WOT-2026-008c`, `WOT-2026-008d`, `WOT-2026-010s` y `WOT-2026-010t`, con decision `adoptar`, `adaptar`, `rechazar` o `diferir`.
+  - [ ] El reporte contiene inventario reproducible de consumidores locales de `triggers` y discovery, con comando exacto o limitacion explicita.
+  - [ ] El reporte declara que `010r` no adopta ni porta nada; `CREDITS.md` queda como read-only y cualquier fila se difiere a `010s` o `010t` si adoptan ideas.
+  - [ ] Si `gh` no esta autenticado, el reporte conserva el fallo literal y usa fetch web como fuente alternativa etiquetada.
+  - [ ] Encoding guard pasa sobre el reporte y los artefactos del packet tocados.
+  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+- **Integracion cross-ticket:** `010r` es gate de decision para `010s` y `010t`, y debe informar la ejecucion de `008c/008d` sin bloquearlos por prosa.
+- **CONTRACT_GAP behavior:** si el release no puede verificarse, si la licencia no puede confirmarse, si el impacto exige tocar codigo de discovery, o si el reporte no puede separar adopcion conceptual de portado de archivos, emitir `CG-WOT-2026-010r.md` y bloquear.
+- **Builder clarification budget:** 0. El Builder no decide adopcion productiva; solo produce evidencia y recomendacion.
+- **STOP conditions:** parar si aparece necesidad de modificar skills/prompts locales; parar si se propone instalar/copiar el bundle externo; parar si la unica fuente del release es un auto-reporte no verificable; parar si se necesita credencial GitHub para continuar y no hay fallback publico.
+- **Depende de:** WOT-2026-010g (COMPLETED), WOT-2026-008b (COMPLETED).

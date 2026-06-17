@@ -1,148 +1,118 @@
-# Work Plan: WOT-2026-010g
+# Work Plan: WOT-2026-010r
 
-> Origen: el cierre de sesion detecto artefactos con semantica legacy/deprecated
-> sin clasificar (`prompts/audit_plan.md` stub alias,
-> `skills/setup-agent-system/references/quickstart-checklist.md` legacy,
-> Goose/Claw deprecated en `AGENTS.md`, piezas Goose dentro de
-> `skills/refactor-manager/`). Antes de mover, archivar o eliminar nada, hay que
-> inventariar y clasificar.
+> Origen: `WOT-2026-010g` dejo inventario de prompts/skills y el release externo `mattpocock/skills@1.0.0` introduce taxonomia y vocabulario que pueden afectar `008c/008d`. Este ticket mide impacto y decide ruta; no adopta cambios productivos.
 
 ## Metadata
 
-- **ID:** WOT-2026-010g
-- **Contract ID:** T-010G-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-010r
+- **Contract ID:** T-010R-001
+- **Estado:** APPROVED
 - **deliverable_type:** analysis
-- **delivery_authority:** repo_destino
-- **Depends on:** WOT-2026-010c (completed)
+- **delivery_authority:** repo_motor
+- **Depends on:** WOT-2026-010g (completed), WOT-2026-008b (completed)
 
 ## Objetivo
 
-Producir un inventario clasificado de `prompts/` y `skills/` del `repo_motor`
-ANTES de mover, archivar o eliminar cualquier pieza legacy. Esta fase es
-estrictamente de auditoria read-only: NO mueve, NO renombra y NO borra ningun
-archivo. Cualquier accion destructiva se difiere a un ticket de follow-up
-explicito.
+Crear un reporte durable que evalua `mattpocock/skills@1.0.0` contra el inventario local de `010g` y la cadena Plan 008. El reporte debe decidir que ideas conviene adaptar, que riesgos tiene cada una y que tickets posteriores (`010s`, `010t`, `008c/008d`) quedan afectados.
 
-## Decision Arquitectonica
+## Hechos verificados de arranque
 
-Decisiones del Manager para este ticket:
-
-- **Esto es analysis, no mixed:** el deliverable unico es un reporte de
-  inventario. No se ajustan aliases ni docs en este ticket (eso seria mixed y
-  abriria scope destructivo prematuro).
-- **delivery_authority = repo_destino:** el reporte es un artefacto de auditoria
-  puntual de esta sesion (`destination-only` por su propia clasificacion), no
-  tooling portable. Sigue el precedente de `WOT-2026-008a`, cuyo analysis vivio
-  en `.agent/docs/` del `repo_destino`. Por tanto NO exige commit productivo en
-  `repo_motor` ni pytest/ruff: el cierre se basa en existencia del artefacto +
-  `validate` 0/0.
-- El motor se LEE (read-only) para inventariar; no se escribe en el.
-
-## Hechos verificados (premise re-check read-only, 2026-06-17)
-
-Las 4 premisas del origen siguen vigentes:
-- `prompts/audit_plan.md` existe como stub alias -> `audit_ticket_contract.md`
-  (renombrado en 010a). [candidato `alias-compat`]
-- `skills/setup-agent-system/references/quickstart-checklist.md` existe.
-  [candidato `legacy-retained` o `deprecated-removable`, decidir por consumidores]
-- `AGENTS.md` menciona Goose/Claw como deprecated (WT-2026-254a).
-  [historia/`legacy-retained`]
-- `skills/refactor-manager/` contiene `goose-skill.json` + `goose_integration.py`.
-  [candidatos `deprecated-removable`, pendiente de gate de consumidores]
-- Tamano del inventario: 20 prompts (`prompts/*.md`) + 31 skills
-  (`skills/*/`). Acotado y abordable en un solo reporte.
+- `010g` esta cerrado canonicamente: `STATE.md` = `WOT-2026-010g / COMPLETED` y bus contiene `SUPERVISOR_CLOSED`.
+- `validate --json --project-root <repo_destino>` previo al arranque dio 0 errors / 0 warnings.
+- GitHub release verificado por fetch web: tag `mattpocock-skills@1.0.0`, release commit `00ff03c`, primary change commit listado `47bde84`, publicado 2026-06-17 14:45 UTC.
+- `gh` puede no estar autenticado; si falla, conservar el error literal y usar fetch web como fuente alternativa.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de redactar:
+Confirmar antes de escribir el reporte:
 
-- la lista completa de `prompts/*.md` y `skills/*/` del `repo_motor`
-  (`ls prompts/*.md`, `ls -d skills/*/`);
-- el seam de busqueda de consumidores vivos: `rg <basename>` sobre `repo_motor`
-  (scripts, prompts, skills, tests, `.agent/`) y sobre `repo_destino` cuando
-  aplique, ANTES de proponer cualquier move/delete;
-- el precedente de artefacto analysis (`.agent/docs/` del destino, 008a).
+- existencia y contenido relevante de `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`;
+- estado real de `010r`, `010s`, `010t`, `008c`, `008d` y `008e` en backlog;
+- consumidores locales del campo `triggers` y del discovery de skills con comandos reproducibles;
+- si `disable-model-invocation` existe o no en el repo;
+- licencia del repo externo antes de recomendar adopcion en tickets posteriores.
 
-Registrar en `execution_log.md`: lista inventariada, seam de consumidores usado
-y cualquier hallazgo que cambie el alcance.
+Registrar en `execution_log.md`:
 
-## Clasificacion requerida (taxonomia, una etiqueta por artefacto o grupo de archivos)
-
-- `canonical`: fuente viva del motor portable.
-- `alias-compat`: stub o alias necesario para compatibilidad de nombres.
-- `legacy-retained`: historia o referencia conservada deliberadamente.
-- `deprecated-removable`: candidato a retirada tras demostrar CERO consumidores.
-- `destination-only`: pertenece a historia operativa del `repo_destino`, no al
-  motor portable.
-
-## Reglas de clasificacion
-
-- Si ayuda a instalar/operar cualquier destino -> `repo_motor` (canonical).
-- Si documenta una sesion/ticket concreto de este destino -> `repo_destino`
-  (`destination-only`).
-- Si es compatibilidad de nombres antiguos -> `alias-compat`, se conserva como
-  stub hasta que una gate confirme cero consumidores.
-- Si es historia fiel -> `legacy-retained`, NO se reescribe ni moderniza.
-- `deprecated-removable` SOLO si `rg` demuestra cero consumidores vivos; si hay
-  duda, degrada a `legacy-retained`, no a removable.
+- fuente usada para el release (`gh` o fetch web) y resultado literal;
+- seams/consumidores confirmados;
+- limitaciones de evidencia.
 
 ## Files Likely Touched
 
+### repo_motor
+- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+
 ### repo_destino
-- `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md` (nuevo: el reporte)
 - `.agent/collaboration/work_plan.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010r.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010r.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
+- `.agent/planning/ticket_contracts.md`
 
-## Read/inspect only (repo_motor, NO escribir)
+## Read/inspect only
 
-- `prompts/` (los 20 `*.md`)
-- `skills/` (las 31 carpetas)
-- `AGENTS.md`
-- `scripts/discover_skills.py`, `scripts/check_skill_collisions.py`
-- cualquier consumidor encontrado via `rg`
+- `CREDITS.md`
+- `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`
+- `skills/`
+- `prompts/`
+- `scripts/discover_skills.py`
+- `scripts/check_skill_collisions.py`
+- `scripts/local_audit.py`
+- `scripts/orquestador.py`
+- `scripts/validate_agent_config.py`
+- `bus/skill_resolver.py`
+- `.agent/collaboration/backlog.md`
+- `.agent/planning/ticket_contracts.md`
 
 ## Manager-only
 
-- verificar que el inventario cubre los 20 prompts + 31 skills sin huecos;
-- verificar que cada `deprecated-removable` cita evidencia `rg` de cero
-  consumidores;
-- verificar que no se ejecuto ningun move/delete;
-- `validate --json --project-root <repo_destino>` final 0/0.
+- verificar que el reporte separa evidencia e inferencia;
+- verificar que no se adopta ni se porta codigo externo;
+- verificar que `CREDITS.md` no se modifica en `010r` salvo CONTRACT_GAP aprobado;
+- revisar impacto declarado sobre `008c/008d`, `010s` y `010t`.
+
+## Decision Arquitectonica
+
+- `010r` es un ticket de decision y evidencia, no de migracion.
+- Las ideas externas se tratan como `Adapted`, no `Ported`, salvo ticket posterior con aprobacion explicita.
+- La taxonomia `user-invoked/model-invoked` no puede sustituir `triggers` por decreto: primero debe mapear consumidores locales y compatibilidad.
+- El vocabulario `codebase-design` puede alimentar review del Manager solo si se convierte en checklist concreta en ticket posterior.
 
 ## Criterios Binarios
 
-- [ ] Existe `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md` con un
-      inventario completo de `prompts/` y `skills/`: estado por archivo o grupo
-      de archivos con una etiqueta de la taxonomia.
-- [ ] Cada candidato a move/delete cita evidencia `rg` de consumidores vivos
-      (o su ausencia) ANTES de proponerlo.
-- [ ] Lista explicita de candidatos `destination-only` (mover a `repo_destino`)
-      con justificacion.
-- [ ] Lista explicita de candidatos a archivar en `repo_motor` con nota de
-      rollback.
-- [ ] CERO cambios destructivos: ningun archivo movido/renombrado/borrado en este
-      ticket. Cualquier accion queda como follow-up con ticket propio.
-- [ ] No se migran referencias historicas `WP-`/`WT-` ni comentarios de historia
-      fiel.
-- [ ] `check_encoding_guard.py <reporte>` exit 0 y
-      `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
+- [ ] Existe `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`.
+- [ ] El reporte separa `VERIFICADO` e `INFERENCIA` en claims del release y del repo local.
+- [ ] El reporte cubre `ask-matt`, `codebase-design`, `domain-modeling`, `diagnosing-bugs`, `writing-great-skills`, `resolving-merge-conflicts` y `docs/invocation.md`.
+- [ ] El reporte mapea impacto sobre `008c`, `008d`, `010s` y `010t` con accion propuesta por pieza.
+- [ ] El reporte contiene inventario reproducible de consumidores locales de `triggers` y discovery.
+- [ ] `CREDITS.md` queda read-only y cualquier fila se difiere a tickets de adopcion (`010s` o `010t`).
+- [ ] No se copian archivos del bundle externo ni se instalan dependencias.
+- [ ] Encoding guard pasa sobre reporte y packet tocado.
+- [ ] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO mover/eliminar/renombrar archivos en esta fase de inventario.
-- NO migrar referencias `WP-`/`WT-` ni reescribir historia fiel.
-- NO ajustar aliases ni docs (eso seria mixed; aqui es analysis puro).
-- NO mezclar con `WOT-2026-010e`, `WOT-2026-010d` ni `WOT-2026-008d`.
-- NO escribir nada en el `repo_motor`.
+- NO modificar discovery, resolver, bus, review Manager ni skills locales.
+- NO instalar ni copiar el bundle externo.
+- NO actualizar `CREDITS.md` en este ticket salvo que el contrato se reabra explicitamente.
+- NO ejecutar `010s` ni `010t` dentro de `010r`.
+- NO cambiar la ruta de `008c/008d`; solo informar impacto y riesgos.
 
 ## Forbidden Surfaces
 
-- cualquier move/delete/rename en `prompts/` o `skills/` del motor
-- escritura en el `repo_motor`
+- `skills/`
+- `prompts/`
+- `scripts/discover_skills.py`
+- `scripts/check_skill_collisions.py`
+- `scripts/local_audit.py`
+- `scripts/orquestador.py`
+- `scripts/validate_agent_config.py`
+- `bus/skill_resolver.py`
+- `CREDITS.md`
+- `pyproject.toml`
+- `uv.lock`
+- bus editado manualmente
 - `privada/`
 - `.env`
-- `.agent/runtime/memory/`
-- bus editado manualmente
-- referencias historicas `WP-`/`WT-` y comentarios de historia fiel
