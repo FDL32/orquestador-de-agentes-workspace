@@ -339,3 +339,48 @@
 - **Builder clarification budget:** 0. El Builder no decide adopcion productiva; solo produce evidencia y recomendacion.
 - **STOP conditions:** parar si aparece necesidad de modificar skills/prompts locales; parar si se propone instalar/copiar el bundle externo; parar si la unica fuente del release es un auto-reporte no verificable; parar si se necesita credencial GitHub para continuar y no hay fallback publico.
 - **Depende de:** WOT-2026-010g (COMPLETED), WOT-2026-008b (COMPLETED).
+
+## T-010T-001 -- Vocabulario de diseno profundo para review del Manager
+
+- **ticket_id:** WOT-2026-010t
+- **status:** frozen
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010T-001
+- **Plan-Link:** PLAN-010T-001
+- **Premise:** `WOT-2026-010r` concluyo que `mattpocock/skills v1.0.0` aporta vocabulario util de `codebase-design` para el Manager (`deep module`, `interface`, `seam`, `adapter`, `deletion test`) y que `diagnosing-bugs` puede complementar nuestro debugging sin reemplazar el limite local de 3 intentos. La adopcion debe ser conceptual y concreta en checklist, no una importacion de bundle ni una exigencia de nuevas abstracciones.
+- **External Source Baseline:** usar el reporte `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md` como fuente local. Antes de escribir, re-anclar el origen externo: `v1.0.0` -> `dcfc232`; existe `v1.0.1` posterior. Si `v1.0.1` cambia `codebase-design` o `diagnosing-bugs`, documentarlo en el diff o emitir CONTRACT_GAP.
+- **Premise Re-check (read-only):**
+  - releer `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`;
+  - verificar si `v1.0.1` cambia `skills/engineering/codebase-design` o `diagnosing-bugs` frente a `v1.0.0`;
+  - leer `skills/man-review-implementation/references/review-checklist.md`;
+  - leer `skills/_shared/anti-patterns.md` y `skills/_shared/ticket-anti-patterns.md`;
+  - leer `skills/systematic-debugging/SKILL.md` para conservar el limite de 3 intentos;
+  - encontrar un decision artifact o artefacto real existente donde ya aparezcan interface/seam/adapter sin inventar arquitectura nueva.
+- **Context Baseline Evidence:** source_ticket=WOT-2026-010r completed; source_report_commit=42ee1fc; destino_closeout=5fa6b9a; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder: `skills/man-review-implementation/references/review-checklist.md`
+  - Builder: `skills/_shared/anti-patterns.md`
+  - Builder: `CREDITS.md`
+  - Builder: `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
+  - Read/inspect only: `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+  - Read/inspect only: `skills/_shared/ticket-anti-patterns.md`
+  - Read/inspect only: `skills/systematic-debugging/SKILL.md`
+  - Read/inspect only: `skills/man-review-implementation/SKILL.md`
+  - Read/inspect only: `.agent/runtime/reviews/`
+  - Read/inspect only: `.agent/collaboration/_archive/plan_audit/`
+- **Forbidden Surfaces:** codigo Python; discovery/resolver/bus; `skills/` fuera de las dos rutas Builder declaradas; prompts; dependencias (`pyproject.toml`, `uv.lock`); copiar archivos del bundle externo; cambiar politica de debugging de 3 intentos; crear nuevas abstracciones productivas; bus editado manualmente; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `review-checklist.md` incluye preguntas accionables para `deep module`, `interface`, `seam`, `adapter`, `deletion test` y `interface is the test surface`.
+  - [ ] `anti-patterns.md` incluye al menos un anti-patron nuevo o refinado que capture sobreingenieria por vocabulario (`seam/adapter` inventado) y lo diferencia de un seam real existente.
+  - [ ] Existe `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md` con un ejemplo concreto aplicado a un artefacto real existente, preferiblemente el caso `WOT-2026-009b scope_gate`, sin inventar modulos nuevos.
+  - [ ] El documento contrasta `diagnosing-bugs` con `skills/systematic-debugging/SKILL.md` y conserva explicitamente el limite de 3 intentos.
+  - [ ] `CREDITS.md` incluye una fila para `WOT-2026-010t` con source pinneado y `Adapted`, no `Ported`.
+  - [ ] El cambio no toca codigo ni modifica resolucion de skills.
+  - [ ] Encoding guard pasa sobre todos los archivos tocados.
+  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+- **Integracion cross-ticket:** `010t` puede cerrar antes de `010s`; no cambia la taxonomia `user/model-invoked` ni el Plan 008. Su salida debe ayudar al Manager a revisar `010s/008c/008d` con mejor vocabulario.
+- **CONTRACT_GAP behavior:** si el vocabulario solo puede aplicarse creando abstracciones nuevas, si `v1.0.1` invalida la base externa, si la fila CREDITS no puede pinnear fuente/licencia, o si tocar `review-checklist.md` obliga a normalizar encoding masivo no revisable, emitir `CG-WOT-2026-010t.md` y bloquear.
+- **Builder clarification budget:** 0. El Builder adapta vocabulario a checklist y anti-patrones concretos; no decide cambios de arquitectura.
+- **STOP conditions:** parar si hace falta tocar codigo; parar si se intenta copiar texto largo del repo externo; parar si el ejemplo de referencia no puede anclarse a un artefacto real; parar si el diff se convierte en re-encoding masivo no revisable.
+- **Depende de:** WOT-2026-010r (COMPLETED).

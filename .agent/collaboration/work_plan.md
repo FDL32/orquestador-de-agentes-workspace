@@ -1,118 +1,116 @@
-# Work Plan: WOT-2026-010r
+# Work Plan: WOT-2026-010t
 
-> Origen: `WOT-2026-010g` dejo inventario de prompts/skills y el release externo `mattpocock/skills@1.0.0` introduce taxonomia y vocabulario que pueden afectar `008c/008d`. Este ticket mide impacto y decide ruta; no adopta cambios productivos.
+> Origen: `WOT-2026-010r` recomendo adaptar el vocabulario de `codebase-design` al review del Manager. Este ticket convierte esa recomendacion en checklist y anti-patron local, sin tocar codigo ni importar el bundle externo.
 
 ## Metadata
 
-- **ID:** WOT-2026-010r
-- **Contract ID:** T-010R-001
-- **Estado:** COMPLETED
-- **deliverable_type:** analysis
+- **ID:** WOT-2026-010t
+- **Contract ID:** T-010T-001
+- **Estado:** APPROVED
+- **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010g (completed), WOT-2026-008b (completed)
+- **Depends on:** WOT-2026-010r (completed)
 
 ## Objetivo
 
-Crear un reporte durable que evalua `mattpocock/skills@1.0.0` contra el inventario local de `010g` y la cadena Plan 008. El reporte debe decidir que ideas conviene adaptar, que riesgos tiene cada una y que tickets posteriores (`010s`, `010t`, `008c/008d`) quedan afectados.
+Adaptar conceptualmente el vocabulario de diseno profundo (`deep module`, `interface`, `seam`, `adapter`, `deletion test`, `interface is the test surface`) al review del Manager. El resultado debe ayudar a detectar sobreingenieria, wrappers superficiales y seams inventados, usando un ejemplo real del motor como referencia.
 
 ## Hechos verificados de arranque
 
-- `010g` esta cerrado canonicamente: `STATE.md` = `WOT-2026-010g / COMPLETED` y bus contiene `SUPERVISOR_CLOSED`.
-- `validate --json --project-root <repo_destino>` previo al arranque dio 0 errors / 0 warnings.
-- GitHub release verificado por fetch web: tag `mattpocock-skills@1.0.0`, release commit `00ff03c`, primary change commit listado `47bde84`, publicado 2026-06-17 14:45 UTC.
-- `gh` puede no estar autenticado; si falla, conservar el error literal y usar fetch web como fuente alternativa.
+- `010r` esta cerrado canonicamente y `validate --json` esta 0/0.
+- El reporte `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md` existe en `repo_motor` y recomienda `010t` para vocabulario de review.
+- `review-checklist.md` y `anti-patterns.md` existen como superficies vivas del Manager.
+- El ticket es `documentation`: no requiere pytest/ruff salvo que el Builder toque codigo, lo cual esta prohibido.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de escribir el reporte:
+Confirmar antes de editar:
 
-- existencia y contenido relevante de `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`;
-- estado real de `010r`, `010s`, `010t`, `008c`, `008d` y `008e` en backlog;
-- consumidores locales del campo `triggers` y del discovery de skills con comandos reproducibles;
-- si `disable-model-invocation` existe o no en el repo;
-- licencia del repo externo antes de recomendar adopcion en tickets posteriores.
+- que `v1.0.1` no cambia de forma material `codebase-design` o `diagnosing-bugs`; si cambia, documentar diferencia o emitir CONTRACT_GAP;
+- que `skills/man-review-implementation/references/review-checklist.md` es el checklist activo;
+- que `skills/_shared/anti-patterns.md` es la fuente canonica AP;
+- que `skills/systematic-debugging/SKILL.md` conserva el limite local de 3 intentos;
+- que existe un artefacto real para el ejemplo, preferentemente `WOT-2026-009b scope_gate` o un decision artifact equivalente.
 
 Registrar en `execution_log.md`:
 
-- fuente usada para el release (`gh` o fetch web) y resultado literal;
-- seams/consumidores confirmados;
-- limitaciones de evidencia.
+- fuentes externas verificadas y SHA/tag usados;
+- artefacto real elegido como ejemplo;
+- cualquier normalizacion de encoding necesaria en archivos tocados.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+- `skills/man-review-implementation/references/review-checklist.md`
+- `skills/_shared/anti-patterns.md`
+- `CREDITS.md`
+- `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010r.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010r.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010t.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010t.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/planning/ticket_contracts.md`
 
 ## Read/inspect only
 
-- `CREDITS.md`
-- `.agent/docs/prompts_skills_inventory_WOT-2026-010g.md`
-- `skills/`
-- `prompts/`
-- `scripts/discover_skills.py`
-- `scripts/check_skill_collisions.py`
-- `scripts/local_audit.py`
-- `scripts/orquestador.py`
-- `scripts/validate_agent_config.py`
-- `bus/skill_resolver.py`
-- `.agent/collaboration/backlog.md`
-- `.agent/planning/ticket_contracts.md`
+- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+- `skills/_shared/ticket-anti-patterns.md`
+- `skills/systematic-debugging/SKILL.md`
+- `skills/man-review-implementation/SKILL.md`
+- `.agent/runtime/reviews/`
+- `.agent/collaboration/_archive/plan_audit/`
 
 ## Manager-only
 
-- verificar que el reporte separa evidencia e inferencia;
-- verificar que no se adopta ni se porta codigo externo;
-- verificar que `CREDITS.md` no se modifica en `010r` salvo CONTRACT_GAP aprobado;
-- revisar impacto declarado sobre `008c/008d`, `010s` y `010t`.
+- verificar que el vocabulario describe seams/adapters existentes, no exige abstracciones nuevas;
+- verificar que `CREDITS.md` usa source pinneado y `Adapted`;
+- verificar que no se toca codigo ni discovery;
+- verificar que encoding guard no oculta una reescritura masiva no revisable.
 
 ## Decision Arquitectonica
 
-- `010r` es un ticket de decision y evidencia, no de migracion.
-- Las ideas externas se tratan como `Adapted`, no `Ported`, salvo ticket posterior con aprobacion explicita.
-- La taxonomia `user-invoked/model-invoked` no puede sustituir `triggers` por decreto: primero debe mapear consumidores locales y compatibilidad.
-- El vocabulario `codebase-design` puede alimentar review del Manager solo si se convierte en checklist concreta en ticket posterior.
+- El vocabulario es una herramienta de review, no una regla para crear capas nuevas.
+- `interface is the test surface` debe usarse para preguntar que contrato observable se prueba, no para exigir mas mocks.
+- `deletion test` se usa como heuristica de valor: si borrar el wrapper no cambia comportamiento ni claridad, probablemente es AP-03 o sobreingenieria.
+- `diagnosing-bugs` puede enriquecer el lenguaje de causa raiz, pero NO reemplaza `systematic-debugging` ni su limite de 3 intentos.
 
 ## Criterios Binarios
 
-- [ ] Existe `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`.
-- [ ] El reporte separa `VERIFICADO` e `INFERENCIA` en claims del release y del repo local.
-- [ ] El reporte cubre `ask-matt`, `codebase-design`, `domain-modeling`, `diagnosing-bugs`, `writing-great-skills`, `resolving-merge-conflicts` y `docs/invocation.md`.
-- [ ] El reporte mapea impacto sobre `008c`, `008d`, `010s` y `010t` con accion propuesta por pieza.
-- [ ] El reporte contiene inventario reproducible de consumidores locales de `triggers` y discovery.
-- [ ] `CREDITS.md` queda read-only y cualquier fila se difiere a tickets de adopcion (`010s` o `010t`).
-- [ ] No se copian archivos del bundle externo ni se instalan dependencias.
-- [ ] Encoding guard pasa sobre reporte y packet tocado.
+- [ ] `review-checklist.md` incluye preguntas accionables para `deep module`, `interface`, `seam`, `adapter`, `deletion test` y `interface is the test surface`.
+- [ ] `anti-patterns.md` incluye anti-patron o refinamiento sobre seam/adapter inventado y sobreingenieria por vocabulario.
+- [ ] Existe `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md` con ejemplo real aplicado a un artefacto existente.
+- [ ] El documento contrasta `diagnosing-bugs` con `systematic-debugging` y conserva el limite de 3 intentos.
+- [ ] `CREDITS.md` incluye fila `WOT-2026-010t` con fuente pinneada, licencia MIT verificada y `Adapted`.
+- [ ] No se toca codigo, discovery, resolver, bus, prompts ni dependencias.
+- [ ] Encoding guard pasa sobre todos los archivos tocados.
 - [ ] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO modificar discovery, resolver, bus, review Manager ni skills locales.
-- NO instalar ni copiar el bundle externo.
-- NO actualizar `CREDITS.md` en este ticket salvo que el contrato se reabra explicitamente.
-- NO ejecutar `010s` ni `010t` dentro de `010r`.
-- NO cambiar la ruta de `008c/008d`; solo informar impacto y riesgos.
+- NO migrar taxonomia `user/model-invoked` (`010s`).
+- NO tocar `triggers`, discovery, resolver ni bus.
+- NO copiar archivos del bundle externo.
+- NO introducir nuevas abstracciones productivas.
+- NO modificar prompts generales fuera del review checklist.
+- NO cambiar el limite de 3 intentos de `systematic-debugging`.
 
 ## Forbidden Surfaces
 
-- `skills/`
-- `prompts/`
+- codigo Python
 - `scripts/discover_skills.py`
 - `scripts/check_skill_collisions.py`
 - `scripts/local_audit.py`
 - `scripts/orquestador.py`
 - `scripts/validate_agent_config.py`
 - `bus/skill_resolver.py`
-- `CREDITS.md`
+- `skills/` fuera de `skills/man-review-implementation/references/review-checklist.md` y `skills/_shared/anti-patterns.md`
+- `prompts/`
 - `pyproject.toml`
 - `uv.lock`
+- bundle externo copiado
 - bus editado manualmente
 - `privada/`
 - `.env`
