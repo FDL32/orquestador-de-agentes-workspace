@@ -2077,3 +2077,28 @@ Para WOT-2026-010t (cuando se porte el vocabulario de review):
 ```
 | WOT-2026-010t | [mattpocock/skills@dcfc232](https://github.com/mattpocock/skills/tree/dcfc2322f2f978113b1ec2dbbf50c00eda824519) | Deep-module design vocabulary (module/interface/seam/adapter/depth, deletion test, "interface is the test surface"), from `skills/engineering/codebase-design` | MIT | Adapted (review-rubric vocabulary only, no code copied) |
 ```
+
+## Refinamientos verificados para 010r/s (Manager, 2026-06-17)
+
+Auditoria adversarial de 3 recomendaciones (via `prompts/audit_agent_output.md`). Resultado tras verificar contra el codigo:
+
+- **Inventario de consumidores reproducible (REC#1, VALIDA con scope):** el grep
+  manual produjo el falso positivo 7->6 (review_bridge.py). 010r debe documentar
+  su inventario con un COMANDO REPRODUCIBLE citado literalmente
+  (`grep -rn 'fm.get("triggers")\|trigger_map' scripts/ bus/`), no un grep ad-hoc.
+  010r es analysis/cero-codigo: NO implementa un script (eso seria mixed). Si la
+  decision concluye que hace falta una GATE PERMANENTE de consumidores, se
+  materializa en 010s (ya es codigo) o follow-up. No existe hoy herramienta
+  dedicada; `graphify` podria responderlo pero no es gate.
+- **Decision hibrido/break-glass documentada (REC#2, VALIDA, mecanismo ya existe):**
+  010r DEBE registrar la estrategia elegida + trade-offs + implicacion para 010s
+  en el decision_artifact del Manager y en la seccion `Decision Arquitectonica`
+  del work_plan. NO hace falta plantilla nueva: el decision_artifact
+  (`decision_WOT-<ID>.json`) ya es el canal canonico.
+- **Preflight de existencia de entregable (REC#3, RECHAZADA - ya existe):** la
+  premisa "un analysis puede cerrar sin producir artefacto" es FALSA hoy.
+  `scripts/run_gates_dispatch.py:152` corre `check_deliverables_exist.py` para
+  documentation/research/analysis/mixed (exit 1 si falta el deliverable declarado
+  en FLT). Barrera viva, verificada. NO se añade a 010r (seria duplicar gate).
+  Sub-matiz real (NO blocker de 010r): ese check valida EXISTENCIA, no CONTENIDO;
+  follow-up de otra naturaleza si alguna vez se quiere validar contenido minimo.
