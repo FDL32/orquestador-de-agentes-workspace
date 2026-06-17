@@ -3,7 +3,7 @@
 ## Status
 
 - Ticket: WOT-2026-010r
-- **Estado:** IN_PROGRESS
+- **Estado:** READY_FOR_REVIEW
 - Role: MANAGER/ORCHESTRATOR preflight
 - Started: 2026-06-18
 
