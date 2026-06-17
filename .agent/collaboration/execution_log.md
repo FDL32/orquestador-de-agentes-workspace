@@ -2,7 +2,7 @@
 
 ## Metadata
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **ID:** WOT-2026-010o
 - **Contract ID:** T-010O-001
 - **deliverable_type:** code
