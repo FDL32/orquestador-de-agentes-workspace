@@ -10,7 +10,7 @@
 
 - **ID:** WOT-2026-010h
 - **Contract ID:** T-010H-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010a (completed)

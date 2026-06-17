@@ -13,7 +13,7 @@ Este repo es `repo_destino` de dogfooding del motor. No usar "workspace" a secas
 
 **Regla de repos:** operaciones git del tooling corren en `repo_motor`. Estado operativo (tickets, memoria) vive aqui en `repo_destino`.
 
-**Regla de nomenclatura de tickets:** este `repo_destino` usa el prefijo `WT-YYYY-NNN` por ser dogfooding del motor. Un proyecto destino normal declara su prefijo en `PROJECT.md` como `Ticket prefix: XXX`.
+**Regla de nomenclatura de tickets:** este `repo_destino` usa el prefijo `WOT-YYYY-NNNx` (declarado en `PROJECT.md` como `Ticket prefix: WOT`) por ser dogfooding del motor; `WP-`/`WT-` son legacy historico. El `<PREFIX>` se lee del contrato del repo activo (`AGENTS.md`/`CLAUDE.md` autocargado); un proyecto destino normal declara su prefijo `XXX-YYYY-NNN` y el campo `Ticket prefix: XXX` en `PROJECT.md`, verificado via `agent_controller --validate`. `WOT-` es prefijo SOLO del motor/dogfooding, no universal.
 
 ## Agentes disponibles
 
