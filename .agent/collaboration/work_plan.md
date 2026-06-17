@@ -6,7 +6,7 @@
 
 - **ID:** WOT-2026-010r
 - **Contract ID:** T-010R-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010g (completed), WOT-2026-008b (completed)
