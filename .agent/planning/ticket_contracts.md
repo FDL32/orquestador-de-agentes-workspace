@@ -141,3 +141,38 @@
 - **Builder clarification budget:** 0. El Builder no decide politica de gates ni optimizaciones; solo mide y reporta.
 - **STOP conditions:** parar si el ticket exige tocar codigo del motor para "facilitar" la medicion; parar si la unica forma de obtener datos requiere activar cache/sharding/xdist; parar si el reporte acabaría en `repo_destino` en vez de `repo_motor`; parar si `validate` deja warnings nuevos sin resolver.
 - **Depende de:** WOT-2026-010c (COMPLETED).
+
+## T-010N-001 -- Gate de deliverables namespaced por delivery_authority
+
+- **ticket_id:** WOT-2026-010n
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010N-001
+- **Plan-Link:** PLAN-010N-001
+- **Premise:** `scripts/check_deliverables_exist.py` valida hoy los deliverables Builder solo relativos a `--project-root` y no resuelve correctamente rutas FLT que viven en `repo_motor`. El fallo fue evidenciado por `WOT-2026-010j`: un reporte real y existente en `repo_motor/docs/test_performance/` quedo bloqueado por el gate aunque el contrato declaraba `delivery_authority: repo_motor`.
+- **Premise Re-check (read-only):**
+  - reproducir el bloqueo de `WOT-2026-010j` sin duplicar el artefacto en `repo_destino`;
+  - inspeccionar `scripts/check_deliverables_exist.py` y como interpreta `Files Likely Touched`;
+  - contrastar con `scripts/scope_gate.py`, `delivery_authority` y FLT namespaced;
+  - verificar que `Read/inspect only` y notas libres no cuentan como deliverables Builder.
+- **Context Baseline Evidence:** trigger_ticket=WOT-2026-010j; report_commit=c05dbfe; packet_fix_commit=cb01f28; generated_at=2026-06-17.
+- **Files Likely Touched:**
+  - Builder: `scripts/check_deliverables_exist.py`
+  - Builder: tests del gate de deliverables
+  - Builder: documentacion puntual del gate solo si la regla namespaced necesita quedar explicita
+  - Read/inspect only: `scripts/scope_gate.py`, `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `ticket_contracts.md`, `work_plan.md`, artefactos de `WOT-2026-010j`
+- **Forbidden Surfaces:** duplicar artefactos entre `repo_motor` y `repo_destino` para satisfacer el gate; relajar el gate a pass-open; modificar el reporte de `010j`; cambiar politica de closeout ajena al bug; `privada/`; bus editado manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe una barrera de regresion que reproduce el caso real de `010j` y falla sin el fix.
+  - [ ] Un deliverable Builder existente en `repo_motor` pasa el gate cuando el FLT o el contrato lo resuelven a `repo_motor`.
+  - [ ] Un deliverable Builder existente en `repo_destino` sigue pasando sin regresion.
+  - [ ] Una ruta namespaced invalida, ambigua o fuera de root falla cerrado con diagnostico claro.
+  - [ ] El gate ignora `Read/inspect only`, `Manager-only` y notas no parseables como entregables Builder.
+  - [ ] `WOT-2026-010j` puede cerrar canonicamente sin duplicar el reporte en `repo_destino`.
+  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings tras la reparacion del gate y el cierre reintentado de `010j`.
+- **Integracion cross-ticket:** desbloquea el cierre de `WOT-2026-010j`; cualquier ticket documental/analysis con entrega en `repo_motor` depende de esta correccion si usa `check_deliverables_exist.py`.
+- **CONTRACT_GAP behavior:** si el bug no puede corregirse sin redisenar por completo el contrato FLT/delivery_authority, o aparecen consumidores incompatibles que exigen una migracion mayor, emitir `CG-WOT-2026-010n.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0. El Builder no debe improvisar duplicacion de artefactos ni reinterpretar a mano el namespace correcto.
+- **STOP conditions:** parar si la unica forma de pasar el gate exige copiar el deliverable de `repo_motor` a `repo_destino`; parar si el fix rompe deliverables existentes del destino; parar si la reproduccion depende de editar el ticket `010j` mas alla de usar su evidencia real.
+- **Depende de:** WOT-2026-010j (IN_PROGRESS / CONTRACT_GAP confirmado).

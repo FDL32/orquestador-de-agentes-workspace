@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-17 09:39:59
+**Ultima actualizacion:** 2026-06-17 10:28:12
 
 ---
 
@@ -9,7 +9,7 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **BUILDER** |
-| **Plan ID** | WOT-2026-010j |
+| **Plan ID** | WOT-2026-010n |
 | **Tipo** | IMPLEMENT |
 | **Accion** | IMPLEMENT |
 
@@ -17,7 +17,7 @@
 
 ## Instruccion
 
-> Ticket WOT-2026-010j reactivado. Continua la implementacion.
+> Ticket WOT-2026-010n reactivado. Continua la implementacion.
 
 ---
 
@@ -30,4 +30,4 @@
 
 ---
 
-*Preparado documentalmente para WOT-2026-010j*
+*Preparado documentalmente para WOT-2026-010n*

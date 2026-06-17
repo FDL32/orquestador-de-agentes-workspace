@@ -78,6 +78,7 @@
 | Media | WOT-2026-010k | Reducir coste de tests git/subprocess sin cambiar politica de gates | motor/test-performance | pending | WOT-2026-010j | session-2026-06-17-suite-performance |  <!-- Follow-up condicionado por 010j. Objetivo: atacar hotspots verificados de git/subprocess mediante fixtures compartidas, helpers realistas o monkeypatch solo donde el contrato no valide git real. No tocar run_gates_dispatch ni reducir cobertura canonica. -->
 | Media | WOT-2026-010l | Selector focal por diff para run_pytest_safe con fail-open a suite canonica | motor/quality-gates | pending | WOT-2026-010j, WOT-2026-010i | session-2026-06-17-suite-performance |  <!-- Follow-up de politica/runner. Objetivo: unir get_changed_files/scope_gate/FLT con un mapa conservador archivo->tests y pasar subset a run_pytest_safe -- <subset>; si el selector no sabe, falla abierto a suite canonica. No sustituye la suite canonica de handoff hasta tener evidencia. -->
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance |  <!-- Fase 2, alto riesgo por estado compartido. Objetivo: probar paralelizacion solo en subset unitario puro y demostrar que no pisa .agent, tmp_path, cwd ni locks. No activar por defecto hasta barrera anti state-leak verde. -->
+| Alta | WOT-2026-010n | Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino | motor/protocol-runtime | pending | WOT-2026-010j | session-2026-06-17-deliverable-gate-bug |  <!-- Bug follow-up de 010j. Origen: check_deliverables_exist.py valida Builder artefacts solo relativo a --project-root y no resuelve namespaces repo_motor/repo_destino del FLT; bloquea tickets analysis/documentation con entrega legitima en repo_motor. -->
 | Media | WOT-2026-007e | Plan graph avanzado: paralelismo, shared dependencies y anti-scope | motor/protocol-validation | completed | WOT-2026-007a, WOT-2026-007b | session-2026-06-14-contract-formation |  <!-- motor 1dc5447; plantilla plan_graph dedicada + paralelizable yes/no/after + Merge Regression Audit; checks estructurales ya en validador 007c; enforcement de valores = follow-up tras cierre 007c -->
 | Baja | WOT-2026-007g | Validador plan_graph: enforce paralelizable in {yes,no,after} + presencia Merge Regression Audit | motor/quality-gates | completed | WOT-2026-007c, WOT-2026-007e | session-2026-06-15-contract-formation |  <!-- motor ce83621; destino 03efad4+ae5bb67+closeout; validate_plan_graph localiza Paralelizable por header, acepta parallelism_notes separado, exige Merge Regression Audit; cierre canonico manager-approve 0/0 -->
 | Baja | WOT-2026-007f | Integracion runtime de CONTRACT_GAP en bus/controller | motor/protocol-runtime | completed | WOT-2026-007c, WOT-2026-007e, WOT-2026-007g | session-2026-06-14-contract-formation |  <!-- motor f5923d7+c5d81ee+5fab636+ece7524; suite independiente 2713 passed; Manager APROBADO; cierre canonico manager-approve; validate 0/0 -->
@@ -1735,3 +1736,41 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - No activar paralelizacion para toda la suite.
   - No modificar la suite canonica local por defecto.
   - No ocultar flakiness bajo retries.
+
+## WOT-2026-010n - Gate de deliverables namespaced por delivery_authority para repo_motor/repo_destino
+
+- **Prioridad:** Alta
+- **Scope:** motor/protocol-runtime
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-010j
+- **Origen:** session-2026-06-17-deliverable-gate-bug
+- **Problema:** `WOT-2026-010j` produjo correctamente un artefacto `analysis` en
+  `repo_motor`, pero `check_deliverables_exist.py` valida los deliverables Builder
+  solo relativos a `--project-root`. Hoy no resuelve rutas namespaced por
+  `repo_motor`/`repo_destino` ni por `delivery_authority`, asi que bloquea tickets
+  legitimos con entrega documental en el motor.
+- **Objetivo:** corregir el gate de existencia de deliverables para que resuelva
+  cada entrada de `Files Likely Touched` segun su namespace y/o `delivery_authority`,
+  manteniendo fail-closed cuando la ruta sea ambigua, inexistente o salga de los
+  roots permitidos.
+- **Files Likely Touched:**
+  - Builder: `scripts/check_deliverables_exist.py`
+  - Builder: tests del gate de deliverables
+  - Builder: docs del gate solo si hace falta explicitar la regla namespaced
+  - Read/inspect only: `scripts/scope_gate.py`, `.agent/agent_controller.py`,
+    `scripts/pre_handoff_guard.py`, `work_plan.md` y `ticket_contracts.md` de `010j`
+- **Criterios binarios:**
+  - Un ticket `analysis` con deliverable Builder en `repo_motor` y
+    `delivery_authority: repo_motor` pasa el gate cuando el artefacto existe.
+  - Un deliverable Builder en `repo_destino` sigue pasando cuando existe.
+  - Una ruta namespaced invalida, ambigua o fuera de root falla cerrado con
+    diagnostico claro.
+  - El gate no trata notas libres ni bullets `Read/inspect only` como deliverables.
+  - Existe barrera de regresion que falla sin el fix para el caso real de `010j`.
+  - `WOT-2026-010j` puede cerrar sin duplicar el reporte en `repo_destino`.
+- **Non-goals:**
+  - No duplicar artefactos entre `repo_motor` y `repo_destino` para satisfacer el gate.
+  - No convertir el gate en pass-open.
+  - No mezclar optimizaciones de runner ni cambios ajenos de politica de closeout.
