@@ -84,7 +84,7 @@ La autoridad del ticket es `docs/decisions/DEC-008G-001-vocabulary-and-role-nami
 
 - Existe la DEC en repo_motor.
 - La DEC contiene vocabulario canonico, roles canonicos, supervisor runtime, regla actor/family, criterio de desempate, tabla congelada y plan de lotes.
-- La tabla clasifica 20 prompts fisicos: 5 futuros orchestrator_*, 1 manager_*, 12 audit_* family, 1 memory_* family, 1 contract_formation_* family y 1 legacy stub.
+- La tabla clasifica 21 prompts fisicos: 6 orchestrator_* relacionados (5 futuros renames y orchestrator_pipeline.md ya canonico), 1 manager_*, 11 audit_* family, 1 memory_* family, 1 contract_formation_* family y 1 legacy stub.
 - AGENTS.md contiene "Backends y roles".
 - `python scripts/discover_skills.py --check-naming` pasa.
 - `python scripts/check_encoding_guard.py docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md AGENTS.md` pasa.

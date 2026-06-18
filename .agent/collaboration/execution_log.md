@@ -25,3 +25,9 @@
 
 - Bus: BUILDER_EXIT y STATE_CHANGED -> READY_FOR_REVIEW presentes para WOT-2026-008g.
 - Ticket listo para review del Manager.
+## Manager CHANGES R2
+
+- Finding ALTO confirmado: la DEC decia 20 prompts fisicos y omitida `orchestrator_pipeline.md`.
+- Correccion aplicada: DEC actualizada a 21 prompts fisicos, con `orchestrator_pipeline.md` clasificado como `orchestrator_pipeline.md` ya canonico.
+- Conteo recalculado: 6 orchestrator relacionados (5 futuros renames + 1 ya canonico), 1 manager, 11 audit family, 1 memory family, 1 contract_formation family y 1 legacy stub.
+- No se ejecutaron renames, no se toco frontmatter, no se cambio runtime.
