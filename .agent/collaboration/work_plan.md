@@ -1,10 +1,10 @@
-# work_plan.md -- WOT-2026-008h
+﻿# work_plan.md -- WOT-2026-008k
 
 ## Metadata
 
-- **ID:** WOT-2026-008h
-- **Contract ID:** T-008H-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-008k
+- **Contract ID:** T-008K-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
@@ -13,59 +13,43 @@
 
 ## Objetivo
 
-Ejecutar el rename versionado de cinco prompts del orchestrator a nombres `orchestrator_*`, manteniendo compatibilidad con stubs y actualizando consumidores vivos. Cumplimiento medible: existen los cinco prompts canonicos nuevos, los cinco nombres viejos sobreviven como stubs, `source_prompt` y referencias vivas apuntan al canonico, y `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+Formalizar `role: auditor` en las skills que son propiedad real del rol auditor, sin renombrar directorios ni prompts. Cumplimiento medible: las cinco skills auditoras declaradas quedan con `role: auditor`, discovery/index siguen verdes, `bui-self-audit` permanece en `builder`, y `validate --json --project-root <repo_destino>` cierra en 0 errors / 0 warnings.
 
 ## Non-goals
 
-- No renombrar `prompts/orchestrator_pipeline.md`.
-- No migrar skills `man-*` o `bui-*`.
+- No renombrar prompts `audit_*` ni skills.
+- No tocar `skills/bui-self-audit/SKILL.md`.
+- No migrar `man-*` o `bui-*`.
 - No tocar bus, runtime o eventos.
-- No cambiar dependencias ni politicas del launcher.
+- No cambiar dependencias ni launcher.
 
 ## Premisas verificadas antes de Builder
 
-- WOT-2026-008g esta COMPLETED y `DEC-008G-001` es la autoridad.
-- `orchestrator_pipeline.md` ya es canonico y no entra en el rename.
-- `launch_builder.md` sigue siendo exception lexical; por tanto la migracion no se puede probar solo con `--check-naming`.
-- `skills/bui-implement-from-plan/SKILL.md` usa `source_prompt: prompts/launch_builder.md` y debe actualizarse.
+- `WOT-2026-008g` y `WOT-2026-008h` estan COMPLETED.
+- `DEC-008G-001` congelo que `audit_*` en prompts es familia transversal y que `008k` formaliza solo el rol de ciertas skills auditoras.
+- Las cinco skills candidatas hoy no estan en `role: auditor`: `audit-git-publication`, `audit-pipeline`, `code-audit`, `local-audit`, `system-health-audit`.
+- `skills/bui-self-audit/SKILL.md` usa `role: builder` y queda fuera por propiedad real del artefacto.
+- `scripts/discover_skills.py` hoy endurece `_check_contract()` solo para `manager|builder`; el ticket debe preservar ese contrato o extenderlo sin regresion.
 
 ## Decision Arquitectonica
 
-El ticket replica el patron versionado de 008e: cada nombre canonico nuevo nace como archivo fuente y el nombre viejo sobrevive como stub de compatibilidad. La prueba de migracion se apoya en consumidores vivos, `source_prompt`, registry y stubs presentes; no se acepta como evidencia unica que `--check-naming` siga verde.
+La taxonomia se apoya en propiedad real del artefacto, no en el prefijo del nombre. Por eso los prompts `audit_*` siguen como familia transversal, mientras que estas cinco skills pasan a `role: auditor`. `bui-self-audit` no migra: es una skill del builder para auto-auditar su propio trabajo, no una skill del rol auditor.
 
 ## Files Likely Touched
 
 ### repo_motor
 
-- `prompts/launch_builder.md`
-- `prompts/orchestrator_launch_builder.md`
-- `prompts/session_bootstrap.md`
-- `prompts/orchestrator_session_bootstrap.md`
-- `prompts/session_close_chat.md`
-- `prompts/orchestrator_session_close_chat.md`
-- `prompts/destination_bootstrap.md`
-- `prompts/orchestrator_destination_bootstrap.md`
-- `prompts/refactor_bootstrap.md`
-- `prompts/orchestrator_refactor_bootstrap.md`
-- `prompts/orchestrator_pipeline.md`
-- `prompts/audit_complete_motor_destination.md`
-- `prompts/audit_git_publication.md`
-- `skills/bui-implement-from-plan/SKILL.md`
-- `skills/orchestrate-pipeline/SKILL.md`
-- `skills/setup-agent-system/SKILL.md`
-- `skills/setup-agent-system/references/quickstart-checklist.md`
-- `skills/refactor-manager/SKILL.md`
-- `scripts/build_llms.py`
-- `MANIFEST.distribute`
+- `skills/audit-git-publication/SKILL.md`
+- `skills/audit-pipeline/SKILL.md`
+- `skills/code-audit/SKILL.md`
+- `skills/local-audit/SKILL.md`
+- `skills/system-health-audit/SKILL.md`
+- `scripts/discover_skills.py`
 - `docs/registry/INDEX.md`
-- `README.md`
-- `QUICKSTART.md`
-- `AGENTS.md`
-- `CLAUDE.md`
-- `llms.txt`
-- `llms-full.txt`
-- `tests/test_migration_bootstrap.py`
+- `docs/registry/README.md`
+- `tests/test_discover_skills.py`
 - `tests/test_check_naming.py`
+- `tests/test_check_skill_collisions.py`
 
 ### repo_destino
 
@@ -74,29 +58,32 @@ El ticket replica el patron versionado de 008e: cada nombre canonico nuevo nace 
 ## Read/inspect only
 
 - `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`
-- `scripts/discover_skills.py`
-- `CHANGELOG.md`
+- `skills/bui-self-audit/SKILL.md`
+- `prompts/audit_*.md`
+- `scripts/run_gates_dispatch.py`
 - `bus/runtime/events`
 
 ## Forbidden Surfaces
 
-- Renombrar `prompts/orchestrator_pipeline.md`.
-- Tocar `man-*`/`bui-*`.
+- Renombrar skills o prompts.
+- Tocar `skills/bui-self-audit/SKILL.md`.
+- Mover `audit_*` prompts a `auditor_*`.
 - Tocar bus/runtime/events manualmente.
 - Tocar dependencias.
-- Editar frontmatter fuera de `source_prompt` cuando aplique.
+- Expandir `man-*`/`bui-*`.
 
 ## Criterios binarios
 
-- Existen los cinco prompts canonicos nuevos `orchestrator_*`.
-- Los cinco nombres viejos quedan como stubs de compatibilidad.
-- `source_prompt` del Builder apunta al nuevo canonico.
-- Los consumidores vivos declarados en FLT usan el nombre canonico nuevo o documentan explicitamente el stub.
-- `orchestrator_pipeline.md` sigue sin rename y con referencias actualizadas.
-- `MANIFEST.distribute`, `INDEX.md`, `README.md`, `QUICKSTART.md`, `AGENTS.md`, `CLAUDE.md`, `llms.txt` y `llms-full.txt` quedan alineados donde aplique.
-- La prueba de migracion no descansa solo en `--check-naming`; tambien se verifica con `rg`, stubs presentes y `source_prompt` actualizado.
-- `discover_skills.py --check-naming`, `--check-index`, encoding guard, tests focales, `run_pytest_safe --level all` y `validate --json` quedan verdes.
+- Las cinco skills auditoras declaradas en FLT usan `role: auditor`.
+- `skills/bui-self-audit/SKILL.md` sigue con `role: builder`.
+- `scripts/discover_skills.py` acepta y proyecta `role: auditor` sin romper el contrato actual de `manager|builder`.
+- `docs/registry/INDEX.md` refleja el ownership actualizado de las skills auditoras.
+- `docs/registry/README.md` queda alineado si documenta ownership/roles.
+- `discover_skills.py --check-naming`, `--check-contract`, `--check-index` y `check_skill_collisions.py` quedan verdes.
+- La evidencia de discovery demuestra que las cinco skills auditoras salen clasificadas coherentemente y que `bui-self-audit` sigue fuera.
+- Tests focales cubren aceptacion de `role: auditor`, exclusion de `bui-self-audit` y no regresion de manager/builder.
+- `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json` quedan verdes.
 
 ## CONTRACT_GAP
 
-Emitir `CG-WOT-2026-008h.md` y parar si algun prompt viejo no puede mantenerse como stub, si aparece un consumidor vivo no declarado de alto riesgo, si el rename exige tocar runtime/bus o si la compatibilidad requiere un cambio de gate no previsto.
+Emitir `CG-WOT-2026-008k.md` y parar si formalizar `auditor` exige renombrar prompts `audit_*`, ampliar el ticket a `man-*`/`bui-*`, reescribir `source_prompt`/`contract_id`, o cambia el meaning de `owner` mas alla de las cinco skills auditoras.
