@@ -1,109 +1,111 @@
-# Work Plan: WOT-2026-010u
-
-> Origen: patron repetido de archivado en limbo: `archive_collaboration_artifacts.py` mueve `STRATEGY_/AUDIT_` cerrados a `_archive/plan_audit/`, pero si el rename no queda commiteado, el siguiente ticket queda bloqueado por `contaminacion_productiva`.
+# work_plan.md -- WOT-2026-008c
 
 ## Metadata
 
-- **ID:** WOT-2026-010u
-- **Contract ID:** T-010U-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-008c
+- **Contract ID:** T-008C-001
+- **Estado:** APPROVED
+- **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010s (completed)
+- **repo_motor:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes
+- **repo_destino:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 
 ## Objetivo
 
-Convertir el archivado incompleto de `STRATEGY_/AUDIT_` en una barrera temprana y accionable. El ticket debe detectar el estado `delete+untracked` que representa un rename no commiteado hacia `_archive/plan_audit/` y bloquear cierre/handoff con un diagnostico self-service. No debe hacer commits automaticos.
+Crear un registry generado y verificable para prompts/skills y una proyeccion `docs/registry/INDEX.md` derivada de esa fuente. El ticket debe dejar una base estable para `WOT-2026-008d` sin mover, renombrar ni retirar artefactos.
 
-## Hechos verificados de arranque
+## Premisas verificadas antes de Builder
 
-- `scripts/archive_collaboration_artifacts.py` mueve archivos con `shutil.move`, sin `git add` ni commit.
-- La deteccion actual existe, pero llega tarde como `contaminacion_productiva` en el siguiente validate/handoff.
-- Patron repetido en la sesion: archivado previo dejo delete+untracked y bloqueo tickets posteriores.
-- Decision de alcance: implementar opcion B. Guard fail-closed + remediacion explicita. NO auto-commit.
+- `WOT-2026-008b` esta cerrado y es la dependencia directa de `008c`.
+- `WOT-2026-010r`, `WOT-2026-010s`, `WOT-2026-010t` y `WOT-2026-010u` estan cerrados; informan el diseno, pero no amplian el scope de `008c`.
+- El registry debe ser una autoridad generada, no una lista manual mantenida a mano.
+- La migracion de naming/shims pertenece a `WOT-2026-008d`, no a este ticket.
 
-## Fase 0: Diagnostico antes del cambio
-
-Confirmar antes de editar:
-
-- punto exacto donde se invoca `_auto_archive_closed_artifacts()` en `agent_controller.py`;
-- como `pre_handoff_guard.py` clasifica `_archive/plan_audit/` y superficies vivas;
-- donde `delivery_hygiene_check.py` reporta arbol sucio/contaminacion;
-- si ya existe helper reutilizable para `git status --porcelain -z` o parser de renames;
-- tests existentes que cubren archiver/pre-handoff/validate.
-
-Registrar en `execution_log.md`:
-
-- seam elegido para la barrera;
-- por que no se implementa auto-commit;
-- reproduccion roja del limbo delete+untracked.
-
-## Files Likely Touched
-
-### repo_motor
-- `scripts/archive_collaboration_artifacts.py`
-- `.agent/agent_controller.py`
-- `scripts/pre_handoff_guard.py`
-- `scripts/delivery_hygiene_check.py`
-- `tests/test_pre_handoff_guard.py`
-- `tests/test_archive_collaboration_artifacts.py`
-- `tests/unit/test_delivery_hygiene_check.py`
-- `docs/protocol/archive_rename_hygiene_WOT-2026-010u.md`
-
-### repo_destino
-- `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010u.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010u.md`
-- `.agent/collaboration/execution_log.md`
-- `.agent/collaboration/backlog.md`
-- `.agent/planning/ticket_contracts.md`
-
-## Read/inspect only
-
-- `.agent/collaboration/_archive/plan_audit/`
-- `.agent/runtime/events/`
-- `docs/KNOWN_FAILURE_PATTERNS.md`
-- `AGENTS.md`
-
-## Manager-only
-
-- verificar que el guard no auto-commitea;
-- verificar que no borra artefactos historicos;
-- verificar que el diagnostico contiene comandos de remediacion;
-- verificar test rojo/verde contra repo git real o fixture con git real.
 
 ## Decision Arquitectonica
 
-- La barrera debe fallar temprano si detecta rename incompleto de plan/audit cerrado.
-- Remediacion preferida: stage ambos lados del rename y commitear, no borrar archivos.
-- No auto-commit desde archivador: evita commits sorpresa y mezcla de estado vivo con cambios del usuario.
-- El guard debe ser self-service: mostrar rutas y comando exacto de reconciliacion.
-
-## Criterios Binarios
-
-- [ ] Existe test que reproduce `D .agent/collaboration/AUDIT_*.md` + `?? .agent/collaboration/_archive/plan_audit/AUDIT_*.md` y falla sin el fix.
-- [ ] El guard bloquea el cierre/handoff/validate correspondiente con razon `archive_rename_uncommitted` o equivalente estable.
-- [ ] El diagnostico lista origen, destino y comando de remediacion (`git add <old> <new> && git commit ...`).
-- [ ] El fix no ejecuta `git commit` automaticamente.
-- [ ] No se borran artefactos historicos; el flujo esperado preserva rename 100%.
-- [ ] Tests focales pasan.
-- [ ] Ruff/format pasan sobre Python tocado.
-- [ ] Encoding guard pasa sobre docs y codigo tocados.
-- [ ] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
+El ticket adopta un registry generado manifest-first como fuente canonica y conserva `INDEX.md` como proyeccion humana derivada. La decision reduce drift antes de `008d`, mantiene discovery/collision verificables y evita que una migracion de nombres se base en inventario manual.
 
 ## Non-goals
 
-- NO auto-commit en `archive_collaboration_artifacts.py`.
-- NO borrar artefactos en vez de renombrar.
-- NO editar bus runtime ni fabricar eventos.
-- NO cambiar politicas de archive para `archive/` vivo de notifications.
-- NO mezclar limpieza Goose ni Plan 008.
+- No migrar naming, shims ni aliases de `WOT-2026-008d`.
+- No mover, renombrar ni borrar prompts o skills.
+- No cambiar politica de invocation ni retirar `triggers:`.
+- No instalar dependencias ni copiar bundles externos.
+## Files Likely Touched
+
+### repo_motor - Builder
+
+- `scripts/discover_skills.py`
+- `scripts/check_skill_collisions.py`
+- `scripts/generate_registry_catalog.py`
+- `scripts/check_registry_catalog.py`
+- `docs/registry/README.md`
+- `docs/registry/INDEX.md`
+- `docs/registry/registry.json`
+- `tests/test_registry_catalog.py`
+- `tests/test_discover_skills.py`
+- `tests/test_check_skill_collisions.py`
+
+### repo_motor - Read/inspect only
+
+- `docs/decisions/DEC-008B-001-registry-model.md`
+- `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
+- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+- `skills/`
+- `prompts/`
+- `scripts/local_audit.py`
+- `scripts/validate_agent_config.py`
+- `bus/skill_resolver.py`
+
+### repo_destino - Builder
+
+- `.agent/collaboration/execution_log.md`
+
+### repo_destino - Manager-only
+
+- `.agent/collaboration/work_plan.md`
+- `.agent/collaboration/AUDIT_WOT-2026-008c.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-008c.md`
+- `.agent/planning/ticket_contracts.md`
+- `.agent/collaboration/backlog.md`
+- `.agent/collaboration/STATE.md`
+- `.agent/collaboration/TURN.md`
 
 ## Forbidden Surfaces
 
-- bus runtime/events
-- `privada/`
-- `.env`
-- dependencias (`pyproject.toml`, `uv.lock`)
-- borrado destructivo de `_archive/plan_audit/`
-- auto-commit automatico dentro del archivador
+- No mover, renombrar ni borrar carpetas de `prompts/` o `skills/`.
+- No retirar `triggers:` ni cambiar la semantica de `disable-model-invocation`.
+- No copiar bundles externos ni instalar dependencias.
+- No tocar `pyproject.toml`, `uv.lock`, bus runtime/events, `privada/` ni `.env`.
+- No ejecutar la migracion de naming/shims de `WOT-2026-008d`.
+
+## Impact Simulation
+
+| Superficie | Impacto esperado | Riesgo | Mitigacion | Paralelizable |
+|------------|------------------|--------|------------|---------------|
+| `docs/registry/registry.json` | Nueva fuente generada versionada | stale o orden no determinista | check de regeneracion + tests de orden estable | No con 008d |
+| `docs/registry/INDEX.md` | Proyeccion humana generada | drift manual | check que compare contenido generado | No con 008d |
+| discovery/collision | Puede reutilizar metadata o conservar paridad | romper trigger_map o collisions | tests existentes + paridad observable | No con 010s ya cerrado |
+| prompts/skills layout | Solo lectura | scope creep hacia moves | Forbidden Surfaces + CONTRACT_GAP | No con migraciones |
+| repo_destino | Estado operativo del ticket | drift de bus/proyecciones | bootstrap + validate 0/0 | No |
+
+## Criterios binarios de cierre
+
+- Existe un registry generado determinista en `docs/registry/registry.json` o equivalente declarado por Builder.
+- `docs/registry/INDEX.md` se genera desde el registry y no queda como indice manual divergente.
+- Existe un check que falla si registry o INDEX estan stale respecto a prompts/skills reales.
+- El registry cubre prompts, skills, `PROMPT_TEMPLATE.md`, referencias/templates compartidas y consumidores relevantes declarados por `008a/008b`.
+- Cada entrada incluye ruta, tipo de artefacto, owner/source, canonical_source, estado, aliases/triggers cuando aplique y notas de compatibilidad si existen shims.
+- Se distingue layout fisico de alias logico; no se ejecuta ninguna migracion de naming/shims de `008d`.
+- Discovery/collision conservan paridad observable o documentan por que quedan read-only.
+- Tests focales, ruff, encoding guard y `validate --json --project-root <repo_destino>` terminan en verde.
+
+## STOP / CONTRACT_GAP
+
+Emitir `CG-WOT-2026-008c.md` y detener si el inventario no puede generarse deterministamente, si el INDEX no puede derivarse del registry, si aparece consumidor vivo no clasificable, si el cambio exige migrar nombres/shims, o si el stale-check solo puede ser pass-open.
+
+## Instruccion de arranque Builder
+
+Antes de implementar, releer `prompts/launch_builder.md`, confirmar `STATE.md/TURN.md` apuntando a `WOT-2026-008c`, ejecutar validate 0/0, y registrar Fase 0 en `execution_log.md`. Builder no debe tocar superficies Manager-only salvo `execution_log.md`.

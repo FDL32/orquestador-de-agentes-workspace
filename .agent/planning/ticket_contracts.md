@@ -437,3 +437,54 @@
 - **CONTRACT_GAP behavior:** stop if fix requires auto-commit or destructive deletion.
 - **Builder clarification budget:** 0. Implement guard fail-closed, not policy redesign.
 - **Depende de:** WOT-2026-010s (COMPLETED).
+
+## T-008C-001 -- Registry/INDEX generado de prompts y skills
+
+- **ticket_id:** WOT-2026-008c
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008C-001
+- **Plan-Link:** PLAN-008C-001
+- **Premise:** `WOT-2026-008b` cerro el modelo de registry manifest-first. Hoy `docs/registry/INDEX.md` existe como superficie documental, pero no hay una fuente generada y verificable que cubra prompts, skills, referencias/templates y consumidores declarados por `008a/008b`. Sin esa fuente, `008d` migraria naming/shims sobre inventario manual.
+- **Premise Re-check (read-only):**
+  - verificar que `WOT-2026-008b` esta completado;
+  - releer `docs/decisions/DEC-008B-001-registry-model.md` y `docs/registry/README.md`;
+  - inspeccionar `docs/registry/INDEX.md`, `scripts/discover_skills.py`, `scripts/check_skill_collisions.py` y tests existentes;
+  - contar prompts, skills, `PROMPT_TEMPLATE.md`, `references/`, `_shared/` y consumidores relevantes con comando reproducible;
+  - confirmar que `disable-model-invocation` de `010s` no rompe `trigger_map` ni el registry.
+- **Context Baseline Evidence:** depends_on=WOT-2026-008b completed; informs=WOT-2026-008d,WOT-2026-008f; recent_context=WOT-2026-010r/010s/010t completed; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder: `scripts/discover_skills.py`
+  - Builder: `scripts/check_skill_collisions.py`
+  - Builder: `scripts/generate_registry_catalog.py`
+  - Builder: `scripts/check_registry_catalog.py`
+  - Builder: `docs/registry/README.md`
+  - Builder: `docs/registry/INDEX.md`
+  - Builder: `docs/registry/registry.json`
+  - Builder: `tests/test_registry_catalog.py`
+  - Builder: `tests/test_discover_skills.py`
+  - Builder: `tests/test_check_skill_collisions.py`
+  - Read/inspect only: `docs/decisions/DEC-008B-001-registry-model.md`
+  - Read/inspect only: `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
+  - Read/inspect only: `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
+  - Read/inspect only: `skills/`
+  - Read/inspect only: `prompts/`
+  - Read/inspect only: `scripts/local_audit.py`
+  - Read/inspect only: `scripts/validate_agent_config.py`
+  - Read/inspect only: `bus/skill_resolver.py`
+- **Forbidden Surfaces:** mover, renombrar o borrar carpetas de prompts/skills; retirar `triggers:`; copiar bundles externos; instalar dependencias; tocar `pyproject.toml` o `uv.lock`; editar bus runtime/events manualmente; `privada/`; `.env`; migrar shims de `008d`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe un registry generado determinista en `docs/registry/registry.json` o equivalente declarado por el Builder, con orden estable.
+  - [ ] `docs/registry/INDEX.md` se genera desde el registry y no queda como indice manual divergente.
+  - [ ] Existe un check que falla si registry o INDEX estan stale respecto a prompts/skills reales.
+  - [ ] El registry cubre prompts, skills, `PROMPT_TEMPLATE.md`, referencias/templates compartidas y consumidores relevantes declarados por `008a/008b`.
+  - [ ] Cada entrada incluye ruta, tipo de artefacto, owner/source, canonical_source, estado (`active`, `deprecated`, `draft` o equivalente), aliases/triggers cuando aplique y notas de compatibilidad si existen shims.
+  - [ ] Se distingue layout fisico de alias logico; no se ejecuta ninguna migracion de naming/shims de `008d`.
+  - [ ] Discovery/collision conservan paridad observable o documentan por que quedan read-only.
+  - [ ] Tests focales, ruff, encoding guard y `validate --json --project-root <repo_destino>` terminan en verde.
+- **Integracion cross-ticket:** `008c` desbloquea `008d` y `008f`. Debe incorporar el aprendizaje de `010s` como metadata aditiva, sin reabrir la taxonomia externa.
+- **CONTRACT_GAP behavior:** si el inventario no puede generarse deterministamente, si el INDEX no puede derivarse del registry, si aparece consumidor vivo no clasificado, o si el cambio exige migrar nombres/shims, emitir `CG-WOT-2026-008c.md` y bloquear.
+- **Builder clarification budget:** 0. Las decisiones abiertas se registran como notas o follow-ups; no se pide al humano durante Builder salvo CONTRACT_GAP real.
+- **STOP conditions:** parar si se requiere mover/renombrar/borrar prompts o skills; parar si el registry depende de estado local no versionado; parar si el stale-check solo puede ser pass-open; parar si se necesita tocar dependencias o bus.
+- **Depende de:** WOT-2026-008b (COMPLETED).
