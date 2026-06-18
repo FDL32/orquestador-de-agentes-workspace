@@ -25,7 +25,7 @@ Crear un gate integrado `scripts/check_motor_destination_integration.py` que val
 
 ## Decision Arquitectonica
 
-La entrada canonica del ticket sera `scripts/check_motor_destination_integration.py`. El wrapper debe delegar en logica existente siempre que sea posible: `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y helpers de autoridad/topologia ya presentes. El modo por defecto cubre integracion operativa cotidiana; la auditoria de primera publicacion queda separada detras de un flag explicito para no mezclar un gate pre-push con un scan historico mas caro.
+La entrada canonica del ticket sera `scripts/check_motor_destination_integration.py`. El wrapper debe delegar en logica existente siempre que sea posible: `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y helpers de autoridad/topologia ya presentes. En `validate_authority.py`, `main()` es CLI-only y valida el motor; para validar autoridad del destino el ticket debe extraer un helper exportable reutilizando `is_canonical_authority(...)` y `find_all_agent_dirs(...)` con `canonical_root = <project_root>/.agent/collaboration`, sin cambiar `main()` ni su CLI. Para `check_destino_publish_ready.py`, delegar significa invocar `main(argv)` por import y propagar su exit code; extraer helper solo si hace falta estructura adicional, sin reescribir `_run_validate`. El modo por defecto cubre integracion operativa cotidiana; la auditoria de primera publicacion queda separada detras de un flag explicito para no mezclar un gate pre-push con un scan historico mas caro.
 
 ## Non-goals
 
@@ -104,8 +104,10 @@ La entrada canonica del ticket sera `scripts/check_motor_destination_integration
 
 - Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
 - El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/settings ya presentes.
-- destination_context.py, check_destino_publish_ready.py, classify_publication.py y validate_authority.py solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
-- El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido.
+- `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y `validate_authority.py` solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
+- En alidate_authority.py, la delegacion valida del destino pasa por un helper exportable sobre is_canonical_authority(...) y ind_all_agent_dirs(...); main() queda reservado al CLI del motor.
+- En check_destino_publish_ready.py, delegar significa llamar main(argv) por import y propagar su exit code; no reescribir _run_validate ni duplicar alidate --json.
+- El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido, aunque hoy `resolve_motor_link()` solo garantice `motor_root`.
 - El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
 - El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
 - Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.

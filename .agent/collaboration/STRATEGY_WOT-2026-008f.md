@@ -2,11 +2,11 @@
 
 ## Enfoque
 
-1. Baseline read-only: confirmar `008e` COMPLETED, `008c` como premisa tecnica satisfecha, ejecutar `validate --json`, `check_destino_publish_ready.py` y leer `destination_context.py`, `classify_publication.py`, `validate_authority.py`.
+1. Baseline read-only: confirmar `008e` COMPLETED, `008c` como premisa tecnica satisfecha, ejecutar `validate --json`, `check_destino_publish_ready.py` y leer `destination_context.py`, `classify_publication.py`, `validate_authority.py` poniendo foco explicito en que `validate_authority.main()` es CLI-only y que `check_destino_publish_ready` reutilizable hoy entra por `main(argv)`.
 2. Crear `scripts/check_motor_destination_integration.py` como wrapper unico con `--project-root` obligatorio y `--motor-root` opcional.
 3. Mantener dos modos separados: modo operativo por defecto y auditoria de primera publicacion solo con flag explicito.
-4. Delegar en checks existentes siempre que sea viable; si hace falta extraer helpers pequenos desde scripts vivos, hacerlo sin duplicar semantica ni cambiar su contrato CLI.
-5. Cubrir con tests de integracion livianos sobre fixtures/tmp: link roto, publish-ready failure, autoridad/manifest incompatible y publication audit opcional.
+4. Delegar en checks existentes siempre que sea viable; si hace falta extraer helpers pequenos desde scripts vivos, hacerlo sin duplicar semantica ni cambiar su contrato CLI. En `validate_authority.py`, extraer helper exportable para destino sobre `is_canonical_authority(...)` y `find_all_agent_dirs(...)` sin tocar `main()`. En `check_destino_publish_ready.py`, delegar por `main(argv)` y propagar exit code; extraer helper solo si hace falta estructura adicional.
+5. Cubrir con tests de integracion livianos sobre fixtures/tmp: link roto, publish-ready failure, autoridad/manifest incompatible y publication audit opcional. Para auditoria de primera publicacion, el punto de delegacion preferente es `classify_publication.build_manifest(...)`.
 6. Si se tocan prompts, limitarlo a anadir una referencia minima al wrapper nuevo; no reescribir flujo operativo ni auditorias existentes.
 7. Documentar exit codes, comandos de reproduccion y limites del wrapper en un artefacto puntual.
 

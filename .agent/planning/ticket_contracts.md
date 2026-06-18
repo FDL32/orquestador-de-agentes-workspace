@@ -575,7 +575,7 @@
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008F-001
 - **Plan-Link:** PLAN-008F-001
-- **Premise:** el engranaje destino-motor y la preparacion operativa del destino ya estan cubiertos por piezas separadas (`destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py`, validaciones de autoridad/topologia), pero no existe una entrada unica que las orqueste de punta a punta sin duplicar logica.
+- **Premise:** el engranaje destino-motor y la preparacion operativa del destino ya estan cubiertos por piezas separadas (`destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py`, validaciones de autoridad/topologia), pero no existe una entrada unica que las orqueste de punta a punta sin duplicar logica. `validate_authority.main()` sigue siendo CLI-only para el motor; el ticket debe reutilizar sus helpers y no asumir que `main()` valida un `project_root` arbitrario.
 - **Premise Re-check:** confirmar `008e` COMPLETED y `008c` satisfecho como premisa tecnica; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/check_motor_destination_integration.py`
@@ -597,7 +597,7 @@
   - [ ] Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
   - [ ] El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/topologia ya presentes.
   - [ ] destination_context.py, check_destino_publish_ready.py, classify_publication.py y validate_authority.py solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
-  - [ ] El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido.
+  - [ ] El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido, aunque `resolve_motor_link()` hoy solo garantice `motor_root`.
   - [ ] El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
   - [ ] El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
   - [ ] Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.
