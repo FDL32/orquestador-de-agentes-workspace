@@ -46,3 +46,46 @@
 - Cambio aplicado: contrato activo, STRATEGY, AUDIT y `T-008C-001` ya no piden `registry.json` ni scripts nuevos de registry.
 - Nuevo objetivo: formalizar `INDEX.md` como proyeccion generada por `discover_skills.py --generate-index` y anadir stale-check.
 - Trazabilidad: el gap queda documentado en este `execution_log.md`; no se conserva `CG-WOT-2026-008c.md` fisico porque no hubo evento CONTRACT_GAP canonico en bus y `--validate` lo trata como incoherencia.
+
+## Builder execution - contrato re-scoped (2026-06-18)
+
+### Fase 0 - Diagnostico
+
+- Preflight: validate 0/0; STATE=WOT-2026-008c/IN_PROGRESS, TURN=BUILDER/IMPLEMENT.
+- **El grueso de 008c YA estaba implementado** en commit `dbd2ba5 feat(WOT-2026-008c):
+  derived catalog + generated INDEX projection`: `discover_skills.py` ya tiene
+  `generate_index()` (L517), `check_index_stale()` (L527), CLI `--generate-index`
+  / `--check-index`; `docs/registry/INDEX.md` es proyeccion autogenerada;
+  `docs/registry/README.md` documenta "discovery recursivo sin manifest";
+  `tests/test_registry_catalog.py` cubre stale-gate y parity. NO existe
+  registry.json (correcto segun DEC-008B-001).
+- Conteo reproducible: 20 prompts, 29 skills, 2 PROMPT_TEMPLATE, 44 references, 3 _shared.
+- **Gap legitimo encontrado:** el criterio binario re-scoped exige que el INDEX
+  refleje `disable-model-invocation` (metadata que 010s anadio al discovery DESPUES
+  de `dbd2ba5`). El INDEX/generador NO lo emitia (0 menciones). Este es el unico
+  trabajo productivo pendiente; no se fabrica nada mas (honestidad > deliverables
+  cosmeticos).
+
+### Fase 1 - Implementacion (cambio minimo)
+
+- `scripts/discover_skills.py`: `_catalog_entry` gana campo `invocation`
+  (user-invoked/model-invoked derivado de `disable_model_invocation`);
+  `build_catalog` lo pasa desde el discovery; `render_index` anade columna
+  `invocation`. INDEX regenerado: 90 entradas con invocacion, stale-check verde.
+- NO se crea registry.json ni scripts de registry (DEC-008B-001 / Forbidden).
+- NO se toca discovery/collision dispatch (trigger_map intacto), naming/shims (008d).
+
+### Fase 2 - Tests + Gates
+
+- `test_registry_catalog.py`: `invocation` anadido a required fields +
+  `test_catalog_invocation_parity_with_discovery` (paridad con disable_model_invocation).
+- Focal: `pytest test_registry_catalog.py test_discover_skills.py
+  test_check_skill_collisions.py -q` -> **52 passed**.
+- `--check-index` -> INDEX en sync. `check_skill_collisions` -> OK (no collisions).
+- **Suite canonica `run_pytest_safe --level all` -> 2947 passed, 20 skipped, 0 failed (4m53s).**
+- ruff All checks passed; format OK; encoding exit 0; validate 0/0.
+
+### Entrega
+
+- Trabajo previo: commit `dbd2ba5` (ya en repo, base Opcion 4).
+- Trabajo de esta sesion: INDEX refleja invocation + test de paridad (commit abajo).
