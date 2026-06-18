@@ -1081,12 +1081,12 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Depende de:** WOT-2026-008c
 - **Problema:** los prompts usan `snake_case` con orden inconsistente (`review_manager.md`, `launch_builder.md`, `audit_*`) y las skills usan `kebab-case` mayormente dominio/actor primero (`man-review-implementation`, `bui-implement-from-plan`). Renombrar sin decision congelada rompe `source_prompt`, `contract_id`, docs, memoria y agentes externos. Tras 008c no hay `registry.json`: la compatibilidad debe vivir en shims/stubs, frontmatter y checks existentes.
 - **Objetivo:** fijar una DEC de convencion de nombres antes de mover nada, aplicar un piloto minimo y atomico, y preservar compatibilidad con shims versionados. La convencion debe cubrir prompts, skills, scripts y artefactos auxiliares, distinguiendo actor/dominio primero vs accion primero por tipo. No hay migracion masiva en este ticket.
-- **Decision previa obligatoria:** crear una DEC nueva (por ejemplo `docs/decisions/DEC-008D-001-naming-convention.md`) que congele:
-  - prompts: `snake_case`, patron `<domain_or_actor>_<action>_<object>.md` salvo familias historicas justificadas como `audit_*`;
+- **Decision previa obligatoria:** crear una DEC nueva (por ejemplo `docs/decisions/DEC-008D-001-naming-convention.md`) que primero revalide la premisa contra 010s y congele:
+  - prompts: `snake_case`, patron `<domain_or_actor>_<action>_<object>.md` salvo familias historicas justificadas como `audit_*`; decidir explicitamente prefijos de rol (`man_`/`bui_` o `manager_`/`builder_`);
   - skills: `kebab-case`, patron `<domain-or-actor>-<action>-<object>/`;
   - scripts: `snake_case` verbo primero para CLIs (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`);
   - shims/stubs: formato, ventana de retirada y ticket propietario (`008e`);
-  - criterio de legacy permitido y etiquetas de compatibilidad.
+  - criterio de legacy permitido y etiquetas de compatibilidad;`n  - ortogonalidad entre naming lexico y taxonomia de invocacion `disable-model-invocation` de 010s.
 - **Files Likely Touched:**
   - Builder: DEC de naming en `docs/decisions/`
   - Builder: `docs/registry/README.md`
@@ -1100,11 +1100,11 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - El piloto toca prompt + skill consumidora de forma atomica cuando existe `source_prompt`.
   - `python scripts/discover_skills.py --check-contract` queda verde tras el rename.
   - `python scripts/check_skill_collisions.py` queda verde.
-  - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes sin introducir `registry.json`.
+  - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente debe ser frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, nunca sidecar JSON ni manifest central.
   - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`.
   - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
-  - La barrera preferente es `discover_skills.py --check-naming`, por estar en el mismo dominio que catalog/discovery. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
-  - No se hace migracion masiva; maximo piloto pequeno y reversible.
+  - `discover_skills.py --check-naming` no existe aun: 008d debe implementarlo con test bloqueador fail-closed para un nombre fuera de convencion. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
+  - No se hace migracion masiva; maximo piloto pequeno y reversible. `python scripts/pre_handoff_guard.py`/handoff debe quedar verde para demostrar que la barrera 010u de archival-rename no dispara.
   - Tests focales, ruff/format si toca Python, encoding guard, suite canonica y validate 0/0 pasan.
 - **Piloto sugerido:** evaluar `prompts/review_manager.md` -> nombre canonico actor/dominio primero solo si se actualiza a la vez `skills/man-review-implementation/SKILL.md:source_prompt` y se conserva stub legacy. Si el analisis muestra mayor riesgo que valor, elegir un piloto documental de menor blast radius.
 - **STOP:**

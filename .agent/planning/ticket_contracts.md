@@ -491,8 +491,8 @@
   - verificar que `WOT-2026-008c` esta completado;
   - releer `docs/registry/README.md` y `docs/registry/INDEX.md` generados;
   - inspeccionar `scripts/discover_skills.py --check-contract` y `scripts/check_skill_collisions.py`;
-  - localizar prompts/skills piloto con `source_prompt` vivo antes de proponer rename;
-  - confirmar si `audit_plan.md` sigue siendo stub-alias vivo y usarlo como patron de compatibilidad, no como caso a borrar.
+  - localizar prompts/skills piloto con `source_prompt` vivo y referencias prose vivas antes de proponer rename;
+  - confirmar si `audit_plan.md` sigue siendo stub-alias vivo y usarlo como patron de compatibilidad, no como caso a borrar; revalidar la premisa contra 010s y confirmar que naming lexico es ortogonal a `disable-model-invocation`.
 - **Context Baseline Evidence:** depends_on=WOT-2026-008c completed; naming_discussion=2026-06-18; generated_at=2026-06-18.
 - **Files Likely Touched:**
   - Builder repo_motor: `docs/decisions/DEC-008D-001-naming-convention.md`
@@ -510,17 +510,17 @@
 - **Forbidden Surfaces:** crear `registry.json` o manifest central; migracion masiva; mover carpetas completas de prompts/skills; retirar shims sin scan reproducible; romper `source_prompt`; tocar bus runtime/events; tocar dependencias; `privada/`; `.env`.
 - **DoD (criterios binarios de cierre):**
   - [ ] Existe DEC de naming congelada antes de cualquier rename.
-  - [ ] La DEC fija patrones por tipo: prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`), shims/stubs versionados.
-  - [ ] Si hay piloto de rename, el prompt y TODOS los consumidores `source_prompt` se actualizan atomicamente.
+  - [ ] La DEC fija patrones por tipo: prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`), shims/stubs versionados, prefijos de rol (`man`/`bui` vs `manager`/`builder`) y ortogonalidad con `disable-model-invocation`.
+  - [ ] Si hay piloto de rename, el prompt, su frontmatter `source_prompt` y todas las referencias prose vivas en prompts/skills operativos se actualizan atomicamente.
   - [ ] Existe shim/stub legacy para cada nombre publico antiguo tocado, con retirada asignada a `008e`.
   - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
   - [ ] `python scripts/check_skill_collisions.py` queda verde.
-  - [ ] El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes sin crear manifest central.
+  - [ ] El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente es frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, sin sidecar JSON ni manifest central.
   - [ ] `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
-  - [ ] La barrera preferente es `discover_skills.py --check-naming`; si se crea `check_naming_convention.py`, queda justificado con evidencia de por que no encaja en discovery.
-  - [ ] Tests focales, ruff/format si toca Python, encoding guard, suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
+  - [ ] Existe `discover_skills.py --check-naming` con test que bloquea fail-closed un nombre fuera de convencion; si se crea `check_naming_convention.py`, queda justificado con evidencia de por que no encaja en discovery.
+  - [ ] Tests focales, ruff/format si toca Python, encoding guard, `pre_handoff_guard`/handoff verde (incluida barrera 010u archival-rename), suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
 - **Integracion cross-ticket:** desbloquea `008e`; no debe mezclar lifecycle operativo de `008f` ni performance/CI. Debe preservar lo aprendido en `010s` y `010t`.
 - **CONTRACT_GAP behavior:** si la convencion requiere redisenar discovery, crear manifest central, tocar bus/runtime, o no puede mantener `--check-contract` verde con shims, emitir `CG-WOT-2026-008d.md` y bloquear.
 - **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
-- **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta `discover_skills.py --check-naming`.
+- **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta `discover_skills.py --check-naming`; parar si no se revalida la premisa contra 010s; parar si la DEC no fija prefijos de rol.
 - **Depende de:** WOT-2026-008c (COMPLETED).
