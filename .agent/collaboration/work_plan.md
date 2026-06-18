@@ -93,21 +93,21 @@ Ejecutar el rename versionado `prompts/review_manager.md` -> `prompts/manager_re
    - `python scripts/discover_skills.py --check-contract`
    - `python scripts/check_skill_collisions.py`
    - `python scripts/discover_skills.py --json`
-   - `rg "review_manager|manager_review" prompts skills scripts docs tests`
+   - `rg "review_manager|manager_review" prompts skills scripts docs tests --glob "!**/sandbox/**"`
 3. Confirmar que los consumidores vivos coinciden con los 6 declarados en la DEC o emitir CONTRACT_GAP.
 4. Registrar baseline y seams en `execution_log.md` antes de tocar codigo.
 
 ## Criterios binarios
 
-- `prompts/manager_review.md` contiene el prompt canonico, conserva `contract_id: cid-man-review-v2` y el anchor esperado por `--check-contract`, e incluye frontmatter YAML con `legacy_aliases: [review_manager]`.
-- `prompts/review_manager.md` queda como stub-alias compatible estilo `audit_plan.md`; `--check-naming` lo tolera por el `legacy_aliases` del canonico, no por `KNOWN_LEGACY_NAMES`.
+- `prompts/manager_review.md` contiene el prompt canonico y estrena el patron de frontmatter YAML en prompts usando `parse_frontmatter()` existente; incluye `legacy_aliases: [review_manager]` y conserva en el cuerpo, como texto buscable, las lineas literales `Skill canonica: skills/man-review-implementation/SKILL.md` y `contract_id: cid-man-review-v2`.
+- `prompts/review_manager.md` queda como stub-alias compatible estilo `audit_plan.md`; `audit_plan.md` es precedente solo de forma de stub, no del mecanismo de tolerancia. `--check-naming` tolera el stub por `legacy_aliases` del canonico parseado con `parse_frontmatter()`, no por `KNOWN_LEGACY_NAMES`.
 - Los 6 consumidores vivos declarados en DEC quedan actualizados al canonico o documentan alias de compatibilidad sin romper `--check-contract`.
 - `KNOWN_LEGACY_NAMES` ya no contiene `review_manager`; la compatibilidad vive en frontmatter `legacy_aliases`, con tests que fallan si el alias se tolera solo por hardcode.
-- `python scripts/discover_skills.py --check-naming` pasa sin excepciones hardcodeadas y lee `legacy_aliases` del prompt canonico.
+- `python scripts/discover_skills.py --check-naming` pasa sin excepciones hardcodeadas, lee `legacy_aliases` del prompt canonico con `parse_frontmatter()`, y tiene test del parse real de prompt con frontmatter.
 - `python scripts/discover_skills.py --check-contract` pasa.
 - `python scripts/check_skill_collisions.py` pasa.
-- `python scripts/discover_skills.py --json` conserva paridad funcional de trigger_map.
-- `rg "review_manager" prompts skills scripts docs tests` solo encuentra stub, `legacy_aliases`, docs historicas/deprecacion o tests de compatibilidad; tests se verifican tambien via pytest.
+- `python scripts/discover_skills.py --json` conserva paridad funcional de trigger_map; `python scripts/discover_skills.py --generate-index` actualiza el indice y `python scripts/discover_skills.py --check-index` queda verde.
+- `rg "review_manager" prompts skills scripts docs tests --glob "!**/sandbox/**"` solo encuentra stub, `legacy_aliases`, docs historicas/deprecacion o tests de compatibilidad; tests se verifican tambien via pytest.
 - Tests focales, ruff/format sobre Python tocado, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
 
 ## CONTRACT_GAP behavior
