@@ -90,4 +90,25 @@
 - Trabajo previo: commit `dbd2ba5` (ya en repo, base Opcion 4).
 - Trabajo de esta sesion: INDEX refleja invocation + test de paridad (commit abajo).
 
+### Handoff + hallazgos para el Manager
+
+- Commit motor productivo: `67c2dcc`. Handoff: BUILDER_EXIT + STATE_CHANGED ->
+  READY_FOR_REVIEW emitidos.
+- **Scope-override usado (justificado):** el checkpoint motor reporto los 3
+  archivos "fuera de FLT" aunque estan en `### repo_motor - Builder`. Causa raiz
+  (reportada al Manager, NO arreglada por Builder): `parse_flt_namespaced` en
+  `.agent/scope_gate.py:144` compara el heading EXACTO `== "repo_motor"`, pero el
+  work_plan usa `### repo_motor - Builder` (con sufijo). El parser no reconoce el
+  sufijo -> 0 paths repo_motor -> warning `scope` en validate y bloqueo del scope
+  gate. `scope_gate.py` es Read/inspect-only para Builder; `work_plan.md` es
+  Manager-only. NO lo modifico unilateralmente.
+  - **Opciones para el Manager:** (A) cambiar los headers del work_plan a
+    `### repo_motor` exacto (Manager-only edit), o (B) relajar el parser para
+    reconocer `### repo_motor - <sufijo>` (ticket de motor). El warning `scope`
+    es consecuencia de este formato, no de codigo de 008c.
+- **Patron de archivado (010u) detectado por la propia barrera:** el cierre de
+  010u dejo sus STRATEGY_/AUDIT_ en limbo; el guard `check_archive_rename_complete`
+  (010u) lo cato en vivo; reconciliado como rename 100% (byte-identico).
+- repo_motor limpio; repo_destino limpio tras reconciliacion.
+
 Scope override: delivery_authority=repo_motor; commit 67c2dcc; los 3 archivos (discover_skills.py, docs/registry/INDEX.md, tests/test_registry_catalog.py) estan en FLT repo_motor-Builder del work_plan 008c. Affected files: docs/registry/INDEX.md, scripts/discover_skills.py, tests/test_registry_catalog.py
