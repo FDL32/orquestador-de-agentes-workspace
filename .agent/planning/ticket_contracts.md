@@ -478,3 +478,49 @@
 - **Builder clarification budget:** 0. Las decisiones abiertas se registran como notas o follow-ups; no se pide al humano durante Builder salvo CONTRACT_GAP real.
 - **STOP conditions:** parar si se requiere crear manifest central; parar si se requiere mover/renombrar/borrar prompts o skills; parar si se necesita tocar dependencias o bus; parar si se reabre la decision `DEC-008B-001` sin contrato nuevo.
 - **Depende de:** WOT-2026-008b (COMPLETED).
+## T-008D-001 -- Convencion de naming de prompts/skills con shims versionados
+
+- **ticket_id:** WOT-2026-008d
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008D-001
+- **Plan-Link:** PLAN-008D-001
+- **Premise:** `WOT-2026-008c` cerro el INDEX generado sin `registry.json`. La migracion de naming debe operar sobre discovery/frontmatter/check-contract existentes, no sobre manifest central. Renombrar prompts o skills sin DEC congelada rompe `source_prompt`, `contract_id`, docs y consumidores externos.
+- **Premise Re-check (read-only):**
+  - verificar que `WOT-2026-008c` esta completado;
+  - releer `docs/registry/README.md` y `docs/registry/INDEX.md` generados;
+  - inspeccionar `scripts/discover_skills.py --check-contract` y `scripts/check_skill_collisions.py`;
+  - localizar prompts/skills piloto con `source_prompt` vivo antes de proponer rename;
+  - confirmar si `audit_plan.md` sigue siendo stub-alias vivo y usarlo como patron de compatibilidad, no como caso a borrar.
+- **Context Baseline Evidence:** depends_on=WOT-2026-008c completed; naming_discussion=2026-06-18; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder repo_motor: `docs/decisions/DEC-008D-001-naming-convention.md`
+  - Builder repo_motor: `docs/registry/README.md`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: prompts piloto y stubs legacy versionados
+  - Builder repo_motor: skills piloto que referencian esos prompts por `source_prompt`
+  - Builder repo_motor: tests de discovery, contract-check, collision e INDEX si aplica
+  - Read/inspect only: `scripts/discover_skills.py`
+  - Read/inspect only: `scripts/check_skill_collisions.py`
+  - Read/inspect only: `scripts/check_ticket_nomenclature.py`
+  - Read/inspect only: `scripts/validate_ticket_prose.py`
+  - Read/inspect only: `skills/`
+  - Read/inspect only: `prompts/`
+- **Forbidden Surfaces:** crear `registry.json` o manifest central; migracion masiva; mover carpetas completas de prompts/skills; retirar shims sin scan reproducible; romper `source_prompt`; tocar bus runtime/events; tocar dependencias; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe DEC de naming congelada antes de cualquier rename.
+  - [ ] La DEC fija patrones por tipo: prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero, shims/stubs versionados.
+  - [ ] Si hay piloto de rename, prompt y skill consumidora (`source_prompt`) se actualizan atomicamente.
+  - [ ] Existe shim/stub legacy para cada nombre publico antiguo tocado, con retirada asignada a `008e`.
+  - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
+  - [ ] `python scripts/check_skill_collisions.py` queda verde.
+  - [ ] El INDEX generado expone `canonical_name` y `legacy_aliases` o campos equivalentes sin crear manifest central.
+  - [ ] `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
+  - [ ] No se crea gate nuevo si se puede extender un gate existente; si se crea, queda justificado con evidencia.
+  - [ ] Tests focales, ruff/format si toca Python, encoding guard, suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
+- **Integracion cross-ticket:** desbloquea `008e`; no debe mezclar lifecycle operativo de `008f` ni performance/CI. Debe preservar lo aprendido en `010s` y `010t`.
+- **CONTRACT_GAP behavior:** si la convencion requiere redisenar discovery, crear manifest central, tocar bus/runtime, o no puede mantener `--check-contract` verde con shims, emitir `CG-WOT-2026-008d.md` y bloquear.
+- **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
+- **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta extender uno existente.
+- **Depende de:** WOT-2026-008c (COMPLETED).

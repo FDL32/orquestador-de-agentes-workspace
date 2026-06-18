@@ -1072,58 +1072,48 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
     migrar.
   - Si el registry duplica logica de frontmatter sin test de paridad, bloquear.
 
-### WOT-2026-008d - Migracion de naming audit/version con aliases y shims
+### WOT-2026-008d - Convencion de naming de prompts/skills con shims versionados
 - **Prioridad:** Media
 - **Scope:** motor/skills-taxonomy
 - **Estado:** pending
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008c
-- **Problema:** hay hipotesis de mejora de naming (`aud-*`,
-  `manager_review_rubric`, `bui-version-changelog`), pero renombrar sin registry,
-  aliases y compatibilidad rompe triggers, docs, memoria y agentes externos.
-- **Objetivo:** ejecutar solo los renames aprobados por DEC de 008a/008b, usando
-  aliases logicos del registry como mecanismo por defecto de compatibilidad. Los
-  shims fisicos son excepcion, solo si un `rg` de referencias hardcoded demuestra
-  que el alias logico no puede preservar compatibilidad. Tambien evaluar progressive
-  disclosure para prompts grandes: routers pequenos con referencias relativas a
-  documentos de fase, cargados on-demand.
+- **Problema:** los prompts usan `snake_case` con orden inconsistente (`review_manager.md`, `launch_builder.md`, `audit_*`) y las skills usan `kebab-case` mayormente dominio/actor primero (`man-review-implementation`, `bui-implement-from-plan`). Renombrar sin decision congelada rompe `source_prompt`, `contract_id`, docs, memoria y agentes externos. Tras 008c no hay `registry.json`: la compatibilidad debe vivir en shims/stubs, frontmatter y checks existentes.
+- **Objetivo:** fijar una DEC de convencion de nombres antes de mover nada, aplicar un piloto minimo y atomico, y preservar compatibilidad con shims versionados. La convencion debe cubrir prompts, skills, scripts y artefactos auxiliares, distinguiendo actor/dominio primero vs accion primero por tipo. No hay migracion masiva en este ticket.
+- **Decision previa obligatoria:** crear una DEC nueva (por ejemplo `docs/decisions/DEC-008D-001-naming-convention.md`) que congele:
+  - prompts: `snake_case`, patron `<domain_or_actor>_<action>_<object>.md` salvo familias historicas justificadas como `audit_*`;
+  - skills: `kebab-case`, patron `<domain-or-actor>-<action>-<object>/`;
+  - scripts: `snake_case` verbo primero para CLIs (`check_*`, `generate_*`, `validate_*`, `discover_*`);
+  - shims/stubs: formato, ventana de retirada y ticket propietario (`008e`);
+  - criterio de legacy permitido y etiquetas de compatibilidad.
 - **Files Likely Touched:**
-  - prompts/skills afectados por renames aprobados
-  - registry/manifest/INDEX
-  - docs y referencias
-  - tests discovery/collision/registry
+  - Builder: DEC de naming en `docs/decisions/`
+  - Builder: `docs/registry/README.md`
+  - Builder: `docs/registry/INDEX.md`
+  - Builder: prompts piloto y sus stubs/aliases versionados
+  - Builder: skills piloto que referencian esos prompts por `source_prompt`
+  - Builder: tests de discovery, contract-check, collisions e INDEX si aplica
+  - Read/inspect only: `scripts/discover_skills.py`, `scripts/check_skill_collisions.py`, `scripts/check_ticket_nomenclature.py`, `scripts/validate_ticket_prose.py`, `docs/registry/INDEX.md`, `skills/`, `prompts/`
 - **Criterios binarios:**
-  - Cada rename tiene DEC aprobada, motivo, compatibilidad y fecha de retirada.
-  - Los triggers antiguos siguen resolviendo mediante alias logico del registry
-    durante la ventana declarada; shim fisico solo con evidencia de necesidad.
-  - `discover_skills.py --check-contract`, collision check, registry check y
-    encoding pasan.
-  - `rg` de nombres antiguos solo aparece en aliases/deprecation docs permitidos
-    o en shims fisicos justificados por referencia hardcoded no resoluble.
-  - No se fusionan prompts/skills solo por similitud de nombre; debe haber mejora
-    demostrada de descubribilidad o reduccion de duplicacion.
-  - Si se divide un prompt grande, queda un router canonico estable, referencias
-    relativas validables y test/check de enlaces; no se duplican reglas entre
-    router y subdocumentos.
-  - Antes de mover prompts a subdirectorios, se lista toda referencia hardcoded a
-    `prompts/*.md` en scripts, skills, prompts, docs y launchers; cada referencia
-    tiene resolver/fallback o shim probado antes del move.
-  - La opcion `deprecated/` se prefiere a borrar recursos legacy cuando aun hay
-    referencias historicas o riesgo de compatibilidad; debe incluir README/registry
-    que marque no uso.
-  - DEC de longitud/progressive-disclosure resuelta con evidencia: no adoptar el
-    limite de 100 lineas como contrato inicial (23/29 skills lo superan). Mantener
-    o endurecer primero el umbral existente de 250 lineas (6/29 skills lo superan)
-    y exigir migracion gradual a docs/references antes de cualquier rewrite masivo.
-    Endurecer significa cablear un gate con test (un SKILL.md de 251 lineas falla),
-    no mantener el numero en prosa.
+  - Existe DEC congelada de naming antes de cualquier rename.
+  - El piloto toca prompt + skill consumidora de forma atomica cuando existe `source_prompt`.
+  - `python scripts/discover_skills.py --check-contract` queda verde tras el rename.
+  - `python scripts/check_skill_collisions.py` queda verde.
+  - El INDEX generado expone `canonical_name` y `legacy_aliases` o campos equivalentes sin introducir `registry.json`.
+  - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`.
+  - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
+  - No se crea gate nuevo si una extension razonable de `discover_skills.py --check-contract`, `check_skill_collisions.py`, `check_ticket_nomenclature.py` o `validate_ticket_prose.py` cubre la regla.
+  - No se hace migracion masiva; maximo piloto pequeno y reversible.
+  - Tests focales, ruff/format si toca Python, encoding guard, suite canonica y validate 0/0 pasan.
+- **Piloto sugerido:** evaluar `prompts/review_manager.md` -> nombre canonico actor/dominio primero solo si se actualiza a la vez `skills/man-review-implementation/SKILL.md:source_prompt` y se conserva stub legacy. Si el analisis muestra mayor riesgo que valor, elegir un piloto documental de menor blast radius.
 - **STOP:**
-  - Si un rename no puede tener alias logico ni shim seguro, requiere aprobacion
-    humana explicita.
+  - Si no hay DEC aprobada, no renombrar.
+  - Si un rename rompe `--check-contract`, bloquear y ajustar contrato antes de seguir.
+  - Si el piloto exige tocar bus, runtime, dependencias o migracion de carpetas, emitir CONTRACT_GAP.
+  - Si la regla requiere gate nuevo, justificar por que no se puede extender un gate existente antes de implementarlo.
+  - Si un rename no puede tener shim seguro, requiere aprobacion humana explicita.
   - Si rompe un contrato publicado, aplazar a major/versioned migration.
-  - Si la migracion intenta resolver lifecycle/onboarding del destino, moverlo a 008f.
-
 ### WOT-2026-008e - Retirada versionada de aliases/shims y compat legacy
 - **Prioridad:** Baja
 - **Scope:** motor/skills-taxonomy
