@@ -1,55 +1,65 @@
-# Work Plan: WOT-2026-010t
+# Work Plan: WOT-2026-010s
 
-> Origen: `WOT-2026-010r` recomendo adaptar el vocabulario de `codebase-design` al review del Manager. Este ticket convierte esa recomendacion en checklist y anti-patron local, sin tocar codigo ni importar el bundle externo.
+> Origen: `WOT-2026-010r` decidio adoptar de forma hibrida la taxonomia user-invoked/model-invoked inspirada en `mattpocock/skills`. Este ticket implementa soporte compatible; NO retira `triggers:` de los SKILL.md.
 
 ## Metadata
 
-- **ID:** WOT-2026-010t
-- **Contract ID:** T-010T-001
-- **Estado:** COMPLETED
-- **deliverable_type:** documentation
+- **ID:** WOT-2026-010s
+- **Contract ID:** T-010S-001
+- **Estado:** APPROVED
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010r (completed)
+- **Depends on:** WOT-2026-010r (completed), WOT-2026-010t (completed)
 
 ## Objetivo
 
-Adaptar conceptualmente el vocabulario de diseno profundo (`deep module`, `interface`, `seam`, `adapter`, `deletion test`, `interface is the test surface`) al review del Manager. El resultado debe ayudar a detectar sobreingenieria, wrappers superficiales y seams inventados, usando un ejemplo real del motor como referencia.
+Introducir soporte backward-compatible para `disable-model-invocation` en discovery/resolution de skills sin romper `trigger_map`. Las skills user-invoked pueden conservar `triggers:` para compatibilidad de dispatch, pero quedan marcadas como no invocables por modelo. Las skills model-invoked siguen disponibles para auto-invocacion cuando su metadata lo permita.
 
 ## Hechos verificados de arranque
 
-- `010r` esta cerrado canonicamente y `validate --json` esta 0/0.
-- El reporte `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md` existe en `repo_motor` y recomienda `010t` para vocabulario de review.
-- `review-checklist.md` y `anti-patterns.md` existen como superficies vivas del Manager.
-- El ticket es `documentation`: no requiere pytest/ruff salvo que el Builder toque codigo, lo cual esta prohibido.
+- `010r` esta cerrado y documenta seis consumidores reales de `triggers`.
+- `010t` esta cerrado y aporta vocabulario de review para evitar seams inventados.
+- `disable-model-invocation` no existe aun en skills locales.
+- `triggers:` existe en los SKILL.md y se consume para `trigger_map`; retirarlo en masa seria breaking.
+- Ticket scope ajustado: el backlog decia "retirar triggers"; este contrato lo corrige a migracion hibrida segura. La retirada queda fuera de 010s.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de editar:
+Confirmar antes de editar codigo:
 
-- que `v1.0.1` no cambia de forma material `codebase-design` o `diagnosing-bugs`; si cambia, documentar diferencia o emitir CONTRACT_GAP;
-- que `skills/man-review-implementation/references/review-checklist.md` es el checklist activo;
-- que `skills/_shared/anti-patterns.md` es la fuente canonica AP;
-- que `skills/systematic-debugging/SKILL.md` conserva el limite local de 3 intentos;
-- que existe un artefacto real para el ejemplo, preferentemente `WOT-2026-009b scope_gate` o un decision artifact equivalente.
+- consumidores reales de `triggers`: `scripts/discover_skills.py`, `bus/skill_resolver.py`, `scripts/check_skill_collisions.py`, `scripts/local_audit.py`, `scripts/orquestador.py`, `scripts/validate_agent_config.py`;
+- tests existentes para discovery/resolver/collisions: `tests/test_discover_skills.py`, `tests/unit/test_skill_discovery.py`, `tests/test_check_skill_collisions.py`, `tests/test_approval_state_revision_and_skill_access.py`;
+- formato actual de `python scripts/discover_skills.py --json` y claves que produce;
+- si `v1.0.1` del repo externo cambia `docs/invocation.md`; si invalida el contrato, emitir CONTRACT_GAP.
+
+Nota operativa: evita `rg` sobre `tests/sandbox/test_runtime/**` sin exclusiones; hay carpetas `opencode-review-*` con acceso denegado que no son fallo del contrato.
 
 Registrar en `execution_log.md`:
 
-- fuentes externas verificadas y SHA/tag usados;
-- artefacto real elegido como ejemplo;
-- cualquier normalizacion de encoding necesaria en archivos tocados.
+- consumidores confirmados;
+- baseline `trigger_map` antes del cambio;
+- decision hibrida: `triggers` se conserva, `disable-model-invocation` se anade como metadata semantica.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `skills/man-review-implementation/references/review-checklist.md`
-- `skills/_shared/anti-patterns.md`
+- `scripts/discover_skills.py`
+- `bus/skill_resolver.py`
+- `scripts/check_skill_collisions.py`
+- `scripts/local_audit.py`
+- `scripts/orquestador.py`
+- `scripts/validate_agent_config.py`
+- `tests/test_discover_skills.py`
+- `tests/unit/test_skill_discovery.py`
+- `tests/test_check_skill_collisions.py`
+- `tests/test_approval_state_revision_and_skill_access.py`
+- `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
 - `CREDITS.md`
-- `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010t.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010t.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010s.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010s.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/planning/ticket_contracts.md`
@@ -57,60 +67,56 @@ Registrar en `execution_log.md`:
 ## Read/inspect only
 
 - `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
-- `skills/_shared/ticket-anti-patterns.md`
-- `skills/systematic-debugging/SKILL.md`
-- `skills/man-review-implementation/SKILL.md`
-- `.agent/runtime/reviews/`
-- `.agent/collaboration/_archive/plan_audit/`
+- `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
+- `skills/*/SKILL.md`
+- `prompts/`
+- `.agent/runtime/events/`
 
 ## Manager-only
 
-- verificar que el vocabulario describe seams/adapters existentes, no exige abstracciones nuevas;
-- verificar que `CREDITS.md` usa source pinneado y `Adapted`;
-- verificar que no se toca codigo ni discovery;
-- verificar que encoding guard no oculta una reescritura masiva no revisable.
+- verificar que `trigger_map` no se rompe;
+- verificar que `disable-model-invocation` no se usa como excusa para ocultar skills del dispatch manual;
+- verificar que no se copia bundle externo;
+- verificar que no se hace retirada masiva de `triggers:`.
 
 ## Decision Arquitectonica
 
-- El vocabulario es una herramienta de review, no una regla para crear capas nuevas.
-- `interface is the test surface` debe usarse para preguntar que contrato observable se prueba, no para exigir mas mocks.
-- `deletion test` se usa como heuristica de valor: si borrar el wrapper no cambia comportamiento ni claridad, probablemente es AP-03 o sobreingenieria.
-- `diagnosing-bugs` puede enriquecer el lenguaje de causa raiz, pero NO reemplaza `systematic-debugging` ni su limite de 3 intentos.
+- Migracion hibrida: `triggers` sigue siendo el contrato de dispatch manual/legacy.
+- `disable-model-invocation: true` significa user-invoked: el modelo no debe auto-invocar esa skill, pero un humano/trigger explicito puede seguir usandola.
+- Ausencia del campo equivale a backward-compatible model-invoked por defecto, salvo reglas locales existentes.
+- `discover_skills.py` debe exponer metadata suficiente para que consumidores posteriores distingan `user_invoked` vs `model_invoked` sin romper claves existentes.
+- La paridad de `trigger_map` antes/despues es barrera obligatoria.
 
 ## Criterios Binarios
 
-- [ ] `review-checklist.md` incluye preguntas accionables para `deep module`, `interface`, `seam`, `adapter`, `deletion test` y `interface is the test surface`.
-- [ ] `anti-patterns.md` incluye anti-patron o refinamiento sobre seam/adapter inventado y sobreingenieria por vocabulario.
-- [ ] Existe `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md` con ejemplo real aplicado a un artefacto existente.
-- [ ] El documento contrasta `diagnosing-bugs` con `systematic-debugging` y conserva el limite de 3 intentos.
-- [ ] `CREDITS.md` incluye fila `WOT-2026-010t` con fuente pinneada, licencia MIT verificada y `Adapted`.
-- [ ] No se toca codigo, discovery, resolver, bus, prompts ni dependencias.
-- [ ] Encoding guard pasa sobre todos los archivos tocados.
-- [ ] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
+- [ ] `discover_skills.py` parsea `disable-model-invocation` como booleano estable y lo expone en cada skill descubierta.
+- [ ] `trigger_map` de `discover_skills.py --json` conserva los mismos triggers para skills existentes antes/despues del cambio.
+- [ ] `bus/skill_resolver.py` respeta la metadata sin romper allowlists por nombre o trigger.
+- [ ] `check_skill_collisions.py`, `local_audit.py`, `orquestador.py` y `validate_agent_config.py` no interpretan mal el nuevo campo.
+- [ ] Hay tests de barrera para `disable-model-invocation: true`, ausencia del campo, valor invalido y paridad de `trigger_map`.
+- [ ] `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md` documenta la semantica local, compatibilidad y ruta de retirada futura.
+- [ ] `CREDITS.md` incluye fila `WOT-2026-010s` con source pinneado, licencia MIT y `Adapted`.
+- [ ] No se eliminan `triggers:` de los SKILL.md en este ticket.
+- [ ] No se toca bus runtime ni eventos manualmente.
+- [ ] Tests focales pasan, ruff/format pasan, encoding guard pasa y `validate --json` termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO migrar taxonomia `user/model-invoked` (`010s`).
-- NO tocar `triggers`, discovery, resolver ni bus.
+- NO retirar `triggers:` de SKILL.md.
+- NO cambiar la UX de comandos slash.
 - NO copiar archivos del bundle externo.
-- NO introducir nuevas abstracciones productivas.
-- NO modificar prompts generales fuera del review checklist.
-- NO cambiar el limite de 3 intentos de `systematic-debugging`.
+- NO introducir dependencias.
+- NO modificar prompts salvo que se detecte CONTRACT_GAP.
+- NO tocar `privada/`, `.env`, bus runtime ni eventos manualmente.
 
 ## Forbidden Surfaces
 
-- codigo Python
-- `scripts/discover_skills.py`
-- `scripts/check_skill_collisions.py`
-- `scripts/local_audit.py`
-- `scripts/orquestador.py`
-- `scripts/validate_agent_config.py`
-- `bus/skill_resolver.py`
-- `skills/` fuera de `skills/man-review-implementation/references/review-checklist.md` y `skills/_shared/anti-patterns.md`
+- `skills/*/SKILL.md` para retirada masiva de `triggers:`
 - `prompts/`
 - `pyproject.toml`
 - `uv.lock`
+- `.agent/runtime/events/`
+- `.agent/runtime/reviews/`
 - bundle externo copiado
-- bus editado manualmente
 - `privada/`
 - `.env`

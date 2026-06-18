@@ -384,3 +384,32 @@
 - **Builder clarification budget:** 0. El Builder adapta vocabulario a checklist y anti-patrones concretos; no decide cambios de arquitectura.
 - **STOP conditions:** parar si hace falta tocar codigo; parar si se intenta copiar texto largo del repo externo; parar si el ejemplo de referencia no puede anclarse a un artefacto real; parar si el diff se convierte en re-encoding masivo no revisable.
 - **Depende de:** WOT-2026-010r (COMPLETED).
+## T-010S-001 -- Migracion hibrida user/model-invoked para skills
+
+- **ticket_id:** WOT-2026-010s
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010S-001
+- **Plan-Link:** PLAN-010S-001
+- **Premise:** `WOT-2026-010r` recomendo adoptar la taxonomia user-invoked/model-invoked de forma hibrida. `triggers:` sigue siendo contrato vivo de dispatch; retirarlo ahora es breaking. `WOT-2026-010t` aporta AP-16 para evitar seams inventados durante esta migracion.
+- **External Source Baseline:** `mattpocock/skills` `docs/invocation.md`, fuente pinneada por Builder antes del cambio. Usar MIT, Adapted, no bundle copiado. Si `v1.0.1` cambia materialmente la semantica, emitir CONTRACT_GAP.
+- **Premise Re-check:** confirmar seis consumidores reales: `scripts/discover_skills.py`, `bus/skill_resolver.py`, `scripts/check_skill_collisions.py`, `scripts/local_audit.py`, `scripts/orquestador.py`, `scripts/validate_agent_config.py`; confirmar que `disable-model-invocation` aun no existe; capturar baseline de `trigger_map`.
+- **Files Likely Touched:**
+  - Builder: `scripts/discover_skills.py`
+  - Builder: `bus/skill_resolver.py`
+  - Builder: `scripts/check_skill_collisions.py`
+  - Builder: `scripts/local_audit.py`
+  - Builder: `scripts/orquestador.py`
+  - Builder: `scripts/validate_agent_config.py`
+  - Builder: `tests/test_discover_skills.py`
+  - Builder: `tests/unit/test_skill_discovery.py`
+  - Builder: `tests/test_check_skill_collisions.py`
+  - Builder: `tests/test_approval_state_revision_and_skill_access.py`
+  - Builder: `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
+  - Builder: `CREDITS.md`
+- **Forbidden Surfaces:** removing `triggers:` from SKILL.md; prompts; bus runtime/events; dependency files; copied external bundle; `privada/`; `.env`.
+- **DoD:** parse and expose `disable-model-invocation`; preserve `trigger_map` parity; resolver allowlists still work by name/trigger; tests cover true/absent/invalid field and parity; docs + CREDITS updated; no `triggers:` removal; validate 0/0.
+- **CONTRACT_GAP behavior:** stop if safe migration requires removing `triggers:`, changing prompts, installing deps, or rewriting discovery architecture beyond the six declared consumers.
+- **Builder clarification budget:** 0. Implement hybrid compatibility only.
+- **Depende de:** WOT-2026-010r (COMPLETED), WOT-2026-010t (COMPLETED).
