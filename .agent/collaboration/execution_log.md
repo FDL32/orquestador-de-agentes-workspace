@@ -1,6 +1,6 @@
 # execution_log.md -- WOT-2026-008c
 
-- **Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## Fase Manager preflight
 
@@ -89,3 +89,5 @@
 
 - Trabajo previo: commit `dbd2ba5` (ya en repo, base Opcion 4).
 - Trabajo de esta sesion: INDEX refleja invocation + test de paridad (commit abajo).
+
+Scope override: delivery_authority=repo_motor; commit 67c2dcc; los 3 archivos (discover_skills.py, docs/registry/INDEX.md, tests/test_registry_catalog.py) estan en FLT repo_motor-Builder del work_plan 008c. Affected files: docs/registry/INDEX.md, scripts/discover_skills.py, tests/test_registry_catalog.py
