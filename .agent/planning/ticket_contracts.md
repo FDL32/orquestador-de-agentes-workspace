@@ -516,6 +516,7 @@
   - [ ] Existe shim/stub legacy para cada nombre publico antiguo tocado, con retirada asignada a `008e`; la DEC define si el shim es alias documental o prompt ejecutable, y como conserva `source_prompt`/`contract_id` sin romper `--check-contract`.
   - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
   - [ ] `python scripts/check_skill_collisions.py` queda verde.
+  - [ ] Antes del piloto, capturar baseline de `python scripts/discover_skills.py --check-contract`, `python scripts/check_skill_collisions.py` y `python scripts/discover_skills.py --json`; despues del piloto, repetirlos y demostrar paridad salvo renames/aliases declarados en la DEC.
   - [ ] El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente es frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, sin sidecar JSON ni manifest central.
   - [ ] `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
   - [ ] Existe `discover_skills.py --check-naming` antes del cierre, con test que bloquea fail-closed un nombre fuera de convencion; si se crea `check_naming_convention.py` o se extiende `check_skill_collisions.py`, la DEC lo justifica con evidencia de por que no encaja en discovery.

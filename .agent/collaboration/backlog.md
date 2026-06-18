@@ -1103,6 +1103,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - El piloto toca prompt + skill consumidora de forma atomica cuando existe `source_prompt`.
   - `python scripts/discover_skills.py --check-contract` queda verde tras el rename.
   - `python scripts/check_skill_collisions.py` queda verde.
+  - Antes del piloto, capturar baseline de `python scripts/discover_skills.py --check-contract`, `python scripts/check_skill_collisions.py` y `python scripts/discover_skills.py --json`; despues del piloto, repetirlos y demostrar paridad salvo renames/aliases declarados en la DEC.
   - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente debe ser frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, nunca sidecar JSON ni manifest central.
   - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`; la DEC define si el shim es alias documental o prompt ejecutable, y como conserva `source_prompt`/`contract_id` sin romper `--check-contract`.
   - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
