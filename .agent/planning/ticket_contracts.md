@@ -566,3 +566,41 @@
 - **CONTRACT_GAP behavior:** si aparecen consumidores vivos adicionales de alto riesgo, si el stub no puede mantener compatibilidad, o si el rename rompe `--check-contract`, emitir `CG-WOT-2026-008e.md` y bloquear.
 - **STOP conditions:** parar si no hay baseline; parar si hay mas de 6 consumidores vivos no declarados; parar si se intenta borrar el alias legacy sin stub; parar si se toca bus/runtime.
 - **Depende de:** WOT-2026-008d (COMPLETED).
+
+## T-008F-001 -- Gate de integracion destino-motor y lifecycle operativo
+
+- **ticket_id:** WOT-2026-008f
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008F-001
+- **Plan-Link:** PLAN-008F-001
+- **Premise:** el engranaje destino-motor y la preparacion operativa del destino ya estan cubiertos por piezas separadas (`destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py`, validaciones de autoridad/topologia), pero no existe una entrada unica que las orqueste de punta a punta sin duplicar logica.
+- **Premise Re-check:** confirmar `008c` COMPLETED; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/check_motor_destination_integration.py`
+  - Builder repo_motor: `tests/test_check_motor_destination_integration.py`
+  - Builder repo_motor: `docs/protocol/motor_destination_integration_WOT-2026-008f.md`
+  - Builder repo_motor: `scripts/destination_context.py`
+  - Builder repo_motor: `scripts/check_destino_publish_ready.py`
+  - Builder repo_motor: `scripts/classify_publication.py`
+  - Builder repo_motor: `scripts/validate_authority.py`
+  - Builder repo_motor: `tests/test_destination_context.py`
+  - Builder repo_motor: `tests/test_prepush_check.py`
+  - Builder repo_motor: `tests/test_classify_publication.py`
+  - Builder repo_motor: `prompts/destination_bootstrap.md`
+  - Builder repo_motor: `prompts/audit_git_publication.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/install_agent_system.py`, `.agent/agent_controller.py`, `.agent/config/motor_destination_link.json`, `MANIFEST.distribute`, `MANIFEST.workspace`, `prompts/orchestrator_pipeline.md`, `prompts/audit_complete_motor_destination.md`, `tests/test_motor_root_gates.py`, bus runtime/events.
+- **Forbidden Surfaces:** editar bus runtime/events manualmente; duplicar scanners de secretos o `validate`; mutar un destino real para probar guards/settings; tocar dependencias; redisenar `install_agent_system.py` o el launcher como parte de este ticket.
+- **DoD:**
+  - [ ] Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
+  - [ ] El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/topologia ya presentes.
+  - [ ] El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido.
+  - [ ] El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
+  - [ ] El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
+  - [ ] Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y guard/settings fail-closed sobre fixture o tmp.
+  - [ ] `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
+- **CONTRACT_GAP behavior:** si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse, emitir `CG-WOT-2026-008f.md` y bloquear.
+- **STOP conditions:** parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher.
+- **Depende de:** WOT-2026-008c (COMPLETED).
