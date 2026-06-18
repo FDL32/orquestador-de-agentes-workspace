@@ -2160,4 +2160,4 @@ antes de construir otra.
 - **Criterio de salida:** skills auditoras con ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, alidate --json 0/0 y sin tocar ui-self-audit, prompts ni runtime.
 
 
-| Alta | WOT-2026-008i | Rename atomico de 4 skills manager a manager-* | motor/skills-taxonomy | pending | WOT-2026-008g, WOT-2026-008e, WOT-2026-008h, WOT-2026-008k | session-2026-06-18-role-naming |
+| Alta | WOT-2026-008i | Rename atomico de 4 skills manager a manager-* | motor/skills-taxonomy | completed | WOT-2026-008g, WOT-2026-008e, WOT-2026-008h, WOT-2026-008k | session-2026-06-18-role-naming |  <!-- cerrado canonico 2026-06-19: motor b230b61; rename atomico de 4 skills manager-*, trigger_map byte-identico, suite 3013 passed, validate 0/0 --> |
