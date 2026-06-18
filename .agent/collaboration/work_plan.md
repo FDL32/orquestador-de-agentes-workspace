@@ -1,10 +1,10 @@
-# work_plan.md -- WOT-2026-008k
+# work_plan.md -- WOT-2026-008i
 
 ## Metadata
 
-- **ID:** WOT-2026-008k
-- **Contract ID:** T-008K-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-008i
+- **Contract ID:** T-008I-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
@@ -13,79 +13,83 @@
 
 ## Objetivo
 
-Formalizar `role: auditor` en las skills que son propiedad real del rol auditor,
-sin renombrar directorios ni prompts. Esta pasada usa **opcion B**:
-`discover_skills.py` y el catalogo exponen `role` como campo separado de
-`owner`, sin cambiar la semantica actual de `owner`. Cumplimiento medible: las
-cinco skills auditoras declaradas quedan con `role: auditor`, el catalogo/INDEX
-reflejan `role` en columna separada, `bui-self-audit` permanece en `builder`,
-las tres skills que hoy son contract-validated conservan `source_prompt` y
-`contract_id`, y `validate --json --project-root <repo_destino>` cierra en
-0 errors / 0 warnings.
+Renombrar atomicamente las cuatro skills `man-*` a `manager-*` y migrar sus
+consumidores vivos operativos sin tocar `bui-*`, sin cambiar `triggers`, sin
+romper `manager_review.md` ni `--check-contract`, y preservando la paridad
+funcional del discovery. El nombre de directorio de skill se trata como
+superficie interna del bundle; la compatibilidad se garantiza actualizando los
+consumidores vivos y manteniendo los mismos triggers, no inventando un segundo
+resolver de aliases.
 
 ## Non-goals
 
-- No renombrar prompts `audit_*` ni skills.
-- No tocar `skills/bui-self-audit/SKILL.md`.
-- No migrar `man-*` o `bui-*`.
+- No tocar `bui-*` ni abrir `008j` antes de tiempo.
+- No cambiar `triggers`.
+- No cambiar `contract_id`.
+- No tocar prompts `audit_*`.
 - No tocar bus, runtime o eventos.
-- No cambiar dependencias ni launcher.
-- No desenlazar `owner` de `author`/`role`.
+- No introducir dependencias nuevas.
+- No redisenar discovery salvo ajustes estrictamente necesarios para el rename.
 
 ## Premisas verificadas antes de Builder
 
-- `WOT-2026-008g` y `WOT-2026-008h` estan COMPLETED.
-- `DEC-008G-001` congelo que `audit_*` en prompts es familia transversal y que
-  `008k` formaliza solo el rol de ciertas skills auditoras.
-- `WOT-2026-008i` y `WOT-2026-008j` quedan diferidos segun `DEC-008G-001`; este
-  ticket es independiente de la expansion `man-*`/`bui-*`.
-- Las cinco skills candidatas se dividen hoy en dos grupos relevantes: tres con
-  contrato vivo (`audit-git-publication`, `audit-pipeline`,
-  `system-health-audit`) y dos sin `source_prompt` (`code-audit`,
-  `local-audit`).
-- `skills/bui-self-audit/SKILL.md` usa `role: builder` y queda fuera por
-  propiedad real del artefacto.
-- `repo_motor` ya no esta limpio: existe WIP parcial en
-  `scripts/discover_skills.py`, cinco `SKILL.md` y `docs/registry/INDEX.md`.
-  El Builder debe partir de ese estado real y documentar si continua sobre el
-  WIP o si lo reajusta.
-- `_derive_owner()` hoy deriva `owner` desde `("author", "role")`. Opcion B no
-  cambia eso: anade `role` como campo separado del catalogo/INDEX y acepta que
-  `owner` y `role` coincidan cuando no exista `author`.
+- `WOT-2026-008g`, `008e`, `008h` y `008k` estan COMPLETED.
+- `DEC-008G-001` serializa `008i` como el lote de expansion `man-*` ->
+  `manager-*`.
+- `manager_review.md` ya es el prompt canonico desde `008e`; el binding de
+  `man-review-implementation` sigue apuntando a ese prompt y debe migrarse sin
+  romper `--check-contract`.
+- Los cuatro directorios candidatos son hoy:
+  - `skills/man-create-work-plan/`
+  - `skills/man-resolve-escalation/`
+  - `skills/man-review-implementation/`
+  - `skills/man-session-closeout/`
+- Hay consumidores vivos operativos de esos nombres en prompts, skills,
+  registro y tests; no basta con pasar `--check-naming`.
+- `008i` NO depende de stubs ejecutables de skill: la compatibilidad viva se
+  mide sobre `triggers`, `source_prompt` y referencias operativas.
 
 ## Decision Arquitectonica
 
-La taxonomia se apoya en propiedad real del artefacto, no en el prefijo del
-nombre. Por eso los prompts `audit_*` siguen como familia transversal, mientras
-que estas cinco skills pasan a `role: auditor`. `bui-self-audit` no migra: es
-una skill del builder para auto-auditar su propio trabajo, no una skill del rol
-auditor.
+Esta pasada usa migracion atomica de nombres de skill, no stubs de skill.
+Motivo: a diferencia de los prompts, discovery no tiene hoy un mecanismo
+canonico y declarativo de alias para skills equivalente a `legacy_aliases:`.
+Crear uno dentro de `008i` seria ampliar el scope y el grafo de compatibilidad.
 
-Decision de contrato para evitar falso verde: `auditor` entra en el opt-in de
-`_check_contract()` para que `audit-git-publication`, `audit-pipeline` y
-`system-health-audit` conserven validacion de `source_prompt` y `contract_id`.
-La ruta de exclusion silenciosa no esta permitida.
+Regla de compatibilidad del ticket:
+- conservar triggers y semantica de dispatch;
+- actualizar bindings y consumidores vivos a `manager-*`;
+- tolerar restos `man-*` solo en historia, DEC, changelog, backlog o tests de
+  compatibilidad explicitamente justificados.
 
-Decision de catalogo para opcion B: `role` se expone como columna/campo nuevo y
-separado de `owner`. Este ticket no cambia la semantica de `_derive_owner()` ni
-intenta desenlazar `owner` de `author/role`; si eso hiciera falta, es
-`CONTRACT_GAP`.
+Si aparece un consumidor runtime real del path legacy `skills/man-*`, eso es
+`CONTRACT_GAP`, no una invitacion a improvisar un resolver paralelo.
 
 ## Files Likely Touched
 
 ### repo_motor
 
-- `skills/audit-git-publication/SKILL.md`
+- `skills/man-create-work-plan/`
+- `skills/man-resolve-escalation/`
+- `skills/man-review-implementation/`
+- `skills/man-session-closeout/`
+- `prompts/manager_review.md`
+- `prompts/orchestrator_pipeline.md`
+- `prompts/orchestrator_session_close_chat.md`
+- `skills/orchestrate-pipeline/SKILL.md`
+- `skills/project-finalize/SKILL.md`
 - `skills/audit-pipeline/SKILL.md`
-- `skills/code-audit/SKILL.md`
-- `skills/local-audit/SKILL.md`
-- `skills/system-health-audit/SKILL.md`
-- `scripts/discover_skills.py`
+- `skills/grill-work-plan/SKILL.md`
+- `skills/session-close-observations/SKILL.md`
+- `skills/README.md`
+- `skills/validate_all.py`
+- `skills/create-agent-skill/references/frontmatter-template.md`
+- `skills/create-agent-skill/references/skill-anatomy.md`
+- `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
 - `docs/registry/INDEX.md`
-- `docs/registry/README.md`
 - `tests/test_discover_skills.py`
 - `tests/test_check_naming.py`
-- `tests/test_registry_catalog.py`
+- `tests/test_agent_readme_references.py`
 
 ### repo_destino
 
@@ -94,50 +98,52 @@ intenta desenlazar `owner` de `author/role`; si eso hiciera falta, es
 ## Read/inspect only
 
 - `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`
-- `skills/bui-self-audit/SKILL.md`
-- `prompts/audit_*.md`
-- `scripts/check_skill_collisions.py`
-- `scripts/run_gates_dispatch.py`
+- `docs/decisions/DEC-008D-001-naming-convention.md`
+- `prompts/review_manager.md`
+- `CHANGELOG.md`
+- `backlog.md`
+- `ticket_contracts.md`
+- `tests/sandbox/**`
 - `bus/runtime/events`
 
 ## Forbidden Surfaces
 
-- Renombrar skills o prompts.
-- Tocar `skills/bui-self-audit/SKILL.md`.
-- Mover `audit_*` prompts a `auditor_*`.
+- Tocar `bui-*`.
+- Tocar `audit_*` fuera de consumidores prose explicitamente declarados.
+- Cambiar `triggers`.
+- Cambiar `contract_id`.
+- Introducir alias runtime nuevos para skills.
 - Tocar bus/runtime/events manualmente.
 - Tocar dependencias.
-- Expandir `man-*`/`bui-*`.
-- Cambiar la semantica de `owner` mas alla de anadir `role`.
 
 ## Criterios binarios
 
-- Las cinco skills auditoras declaradas en FLT usan `role: auditor`.
-- `skills/bui-self-audit/SKILL.md` sigue con `role: builder`.
-- `scripts/discover_skills.py` acepta y proyecta `role: auditor`, mantiene
-  `auditor` en el opt-in de `_check_contract()` y expone `role` como campo
-  separado de `owner`.
-- `audit-git-publication`, `audit-pipeline` y `system-health-audit` conservan
-  validacion de `source_prompt` y `contract_id` despues del cambio.
-- El catalogo derivado y `docs/registry/INDEX.md` exponen `role` como campo
-  separado de `owner`; el orden de columnas queda estable y probado.
-- `docs/registry/README.md` queda alineado si documenta ownership/roles/catalog
-  fields.
-- `discover_skills.py --check-naming`, `--check-contract`, `--check-index` y
-  `check_skill_collisions.py` quedan verdes.
-- La evidencia de discovery demuestra que las cinco skills auditoras salen
-  clasificadas coherentemente, con `role` visible y `bui-self-audit` fuera.
-- `tests/test_registry_catalog.py` verifica el nuevo campo `role` y conserva
-  los required fields previos.
-- Tests focales cubren aceptacion de `role: auditor`, exclusion de
-  `bui-self-audit`, no regresion de `manager|builder` y la nueva proyeccion
-  `role` del catalogo.
+- Existen los cuatro directorios canonicos `skills/manager-create-work-plan/`,
+  `skills/manager-resolve-escalation/`,
+  `skills/manager-review-implementation/` y
+  `skills/manager-session-closeout/`.
+- `prompts/manager_review.md` referencia
+  `skills/manager-review-implementation/SKILL.md` y conserva
+  `contract_id: cid-man-review-v2`.
+- Los consumidores vivos declarados en FLT usan `manager-*` al cierre.
+- `rg` de `man-create-work-plan|man-resolve-escalation|man-review-implementation|man-session-closeout`
+  sobre superficies operativas solo deja historia/DEC/changelog/backlog/tests de
+  compatibilidad justificadas.
+- `python scripts/discover_skills.py --check-contract` queda verde.
+- `python scripts/discover_skills.py --check-naming` queda verde.
+- `python scripts/check_skill_collisions.py` queda verde.
+- `python scripts/discover_skills.py --check-index` queda verde tras regenerar
+  `docs/registry/INDEX.md`.
+- La paridad pre/post de discovery conserva los mismos triggers funcionales; el
+  diff del JSON queda limitado a rutas/nombres derivados por el rename.
+- Existe una barrera que detecta referencias prose vivas a los nombres `man-*`
+  en consumidores operativos del lote.
 - `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all`
-  y `validate --json` quedan verdes.
+  y `validate --json --project-root <repo_destino>` quedan verdes.
 
 ## CONTRACT_GAP
 
-Emitir `CG-WOT-2026-008k.md` y parar si formalizar `auditor` exige renombrar
-prompts `audit_*`, ampliar el ticket a `man-*`/`bui-*`, reescribir
-`source_prompt`/`contract_id` fuera de las tres skills contract-validated, o
-cambiar la semantica de `owner` mas alla de anadir `role` como campo separado.
+Emitir `CG-WOT-2026-008i.md` y parar si aparece un consumidor runtime real del
+path `skills/man-*`, si preservar compatibilidad exige un alias de skill no
+soportado limpiamente por discovery, o si el rename deriva a `bui-*` o a
+cambios de trigger/dispatch.

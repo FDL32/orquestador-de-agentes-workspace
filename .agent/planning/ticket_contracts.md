@@ -742,3 +742,56 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si `role: auditor` rompe `_check_contract()` de `manager|builder` y no puede resolverse sin ampliar scope; parar si discovery usa `role` con semantica incompatible y requiere rediseno mayor; parar si aparecen skills adicionales ambiguas fuera de las cinco declaradas; parar si el cambio deriva a rename de directorios o prompts; parar si el WIP en disco no puede reconciliarse con el contrato sin tocar superficies fuera de FLT.
 - **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008h (COMPLETED).
+## T-008I-001 -- Rename atomico de 4 skills manager a manager-*
+
+- **ticket_id:** WOT-2026-008i
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008I-001
+- **Plan-Link:** PLAN-008I-001
+- **Premise:** `DEC-008G-001` congelo que el siguiente lote tras `008h` es la expansion de `man-*` a `manager-*`. A diferencia de `008h`, aqui la compatibilidad NO depende de stubs ejecutables de skill: la API publica viva es `triggers` + `source_prompt` + referencias operativas, mientras que el nombre de directorio de la skill es detalle interno del bundle. Por tanto la migracion debe ser atomica sobre consumidores vivos y preservar `trigger_map`/`check-contract`, no introducir un segundo mecanismo de alias de skill.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-008g`, `WOT-2026-008e`, `WOT-2026-008h` y `WOT-2026-008k` COMPLETED; releer `DEC-008G-001` secciones 2/5/6; inventariar las cuatro skills `man-*`; capturar baseline de `python scripts/discover_skills.py --check-naming`, `--check-contract`, `--json`, `python scripts/check_skill_collisions.py` y `python scripts/discover_skills.py --check-index`; verificar consumidores vivos de `skills/man-*` y `man-*` en prompts, skills, docs y tests operativos; confirmar que `manager_review.md` ya es canonico desde `008e`.
+- **Context Baseline Evidence:** roadmap_source=DEC-008G-001; manager_skill_dirs=4; live_operational_refs_confirmed=true; canonical_prompt_manager_review=true; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder repo_motor: `skills/man-create-work-plan/`
+  - Builder repo_motor: `skills/man-resolve-escalation/`
+  - Builder repo_motor: `skills/man-review-implementation/`
+  - Builder repo_motor: `skills/man-session-closeout/`
+  - Builder repo_motor: `prompts/manager_review.md`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_motor: `prompts/orchestrator_session_close_chat.md`
+  - Builder repo_motor: `skills/orchestrate-pipeline/SKILL.md`
+  - Builder repo_motor: `skills/project-finalize/SKILL.md`
+  - Builder repo_motor: `skills/audit-pipeline/SKILL.md`
+  - Builder repo_motor: `skills/grill-work-plan/SKILL.md`
+  - Builder repo_motor: `skills/session-close-observations/SKILL.md`
+  - Builder repo_motor: `skills/README.md`
+  - Builder repo_motor: `skills/validate_all.py`
+  - Builder repo_motor: `skills/create-agent-skill/references/frontmatter-template.md`
+  - Builder repo_motor: `skills/create-agent-skill/references/skill-anatomy.md`
+  - Builder repo_motor: `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `tests/test_discover_skills.py`
+  - Builder repo_motor: `tests/test_check_naming.py`
+  - Builder repo_motor: `tests/test_agent_readme_references.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`; `docs/decisions/DEC-008D-001-naming-convention.md`; `prompts/review_manager.md`; historicos `CHANGELOG.md`, `backlog.md`, `ticket_contracts.md`; `tests/sandbox/**`; `bus/runtime/events`.
+- **Forbidden Surfaces:** tocar `bui-*`; tocar `audit_*`; cambiar `triggers`; cambiar `contract_id`; introducir hardcode nuevo de dispatch; tocar bus/runtime/events manualmente; tocar dependencias; reabrir `008k`; tocar `privada/` o `.env`.
+- **DoD:**
+  - [ ] Existen los cuatro directorios canonicos `skills/manager-create-work-plan/`, `skills/manager-resolve-escalation/`, `skills/manager-review-implementation/` y `skills/manager-session-closeout/`.
+  - [ ] Los cuatro directorios `man-*` dejan de ser consumidores vivos operativos; si sobrevive algun rastro, queda solo en historia, changelog, backlog, DEC o tests de compatibilidad explicitamente justificados.
+  - [ ] `prompts/manager_review.md` referencia `skills/manager-review-implementation/SKILL.md` y conserva `contract_id: cid-man-review-v2` sin romper `--check-contract`.
+  - [ ] Los consumidores vivos declarados en FLT usan los nombres `manager-*` al cierre.
+  - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
+  - [ ] `python scripts/discover_skills.py --check-naming` queda verde.
+  - [ ] `python scripts/check_skill_collisions.py` queda verde.
+  - [ ] `python scripts/discover_skills.py --check-index` queda verde tras regenerar `docs/registry/INDEX.md`.
+  - [ ] La paridad pre/post de discovery preserva los mismos triggers funcionales; cualquier diff del JSON queda limitado a rutas/nombres derivados por el rename declarado.
+  - [ ] Existe al menos una barrera que detecta una referencia prose viva a `man-*` en superficies operativas del lote.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** ejecuta el lote de roadmap de `DEC-008G-001` para manager skills; deja `008j` (builder skills) intacto y no debe mezclar retirada de aliases de prompts ya resuelta en `008e/008h`.
+- **CONTRACT_GAP behavior:** si aparece un consumidor runtime real del nombre de directorio `man-*`, si la compatibilidad exige un alias de skill no soportado limpiamente por discovery, si preservar `--check-contract` obliga a reabrir prompts fuera de FLT, o si el rename exige tocar `bui-*`, emitir `CG-WOT-2026-008i.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica via de compatibilidad exige un segundo mecanismo de alias de skill ad hoc; parar si el cambio deriva a migracion de `bui-*`; parar si la evidencia de migracion se basa solo en `--check-naming` y no en consumidores vivos; parar si aparece drift de packet no commiteado en repo_destino antes del handoff.
+- **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008e (COMPLETED); WOT-2026-008h (COMPLETED); WOT-2026-008k (COMPLETED).

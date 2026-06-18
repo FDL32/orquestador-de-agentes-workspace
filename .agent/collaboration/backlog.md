@@ -1,4 +1,4 @@
-﻿# Backlog
+# Backlog
 
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
@@ -2159,3 +2159,5 @@ antes de construir otra.
 - **Objetivo:** formalizar ole: auditor en las skills que son propiedad real del rol auditor, sin renombrar directorios ni mezclar prompts udit_* de familia transversal.
 - **Criterio de salida:** skills auditoras con ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, alidate --json 0/0 y sin tocar ui-self-audit, prompts ni runtime.
 
+
+| Alta | WOT-2026-008i | Rename atomico de 4 skills manager a manager-* | motor/skills-taxonomy | pending | WOT-2026-008g, WOT-2026-008e, WOT-2026-008h, WOT-2026-008k | session-2026-06-18-role-naming |
