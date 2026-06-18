@@ -6,7 +6,7 @@
 
 - **ID:** WOT-2026-010t
 - **Contract ID:** T-010T-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010r (completed)
