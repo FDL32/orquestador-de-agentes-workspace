@@ -58,7 +58,8 @@
 | Media | WOT-2026-008c | Registry/INDEX generado de prompts y skills | motor/skills-discovery | completed | WOT-2026-008b | session-2026-06-15-taxonomy |  <!-- cerrado canonico 2026-06-18: motor 67c2dcc; INDEX generado por discover_skills --generate-index + stale-check; DEC-008B Opcion 4 respetada; validate 0/0 --> |
 | Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | completed | WOT-2026-008c | session-2026-06-15-taxonomy |  <!-- cerrado canonico 2026-06-18: motor 4871536+af1359f; DEC-008D-001 + discover_skills.py --check-naming + run_gates_dispatch; actor-first enforced; suite 2965 passed; validate 0/0 --> |
 | Baja | WOT-2026-008e | Rename versionado review_manager -> manager_review con shim y retirada de excepcion legacy | motor/skills-taxonomy | closed | WOT-2026-008d | session-2026-06-15-taxonomy |
-| Media | WOT-2026-008f | Gate de integracion destino-motor y lifecycle operativo | motor/protocol-destino | pending | WOT-2026-008c | session-2026-06-16-taxonomy-review |
+| Media | WOT-2026-008f | Gate de integracion destino-motor y lifecycle operativo | motor/protocol-destino | completed | WOT-2026-008c | session-2026-06-16-taxonomy-review |  <!-- cerrado canonico 2026-06-18: motor 86c6425; wrapper destino-motor; suite 2994 passed; validate 0/0 --> |
+| Media | WOT-2026-008g | DEC de vocabulario y naming por rol | motor/skills-taxonomy | pending | WOT-2026-008f, WOT-2026-008d, WOT-2026-008e | session-2026-06-18-role-naming |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
 | Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
@@ -2131,3 +2132,11 @@ Patron recurrente esta sesion (7->6 consumidores, _validate_host_project_prefix,
 F1 010g, 2 de 3 REC, y ahora TP-PROSE-10 + --check-contract): el motor ya tiene
 mas barreras vivas de las que parece; el valor esta en confirmar cuales existen
 antes de construir otra.
+### WOT-2026-008g - DEC de vocabulario y naming por rol
+- **Prioridad:** Media
+- **Scope:** motor/skills-taxonomy
+- **Estado:** pending
+- **deliverable_type:** documentation
+- **Depende de:** WOT-2026-008f, WOT-2026-008d, WOT-2026-008e
+- **Objetivo:** congelar una DEC documental que separe backends IA, roles y artefactos; documentar supervisor como runtime; formalizar la regla actor/family para naming futuro.
+- **Criterio de salida:** DEC-008G-001 + AGENTS.md actualizados, sin renames ni frontmatter, `discover_skills.py --check-naming` verde y validate 0/0.

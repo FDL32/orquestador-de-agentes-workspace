@@ -1,59 +1,47 @@
-# work_plan.md -- WOT-2026-008f
+# work_plan.md -- WOT-2026-008g
 
 ## Metadata
 
-- **ID:** WOT-2026-008f
-- **Contract ID:** T-008F-001
-- **Estado:** APPROVED
+- **ID:** WOT-2026-008g
+- **Contract ID:** T-008G-001
+- **Estado:** READY_TO_START
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** mixed
+- **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **repo_motor:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes
 - **repo_destino:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 
 ## Objetivo
 
-Crear un gate integrado `scripts/check_motor_destination_integration.py` que valide el engranaje motor-destino y el lifecycle operativo reutilizando checks existentes antes de inventar validadores nuevos. Debe cubrir link `motor_destination_link.json`, compatibilidad de autoridad/version/manifest, resolucion de contexto destino, gate operativo pre-push y auditoria opcional de primera publicacion, con diagnostico self-service y sin mutar un destino real durante las pruebas.
+Crear la DEC de vocabulario y naming por rol que fija el contrato terminologico del sistema: backend IA vs rol vs artefacto, roles canonicos, regla actor_/family_, tabla congelada de prompts y plan de migracion por lotes. Este ticket es documental: sin renames, sin frontmatter, sin tocar 008f.
 
-## Premisas verificadas antes de Builder
-
-- `WOT-2026-008e` esta COMPLETED y es la dependencia funcional directa del siguiente tramo; `WOT-2026-008c` queda satisfecho como premisa tecnica de `INDEX.md` generado y `--check-index` verde.
-- `scripts/destination_context.py` existe y hoy expone `--bootstrap --project-root`; es una pieza viva de resolucion destino.
-- `scripts/check_destino_publish_ready.py` existe y ya orquesta `validate --json` + estado operativo pre-push.
-- `scripts/classify_publication.py` existe y ya clasifica publicacion en dry-run con `--repo-root`.
-- El problema de 008f es de integracion/orquestacion entre piezas existentes, no de ausencia total de checks.
-
-## Decision Arquitectonica
-
-La entrada canonica del ticket sera `scripts/check_motor_destination_integration.py`. El wrapper debe delegar en logica existente siempre que sea posible: `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y helpers de autoridad/topologia ya presentes. En `validate_authority.py`, `main()` es CLI-only y valida el motor; para validar autoridad del destino el ticket debe extraer un helper exportable reutilizando `is_canonical_authority(...)` y `find_all_agent_dirs(...)` con `canonical_root = <project_root>/.agent/collaboration`, sin cambiar `main()` ni su CLI. Para `check_destino_publish_ready.py`, delegar significa invocar `main(argv)` por import y propagar su exit code; extraer helper solo si hace falta estructura adicional, sin reescribir `_run_validate`. El modo por defecto cubre integracion operativa cotidiana; la auditoria de primera publicacion queda separada detras de un flag explicito para no mezclar un gate pre-push con un scan historico mas caro.
+Para verificar el cumplimiento, se validará que existe `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md` y `AGENTS.md` actualizados, y que la ejecución de `python .agent/agent_controller.py --validate --json` finaliza con 0 errors y 0 warnings (una vez bootstrap-ticket emita el evento correspondiente).
 
 ## Non-goals
 
-- No duplicar scanners de secretos, `validate`, ni la clasificacion de publicacion.
-- No mutar un `repo_destino` real para probar guards o settings.
-- No tocar bus runtime/events manualmente.
-- No redisenar `install_agent_system.py` ni el launcher.
-- No tocar dependencias.
-- No convertir el wrapper en un orquestador generico de session-close.
+- No realizar renames físicos de archivos de prompts, skills o scripts.
+- No modificar el frontmatter de ningún prompt o skill (por ejemplo, el campo `role` u otros).
+- No modificar la lógica runtime de bus, supervisor ni ningún componente runtime.
+
+
+## Premisas verificadas antes de Builder
+
+- WOT-2026-008f esta COMPLETED antes de materializar 008g.
+- WOT-2026-008d y WOT-2026-008e estan COMPLETED y sirven como base de naming + rename piloto.
+- DEC-008D-001 existe; 008g formaliza una regla implicita en _PIPELINE_ACTIONS / --check-naming, no afirma que esa regla ya estuviera escrita.
+- supervisor ya existe como actor runtime del bus; la DEC lo documenta, no lo redefine.
+- audit_* es familia transversal de tarea, no propiedad del rol auditor.
+
+## Decision Arquitectonica
+
+La autoridad del ticket sera docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md en repo_motor. AGENTS.md se actualiza solo para reflejar la distincion Backends y roles. Los renames quedan serializados a tickets posteriores con shims.
 
 ## Files Likely Touched
 
 ### repo_motor
 
-- `scripts/check_motor_destination_integration.py`
-- `tests/test_check_motor_destination_integration.py`
-- `docs/protocol/motor_destination_integration_WOT-2026-008f.md`
-- `scripts/destination_context.py`
-- `scripts/check_destino_publish_ready.py`
-- `scripts/classify_publication.py`
-- `scripts/validate_authority.py`
-- `tests/test_destination_context.py`
-- `tests/test_prepush_check.py`
-- `tests/test_classify_publication.py`
-- `prompts/destination_bootstrap.md`
-  - Nota FLT: si se toca, solo para anadir una referencia minima al wrapper nuevo; no reescribir el flujo operativo.
-- `prompts/audit_git_publication.md`
-  - Nota FLT: si se toca, solo para anadir una referencia minima al wrapper nuevo; no reescribir el flujo operativo.
+- `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`
+- `AGENTS.md`
 
 ### repo_destino
 
@@ -61,22 +49,18 @@ La entrada canonica del ticket sera `scripts/check_motor_destination_integration
 
 ## Read/inspect only
 
-- `scripts/install_agent_system.py`
+- `prompts/`
+- `skills/`
+- `bus/supervisor.py`
 - `.agent/agent_controller.py`
-- `.agent/config/motor_destination_link.json`
-- `MANIFEST.distribute`
-- `MANIFEST.workspace`
-- `prompts/orchestrator_pipeline.md`
-- `prompts/audit_complete_motor_destination.md`
-- `tests/test_motor_root_gates.py`
-- `.agent/runtime/events/`
-- `bus/`
+- `docs/decisions/DEC-008D-001-naming-convention.md`
+- `scripts/discover_skills.py`
 
 ## Manager-only
 
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/AUDIT_WOT-2026-008f.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-008f.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-008g.md`
+- `.agent/collaboration/AUDIT_WOT-2026-008g.md`
 - `.agent/planning/ticket_contracts.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/collaboration/STATE.md`
@@ -84,39 +68,37 @@ La entrada canonica del ticket sera `scripts/check_motor_destination_integration
 
 ## Forbidden Surfaces
 
-- Bus runtime/events editado manualmente.
-- Nuevo scanner de secretos o clon de `classify_publication.py`.
-- Reimplementar `validate --json` o `check_destino_publish_ready.py` en vez de delegar.
-- Escribir en un destino real para probar `guard_paths`, settings o lifecycle.
-- Dependencias, `privada/`, `.env`.
+- Renames o moves de prompts, skills o scripts.
+- Modificar frontmatter.
+- Tocar WOT-2026-008f o sus artefactos productivos.
+- Expandir man-/bui- a manager-/builder-.
+- Tocar bus runtime/events manualmente.
+- Dependencias nuevas.
 
 ## Fase 0 obligatoria
 
-1. Confirmar `T-008F-001` frozen, `008e` completed y `008c` satisfecho como premisa tecnica.
-2. Capturar baseline read-only:
-   - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-   - `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`
-   - inspeccion de `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y `validate_authority.py`
-3. Verificar que el wrapper puede delegar en piezas existentes; si obliga a copiar logica central o a cambiar el contrato CLI de los scripts envueltos, emitir CONTRACT_GAP.
-4. Registrar baseline y seams en `execution_log.md` antes de tocar codigo.
+1. Confirmar T-008G-001 frozen y WOT-2026-008f COMPLETED.
+2. Inventariar prompts fisicos y confirmar la tabla de 20 entradas.
+3. Confirmar que supervisor existe como runtime (`bus/supervisor.py`, `actor="SUPERVISOR"`).
+4. Confirmar que audit_* tiene consumidores multi-rol o transversales y no debe forzarse a auditor_*.
+5. Registrar en execution_log.md los comandos usados y cualquier discrepancia.
 
 ## Criterios binarios
 
-- Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
-- El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/settings ya presentes.
-- `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y `validate_authority.py` solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
-- En validate_authority.py, la delegacion valida del destino pasa por un helper exportable sobre is_canonical_authority(...) y find_all_agent_dirs(...); main() queda reservado al CLI del motor.
-- En check_destino_publish_ready.py, delegar significa llamar main(argv) por import y propagar su exit code; no reescribir _run_validate ni duplicar validate --json.
-- El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido, aunque hoy `resolve_motor_link()` solo garantice `motor_root`.
-- El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
-- El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
-- Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.
-- `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
+- Existe `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`.
+- La DEC contiene vocabulario canonico, roles canonicos, supervisor-runtime, regla actor/family, criterio de desempate, tabla congelada de prompts y plan de lotes.
+- AGENTS.md contiene la seccion Backends y roles con backend IA / rol / artefacto / supervisor.
+- La tabla clasifica 20 prompts fisicos: 5 futuros orchestrator_*, 1 manager_*, 12 audit_* family, 1 memory_* family, 1 contract_formation_* family y 1 legacy stub.
+- La DEC no dice que DEC-008D-001 ya escribia family-wins; dice que 008g formaliza un mecanismo implicito en _PIPELINE_ACTIONS / --check-naming.
+- `python scripts/discover_skills.py --check-naming` pasa.
+- `python scripts/check_encoding_guard.py docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md AGENTS.md` pasa.
+- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+- El diff del repo_motor se limita a la DEC y AGENTS.md; no hay renames.
 
 ## CONTRACT_GAP behavior
 
-Emitir `CG-WOT-2026-008f.md` si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse.
+Emitir CG-WOT-2026-008g.md si algun prompt no puede clasificarse con la regla actor/family, si AGENTS.md requiere reescritura amplia fuera de vocabulario, si la DEC necesita tocar codigo/runtime, o si la tabla congelada contradice el inventario real.
 
 ## STOP conditions
 
-Parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos en vez de delegar; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher en vez de integrar checks existentes.
+Parar si aparece cualquier rename, frontmatter edit, cambio de bus/runtime, dependencia nueva o cambio productivo ajeno a DEC/AGENTS.md.
