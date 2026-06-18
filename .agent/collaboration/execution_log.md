@@ -41,3 +41,7 @@
 - `TURN.md` habia quedado en `UNKNOWN / MANUAL_INTERVENTION` y el intento de regeneracion via `--reset-turn` disparo quality gates sobre un ticket documental ya en `READY_FOR_REVIEW`.
 - Se restaura el estado documental coherente con el bus: `execution_log.md` vuelve a `READY_FOR_REVIEW`, el packet queda alineado y `TURN.md` se fija a review del Manager.
 - No cambia el bus: los ultimos eventos validos de 008g siguen siendo `BUILDER_EXIT` + `STATE_CHANGED -> READY_FOR_REVIEW`.
+## Manager CHANGES R5
+
+- Repuesto `T-008G-001` en `ticket_contracts.md` para restaurar la fuente canonica congelada que referencian `work_plan.md` y la DEC.
+- El cierre de 008g vuelve a tener trazabilidad completa contrato -> packet -> DEC.
