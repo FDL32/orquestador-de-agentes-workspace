@@ -3,7 +3,7 @@
 ## Status
 
 - Ticket: WOT-2026-010u
-- **Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - Role: MANAGER/ORCHESTRATOR preflight
 - Started: 2026-06-18
 
@@ -97,3 +97,5 @@ Prepare WOT-2026-010u for Builder with canonical STATE/TURN alignment, frozen co
   bloqueo en el HANDOFF, no solo en pre-push.
 - Suite focal: **56 passed** (era 55 + el nuevo test de integracion).
 - ruff (1 fixed), format OK, encoding 0, validate 0/0.
+
+Manager approved canonical closeout for WOT-2026-010u

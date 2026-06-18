@@ -6,7 +6,7 @@
 
 - **ID:** WOT-2026-010u
 - **Contract ID:** T-010U-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depends on:** WOT-2026-010s (completed)
