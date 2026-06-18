@@ -1103,8 +1103,8 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente debe ser frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, nunca sidecar JSON ni manifest central.
   - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`.
   - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
-  - `discover_skills.py --check-naming` no existe aun: 008d debe implementarlo con test bloqueador fail-closed para un nombre fuera de convencion. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
-  - No se hace migracion masiva; maximo piloto pequeno y reversible. `python scripts/pre_handoff_guard.py`/handoff debe quedar verde para demostrar que la barrera 010u de archival-rename no dispara.
+  - `discover_skills.py --check-naming` no existe aun: es deliverable de 008d y debe existir antes de cerrar, con test bloqueador fail-closed para un nombre fuera de convencion. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
+  - No se hace migracion masiva; maximo piloto pequeno y reversible. El handoff debe quedar verde: `pre_handoff_guard` verifica gates frescos y la barrera 010u de archival-rename, pero no debe reimplementar la logica de naming.
   - Tests focales, ruff/format si toca Python, encoding guard, suite canonica y validate 0/0 pasan.
 - **Piloto sugerido:** evaluar `prompts/review_manager.md` -> nombre canonico actor/dominio primero solo si se actualiza a la vez `skills/man-review-implementation/SKILL.md:source_prompt` y se conserva stub legacy. Si el analisis muestra mayor riesgo que valor, elegir un piloto documental de menor blast radius.
 - **STOP:**
