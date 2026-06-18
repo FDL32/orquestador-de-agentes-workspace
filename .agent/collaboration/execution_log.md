@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Ticket:** WOT-2026-008i
-- **Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 
@@ -53,3 +53,6 @@
 ### Cierre de evidencia - suite
 - run_pytest_safe --level all sobre b230b61: 3013 passed, 20 skipped, 0 failed (691.73s).
 - last-run.json: finished, exit_code=0, tested_commit_sha=b230b61 == HEAD.
+
+
+Scope override: commit b230b61: (1) references/ internos de los 4 dirs man-*/manager-* son parte atomica del git mv declarado en FLT (el FLT lista los dirs; el parser cuenta archivos); (2) 3 consumidores vivos no-FLT (.claude/agents/manager.md, scripts/closeout_steps/observations.py, skills/refactor-manager/PROMPT_TEMPLATE.md) justificados por CEM en execution_log Fase 0 ANTES de tocarlos: el contrato exige migrar consumidores vivos operativos. No CONTRACT_GAP. Triggers byte-identicos.. Affected files: .claude/agents/manager.md, scripts/closeout_steps/observations.py, skills/man-create-work-plan/SKILL.md, skills/man-create-work-plan/references/plan-quality-checklist.md, skills/man-create-work-plan/references/plan-template.md, skills/man-create-work-plan/references/risk-guide.md, skills/man-resolve-escalation/SKILL.md, skills/man-resolve-escalation/references/escalation-levels.md, skills/man-review-implementation/SKILL.md, skills/man-review-implementation/references/review-checklist.md, skills/man-review-implementation/references/verdict-format.md, skills/man-session-closeout/SKILL.md, skills/man-session-closeout/references/closeout-lessons-format.md, skills/man-session-closeout/references/scope-taxonomy.md, skills/man-session-closeout/references/upstream-learnings-format.md, skills/manager-create-work-plan/SKILL.md, skills/manager-create-work-plan/references/plan-quality-checklist.md, skills/manager-create-work-plan/references/plan-template.md, skills/manager-create-work-plan/references/risk-guide.md, skills/manager-resolve-escalation/SKILL.md, skills/manager-resolve-escalation/references/escalation-levels.md, skills/manager-review-implementation/SKILL.md, skills/manager-review-implementation/references/review-checklist.md, skills/manager-review-implementation/references/verdict-format.md, skills/manager-session-closeout/SKILL.md, skills/manager-session-closeout/references/closeout-lessons-format.md, skills/manager-session-closeout/references/scope-taxonomy.md, skills/manager-session-closeout/references/upstream-learnings-format.md, skills/refactor-manager/PROMPT_TEMPLATE.md
