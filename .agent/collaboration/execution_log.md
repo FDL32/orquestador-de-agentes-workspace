@@ -79,3 +79,21 @@ Prepare WOT-2026-010u for Builder with canonical STATE/TURN alignment, frozen co
 - **No tocados (rigor proporcional):** archivador (sigue mover-puro, Non-goal
   auto-commit), agent_controller, pre_handoff_guard. El guard vive en
   delivery_hygiene_check (modulo de higiene canonico) y es reutilizable desde ahi.
+
+### Ronda 2 - CHANGES del Manager: conectar la barrera al handoff
+
+- **Veredicto R1:** CHANGES. Finding valido: la barrera vivia solo en
+  delivery_hygiene_check (pre-push), no en el flujo canonico de cierre/handoff que
+  el contrato pedia. Detectaba tarde, reduciendo el fix a "mejor gate de publicacion".
+- **Correccion:** integrado `check_archive_rename_complete` en
+  `pre_handoff_guard.py::run_guard` como **seccion 5.c** (corre en `--pre-handoff`
+  y `--mark-ready`). Fail-closed: si el guard no puede ejecutarse, BLOQUEA
+  (`archive_rename_guard_error`). Diagnostico self-service en `main()`.
+  `delivery_hygiene_check` se conserva como defensa adicional (pre-push).
+- **Test pedido por el Manager:** `tests/test_pre_handoff_guard.py::
+  test_guard_blocks_uncommitted_archive_rename` reproduce el limbo en repo git real
+  e invoca `run_guard` directamente (el flujo de --mark-ready), afirmando
+  `valid=False` + `archive_rename_uncommitted` nombrando el artefacto. Demuestra
+  bloqueo en el HANDOFF, no solo en pre-push.
+- Suite focal: **56 passed** (era 55 + el nuevo test de integracion).
+- ruff (1 fixed), format OK, encoding 0, validate 0/0.
