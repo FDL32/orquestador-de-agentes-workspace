@@ -1086,25 +1086,28 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - skills: `kebab-case`, patron `<domain-or-actor>-<action>-<object>/`;
   - scripts: `snake_case` verbo primero para CLIs (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`);
   - shims/stubs: formato, ventana de retirada y ticket propietario (`008e`);
-  - criterio de legacy permitido y etiquetas de compatibilidad;`n  - ortogonalidad entre naming lexico y taxonomia de invocacion `disable-model-invocation` de 010s.
+  - criterio de legacy permitido y etiquetas de compatibilidad;
+  - ortogonalidad entre naming lexico y taxonomia de invocacion `disable-model-invocation` de 010s.
 - **Files Likely Touched:**
   - Builder: DEC de naming en `docs/decisions/`
   - Builder: `docs/registry/README.md`
   - Builder: `docs/registry/INDEX.md`
   - Builder: prompts piloto y sus stubs/aliases versionados
   - Builder: skills piloto que referencian esos prompts por `source_prompt`
-  - Builder: tests de discovery, contract-check, collisions e INDEX si aplica
-  - Read/inspect only: `scripts/discover_skills.py`, `scripts/check_skill_collisions.py`, `scripts/check_ticket_nomenclature.py`, `scripts/validate_ticket_prose.py`, `docs/registry/INDEX.md`, `skills/`, `prompts/`
+  - Builder: `scripts/discover_skills.py`
+  - Builder: `scripts/run_gates_dispatch.py`
+  - Builder: tests de discovery, contract-check, naming, gate-dispatch, collisions e INDEX si aplica
+  - Read/inspect only: `scripts/check_skill_collisions.py` salvo DEC explicita, `scripts/check_ticket_nomenclature.py`, `scripts/validate_ticket_prose.py`, `skills/`, `prompts/`
 - **Criterios binarios:**
   - Existe DEC congelada de naming antes de cualquier rename.
   - El piloto toca prompt + skill consumidora de forma atomica cuando existe `source_prompt`.
   - `python scripts/discover_skills.py --check-contract` queda verde tras el rename.
   - `python scripts/check_skill_collisions.py` queda verde.
   - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente debe ser frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, nunca sidecar JSON ni manifest central.
-  - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`.
+  - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`; la DEC define si el shim es alias documental o prompt ejecutable, y como conserva `source_prompt`/`contract_id` sin romper `--check-contract`.
   - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
-  - `discover_skills.py --check-naming` no existe aun: es deliverable de 008d y debe existir antes de cerrar, con test bloqueador fail-closed para un nombre fuera de convencion. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
-  - No se hace migracion masiva; maximo piloto pequeno y reversible. El handoff debe quedar verde: `pre_handoff_guard` verifica gates frescos y la barrera 010u de archival-rename, pero no debe reimplementar la logica de naming.
+  - `discover_skills.py --check-naming` no existe aun: es deliverable de 008d y debe existir antes de cerrar, con test bloqueador fail-closed para un nombre fuera de convencion. Si se crea un script separado (`check_naming_convention.py`) o se extiende `check_skill_collisions.py`, justificar por que no encaja como subcomando de discovery.
+  - No se hace migracion masiva; maximo piloto pequeno y reversible. `scripts/run_gates_dispatch.py` invoca `--check-naming` o equivalente decidido por DEC; el handoff debe quedar verde: `pre_handoff_guard` verifica gates frescos y la barrera 010u de archival-rename, pero no debe reimplementar la logica de naming.
   - Tests focales, ruff/format si toca Python, encoding guard, suite canonica y validate 0/0 pasan.
 - **Piloto sugerido:** evaluar `prompts/review_manager.md` -> nombre canonico actor/dominio primero solo si se actualiza a la vez `skills/man-review-implementation/SKILL.md:source_prompt` y se conserva stub legacy. Si el analisis muestra mayor riesgo que valor, elegir un piloto documental de menor blast radius.
 - **STOP:**
@@ -2091,13 +2094,13 @@ Auditoria adversarial de 3 recomendaciones (via `prompts/audit_agent_output.md`)
   premisa "un analysis puede cerrar sin producir artefacto" es FALSA hoy.
   `scripts/run_gates_dispatch.py:152` corre `check_deliverables_exist.py` para
   documentation/research/analysis/mixed (exit 1 si falta el deliverable declarado
-  en FLT). Barrera viva, verificada. NO se añade a 010r (seria duplicar gate).
+  en FLT). Barrera viva, verificada. NO se anade a 010r (seria duplicar gate).
   Sub-matiz real (NO blocker de 010r): ese check valida EXISTENCIA, no CONTENIDO;
   la barrera de contenido para analysis vive en review_bridge (deliverable_type
   =analysis), no en check_deliverables_exist. Follow-up de otra naturaleza si
   alguna vez se quiere validar contenido minimo.
 
-## Segunda auditoria adversarial (Manager, 2026-06-17) — 2 refinamientos + 1 mejora nueva
+## Segunda auditoria adversarial (Manager, 2026-06-17) -- 2 refinamientos + 1 mejora nueva
 
 Verificado en codigo tras pasada de revision:
 
@@ -2106,14 +2109,14 @@ Verificado en codigo tras pasada de revision:
   nominal, el MANAGER-REVIEW de 010r debe EJECUTAR el comando una vez y registrar
   exit code + conteo en `execution_log.md`. La automatizacion (gate permanente)
   sigue siendo 010s.
-- **REC#2, gate ya vive (refuerza, no añade):** `scripts/validate_ticket_prose.py`
+- **REC#2, gate ya vive (refuerza, no anade):** `scripts/validate_ticket_prose.py`
   (regla TP-PROSE-10, lineas 399-413) ya FALLA si falta la seccion
   `## Decision Arquitectonica`. Por tanto 010r no "exige" nada nuevo: solo debe
   USAR esa seccion existente para documentar la decision hibrido/break-glass +
   trade-offs + implicacion para 010s. El `decision_artifact`
   (`bus/decision_parser.py:39`, consumido por review_bridge:2193) es distinto de
   `DEC-*` de contract formation; no confundir.
-- **MEJORA NUEVA — Impact Simulation faltante (--check-contract):** VERIFICADO:
+- **MEJORA NUEVA -- Impact Simulation faltante (--check-contract):** VERIFICADO:
   `scripts/run_gates_dispatch.py:157` corre `discover_skills.py --check-contract`
   (validacion bidireccional prompt<->skill: source_prompt/contract_id/ancla
   inversa) INDEPENDIENTE de deliverable_type. Implicacion: si 010r decide
