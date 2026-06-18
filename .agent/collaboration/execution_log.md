@@ -47,3 +47,29 @@ rg del prompt encontro referencias fuera del FLT. Clasificacion:
 - ruff All checks passed; format unchanged.
 - Commit productivo: 8b7b260.
 - Pendiente: suite canonica level=all contra HEAD + handoff.
+
+## Builder - Manager CHANGES resueltos (2026-06-18)
+
+Manager veredicto CHANGES: 1 consumidor vivo legacy (ALTO) + falta test de prose viva (MEDIO). Ambos corregidos.
+
+### ALTO - refs bare legacy supervivientes
+- Causa raiz: el sed de migracion capturo solo "prompts/<legacy>.md". orchestrator_pipeline.md:1082 ("BUILDER implementa con launch_builder.md") era ref BARE (sin prompts/) -> escapo. Mi claim "7 restantes legitimos" fue impreciso: mi grep de verificacion tambien exigia prompts/.
+- Barrido completo de refs bare: encontradas 4 vivas (orchestrator_pipeline:1082, orchestrator_session_bootstrap:138, orchestrator_destination_bootstrap:100, orchestrator_refactor_bootstrap:3). Todas repuntadas a orchestrator_*. llms regenerado.
+- Verificacion final: grep bare+qualified legacy en consumidores vivos = 0 (solo quedan stubs con su cabecera, DEC historicos, comentarios fuera FLT).
+
+### MEDIO - test de regresion de prose viva
+- Anadido test_no_live_prose_reference_to_legacy_names: escanea consumidores OPERATIVOS vivos (canonicos + audit prompts + README/QUICKSTART/AGENTS/CLAUDE + skills) por refs legacy bare o con prompts/, saltando cabeceras de stub "# Legacy alias:" y docs historicos.
+- BARRERA VERIFICADA: reintroduje L1082 legacy -> test FALLA (caza el bug exacto del Manager); restaurado -> PASA. No es falso verde.
+
+### Gates post-fix
+- Focal: pytest test_migration_bootstrap.py test_check_naming.py -q -> 46 passed.
+- --check-naming/--check-contract/--check-index EXIT 0; ruff All checks passed; encoding EXIT 0.
+- Commit productivo: e5975eb.
+- Pendiente: suite canonica level=all contra HEAD + re-handoff.
+
+### Cierre de evidencia - suite cerrada limpia (re-run)
+
+- La corrida previa dejo last-run.json en status=started/exit=None (interrumpida). Relanzada limpia.
+- run_pytest_safe --level all sobre e5975eb: 3006 passed, 20 skipped, 0 failed (377.85s).
+- last-run.json CERRADO: status=finished, exit_code=0, tested_commit_sha=e5975eb == HEAD.
+- validate --json repo_destino: 0 errors / 0 warnings. STATE=008h/READY_FOR_REVIEW. Motor limpio.
