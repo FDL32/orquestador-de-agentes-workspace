@@ -1,9 +1,9 @@
-# work_plan.md -- WOT-2026-008d
+# work_plan.md -- WOT-2026-008e
 
 ## Metadata
 
-- **ID:** WOT-2026-008d
-- **Contract ID:** T-008D-001
+- **ID:** WOT-2026-008e
+- **Contract ID:** T-008E-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
@@ -13,48 +13,45 @@
 
 ## Objetivo
 
-Crear `docs/decisions/DEC-008D-001-naming-convention.md`, implementar `python scripts/discover_skills.py --check-naming`, conectarlo en `scripts/run_gates_dispatch.py`, demostrar paridad pre/post con `--check-contract`, `check_skill_collisions.py` y `discover_skills.py --json`, y cerrar con `validate --json` en 0 errors.
+Ejecutar el rename versionado `prompts/review_manager.md` -> `prompts/manager_review.md`, mantener `prompts/review_manager.md` como stub-alias compatible, actualizar los 6 consumidores vivos declarados en `DEC-008D-001`, retirar `review_manager` de `KNOWN_LEGACY_NAMES`, y cerrar con `python scripts/discover_skills.py --check-naming`, `--check-contract`, `check_skill_collisions.py`, suite canonica y `validate --json` en verde.
 
 ## Premisas verificadas antes de Builder
 
-- `WOT-2026-008c` esta completado y formaliza `docs/registry/INDEX.md` como proyeccion generada, sin `registry.json`.
-- `T-008D-001` existe y esta frozen.
-- `discover_skills.py --check-naming` no existe aun: es entregable de este ticket.
-- Naming lexico es ortogonal a la taxonomia `disable-model-invocation` de `010s`; la DEC debe confirmarlo.
-- `pre_handoff_guard` no debe implementar logica de naming; solo valida handoff, gates frescos y barrera 010u.
+- `WOT-2026-008d` esta COMPLETED y fijo `DEC-008D-001`.
+- `DEC-008D-001` asigna explicitamente el rename `review_manager -> manager_review` a `008e`.
+- `review_manager` esta tolerado por `KNOWN_LEGACY_NAMES`; 008e debe retirar esa excepcion.
+- El patron de stub-alias vivo existe en `prompts/audit_plan.md`.
 
 ## Decision Arquitectonica
 
-La primera entrega del Builder debe ser `docs/decisions/DEC-008D-001-naming-convention.md`. La DEC decide la convencion antes de cualquier rename: patrones por tipo, prefijos de rol, contrato de shim/frontmatter, fuente de `canonical_name`/`legacy_aliases`/`naming_status`, y si `check_skill_collisions.py` permanece read-only o se modifica con justificacion explicita. Si no hay DEC, no hay rename.
+`prompts/manager_review.md` sera la fuente canonica. `prompts/review_manager.md` permanecera como stub-alias compatible hasta que 008e demuestre que los consumidores vivos actualizados usan el canonico y que el alias solo queda como superficie de compatibilidad documentada. La compatibilidad no se implementa con manifest central ni sidecar JSON.
 
 ## Non-goals
 
-- No crear `registry.json` ni manifest central.
-- No renombrar mas de un piloto prompt+skill en este ticket.
-- No mover carpetas completas de `prompts/` o `skills/`.
-- No retirar shims ni compat legacy; eso queda para `008e`.
+- No migrar otros prompts/skills.
 - No tocar bus runtime/events manualmente.
-- No tocar dependencias, `pyproject.toml` ni `uv.lock`.
-- No poner logica de naming en `pre_handoff_guard`.
+- No crear manifest central, registry.json ni sidecar JSON.
+- No tocar `pre_handoff_guard.py` ni politica de gates.
+- No retirar otros aliases o shims no relacionados.
+- No tocar dependencias.
 
 ## Files Likely Touched
 
 ### repo_motor
 
-- `docs/decisions/DEC-008D-001-naming-convention.md`
-- `docs/registry/README.md`
-- `docs/registry/INDEX.md`
+- `prompts/review_manager.md`
+- `prompts/manager_review.md`
+- `skills/man-review-implementation/SKILL.md`
+- `skills/audit-pipeline/SKILL.md`
+- `skills/orchestrate-pipeline/SKILL.md`
+- `prompts/audit_complete_motor_destination.md`
+- `prompts/audit_pipeline.md`
+- `prompts/orchestrator_pipeline.md`
 - `scripts/discover_skills.py`
-- `scripts/run_gates_dispatch.py`
-- `tests/test_discover_skills.py`
-- `tests/unit/test_run_gates_dispatch.py`
 - `tests/test_check_naming.py`
 - `tests/test_discover_skills.py`
-- `tests/unit/test_run_gates_dispatch.py`
-
-
-
-Nota: la DEC declarara las rutas concretas de prompts piloto, stubs legacy y skills piloto antes de tocarlas; no son FLT editable hasta que la DEC las nombre explicitamente.
+- `docs/registry/INDEX.md`
+- `docs/registry/README.md`
 
 ### repo_destino
 
@@ -62,20 +59,18 @@ Nota: la DEC declarara las rutas concretas de prompts piloto, stubs legacy y ski
 
 ## Read/inspect only
 
-- `scripts/check_skill_collisions.py` (no editar salvo que la DEC descarte explicitamente `discover_skills.py --check-naming` como autoridad)
-- `scripts/check_ticket_nomenclature.py`
-- `scripts/validate_ticket_prose.py`
-- `skills/`
-- `prompts/`
-- `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
-- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
-- `skills/man-review-implementation/SKILL.md` y prompt relacionado son solo candidatos; si la DEC elige ese piloto, el Builder debe registrar CEM y mantener el cambio dentro de FLT antes de tocarlo
+- `docs/decisions/DEC-008D-001-naming-convention.md`
+- `scripts/check_skill_collisions.py`
+- `scripts/run_gates_dispatch.py`
+- `scripts/pre_handoff_guard.py`
+- `bus/`
+- `.agent/runtime/events/`
 
 ## Manager-only
 
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/AUDIT_WOT-2026-008d.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-008d.md`
+- `.agent/collaboration/AUDIT_WOT-2026-008e.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-008e.md`
 - `.agent/planning/ticket_contracts.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/collaboration/STATE.md`
@@ -83,45 +78,42 @@ Nota: la DEC declarara las rutas concretas de prompts piloto, stubs legacy y ski
 
 ## Forbidden Surfaces
 
-- `registry.json` o manifest central.
-- Migracion masiva.
-- Borrado de prompts/skills o carpetas completas.
-- Retirada de shims sin scan reproducible.
-- Romper `source_prompt` o `contract_id`.
-- Logica de naming en `pre_handoff_guard`.
 - Bus runtime/events editado manualmente.
-- `privada/`, `.env`, dependencias.
+- `pre_handoff_guard.py`.
+- `registry.json`, manifest central o sidecar JSON.
+- Dependencias.
+- Rename de otros prompts/skills.
+- Borrado de `review_manager.md` sin stub.
 
 ## Fase 0 obligatoria
 
-1. Confirmar `T-008D-001` frozen y `008c` completed.
-2. Capturar baseline antes de cualquier rename:
+1. Confirmar `T-008E-001` frozen y `008d` completed.
+2. Capturar baseline:
+   - `python scripts/discover_skills.py --check-naming`
    - `python scripts/discover_skills.py --check-contract`
    - `python scripts/check_skill_collisions.py`
    - `python scripts/discover_skills.py --json`
-3. Localizar consumidores vivos de `source_prompt` y referencias prose del piloto candidato.
-4. Confirmar si `audit_plan.md` sigue siendo stub-alias vivo y documentar el patron de shim.
-5. Registrar en `execution_log.md` seams, baseline y cualquier desviacion CEM antes de tocar codigo.
+   - `rg "review_manager|manager_review" prompts skills scripts docs`
+3. Confirmar que los consumidores vivos coinciden con los 6 declarados en la DEC o emitir CONTRACT_GAP.
+4. Registrar baseline y seams en `execution_log.md` antes de tocar codigo.
 
 ## Criterios binarios
 
-- Existe DEC congelada como primer entregable y antes de cualquier rename.
-- La DEC fija prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero, shims/stubs versionados, prefijos de rol y ortogonalidad con `disable-model-invocation`.
-- Si hay piloto de rename, el prompt, su frontmatter `source_prompt` y cada referencia prose viva en prompts/skills operativos se actualizan atomicamente.
-- Existe shim/stub legacy para cada nombre publico antiguo tocado, con retirada asignada a `008e`; la DEC define si es alias documental o prompt ejecutable y como conserva `source_prompt`/`contract_id` sin romper `--check-contract`.
-- `python scripts/discover_skills.py --check-contract` queda verde.
-- `python scripts/check_skill_collisions.py` queda verde.
-- Baseline pre/post de `--check-contract`, `check_skill_collisions.py` y `discover_skills.py --json` demuestra paridad salvo renames/aliases declarados en la DEC.
-- `docs/registry/INDEX.md` expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; fuente: frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, sin sidecar JSON ni manifest central.
-- `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
-- Existe `discover_skills.py --check-naming` antes del cierre, con test fail-closed para un nombre fuera de convencion; si se crea script separado o se extiende `check_skill_collisions.py`, la DEC lo justifica.
-- `scripts/run_gates_dispatch.py` invoca `discover_skills.py --check-naming` o equivalente decidido por la DEC en los perfiles aplicables.
-- Tests focales, ruff/format si toca Python, encoding guard, handoff verde incluida barrera 010u, suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
+- `prompts/manager_review.md` contiene el prompt canonico.
+- `prompts/review_manager.md` queda como stub-alias compatible estilo `audit_plan.md`.
+- Los 6 consumidores vivos declarados en DEC quedan actualizados al canonico o documentan alias de compatibilidad sin romper `--check-contract`.
+- `KNOWN_LEGACY_NAMES` ya no contiene `review_manager`.
+- `python scripts/discover_skills.py --check-naming` pasa sin excepciones legacy.
+- `python scripts/discover_skills.py --check-contract` pasa.
+- `python scripts/check_skill_collisions.py` pasa.
+- `python scripts/discover_skills.py --json` conserva paridad funcional de trigger_map.
+- `rg "review_manager" prompts skills scripts docs` solo encuentra stub, legacy_aliases, docs historicas/deprecacion o tests de compatibilidad.
+- Tests focales, ruff/format sobre Python tocado, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
 
 ## CONTRACT_GAP behavior
 
-Emitir `CG-WOT-2026-008d.md` y bloquear si la convencion requiere redisenar discovery, crear manifest central, tocar bus/runtime, no puede mantener `--check-contract` verde con shims, o exige meter naming dentro de `pre_handoff_guard`.
+Emitir `CG-WOT-2026-008e.md` si aparecen consumidores vivos adicionales de alto riesgo, si el stub no puede mantener compatibilidad, si el rename rompe `--check-contract`, o si hay que tocar bus/runtime.
 
 ## STOP conditions
 
-Parar si no hay DEC; si el rename elegido no tiene shim seguro; si quedan referencias legacy vivas fuera de superficies permitidas; si `discover_skills.py` queda read-only mientras se exige modificarlo; si no se revalida 010s; si la DEC no fija prefijos de rol; si el piloto exige scope masivo.
+Parar si no hay baseline; si hay mas de 6 consumidores vivos no declarados; si no puede mantenerse el stub; si el cambio exige tocar bus/runtime o dependencias; si `--check-contract` no puede quedar verde.

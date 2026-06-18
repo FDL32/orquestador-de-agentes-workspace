@@ -526,3 +526,41 @@
 - **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
 - **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta `discover_skills.py --check-naming`; parar si deja `discover_skills.py` como read-only mientras exige modificarlo; parar si intenta poner la logica de naming dentro de `pre_handoff_guard` en vez de los quality gates; parar si no se revalida la premisa contra 010s; parar si la DEC no fija prefijos de rol.
 - **Depende de:** WOT-2026-008c (COMPLETED).
+## T-008E-001 -- Rename versionado review_manager -> manager_review
+
+- **ticket_id:** WOT-2026-008e
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008E-001
+- **Plan-Link:** PLAN-008E-001
+- **Premise:** `WOT-2026-008d` cerro `DEC-008D-001` y dejo `review_manager` como excepcion legacy temporal. `008e` ejecuta el rename versionado y retira esa excepcion sin romper `source_prompt`, prose viva ni discovery.
+- **Premise Re-check:** confirmar `008d` COMPLETED; leer `DEC-008D-001`; ejecutar baseline `discover_skills.py --check-naming`, `--check-contract`, `check_skill_collisions.py`, `discover_skills.py --json`; ejecutar `rg "review_manager|manager_review" prompts skills scripts docs`.
+- **Files Likely Touched:**
+  - Builder repo_motor: `prompts/review_manager.md`
+  - Builder repo_motor: `prompts/manager_review.md`
+  - Builder repo_motor: `skills/man-review-implementation/SKILL.md`
+  - Builder repo_motor: `skills/audit-pipeline/SKILL.md`
+  - Builder repo_motor: `skills/orchestrate-pipeline/SKILL.md`
+  - Builder repo_motor: `prompts/audit_complete_motor_destination.md`
+  - Builder repo_motor: `prompts/audit_pipeline.md`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_motor: `scripts/discover_skills.py`
+  - Builder repo_motor: `tests/test_check_naming.py`
+  - Builder repo_motor: `tests/test_discover_skills.py`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `docs/registry/README.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/check_skill_collisions.py`, `scripts/run_gates_dispatch.py`, `scripts/pre_handoff_guard.py`, bus runtime/events, `docs/decisions/DEC-008D-001-naming-convention.md`.
+- **Forbidden Surfaces:** editar bus runtime/events manualmente; crear manifest central o sidecar JSON; tocar dependencias; modificar `pre_handoff_guard.py`; ampliar el rename a otros prompts/skills; borrar el prompt legacy sin stub.
+- **DoD:**
+  - [ ] `prompts/manager_review.md` es la fuente canonica del prompt.
+  - [ ] `prompts/review_manager.md` queda como stub-alias compatible estilo `audit_plan.md`.
+  - [ ] Consumidores vivos declarados en DEC (`man-review-implementation`, `audit-pipeline`, `orchestrate-pipeline`, `audit_complete_motor_destination`, `audit_pipeline`, `orchestrator_pipeline`) quedan actualizados o documentan explicitamente el alias sin romper `--check-contract`.
+  - [ ] `KNOWN_LEGACY_NAMES` ya no contiene `review_manager`; `--check-naming` pasa sin excepciones legacy.
+  - [ ] `--check-contract`, `check_skill_collisions.py`, `--check-naming` y `discover_skills.py --json` pasan; trigger_map conserva paridad funcional.
+  - [ ] `rg "review_manager" prompts skills scripts docs` solo devuelve stub, legacy_aliases, docs historicas/deprecacion o tests de compatibilidad.
+  - [ ] Tests focales, ruff/format, encoding guard, run_pytest_safe --level all y validate --json 0/0 pasan.
+- **CONTRACT_GAP behavior:** si aparecen consumidores vivos adicionales de alto riesgo, si el stub no puede mantener compatibilidad, o si el rename rompe `--check-contract`, emitir `CG-WOT-2026-008e.md` y bloquear.
+- **STOP conditions:** parar si no hay baseline; parar si hay mas de 6 consumidores vivos no declarados; parar si se intenta borrar el alias legacy sin stub; parar si se toca bus/runtime.
+- **Depende de:** WOT-2026-008d (COMPLETED).
