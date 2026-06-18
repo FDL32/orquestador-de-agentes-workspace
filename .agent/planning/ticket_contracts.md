@@ -642,3 +642,60 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si aparece rename, frontmatter edit, cambio de bus/runtime, dependencia nueva o cambio productivo ajeno a DEC/AGENTS.md.
 - **Depende de:** WOT-2026-008f (COMPLETED), WOT-2026-008d (COMPLETED), WOT-2026-008e (COMPLETED).
+## T-008H-001 -- Rename versionado de 5 prompts orchestrator con shims
+
+- **ticket_id:** WOT-2026-008h
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008H-001
+- **Plan-Link:** PLAN-008H-001
+- **Premise:** `DEC-008G-001` ya congelo que cinco prompts deben migrar a nombres `orchestrator_*` y que `orchestrator_pipeline.md` ya es canonico y no se renombra. El ticket debe ejecutar el rename versionado con stubs y actualizar consumidores vivos sin tocar bus/runtime.
+- **Premise Re-check:** confirmar `008g` COMPLETED; ejecutar baseline `python scripts/discover_skills.py --check-naming`, `python scripts/discover_skills.py --json`, `python scripts/discover_skills.py --check-index`; ejecutar `rg "prompts/(launch_builder|session_bootstrap|session_close_chat|destination_bootstrap|refactor_bootstrap)\.md" skills prompts scripts docs README.md QUICKSTART.md AGENTS.md CLAUDE.md MANIFEST.distribute llms.txt llms-full.txt tests`; confirmar que `launch_builder.md` sigue siendo exception lexical y que por eso la prueba de migracion NO puede descansar solo en `--check-naming`.
+- **Context Baseline Evidence:** old_prompt_paths=5; canonical_new_paths=5; source_prompt_live=skills/bui-implement-from-plan/SKILL.md; generated_at=2026-06-18.
+- **Files Likely Touched:**
+  - Builder repo_motor: `prompts/launch_builder.md`
+  - Builder repo_motor: `prompts/orchestrator_launch_builder.md`
+  - Builder repo_motor: `prompts/session_bootstrap.md`
+  - Builder repo_motor: `prompts/orchestrator_session_bootstrap.md`
+  - Builder repo_motor: `prompts/session_close_chat.md`
+  - Builder repo_motor: `prompts/orchestrator_session_close_chat.md`
+  - Builder repo_motor: `prompts/destination_bootstrap.md`
+  - Builder repo_motor: `prompts/orchestrator_destination_bootstrap.md`
+  - Builder repo_motor: `prompts/refactor_bootstrap.md`
+  - Builder repo_motor: `prompts/orchestrator_refactor_bootstrap.md`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_motor: `prompts/audit_complete_motor_destination.md`
+  - Builder repo_motor: `prompts/audit_git_publication.md`
+  - Builder repo_motor: `skills/bui-implement-from-plan/SKILL.md`
+  - Builder repo_motor: `skills/orchestrate-pipeline/SKILL.md`
+  - Builder repo_motor: `skills/setup-agent-system/SKILL.md`
+  - Builder repo_motor: `skills/setup-agent-system/references/quickstart-checklist.md`
+  - Builder repo_motor: `skills/refactor-manager/SKILL.md`
+  - Builder repo_motor: `scripts/build_llms.py`
+  - Builder repo_motor: `MANIFEST.distribute`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `README.md`
+  - Builder repo_motor: `QUICKSTART.md`
+  - Builder repo_motor: `AGENTS.md`
+  - Builder repo_motor: `CLAUDE.md`
+  - Builder repo_motor: `llms.txt`
+  - Builder repo_motor: `llms-full.txt`
+  - Builder repo_motor: `tests/test_migration_bootstrap.py`
+  - Builder repo_motor: `tests/test_check_naming.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`, `scripts/discover_skills.py`, `bus/runtime/events`, `CHANGELOG.md`, historicos en docs/tests no declarados.
+- **Forbidden Surfaces:** renombrar `prompts/orchestrator_pipeline.md`; tocar `man-*`/`bui-*`; tocar bus/runtime/events; tocar dependencias; editar frontmatter fuera de lo estrictamente necesario para `source_prompt`; tocar `privada/` o `.env`.
+- **DoD:**
+  - [ ] Existen los cinco prompts canonicos nuevos `orchestrator_*` y contienen el cuerpo operativo canónico.
+  - [ ] Los cinco nombres viejos sobreviven como stubs/aliases de compatibilidad; no se borran.
+  - [ ] `skills/bui-implement-from-plan/SKILL.md` actualiza `source_prompt` al nombre canonico nuevo.
+  - [ ] Los consumidores vivos declarados en FLT usan el nombre canonico nuevo o documentan explicitamente el stub cuando procede.
+  - [ ] `orchestrator_pipeline.md` permanece sin rename y sus referencias a prompts renombrados quedan actualizadas.
+  - [ ] `MANIFEST.distribute`, `docs/registry/INDEX.md`, `llms.txt`, `llms-full.txt`, `README.md`, `QUICKSTART.md`, `AGENTS.md` y `CLAUDE.md` quedan alineados a los nombres canonicos donde aplique.
+  - [ ] La prueba de migracion NO descansa solo en `--check-naming`; tambien se verifica por `rg` de consumidores vivos, stubs presentes y `source_prompt` actualizado.
+  - [ ] `python scripts/discover_skills.py --check-naming`, `python scripts/discover_skills.py --check-index`, encoding guard, tests focales reales, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
+- **CONTRACT_GAP behavior:** si algun prompt viejo no puede mantenerse como stub, si aparece un consumidor vivo no declarado de alto riesgo, si el rename exige tocar runtime/bus o si la compatibilidad requiere un cambio de gate no previsto, emitir `CG-WOT-2026-008h.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si falta baseline; parar si el rename se extiende a `orchestrator_pipeline.md`; parar si el cambio deriva a migracion de skills `man-*`/`bui-*`; parar si la unica evidencia de migracion es `--check-naming`.
+- **Depende de:** WOT-2026-008g (COMPLETED).

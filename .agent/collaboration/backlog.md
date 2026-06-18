@@ -59,7 +59,8 @@
 | Media | WOT-2026-008d | Migracion de naming audit/version con shims | motor/skills-taxonomy | completed | WOT-2026-008c | session-2026-06-15-taxonomy |  <!-- cerrado canonico 2026-06-18: motor 4871536+af1359f; DEC-008D-001 + discover_skills.py --check-naming + run_gates_dispatch; actor-first enforced; suite 2965 passed; validate 0/0 --> |
 | Baja | WOT-2026-008e | Rename versionado review_manager -> manager_review con shim y retirada de excepcion legacy | motor/skills-taxonomy | closed | WOT-2026-008d | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008f | Gate de integracion destino-motor y lifecycle operativo | motor/protocol-destino | completed | WOT-2026-008c | session-2026-06-16-taxonomy-review |  <!-- cerrado canonico 2026-06-18: motor 86c6425; wrapper destino-motor; suite 2994 passed; validate 0/0 --> |
-| Media | WOT-2026-008g | DEC de vocabulario y naming por rol | motor/skills-taxonomy | pending | WOT-2026-008f, WOT-2026-008d, WOT-2026-008e | session-2026-06-18-role-naming |
+| Media | WOT-2026-008g | DEC de vocabulario y naming por rol | motor/skills-taxonomy | completed | WOT-2026-008f, WOT-2026-008d, WOT-2026-008e | session-2026-06-18-role-naming |  <!-- cerrado canonico 2026-06-18: motor 79da19d+264a6ad+6216b12+a7640ee; contrato T-008G-001 restaurado; validate 0/0 --> |
+| Alta | WOT-2026-008h | Rename versionado de 5 prompts orchestrator con shims | motor/skills-taxonomy | pending | WOT-2026-008g | session-2026-06-18-role-naming |
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
 | Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
@@ -122,7 +123,7 @@
 ### WOT-2026-007a - Contract Formation Pipeline v0: contrato minimo documental
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-docs
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Problema:** hoy existe un pipeline fuerte de implantacion/revision, pero la fase
@@ -239,7 +240,7 @@
 ### WOT-2026-007b - Validacion vertical: idea -> contrato -> backlog -> Builder sin aclaraciones
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-validation
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Problema:** un contrato bonito no demuestra que el Builder pueda operar con
@@ -291,7 +292,7 @@
 ### WOT-2026-007c - Validador de contratos de ticket y planning docs
 - **Prioridad:** Media
 - **Scope:** motor/quality-gates
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Problema:** si el contrato se queda solo en Markdown, futuros Managers pueden omitir
@@ -321,7 +322,7 @@
 ### WOT-2026-007d - Skills/prompts de auditoria de idea, plan y ticket
 - **Prioridad:** Media
 - **Scope:** motor/protocol-docs
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Problema:** las auditorias actuales cubren plan, implementacion, bus, pipeline y salud
@@ -351,7 +352,7 @@
 ### WOT-2026-007e - Plan graph avanzado: paralelismo, shared dependencies y anti-scope
 - **Prioridad:** Media
 - **Scope:** motor/protocol-validation
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Problema:** ejecutar planes en paralelo es el claim mas fragil. Las superficies de
@@ -1034,7 +1035,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-008c - Registry/INDEX generado de prompts y skills
 - **Prioridad:** Media
 - **Scope:** motor/skills-discovery
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008b
@@ -1076,7 +1077,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-008d - Convencion de naming de prompts/skills con shims versionados
 - **Prioridad:** Media
 - **Scope:** motor/skills-taxonomy
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008c
@@ -1122,7 +1123,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-008e - Retirada versionada de aliases/shims y compat legacy
 - **Prioridad:** Baja
 - **Scope:** motor/skills-taxonomy
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008d
@@ -1146,7 +1147,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-008f - Gate de integracion destino-motor y lifecycle operativo
 - **Prioridad:** Media
 - **Scope:** motor/protocol-destino
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008c
@@ -1192,7 +1193,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-009a - Pre-Builder contract gate deliverable-aware y fail-closed
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-008a
@@ -1239,7 +1240,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 ### WOT-2026-009b - Scope gate topology-aware por delivery_authority y FLT namespaced
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-009a
@@ -1510,7 +1511,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Alta
 - **Scope:** motor/protocol-runtime
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
@@ -1589,7 +1590,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/protocol-docs
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** analysis/mixed (analysis si solo inventaria; mixed si ajusta aliases/docs)
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010c
@@ -1699,7 +1700,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Media
 - **Scope:** motor/quality-gates
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010j, WOT-2026-010i, WOT-2026-010q
@@ -1724,7 +1725,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Baja
 - **Scope:** motor/ci-performance
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010j, WOT-2026-010k
@@ -1783,7 +1784,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 
 - **Prioridad:** Baja
 - **Scope:** motor/test-determinism
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-010k
@@ -2135,8 +2136,16 @@ antes de construir otra.
 ### WOT-2026-008g - DEC de vocabulario y naming por rol
 - **Prioridad:** Media
 - **Scope:** motor/skills-taxonomy
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** documentation
 - **Depende de:** WOT-2026-008f, WOT-2026-008d, WOT-2026-008e
 - **Objetivo:** congelar una DEC documental que separe backends IA, roles y artefactos; documentar supervisor como runtime; formalizar la regla actor/family para naming futuro.
 - **Criterio de salida:** DEC-008G-001 + AGENTS.md actualizados, sin renames ni frontmatter, `discover_skills.py --check-naming` verde y validate 0/0.
+### WOT-2026-008h - Rename versionado de 5 prompts orchestrator con shims
+- **Prioridad:** Alta
+- **Scope:** motor/skills-taxonomy
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **Depende de:** WOT-2026-008g
+- **Objetivo:** renombrar `launch_builder.md`, `session_bootstrap.md`, `session_close_chat.md`, `destination_bootstrap.md` y `refactor_bootstrap.md` a sus nombres `orchestrator_*`, manteniendo compatibilidad con stubs y actualizando consumidores vivos.
+- **Criterio de salida:** los 5 prompts canonicos nuevos existen, los 5 nombres viejos quedan como stubs, `source_prompt` y consumidores vivos apuntan al nombre canonico, `INDEX.md` y `MANIFEST.distribute` quedan alineados, `--check-naming` + `validate --json` verdes.
