@@ -535,7 +535,7 @@
 - **Objective-Link:** OBJ-008E-001
 - **Plan-Link:** PLAN-008E-001
 - **Premise:** `WOT-2026-008d` cerro `DEC-008D-001` y dejo `review_manager` como excepcion legacy temporal. `008e` ejecuta el rename versionado y retira esa excepcion sin romper `source_prompt`, prose viva ni discovery.
-- **Premise Re-check:** confirmar `008d` COMPLETED; leer `DEC-008D-001`; ejecutar baseline `discover_skills.py --check-naming`, `--check-contract`, `check_skill_collisions.py`, `discover_skills.py --json`; ejecutar `rg "review_manager|manager_review" prompts skills scripts docs`.
+- **Premise Re-check:** confirmar `008d` COMPLETED; leer `DEC-008D-001`; ejecutar baseline `discover_skills.py --check-naming`, `--check-contract`, `check_skill_collisions.py`, `discover_skills.py --json`; ejecutar `rg "review_manager|manager_review" prompts skills scripts docs tests`.
 - **Files Likely Touched:**
   - Builder repo_motor: `prompts/review_manager.md`
   - Builder repo_motor: `prompts/manager_review.md`
@@ -559,7 +559,7 @@
   - [ ] Consumidores vivos declarados en DEC (`man-review-implementation`, `audit-pipeline`, `orchestrate-pipeline`, `audit_complete_motor_destination`, `audit_pipeline`, `orchestrator_pipeline`) quedan actualizados o documentan explicitamente el alias sin romper `--check-contract`.
   - [ ] `KNOWN_LEGACY_NAMES` ya no contiene `review_manager`; `--check-naming` pasa sin excepciones legacy.
   - [ ] `--check-contract`, `check_skill_collisions.py`, `--check-naming` y `discover_skills.py --json` pasan; trigger_map conserva paridad funcional.
-  - [ ] `rg "review_manager" prompts skills scripts docs` solo devuelve stub, legacy_aliases, docs historicas/deprecacion o tests de compatibilidad.
+  - [ ] `rg "review_manager" prompts skills scripts docs tests` solo devuelve stub, legacy_aliases, docs historicas/deprecacion o tests de compatibilidad.
   - [ ] Tests focales, ruff/format, encoding guard, run_pytest_safe --level all y validate --json 0/0 pasan.
 - **CONTRACT_GAP behavior:** si aparecen consumidores vivos adicionales de alto riesgo, si el stub no puede mantener compatibilidad, o si el rename rompe `--check-contract`, emitir `CG-WOT-2026-008e.md` y bloquear.
 - **STOP conditions:** parar si no hay baseline; parar si hay mas de 6 consumidores vivos no declarados; parar si se intenta borrar el alias legacy sin stub; parar si se toca bus/runtime.
