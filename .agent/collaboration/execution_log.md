@@ -39,3 +39,10 @@
   una decision congelada.
 - **No ejecutado:** cero archivos productivos en repo_motor; solo lectura + CG +
   esta nota.
+## Manager / Contract Formation - CG resuelto
+
+- Veredicto: el CONTRACT_GAP de Fase 0 era correcto.
+- Decision: RE-SCOPE 008c a `DEC-008B-001` Opcion 4, sin reabrir la DEC.
+- Cambio aplicado: contrato activo, STRATEGY, AUDIT y `T-008C-001` ya no piden `registry.json` ni scripts nuevos de registry.
+- Nuevo objetivo: formalizar `INDEX.md` como proyeccion generada por `discover_skills.py --generate-index` y anadir stale-check.
+- Trazabilidad: el gap queda documentado en este `execution_log.md`; no se conserva `CG-WOT-2026-008c.md` fisico porque no hubo evento CONTRACT_GAP canonico en bus y `--validate` lo trata como incoherencia.
