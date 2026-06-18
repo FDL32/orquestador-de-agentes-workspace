@@ -413,3 +413,27 @@
 - **CONTRACT_GAP behavior:** stop if safe migration requires removing `triggers:`, changing prompts, installing deps, or rewriting discovery architecture beyond the six declared consumers.
 - **Builder clarification budget:** 0. Implement hybrid compatibility only.
 - **Depende de:** WOT-2026-010r (COMPLETED), WOT-2026-010t (COMPLETED).
+## T-010U-001 -- Guard fail-closed para archivado de plan/audit en limbo
+
+- **ticket_id:** WOT-2026-010u
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010U-001
+- **Plan-Link:** PLAN-010U-001
+- **Premise:** El archivador mueve artefactos cerrados a `_archive/plan_audit/` pero el rename puede quedar sin commit (`D old` + `?? new`). La contaminacion se detecta tarde en el siguiente ticket. La solucion elegida es guard fail-closed con remediacion, no auto-commit.
+- **Premise Re-check:** confirmar `archive_collaboration_artifacts.py` usa move sin commit; confirmar sitios de deteccion existentes; reproducir limbo en repo git real.
+- **Files Likely Touched:**
+  - Builder: `scripts/archive_collaboration_artifacts.py`
+  - Builder: `.agent/agent_controller.py`
+  - Builder: `scripts/pre_handoff_guard.py`
+  - Builder: `scripts/delivery_hygiene_check.py`
+  - Builder: `tests/test_pre_handoff_guard.py`
+  - Builder: `tests/test_archive_collaboration_artifacts.py`
+  - Builder: `tests/unit/test_delivery_hygiene_check.py`
+  - Builder: `docs/protocol/archive_rename_hygiene_WOT-2026-010u.md`
+- **Forbidden Surfaces:** bus runtime/events; destructive deletion of archived artifacts; dependency files; auto-commit inside archiver; `privada/`; `.env`.
+- **DoD:** test reproduces limbo delete+untracked; guard blocks with stable reason and remediation; no auto-commit; artifacts preserved as rename; tests/ruff/encoding/validate pass.
+- **CONTRACT_GAP behavior:** stop if fix requires auto-commit or destructive deletion.
+- **Builder clarification budget:** 0. Implement guard fail-closed, not policy redesign.
+- **Depende de:** WOT-2026-010s (COMPLETED).

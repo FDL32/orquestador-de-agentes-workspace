@@ -1,122 +1,109 @@
-# Work Plan: WOT-2026-010s
+# Work Plan: WOT-2026-010u
 
-> Origen: `WOT-2026-010r` decidio adoptar de forma hibrida la taxonomia user-invoked/model-invoked inspirada en `mattpocock/skills`. Este ticket implementa soporte compatible; NO retira `triggers:` de los SKILL.md.
+> Origen: patron repetido de archivado en limbo: `archive_collaboration_artifacts.py` mueve `STRATEGY_/AUDIT_` cerrados a `_archive/plan_audit/`, pero si el rename no queda commiteado, el siguiente ticket queda bloqueado por `contaminacion_productiva`.
 
 ## Metadata
 
-- **ID:** WOT-2026-010s
-- **Contract ID:** T-010S-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-010u
+- **Contract ID:** T-010U-001
+- **Estado:** APPROVED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depends on:** WOT-2026-010r (completed), WOT-2026-010t (completed)
+- **Depends on:** WOT-2026-010s (completed)
 
 ## Objetivo
 
-Introducir soporte backward-compatible para `disable-model-invocation` en discovery/resolution de skills sin romper `trigger_map`. Las skills user-invoked pueden conservar `triggers:` para compatibilidad de dispatch, pero quedan marcadas como no invocables por modelo. Las skills model-invoked siguen disponibles para auto-invocacion cuando su metadata lo permita.
+Convertir el archivado incompleto de `STRATEGY_/AUDIT_` en una barrera temprana y accionable. El ticket debe detectar el estado `delete+untracked` que representa un rename no commiteado hacia `_archive/plan_audit/` y bloquear cierre/handoff con un diagnostico self-service. No debe hacer commits automaticos.
 
 ## Hechos verificados de arranque
 
-- `010r` esta cerrado y documenta seis consumidores reales de `triggers`.
-- `010t` esta cerrado y aporta vocabulario de review para evitar seams inventados.
-- `disable-model-invocation` no existe aun en skills locales.
-- `triggers:` existe en los SKILL.md y se consume para `trigger_map`; retirarlo en masa seria breaking.
-- Ticket scope ajustado: el backlog decia "retirar triggers"; este contrato lo corrige a migracion hibrida segura. La retirada queda fuera de 010s.
+- `scripts/archive_collaboration_artifacts.py` mueve archivos con `shutil.move`, sin `git add` ni commit.
+- La deteccion actual existe, pero llega tarde como `contaminacion_productiva` en el siguiente validate/handoff.
+- Patron repetido en la sesion: archivado previo dejo delete+untracked y bloqueo tickets posteriores.
+- Decision de alcance: implementar opcion B. Guard fail-closed + remediacion explicita. NO auto-commit.
 
 ## Fase 0: Diagnostico antes del cambio
 
-Confirmar antes de editar codigo:
+Confirmar antes de editar:
 
-- consumidores reales de `triggers`: `scripts/discover_skills.py`, `bus/skill_resolver.py`, `scripts/check_skill_collisions.py`, `scripts/local_audit.py`, `scripts/orquestador.py`, `scripts/validate_agent_config.py`;
-- tests existentes para discovery/resolver/collisions: `tests/test_discover_skills.py`, `tests/unit/test_skill_discovery.py`, `tests/test_check_skill_collisions.py`, `tests/test_approval_state_revision_and_skill_access.py`;
-- formato actual de `python scripts/discover_skills.py --json` y claves que produce;
-- si `v1.0.1` del repo externo cambia `docs/invocation.md`; si invalida el contrato, emitir CONTRACT_GAP.
-
-Nota operativa: evita `rg` sobre `tests/sandbox/test_runtime/**` sin exclusiones; hay carpetas `opencode-review-*` con acceso denegado que no son fallo del contrato.
+- punto exacto donde se invoca `_auto_archive_closed_artifacts()` en `agent_controller.py`;
+- como `pre_handoff_guard.py` clasifica `_archive/plan_audit/` y superficies vivas;
+- donde `delivery_hygiene_check.py` reporta arbol sucio/contaminacion;
+- si ya existe helper reutilizable para `git status --porcelain -z` o parser de renames;
+- tests existentes que cubren archiver/pre-handoff/validate.
 
 Registrar en `execution_log.md`:
 
-- consumidores confirmados;
-- baseline `trigger_map` antes del cambio;
-- decision hibrida: `triggers` se conserva, `disable-model-invocation` se anade como metadata semantica.
+- seam elegido para la barrera;
+- por que no se implementa auto-commit;
+- reproduccion roja del limbo delete+untracked.
 
 ## Files Likely Touched
 
 ### repo_motor
-- `scripts/discover_skills.py`
-- `bus/skill_resolver.py`
-- `scripts/check_skill_collisions.py`
-- `scripts/local_audit.py`
-- `scripts/orquestador.py`
-- `scripts/validate_agent_config.py`
-- `tests/test_discover_skills.py`
-- `tests/unit/test_skill_discovery.py`
-- `tests/test_check_skill_collisions.py`
-- `tests/test_approval_state_revision_and_skill_access.py`
-- `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
-- `CREDITS.md`
+- `scripts/archive_collaboration_artifacts.py`
+- `.agent/agent_controller.py`
+- `scripts/pre_handoff_guard.py`
+- `scripts/delivery_hygiene_check.py`
+- `tests/test_pre_handoff_guard.py`
+- `tests/test_archive_collaboration_artifacts.py`
+- `tests/unit/test_delivery_hygiene_check.py`
+- `docs/protocol/archive_rename_hygiene_WOT-2026-010u.md`
 
 ### repo_destino
 - `.agent/collaboration/work_plan.md`
-- `.agent/collaboration/STRATEGY_WOT-2026-010s.md`
-- `.agent/collaboration/AUDIT_WOT-2026-010s.md`
+- `.agent/collaboration/STRATEGY_WOT-2026-010u.md`
+- `.agent/collaboration/AUDIT_WOT-2026-010u.md`
 - `.agent/collaboration/execution_log.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/planning/ticket_contracts.md`
 
 ## Read/inspect only
 
-- `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
-- `docs/protocol/manager_review_design_vocabulary_WOT-2026-010t.md`
-- `skills/*/SKILL.md`
-- `prompts/`
+- `.agent/collaboration/_archive/plan_audit/`
 - `.agent/runtime/events/`
+- `docs/KNOWN_FAILURE_PATTERNS.md`
+- `AGENTS.md`
 
 ## Manager-only
 
-- verificar que `trigger_map` no se rompe;
-- verificar que `disable-model-invocation` no se usa como excusa para ocultar skills del dispatch manual;
-- verificar que no se copia bundle externo;
-- verificar que no se hace retirada masiva de `triggers:`.
+- verificar que el guard no auto-commitea;
+- verificar que no borra artefactos historicos;
+- verificar que el diagnostico contiene comandos de remediacion;
+- verificar test rojo/verde contra repo git real o fixture con git real.
 
 ## Decision Arquitectonica
 
-- Migracion hibrida: `triggers` sigue siendo el contrato de dispatch manual/legacy.
-- `disable-model-invocation: true` significa user-invoked: el modelo no debe auto-invocar esa skill, pero un humano/trigger explicito puede seguir usandola.
-- Ausencia del campo equivale a backward-compatible model-invoked por defecto, salvo reglas locales existentes.
-- `discover_skills.py` debe exponer metadata suficiente para que consumidores posteriores distingan `user_invoked` vs `model_invoked` sin romper claves existentes.
-- La paridad de `trigger_map` antes/despues es barrera obligatoria.
+- La barrera debe fallar temprano si detecta rename incompleto de plan/audit cerrado.
+- Remediacion preferida: stage ambos lados del rename y commitear, no borrar archivos.
+- No auto-commit desde archivador: evita commits sorpresa y mezcla de estado vivo con cambios del usuario.
+- El guard debe ser self-service: mostrar rutas y comando exacto de reconciliacion.
 
 ## Criterios Binarios
 
-- [ ] `discover_skills.py` parsea `disable-model-invocation` como booleano estable y lo expone en cada skill descubierta.
-- [ ] `trigger_map` de `discover_skills.py --json` conserva los mismos triggers para skills existentes antes/despues del cambio.
-- [ ] `bus/skill_resolver.py` respeta la metadata sin romper allowlists por nombre o trigger.
-- [ ] `check_skill_collisions.py`, `local_audit.py`, `orquestador.py` y `validate_agent_config.py` no interpretan mal el nuevo campo.
-- [ ] Hay tests de barrera para `disable-model-invocation: true`, ausencia del campo, valor invalido y paridad de `trigger_map`.
-- [ ] `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md` documenta la semantica local, compatibilidad y ruta de retirada futura.
-- [ ] `CREDITS.md` incluye fila `WOT-2026-010s` con source pinneado, licencia MIT y `Adapted`.
-- [ ] No se eliminan `triggers:` de los SKILL.md en este ticket.
-- [ ] No se toca bus runtime ni eventos manualmente.
-- [ ] Tests focales pasan, ruff/format pasan, encoding guard pasa y `validate --json` termina 0 errors / 0 warnings.
+- [ ] Existe test que reproduce `D .agent/collaboration/AUDIT_*.md` + `?? .agent/collaboration/_archive/plan_audit/AUDIT_*.md` y falla sin el fix.
+- [ ] El guard bloquea el cierre/handoff/validate correspondiente con razon `archive_rename_uncommitted` o equivalente estable.
+- [ ] El diagnostico lista origen, destino y comando de remediacion (`git add <old> <new> && git commit ...`).
+- [ ] El fix no ejecuta `git commit` automaticamente.
+- [ ] No se borran artefactos historicos; el flujo esperado preserva rename 100%.
+- [ ] Tests focales pasan.
+- [ ] Ruff/format pasan sobre Python tocado.
+- [ ] Encoding guard pasa sobre docs y codigo tocados.
+- [ ] `validate --json --project-root <repo_destino>` termina 0 errors / 0 warnings.
 
 ## Non-goals
 
-- NO retirar `triggers:` de SKILL.md.
-- NO cambiar la UX de comandos slash.
-- NO copiar archivos del bundle externo.
-- NO introducir dependencias.
-- NO modificar prompts salvo que se detecte CONTRACT_GAP.
-- NO tocar `privada/`, `.env`, bus runtime ni eventos manualmente.
+- NO auto-commit en `archive_collaboration_artifacts.py`.
+- NO borrar artefactos en vez de renombrar.
+- NO editar bus runtime ni fabricar eventos.
+- NO cambiar politicas de archive para `archive/` vivo de notifications.
+- NO mezclar limpieza Goose ni Plan 008.
 
 ## Forbidden Surfaces
 
-- `skills/*/SKILL.md` para retirada masiva de `triggers:`
-- `prompts/`
-- `pyproject.toml`
-- `uv.lock`
-- `.agent/runtime/events/`
-- `.agent/runtime/reviews/`
-- bundle externo copiado
+- bus runtime/events
 - `privada/`
 - `.env`
+- dependencias (`pyproject.toml`, `uv.lock`)
+- borrado destructivo de `_archive/plan_audit/`
+- auto-commit automatico dentro del archivador
