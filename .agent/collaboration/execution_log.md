@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Ticket:** WOT-2026-008k
-- **Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 
@@ -51,3 +51,6 @@ Orquestador eligio opcion A y amplio FLT con tests/test_registry_catalog.py.
 ### Cierre de evidencia - suite
 - run_pytest_safe --level all sobre fba7a39: 3012 passed, 20 skipped, 0 failed (379.41s).
 - last-run.json: status=finished, exit_code=0, tested_commit_sha=fba7a39 == HEAD.
+
+
+Manager approved canonical closeout for WOT-2026-008k
