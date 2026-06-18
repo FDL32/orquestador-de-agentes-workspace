@@ -525,7 +525,7 @@
 - **CONTRACT_GAP behavior:** si la convencion requiere redisenar discovery, crear manifest central, tocar bus/runtime, o no puede mantener `--check-contract` verde con shims, emitir `CG-WOT-2026-008d.md` y bloquear.
 - **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
 - **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta `discover_skills.py --check-naming`; parar si deja `discover_skills.py` como read-only mientras exige modificarlo; parar si intenta poner la logica de naming dentro de `pre_handoff_guard` en vez de los quality gates; parar si no se revalida la premisa contra 010s; parar si la DEC no fija prefijos de rol.
-- **Depende de:** WOT-2026-008c (COMPLETED).
+- **Depende de:** WOT-2026-008e (COMPLETED); WOT-2026-008c satisfecho como premisa tecnica.
 ## T-008E-001 -- Rename versionado review_manager -> manager_review
 
 - **ticket_id:** WOT-2026-008e
@@ -576,7 +576,7 @@
 - **Objective-Link:** OBJ-008F-001
 - **Plan-Link:** PLAN-008F-001
 - **Premise:** el engranaje destino-motor y la preparacion operativa del destino ya estan cubiertos por piezas separadas (`destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py`, validaciones de autoridad/topologia), pero no existe una entrada unica que las orqueste de punta a punta sin duplicar logica.
-- **Premise Re-check:** confirmar `008c` COMPLETED; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
+- **Premise Re-check:** confirmar `008e` COMPLETED y `008c` satisfecho como premisa tecnica; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/check_motor_destination_integration.py`
   - Builder repo_motor: `tests/test_check_motor_destination_integration.py`
@@ -596,11 +596,13 @@
 - **DoD:**
   - [ ] Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
   - [ ] El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/topologia ya presentes.
+  - [ ] destination_context.py, check_destino_publish_ready.py, classify_publication.py y validate_authority.py solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
   - [ ] El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido.
   - [ ] El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
   - [ ] El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
-  - [ ] Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y guard/settings fail-closed sobre fixture o tmp.
+  - [ ] Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.
+  - [ ] Si se tocan prompts/destination_bootstrap.md o prompts/audit_git_publication.md, el cambio se limita a una referencia minima al wrapper nuevo y no reescribe su flujo operativo.
   - [ ] `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
-- **CONTRACT_GAP behavior:** si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse, emitir `CG-WOT-2026-008f.md` y bloquear.
-- **STOP conditions:** parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher.
-- **Depende de:** WOT-2026-008c (COMPLETED).
+- **CONTRACT_GAP behavior:** si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse, emitir `CG-WOT-2026-008f.md` y bloquear.
+- **STOP conditions:** parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos en vez de delegar; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher.
+- **Depende de:** WOT-2026-008e (COMPLETED); WOT-2026-008c satisfecho como premisa tecnica.

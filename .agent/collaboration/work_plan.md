@@ -17,7 +17,7 @@ Crear un gate integrado `scripts/check_motor_destination_integration.py` que val
 
 ## Premisas verificadas antes de Builder
 
-- `WOT-2026-008c` esta COMPLETED y dejo `docs/registry/INDEX.md` generado y `--check-index` verde.
+- `WOT-2026-008e` esta COMPLETED y es la dependencia funcional directa del siguiente tramo; `WOT-2026-008c` queda satisfecho como premisa tecnica de `INDEX.md` generado y `--check-index` verde.
 - `scripts/destination_context.py` existe y hoy expone `--bootstrap --project-root`; es una pieza viva de resolucion destino.
 - `scripts/check_destino_publish_ready.py` existe y ya orquesta `validate --json` + estado operativo pre-push.
 - `scripts/classify_publication.py` existe y ya clasifica publicacion en dry-run con `--repo-root`.
@@ -51,7 +51,9 @@ La entrada canonica del ticket sera `scripts/check_motor_destination_integration
 - `tests/test_prepush_check.py`
 - `tests/test_classify_publication.py`
 - `prompts/destination_bootstrap.md`
+  - Nota FLT: si se toca, solo para anadir una referencia minima al wrapper nuevo; no reescribir el flujo operativo.
 - `prompts/audit_git_publication.md`
+  - Nota FLT: si se toca, solo para anadir una referencia minima al wrapper nuevo; no reescribir el flujo operativo.
 
 ### repo_destino
 
@@ -90,28 +92,29 @@ La entrada canonica del ticket sera `scripts/check_motor_destination_integration
 
 ## Fase 0 obligatoria
 
-1. Confirmar `T-008F-001` frozen y `008c` completed.
+1. Confirmar `T-008F-001` frozen, `008e` completed y `008c` satisfecho como premisa tecnica.
 2. Capturar baseline read-only:
    - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
    - `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`
    - inspeccion de `destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py` y `validate_authority.py`
-3. Verificar que el wrapper puede delegar en piezas existentes; si obliga a copiar logica central, emitir CONTRACT_GAP.
+3. Verificar que el wrapper puede delegar en piezas existentes; si obliga a copiar logica central o a cambiar el contrato CLI de los scripts envueltos, emitir CONTRACT_GAP.
 4. Registrar baseline y seams en `execution_log.md` antes de tocar codigo.
 
 ## Criterios binarios
 
 - Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
 - El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/settings ya presentes.
+- destination_context.py, check_destino_publish_ready.py, classify_publication.py y validate_authority.py solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
 - El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido.
 - El wrapper distingue gate operativo pre-push de auditoria de primera publicacion; la auditoria historica solo corre con flag explicito y sigue siendo dry-run.
 - El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
-- Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y guard/settings fail-closed sobre fixture o tmp.
+- Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.
 - `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
 
 ## CONTRACT_GAP behavior
 
-Emitir `CG-WOT-2026-008f.md` si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse.
+Emitir `CG-WOT-2026-008f.md` si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse.
 
 ## STOP conditions
 
-Parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher en vez de integrar checks existentes.
+Parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos en vez de delegar; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher en vez de integrar checks existentes.
