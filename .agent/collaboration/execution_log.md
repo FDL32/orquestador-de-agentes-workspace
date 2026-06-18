@@ -1,6 +1,6 @@
 # execution_log.md -- WOT-2026-008c
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## Fase Manager preflight
 
@@ -117,3 +117,5 @@ Scope override: delivery_authority=repo_motor; commit 67c2dcc; los 3 archivos (d
 - Hallazgo Builder confirmado: el parser de scope espera `### repo_motor` exacto; `### repo_motor - Builder` produce warning scope.
 - Fix Manager-only: `work_plan.md` reorganizado con `### repo_motor` y `### repo_destino` exactos; `Read/inspect only` y `Manager-only` salen de `Files Likely Touched` para no ampliar whitelist productiva.
 - Objetivo: relanzar/revisar 008c con `validate --json` en 0/0 sin `--scope-override` por formato.
+
+Manager approved canonical closeout for WOT-2026-008c
