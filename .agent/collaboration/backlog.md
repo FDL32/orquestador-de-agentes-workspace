@@ -1,4 +1,4 @@
-# Backlog
+﻿# Backlog
 
 > Tickets candidatos y planes futuros del workspace.
 > No es estado activo: el ticket activo vive en `work_plan.md`.
@@ -60,7 +60,7 @@
 | Baja | WOT-2026-008e | Rename versionado review_manager -> manager_review con shim y retirada de excepcion legacy | motor/skills-taxonomy | closed | WOT-2026-008d | session-2026-06-15-taxonomy |
 | Media | WOT-2026-008f | Gate de integracion destino-motor y lifecycle operativo | motor/protocol-destino | completed | WOT-2026-008c | session-2026-06-16-taxonomy-review |  <!-- cerrado canonico 2026-06-18: motor 86c6425; wrapper destino-motor; suite 2994 passed; validate 0/0 --> |
 | Media | WOT-2026-008g | DEC de vocabulario y naming por rol | motor/skills-taxonomy | completed | WOT-2026-008f, WOT-2026-008d, WOT-2026-008e | session-2026-06-18-role-naming |  <!-- cerrado canonico 2026-06-18: motor 79da19d+264a6ad+6216b12+a7640ee; contrato T-008G-001 restaurado; validate 0/0 --> |
-| Alta | WOT-2026-008h | Rename versionado de 5 prompts orchestrator con shims | motor/skills-taxonomy | pending | WOT-2026-008g | session-2026-06-18-role-naming |
+| Alta | WOT-2026-008h | Rename versionado de 5 prompts orchestrator con shims | motor/skills-taxonomy | completed | WOT-2026-008g | session-2026-06-18-role-naming |  <!-- motor e5975eb; 5 canonicos + 5 stubs; source_prompt migrado; prose viva legacy barrida; 46 focales + suite 3006/0; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009a | Pre-Builder contract gate deliverable-aware y fail-closed | motor/protocol-runtime | completed | WOT-2026-008a | session-2026-06-15-contract-formation |  <!-- motor 440e878+9b7666f; scope gate deliverable-aware; preflight protocol fail-closed; Manager APROBADO; cierre canonico 0/0 -->
 | Alta | WOT-2026-009b | Scope gate topology-aware por delivery_authority y FLT namespaced | motor/protocol-runtime | completed | WOT-2026-009a | session-2026-06-15-contract-formation |  <!-- motor c308f40+35fb46b; parse_flt_namespaced+_parse_flt_section; pre_handoff_guard delega a scope_gate; 67 focal tests; Manager APROBADO; validate 0/0 -->
 | Media | WOT-2026-009c | Guardias reciprocas de aislamiento repo_motor/repo_destino | motor/protocol-runtime | completed | WOT-2026-009b | session-2026-06-15-contract-formation |  <!-- motor a020afd + destino closeout canonico; validate 0/0 -->
@@ -2144,8 +2144,9 @@ antes de construir otra.
 ### WOT-2026-008h - Rename versionado de 5 prompts orchestrator con shims
 - **Prioridad:** Alta
 - **Scope:** motor/skills-taxonomy
-- **Estado:** pending
+- **Estado:** completed
 - **deliverable_type:** mixed
 - **Depende de:** WOT-2026-008g
 - **Objetivo:** renombrar `launch_builder.md`, `session_bootstrap.md`, `session_close_chat.md`, `destination_bootstrap.md` y `refactor_bootstrap.md` a sus nombres `orchestrator_*`, manteniendo compatibilidad con stubs y actualizando consumidores vivos.
 - **Criterio de salida:** los 5 prompts canonicos nuevos existen, los 5 nombres viejos quedan como stubs, `source_prompt` y consumidores vivos apuntan al nombre canonico, `INDEX.md` y `MANIFEST.distribute` quedan alineados, `--check-naming` + `validate --json` verdes.
+
