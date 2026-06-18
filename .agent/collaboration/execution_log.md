@@ -47,4 +47,13 @@
 ## Entrega
 
 - Commit motor productivo: 1c756fd (12 archivos, +368/-245).
-- Pendiente: suite canonica level=all contra HEAD + handoff.
+
+## Cierre - evidencia final (handoff completado)
+
+- Suite canonica: `run_pytest_safe --level all` -> 2968 passed, 20 skipped, 0 failed (319.11s). exit_code=0.
+- tested_commit_sha == HEAD: SI (1c756fd). last-run.json: level=all, exit=0.
+- validate --json --project-root <repo_destino>: 0 errors / 0 warnings.
+- Handoff: `--pre-handoff --json --force` -> success; `--mark-ready` -> "Motor scope: 12 files within Files Likely Touched" + "marked as ready for review" (sin --scope-override).
+- Eventos de bus emitidos: BUILDER_EXIT + STATE_CHANGED -> READY_FOR_REVIEW. Estado destino: WOT-2026-008e / READY_FOR_REVIEW.
+- Commits destino: 3558b85 (log Fase 0-2), 98d0612 (reconciliacion limbo archivado 008d, rename 100% byte-identico detectado por contaminacion_productiva), 6d23625 (proyecciones handoff).
+- Ambos repos limpios tras cierre.
