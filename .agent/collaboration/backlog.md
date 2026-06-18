@@ -1084,7 +1084,7 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
 - **Decision previa obligatoria:** crear una DEC nueva (por ejemplo `docs/decisions/DEC-008D-001-naming-convention.md`) que congele:
   - prompts: `snake_case`, patron `<domain_or_actor>_<action>_<object>.md` salvo familias historicas justificadas como `audit_*`;
   - skills: `kebab-case`, patron `<domain-or-actor>-<action>-<object>/`;
-  - scripts: `snake_case` verbo primero para CLIs (`check_*`, `generate_*`, `validate_*`, `discover_*`);
+  - scripts: `snake_case` verbo primero para CLIs (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`);
   - shims/stubs: formato, ventana de retirada y ticket propietario (`008e`);
   - criterio de legacy permitido y etiquetas de compatibilidad.
 - **Files Likely Touched:**
@@ -1100,10 +1100,10 @@ migrar DEFAULT a descubrimiento `tests/` tras triage de los excluidos.
   - El piloto toca prompt + skill consumidora de forma atomica cuando existe `source_prompt`.
   - `python scripts/discover_skills.py --check-contract` queda verde tras el rename.
   - `python scripts/check_skill_collisions.py` queda verde.
-  - El INDEX generado expone `canonical_name` y `legacy_aliases` o campos equivalentes sin introducir `registry.json`.
+  - El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes sin introducir `registry.json`.
   - Los nombres legacy quedan como shims/stubs versionados con retirada asignada a `008e`.
   - `rg` de nombres antiguos solo aparece en shims, docs de deprecacion, changelog/backlog historico o tests de compatibilidad.
-  - No se crea gate nuevo si una extension razonable de `discover_skills.py --check-contract`, `check_skill_collisions.py`, `check_ticket_nomenclature.py` o `validate_ticket_prose.py` cubre la regla.
+  - La barrera preferente es `discover_skills.py --check-naming`, por estar en el mismo dominio que catalog/discovery. Si se crea un script separado (`check_naming_convention.py`), justificar por que no encaja como subcomando de discovery.
   - No se hace migracion masiva; maximo piloto pequeno y reversible.
   - Tests focales, ruff/format si toca Python, encoding guard, suite canonica y validate 0/0 pasan.
 - **Piloto sugerido:** evaluar `prompts/review_manager.md` -> nombre canonico actor/dominio primero solo si se actualiza a la vez `skills/man-review-implementation/SKILL.md:source_prompt` y se conserva stub legacy. Si el analisis muestra mayor riesgo que valor, elegir un piloto documental de menor blast radius.

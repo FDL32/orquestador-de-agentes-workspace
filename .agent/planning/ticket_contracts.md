@@ -510,17 +510,17 @@
 - **Forbidden Surfaces:** crear `registry.json` o manifest central; migracion masiva; mover carpetas completas de prompts/skills; retirar shims sin scan reproducible; romper `source_prompt`; tocar bus runtime/events; tocar dependencias; `privada/`; `.env`.
 - **DoD (criterios binarios de cierre):**
   - [ ] Existe DEC de naming congelada antes de cualquier rename.
-  - [ ] La DEC fija patrones por tipo: prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero, shims/stubs versionados.
-  - [ ] Si hay piloto de rename, prompt y skill consumidora (`source_prompt`) se actualizan atomicamente.
+  - [ ] La DEC fija patrones por tipo: prompts `snake_case`, skills `kebab-case`, scripts CLI verbo primero (`check_*`, `generate_*`, `validate_*`, `discover_*`, `archive_*`, `run_*`), shims/stubs versionados.
+  - [ ] Si hay piloto de rename, el prompt y TODOS los consumidores `source_prompt` se actualizan atomicamente.
   - [ ] Existe shim/stub legacy para cada nombre publico antiguo tocado, con retirada asignada a `008e`.
   - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
   - [ ] `python scripts/check_skill_collisions.py` queda verde.
-  - [ ] El INDEX generado expone `canonical_name` y `legacy_aliases` o campos equivalentes sin crear manifest central.
+  - [ ] El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes sin crear manifest central.
   - [ ] `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
-  - [ ] No se crea gate nuevo si se puede extender un gate existente; si se crea, queda justificado con evidencia.
+  - [ ] La barrera preferente es `discover_skills.py --check-naming`; si se crea `check_naming_convention.py`, queda justificado con evidencia de por que no encaja en discovery.
   - [ ] Tests focales, ruff/format si toca Python, encoding guard, suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
 - **Integracion cross-ticket:** desbloquea `008e`; no debe mezclar lifecycle operativo de `008f` ni performance/CI. Debe preservar lo aprendido en `010s` y `010t`.
 - **CONTRACT_GAP behavior:** si la convencion requiere redisenar discovery, crear manifest central, tocar bus/runtime, o no puede mantener `--check-contract` verde con shims, emitir `CG-WOT-2026-008d.md` y bloquear.
 - **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
-- **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta extender uno existente.
+- **STOP conditions:** parar si no hay DEC; parar si el rename elegido no tiene shim seguro; parar si el cambio deja referencias legacy vivas fuera de superficies permitidas; parar si exige gate nuevo sin justificar por que no basta `discover_skills.py --check-naming`.
 - **Depende de:** WOT-2026-008c (COMPLETED).
