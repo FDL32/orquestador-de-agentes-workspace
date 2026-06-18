@@ -112,3 +112,8 @@
 - repo_motor limpio; repo_destino limpio tras reconciliacion.
 
 Scope override: delivery_authority=repo_motor; commit 67c2dcc; los 3 archivos (discover_skills.py, docs/registry/INDEX.md, tests/test_registry_catalog.py) estan en FLT repo_motor-Builder del work_plan 008c. Affected files: docs/registry/INDEX.md, scripts/discover_skills.py, tests/test_registry_catalog.py
+## Manager sanitation - FLT parseable
+
+- Hallazgo Builder confirmado: el parser de scope espera `### repo_motor` exacto; `### repo_motor - Builder` produce warning scope.
+- Fix Manager-only: `work_plan.md` reorganizado con `### repo_motor` y `### repo_destino` exactos; `Read/inspect only` y `Manager-only` salen de `Files Likely Touched` para no ampliar whitelist productiva.
+- Objetivo: relanzar/revisar 008c con `validate --json` en 0/0 sin `--scope-override` por formato.

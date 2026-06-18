@@ -455,22 +455,15 @@
   - confirmar que `disable-model-invocation` de `010s` no rompe `trigger_map` ni el indice.
 - **Context Baseline Evidence:** depends_on=WOT-2026-008b completed; DEC-008B-001=ADOPTED Opcion 4; CG-WOT-2026-008c resolved by re-scope; generated_at=2026-06-18.
 - **Files Likely Touched:**
-  - Builder: `scripts/discover_skills.py`
-  - Builder: `scripts/check_skill_collisions.py`
-  - Builder: `docs/registry/README.md`
-  - Builder: `docs/registry/INDEX.md`
-  - Builder: `tests/test_registry_catalog.py`
-  - Builder: `tests/test_discover_skills.py`
-  - Builder: `tests/test_check_skill_collisions.py`
-  - Read/inspect only: `docs/decisions/DEC-008B-001-registry-model.md`
-  - Read/inspect only: `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
-  - Read/inspect only: `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`
-  - Read/inspect only: `skills/`
-  - Read/inspect only: `prompts/`
-  - Read/inspect only: `scripts/local_audit.py`
-  - Read/inspect only: `scripts/validate_agent_config.py`
-  - Read/inspect only: `bus/skill_resolver.py`
-- **Forbidden Surfaces:** crear `registry.json` o manifest central; mover, renombrar o borrar carpetas de prompts/skills; retirar `triggers:`; copiar bundles externos; instalar dependencias; tocar `pyproject.toml` o `uv.lock`; editar bus runtime/events manualmente; `privada/`; `.env`; migrar shims de `008d`.
+  - Builder repo_motor: `scripts/discover_skills.py`
+  - Builder repo_motor: `scripts/check_skill_collisions.py`
+  - Builder repo_motor: `docs/registry/README.md`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `tests/test_registry_catalog.py`
+  - Builder repo_motor: `tests/test_discover_skills.py`
+  - Builder repo_motor: `tests/test_check_skill_collisions.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/decisions/DEC-008B-001-registry-model.md`; `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`; `docs/skills_taxonomy/mattpocock_v1_impact_WOT-2026-010r.md`; `skills/`; `prompts/`; `scripts/local_audit.py`; `scripts/validate_agent_config.py`; `bus/skill_resolver.py`.- **Forbidden Surfaces:** crear `registry.json` o manifest central; mover, renombrar o borrar carpetas de prompts/skills; retirar `triggers:`; copiar bundles externos; instalar dependencias; tocar `pyproject.toml` o `uv.lock`; editar bus runtime/events manualmente; `privada/`; `.env`; migrar shims de `008d`.
 - **DoD (criterios binarios de cierre):**
   - [ ] `docs/registry/INDEX.md` se genera desde `discover_skills.py --generate-index` o comando equivalente ya existente en discovery.
   - [ ] Existe un stale-check que falla si `INDEX.md` diverge del output generado.

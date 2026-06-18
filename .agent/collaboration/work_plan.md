@@ -38,7 +38,7 @@ Formalizar `docs/registry/INDEX.md` como proyeccion generada por discovery recur
 
 ## Files Likely Touched
 
-### repo_motor - Builder
+### repo_motor
 
 - `scripts/discover_skills.py`
 - `scripts/check_skill_collisions.py`
@@ -48,7 +48,11 @@ Formalizar `docs/registry/INDEX.md` como proyeccion generada por discovery recur
 - `tests/test_discover_skills.py`
 - `tests/test_check_skill_collisions.py`
 
-### repo_motor - Read/inspect only
+### repo_destino
+
+- `.agent/collaboration/execution_log.md`
+
+## Read/inspect only
 
 - `docs/decisions/DEC-008B-001-registry-model.md`
 - `docs/skills_taxonomy/user_model_invocation_WOT-2026-010s.md`
@@ -59,21 +63,15 @@ Formalizar `docs/registry/INDEX.md` como proyeccion generada por discovery recur
 - `scripts/validate_agent_config.py`
 - `bus/skill_resolver.py`
 
-### repo_destino - Builder
-
-- `.agent/collaboration/execution_log.md`
-
-### repo_destino - Manager-only
+## Manager-only
 
 - `.agent/collaboration/work_plan.md`
 - `.agent/collaboration/AUDIT_WOT-2026-008c.md`
 - `.agent/collaboration/STRATEGY_WOT-2026-008c.md`
 - `.agent/planning/ticket_contracts.md`
-- `.agent/planning/contract_gaps/CG-WOT-2026-008c.md`
 - `.agent/collaboration/backlog.md`
 - `.agent/collaboration/STATE.md`
 - `.agent/collaboration/TURN.md`
-
 ## Forbidden Surfaces
 
 - No crear `registry.json` o manifest central.
