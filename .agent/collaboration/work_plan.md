@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-008i
 - **Contract ID:** T-008I-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
