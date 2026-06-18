@@ -1,4 +1,4 @@
-﻿# ticket_contracts.md -- Plan WOT-2026-008
+# ticket_contracts.md -- Plan WOT-2026-008
 
 > Solo contratos frozen pasan a work_plan.md. CONTRACT_GAP es la unica via para
 > invalidar el contrato activo.
@@ -687,7 +687,7 @@
 - **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`, `scripts/discover_skills.py`, `bus/runtime/events`, `CHANGELOG.md`, historicos en docs/tests no declarados.
 - **Forbidden Surfaces:** renombrar `prompts/orchestrator_pipeline.md`; tocar `man-*`/`bui-*`; tocar bus/runtime/events; tocar dependencias; editar frontmatter fuera de lo estrictamente necesario para `source_prompt`; tocar `privada/` o `.env`.
 - **DoD:**
-  - [ ] Existen los cinco prompts canonicos nuevos `orchestrator_*` y contienen el cuerpo operativo canÃ³nico.
+  - [ ] Existen los cinco prompts canonicos nuevos `orchestrator_*` y contienen el cuerpo operativo canÃƒÂ³nico.
   - [ ] Los cinco nombres viejos sobreviven como stubs/aliases de compatibilidad; no se borran.
   - [ ] `skills/bui-implement-from-plan/SKILL.md` actualiza `source_prompt` al nombre canonico nuevo.
   - [ ] Los consumidores vivos declarados en FLT usan el nombre canonico nuevo o documentan explicitamente el stub cuando procede.
@@ -708,36 +708,35 @@
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008K-001
 - **Plan-Link:** PLAN-008K-001
-- **Premise:** DEC-008G-001 congelo que udit_* en prompts es familia transversal, pero dejo serializado  08k para formalizar ole: auditor en las skills cuya propiedad real es el rol auditor. Hoy esas skills estan repartidas entre manager y shared, lo que impide que discovery/catalogo distingan auditoria operativa de rol de pipeline.
-- **Premise Re-check:** confirmar WOT-2026-008g y WOT-2026-008h COMPLETED; releer DEC-008G-001 secciones de vocabulario/roadmap; inventariar skills/audit-git-publication, skills/audit-pipeline, skills/code-audit, skills/local-audit, skills/system-health-audit; verificar el ole: actual en frontmatter; leer scripts/discover_skills.py para confirmar que _check_contract() hoy solo endurece manager|builder y que owner deriva de uthor/ole.
-- **Context Baseline Evidence:** roadmap_source=DEC-008G-001; audit_skill_count=5; builder_self_audit_excluded=true; generated_at=2026-06-18.
+- **Premise:** `DEC-008G-001` congelo que `audit_*` en prompts es familia transversal, pero dejo serializado `008k` para formalizar `role: auditor` en las skills cuya propiedad real es el rol auditor. Hoy esas skills estan repartidas entre tres `manager` con contrato vivo y dos `shared` sin `source_prompt`, lo que impide que discovery/catalogo distingan auditoria operativa de rol de pipeline.
+- **Premise Re-check:** confirmar `WOT-2026-008g` y `WOT-2026-008h` COMPLETED; documentar que `008i` y `008j` quedan diferidos segun `DEC-008G-001`; releer `DEC-008G-001` secciones de vocabulario/roadmap; inventariar `skills/audit-git-publication`, `skills/audit-pipeline`, `skills/code-audit`, `skills/local-audit`, `skills/system-health-audit`; verificar el `role:` actual en frontmatter; leer `scripts/discover_skills.py` para confirmar que `_check_contract()` hoy solo endurece `manager|builder` y que `owner` deriva de `author`/`role`.
+- **Context Baseline Evidence:** roadmap_source=DEC-008G-001; audit_skill_count=5; manager_contract_validated=3; shared_without_source_prompt=2; builder_self_audit_excluded=true; generated_at=2026-06-18.
 - **Files Likely Touched:**
-  - Builder repo_motor: skills/audit-git-publication/SKILL.md
-  - Builder repo_motor: skills/audit-pipeline/SKILL.md
-  - Builder repo_motor: skills/code-audit/SKILL.md
-  - Builder repo_motor: skills/local-audit/SKILL.md
-  - Builder repo_motor: skills/system-health-audit/SKILL.md
-  - Builder repo_motor: scripts/discover_skills.py
-  - Builder repo_motor: docs/registry/INDEX.md
-  - Builder repo_motor: docs/registry/README.md
-  - Builder repo_motor: 	ests/test_discover_skills.py
-  - Builder repo_motor: 	ests/test_check_naming.py
-  - Builder repo_motor: 	ests/test_check_skill_collisions.py
-  - Builder repo_destino: .agent/collaboration/execution_log.md
-- **Read/inspect only:** docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md; skills/bui-self-audit/SKILL.md; prompts/audit_*.md; us/runtime/events; scripts/run_gates_dispatch.py.
-- **Forbidden Surfaces:** renombrar skills o prompts; tocar ui-self-audit; mover udit_* prompts a uditor_*; tocar bus/runtime/events manualmente; tocar dependencias; expandir man-*/ui-*; editar source_prompt/contract_id salvo que una prueba demuestre necesidad contractual real.
+  - Builder repo_motor: `skills/audit-git-publication/SKILL.md`
+  - Builder repo_motor: `skills/audit-pipeline/SKILL.md`
+  - Builder repo_motor: `skills/code-audit/SKILL.md`
+  - Builder repo_motor: `skills/local-audit/SKILL.md`
+  - Builder repo_motor: `skills/system-health-audit/SKILL.md`
+  - Builder repo_motor: `scripts/discover_skills.py`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `docs/registry/README.md`
+  - Builder repo_motor: `tests/test_discover_skills.py`
+  - Builder repo_motor: `tests/test_check_naming.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`; `skills/bui-self-audit/SKILL.md`; `prompts/audit_*.md`; `scripts/check_skill_collisions.py`; `scripts/run_gates_dispatch.py`; `bus/runtime/events`.
+- **Forbidden Surfaces:** renombrar skills o prompts; tocar `skills/bui-self-audit/SKILL.md`; mover `audit_*` prompts a `auditor_*`; tocar bus/runtime/events manualmente; tocar dependencias; expandir `man-*`/`bui-*`; editar `source_prompt`/`contract_id` salvo que una prueba demuestre necesidad contractual real dentro de las tres skills contract-validated.
 - **DoD:**
-  - [ ] Las cinco skills auditoras declaradas en FLT usan ole: auditor en frontmatter.
-  - [ ] skills/bui-self-audit/SKILL.md conserva ole: builder; no se reclasifica por el nombre.
-  - [ ] scripts/discover_skills.py acepta y proyecta ole: auditor sin romper _check_contract() ni el catalogo derivado.
-  - [ ] docs/registry/INDEX.md refleja el ownership/owner actualizado para las skills auditoras tras regeneracion.
-  - [ ] Si docs/registry/README.md documenta roles o discovery ownership, queda alineado con uditor.
-  - [ ] python scripts/discover_skills.py --check-naming, --check-contract, --check-index y python scripts/check_skill_collisions.py pasan en verde.
-  - [ ] python scripts/discover_skills.py --json o evidencia equivalente demuestra que las cinco skills auditoras salen clasificadas coherentemente y que ui-self-audit sigue fuera.
-  - [ ] Tests focales reales cubren al menos: aceptacion de ole: auditor, exclusion de ui-self-audit y no regresion del contrato manager|builder existente.
-  - [ ] uff/ormat si toca Python, encoding guard, un_pytest_safe --level all y alidate --json --project-root <repo_destino> quedan verdes.
-- **CONTRACT_GAP behavior:** si formalizar uditor exige renombrar prompts udit_*, ampliar este ticket a man-*/ui-*, reescribir el contrato de source_prompt, o cambia el meaning de owner en catalogo mas alla de las cinco skills auditoras, emitir CG-WOT-2026-008k.md y bloquear.
+  - [ ] Las cinco skills auditoras declaradas en FLT usan `role: auditor` en frontmatter.
+  - [ ] `skills/bui-self-audit/SKILL.md` conserva `role: builder`; no se reclasifica por el nombre.
+  - [ ] `scripts/discover_skills.py` acepta y proyecta `role: auditor` e incluye `auditor` en el opt-in de `_check_contract()`.
+  - [ ] `audit-git-publication`, `audit-pipeline` y `system-health-audit` conservan validaciÃ³n de `source_prompt` y `contract_id` despuÃ©s del cambio.
+  - [ ] `docs/registry/INDEX.md` refleja el ownership/owner actualizado para las skills auditoras tras regeneracion.
+  - [ ] Si `docs/registry/README.md` documenta roles u ownership de discovery, queda alineado con `auditor`.
+  - [ ] `python scripts/discover_skills.py --check-naming`, `--check-contract`, `--check-index` y `python scripts/check_skill_collisions.py` pasan en verde.
+  - [ ] `python scripts/discover_skills.py --json` o evidencia equivalente demuestra que las cinco skills auditoras salen clasificadas coherentemente y que `bui-self-audit` sigue fuera.
+  - [ ] Tests focales reales cubren al menos: aceptaciÃ³n de `role: auditor`, inclusiÃ³n de `auditor` en `_check_contract()`, exclusiÃ³n de `bui-self-audit` y no regresiÃ³n del contrato `manager|builder` existente.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **CONTRACT_GAP behavior:** si formalizar `auditor` exige renombrar prompts `audit_*`, ampliar este ticket a `man-*`/`bui-*`, reescribir el contrato de `source_prompt` fuera de las tres skills contract-validated, o cambia el meaning de `owner` en catalogo mÃ¡s allÃ¡ de las cinco skills auditoras, emitir `CG-WOT-2026-008k.md` y bloquear.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si ole: auditor rompe _check_contract() de manager/builder y no puede resolverse sin ampliar scope; parar si discovery usa ole con semantica incompatible y requiere rediseño mayor; parar si aparecen skills adicionales ambiguas fuera de las cinco declaradas; parar si el cambio deriva a rename de directorios o prompts.
+- **STOP conditions:** parar si `role: auditor` rompe `_check_contract()` de `manager|builder` y no puede resolverse sin ampliar scope; parar si discovery usa `role` con semÃ¡ntica incompatible y requiere rediseÃ±o mayor; parar si aparecen skills adicionales ambiguas fuera de las cinco declaradas; parar si el cambio deriva a rename de directorios o prompts.
 - **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008h (COMPLETED).
-
