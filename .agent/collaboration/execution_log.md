@@ -44,3 +44,43 @@
 ## INDEX / naming metadata
 
 - Criterio "INDEX expone canonical_name/legacy_aliases/naming_status SI APLICA": NO aplica en 008d. Piloto validacion-only, sin renames ni legacy_aliases: en frontmatter -> sin metadata de naming nueva que proyectar. La proyeccion se materializa en 008e con el primer rename. Deuda con criterio de salida en la DEC.
+
+## Builder - Manager CHANGES resueltos (2026-06-18)
+
+Manager review veredicto CHANGES, 2 blockers. Ambos corregidos:
+
+### Blocker 1 (ALTO) - suite stale contra HEAD
+- Causa raiz: la primera suite corrio ANTES del commit productivo, asi que
+  last-run.json registraba 67c2dcc (commit de 008c), no el de 008d.
+- Fix: commit del CHANGES-fix primero (af1359f), luego re-run.
+- Evidencia: `run_pytest_safe --level all` -> **2965 passed, 20 skipped, 0 failed**
+  (333s); last-run.json tested_commit_sha = af1359f == HEAD. Verificado.
+
+### Blocker 2 (ALTO) - --check-naming no enforzaba actor-first
+- Causa raiz: el gate solo validaba forma lexica (snake/kebab). review_manager
+  ES snake_case valido, asi que devolvia [] y la regla central de la DEC
+  (actor-first) nunca se aplicaba; KNOWN_LEGACY_NAMES enmascaraba una regla
+  inexistente.
+- Fix: anadido `_actor_order_violation` en discover_skills.py. Dispara SOLO
+  cuando coexisten un actor de pipeline (manager/builder) y una accion de
+  pipeline (review/implement/create/plan/audit/resolve/approve) en orden
+  actor-ultimo. review_manager ahora se DETECTA como violacion y se tolera via
+  KNOWN_LEGACY_NAMES como deuda declarada (no como conformidad silenciosa).
+- Barrera verificada: test `test_legacy_tolerance_masks_a_real_detection`
+  vacia el set legacy y confirma que la violacion re-emerge. Test fail-closed
+  para nuevo caso actor-ultimo (review_builder/approve_manager).
+- Anti over-matching (AP-16): durante el fix se detecto que `refactor-manager`
+  (manager = sustantivo nucleo, sin accion de pipeline) y `launch_builder`
+  (launch = verbo del orquestador, no accion del actor) NO deben marcarse. La
+  regla se acoto a acciones de pipeline para no tocarlos. Live tree verde.
+
+### Sugerencia no bloqueante - aplicada
+- DEC seccion 2 aclarada: `launch_builder` queda conforme porque `launch` no es
+  accion de pipeline, NO como excepcion historica a actor-first. Alcance preciso
+  de la regla documentado (head-noun y verbo-orquestador excluidos).
+
+### Gates post-fix
+- Focal: 74 passed (+7 actor-first). ruff/format/encoding limpios.
+- Paridad: discover --json 29 skills / 90 triggers (sin cambio). --check-contract,
+  --check-naming, --check-index, check_skill_collisions todos EXIT 0.
+- Commit productivo: af1359f. Re-handoff abajo.
