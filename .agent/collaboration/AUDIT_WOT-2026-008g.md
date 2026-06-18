@@ -5,7 +5,7 @@
 - [ ] La DEC existe y es documental.
 - [ ] La DEC distingue backend IA, rol, artefacto y supervisor runtime.
 - [ ] `audit_*` queda como familia transversal, no como rol auditor.
-- [ ] La tabla de prompts contiene 20 archivos fisicos y marca `review_manager.md` como legacy stub.
+- [ ] La tabla de prompts contiene 21 archivos fisicos y marca `review_manager.md` como legacy stub.
 - [ ] AGENTS.md contiene "Backends y roles".
 - [ ] No hay renames, moves ni frontmatter.
 - [ ] `discover_skills.py --check-naming` pasa.

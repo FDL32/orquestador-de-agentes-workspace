@@ -6,7 +6,7 @@ Ticket documental DEC-only. El Builder no debe renombrar archivos ni tocar front
 
 ## Pasos
 
-1. Verificar premisas: 008f COMPLETED, 20 prompts fisicos, supervisor como runtime, audit_* como familia transversal.
+1. Verificar premisas: 008f COMPLETED, 21 prompts fisicos, supervisor como runtime, audit_* como familia transversal.
 2. Revisar la DEC preparada en repo_motor y ajustar solo si el inventario vivo la contradice.
 3. Confirmar AGENTS.md con la seccion "Backends y roles".
 4. Ejecutar gates documentales:
