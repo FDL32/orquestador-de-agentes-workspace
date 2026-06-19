@@ -104,3 +104,13 @@
 - Index: `python scripts/discover_skills.py --check-index` -> [OK] INDEX.md is in sync
 - Encoding: `python scripts/check_encoding_guard.py` -> exit 0
 - Validate: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> errors=0 warnings=0
+
+## BUILDER - WOT-2026-011d - Fix de review (segunda pasada Manager)
+
+### BLOCKER resuelto: validate scope warnings
+- Manager reejecuto validate y obtuvo 2 warnings scope `contaminacion_productiva (repo_destino)` para AUDIT_WOT-2026-010w.md y STRATEGY_WOT-2026-010w.md. Mi log previo decia 0/0 porque el validate inicial corrio ANTES de commitear estado operativo.
+- Causa raiz: rename del archivador dejado SIN commitear al cierre de WOT-2026-010w (patron conocido: archiver-leaves-uncommitted-rename). collaboration/ tenia los .md borrados + copias untracked en _archive/plan_audit/ -> el scope gate lo marca como contaminacion.
+- Verificacion no-perdida: sha1 de HEAD:collaboration/<f>.md == _archive/plan_audit/<f>.md para ambos (IDENTICAL). Rename real, sin perdida de datos.
+- Fix: commit housekeeping en repo_destino que materializa el rename + proyecciones de handoff (STATE READY_FOR_REVIEW, TURN MANAGER, execution_log).
+- Revalidacion: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> errors=0 warnings=0 (CLEAN). BLOCKER cerrado.
+- repo_motor sin cambios (commit productivo 28bbe85 intacto). Este fix es solo estado operativo de repo_destino.
