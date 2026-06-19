@@ -2,7 +2,7 @@
 ## Metadata
 - **ID:** WOT-2026-011j
 - **Contract ID:** T-011J-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **Builder clarification budget:** 0
