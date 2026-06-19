@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-010w
 - **Contract ID:** T-010W-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
