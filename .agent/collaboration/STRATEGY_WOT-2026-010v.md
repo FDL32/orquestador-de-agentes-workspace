@@ -36,7 +36,7 @@ hook post-write reaccionan sin romper casos legitimos de whitespace.
 
 Deben existir barreras que prueben:
 - FAIL del CLI guard por ruta explicita con un archivo textual que contiene
-  `\x0b`, `\x0c` o `\x00`.
+  `\x07`, `\x0b`, `\x0c` o `\x00`.
 - FAIL del hook post-write sobre un archivo textual con el mismo problema.
 - PASS de archivos con `\t`, `\n`, `\r` y CRLF legitimos.
 - No regresion de BOM/mojibake/question-mark.

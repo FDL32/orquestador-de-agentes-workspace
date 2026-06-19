@@ -15,7 +15,7 @@
 
 Endurecer `scripts/check_encoding_guard.py` y su fuente compartida
 `scripts/encoding_guard.py` para detectar control chars ASCII `<32`
-no-whitespace en archivos de texto (`\x00`, `\x0b`, `\x0c`, etc.),
+no-whitespace en archivos de texto (`\x00`, `\x07`, `\x0b`, `\x0c`, etc.),
 preservando como validos `\t`, `\n`, `\r` y CRLF, sin ampliar el alcance a
 binarios ni rehacer el hook de Bash/heredoc.
 
@@ -57,6 +57,7 @@ corrupcion ya observada en artefactos textuales.
 
 - `scripts/encoding_guard.py`
 - `scripts/check_encoding_guard.py`
+- `scripts/encoding_post_write_hook.py`
 - `tests/test_encoding_integrity.py`
 - `tests/unit/test_encoding_post_write_hook.py`
 
@@ -66,7 +67,6 @@ corrupcion ya observada en artefactos textuales.
 
 ## Read/inspect only
 
-- `scripts/encoding_post_write_hook.py`
 - `AGENTS.md`
 - `backlog.md`
 - `ticket_contracts.md`
