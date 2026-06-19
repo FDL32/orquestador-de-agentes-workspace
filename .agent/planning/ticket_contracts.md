@@ -906,3 +906,36 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseño mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
 - **Depende de:** WOT-2026-010e (COMPLETED); WOT-2026-008j (COMPLETED).
+
+
+## T-010W-001 -- Hardening de session-close: subprocess utf-8 en closeout_steps para Windows
+
+- **ticket_id:** WOT-2026-010w
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010W-001
+- **Plan-Link:** PLAN-010W-001
+- **Premise:** el intento de `--session-close` posterior a `010v` revelo un blocker real de infraestructura del motor en Windows: `scripts/closeout_steps/support.py:40` ejecuta `subprocess.run(..., capture_output=True, text=True)` sin `encoding`, y al capturar salida no-ASCII de scripts del closeout lanza `UnicodeDecodeError` bajo cp1252. El mismo patron reaparece en `scripts/closeout_steps/support.py:287` (`git ls-files`) y `scripts/closeout_steps/rotation.py:367` (`git status --short`) como riesgo latente sobre paths no-ASCII. El fix correcto es local a los call sites del closeout: `encoding="utf-8", errors="replace"`, con regresion test que pruebe que el closeout no revienta al capturar un em dash u otra salida UTF-8 alta.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-010v` COMPLETED y publicado; reproducir el fallo con `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>`; releer `scripts/closeout_steps/support.py` y `scripts/closeout_steps/rotation.py`; verificar que los tres `subprocess.run(..., text=True)` carecen de `encoding`; localizar los tests de closeout existentes en `tests/test_session_closeout.py`; confirmar que NO hace falta tocar `scripts/session_closeout.py` ni el controller para corregir la ruta de decode.
+- **Context Baseline Evidence:** blocker=UnicodeDecodeError cp1252 on Windows; central_call_site=`scripts/closeout_steps/support.py:40`; latent_call_sites=`support.py:287`,`rotation.py:367`; session_state_before_fix=`WOT-2026-010v/COMPLETED`; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/closeout_steps/support.py`
+  - Builder repo_motor: `scripts/closeout_steps/rotation.py`
+  - Builder repo_motor: `tests/test_session_closeout.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/session_closeout.py`; `.agent/agent_controller.py`; `AGENTS.md`; `backlog.md`; `ticket_contracts.md`; `bus/runtime/events`; salida fallida del dry-run de cierre en `execution_log.md`.
+- **Forbidden Surfaces:** tocar la logica funcional del closeout; mover el fix al reader-thread del controller; tocar otros `subprocess.run` fuera de `closeout_steps`; tocar dependencias; cambiar semantica de `check_versioned_filenames`; tocar `bus/runtime/events` a mano.
+- **DoD:**
+  - [ ] `scripts/closeout_steps/support.py:run_script` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
+  - [ ] `scripts/closeout_steps/support.py:check_versioned_filenames` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
+  - [ ] `scripts/closeout_steps/rotation.py:step_git_clean` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
+  - [ ] Existe al menos un test de regresion en `tests/test_session_closeout.py` que ejecuta la ruta real de `run_script` contra un script temporal que imprime un em dash u otra salida UTF-8 alta y demuestra que la salida se captura sin `UnicodeDecodeError`.
+  - [ ] Si se añade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
+  - [ ] `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>` deja de fallar por `UnicodeDecodeError` en Windows.
+  - [ ] `python -m pytest tests/test_session_closeout.py -v` pasa.
+  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **CONTRACT_GAP behavior:** si el fix exige mover la correccion al controller/reader-thread, tocar rutas de subprocess fuera de `closeout_steps` o reescribir la semantica funcional de los steps de cierre, emitir `CG-WOT-2026-010w.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la reproduccion real no pasa por `closeout_steps`; parar si el dry-run sigue explotando en un cuarto call site fuera del FLT; parar si la unica forma de probar la regresion es con mocks que no ejercitan la decodificacion real.
+- **Depende de:** WOT-2026-010v (COMPLETED).

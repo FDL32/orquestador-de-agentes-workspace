@@ -1,10 +1,10 @@
-# work_plan.md -- WOT-2026-010v
+# work_plan.md -- WOT-2026-010w
 
 ## Metadata
 
-- **ID:** WOT-2026-010v
-- **Contract ID:** T-010V-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-010w
+- **Contract ID:** T-010W-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
@@ -13,53 +13,51 @@
 
 ## Objetivo
 
-Endurecer `scripts/check_encoding_guard.py` y su fuente compartida
-`scripts/encoding_guard.py` para detectar control chars ASCII `<32`
-no-whitespace en archivos de texto (`\x00`, `\x07`, `\x0b`, `\x0c`, etc.),
-preservando como validos `\t`, `\n`, `\r` y CRLF, sin ampliar el alcance a
-binarios ni rehacer el hook de Bash/heredoc.
+Endurecer el pipeline de cierre canonico en Windows corrigiendo los
+`subprocess.run(..., text=True)` de `scripts/closeout_steps/support.py` y
+`scripts/closeout_steps/rotation.py` para fijar `encoding="utf-8",
+errors="replace"`. El objetivo es que `--session-close --dry-run` y el cierre
+real no revienten con `UnicodeDecodeError` al capturar salida no-ASCII de los
+scripts de closeout o de comandos git con paths UTF-8.
 
 ## Non-goals
 
-- No interceptar Bash/heredoc en v1.
-- No tocar bus, runtime o `validate`.
-- No ampliar el guard a binarios o ficheros fuera de `TEXT_EXTENSIONS`.
-- No introducir allowlists nuevas.
-- No reescribir artefactos historicos ya cerrados.
+- No cambiar la logica funcional del closeout.
+- No mover el fix al controller o a un reader-thread global.
+- No tocar otros `subprocess.run` fuera de `closeout_steps`.
+- No cambiar la semantica de `check_versioned_filenames`.
 - No tocar dependencias.
 
 ## Premisas verificadas antes de Builder
 
-- `WOT-2026-010e` esta COMPLETED y ya comparte deteccion entre
-  `check_encoding_guard.py` y `encoding_post_write_hook.py` via
-  `scripts.encoding_guard`.
-- `WOT-2026-008j` cerro con un blocker real de `execution_log.md` corrupto por
-  control chars; el fix fue manual porque el guard no los detectaba.
-- El detector actual cubre BOM, mojibake y `?` intra-palabra, pero no control
-  chars ASCII `<32` no-whitespace.
-- `scripts/encoding_post_write_hook.py` reutiliza `file_issues()` y por tanto
-  hereda cualquier mejora hecha en `scripts/encoding_guard.py`.
-- Existen tests vivos en `tests/test_encoding_integrity.py` y
-  `tests/unit/test_encoding_post_write_hook.py` que pueden blindar la regresion
-  sin crear una suite paralela.
+- `WOT-2026-010v` esta COMPLETED y publicado; el proyecto esta sano y el
+  blocker vive en la herramienta de cierre, no en el estado operativo.
+- El intento real de `python .agent/agent_controller.py --session-close --dry-run
+  --force --project-root <repo_destino>` fallo en Windows con
+  `UnicodeDecodeError` al decodificar stdout/stderr de un subprocess del closeout.
+- `scripts/closeout_steps/support.py:40` (`run_script`) es el call site
+  central: ejecuta scripts del closeout que emiten texto no-ASCII.
+- El mismo patron reaparece en `support.py:287` (`git ls-files`) y
+  `rotation.py:367` (`git status --short`) como riesgo latente con paths
+  no-ASCII.
+- Existen tests vivos en `tests/test_session_closeout.py` que permiten blindar
+  la regresion sin abrir una suite paralela.
 
 ## Decision Arquitectonica
 
-La correccion debe vivir en `scripts/encoding_guard.py` como fuente de verdad
-compartida. `scripts/check_encoding_guard.py` y el hook post-write deben
-consumir ese comportamiento, no duplicarlo. El ticket no cambia el gap v1 de
-Bash/heredoc ni la frontera de ficheros texto; solo blinda una clase de
-corrupcion ya observada en artefactos textuales.
+La correccion debe quedarse local a `scripts/closeout_steps/`: el problema no
+es de negocio sino de decode en tres call sites concretos. El fix correcto es
+explicitar `encoding="utf-8", errors="replace"` en esos `subprocess.run`,
+manteniendo intacta la logica del closeout y evitando mover la responsabilidad
+al controller o a un wrapper global.
 
 ## Files Likely Touched
 
 ### repo_motor
 
-- `scripts/encoding_guard.py`
-- `scripts/check_encoding_guard.py`
-- `scripts/encoding_post_write_hook.py`
-- `tests/test_encoding_integrity.py`
-- `tests/unit/test_encoding_post_write_hook.py`
+- `scripts/closeout_steps/support.py`
+- `scripts/closeout_steps/rotation.py`
+- `tests/test_session_closeout.py`
 
 ### repo_destino
 
@@ -67,39 +65,43 @@ corrupcion ya observada en artefactos textuales.
 
 ## Read/inspect only
 
+- `scripts/session_closeout.py`
+- `.agent/agent_controller.py`
 - `AGENTS.md`
 - `backlog.md`
 - `ticket_contracts.md`
-- historicos de `008f` y `008j` en `execution_log.md`
+- salida fallida del dry-run de cierre en `execution_log.md`
 - `bus/runtime/events`
 
 ## Forbidden Surfaces
 
-- Interceptar Bash/heredoc o cambiar el gap v1 de shell.
-- Escanear binarios o ampliar `TEXT_EXTENSIONS` sin necesidad contractual.
-- Introducir allowlists nuevas.
+- Mover el fix al controller o a un reader-thread global.
+- Tocar otros `subprocess.run` fuera de `closeout_steps`.
+- Cambiar la logica funcional del closeout.
+- Cambiar la semantica de `check_versioned_filenames`.
 - Tocar `validate`, bus, runtime o eventos.
 - Tocar dependencias.
 
 ## Criterios binarios
 
-- `scripts/check_encoding_guard.py <archivo>` falla cerrado ante control chars
-  ASCII `<32` no-whitespace en archivos de texto.
-- `\t`, `\n`, `\r` y CRLF legitimos no disparan falso positivo.
-- La deteccion vive en `scripts/encoding_guard.py` y el hook post-write la
-  hereda sin un detector paralelo.
-- Existe al menos un test de regresion en `tests/test_encoding_integrity.py`
-  para el CLI guard por ruta explicita.
-- Existe al menos un test de regresion en
-  `tests/unit/test_encoding_post_write_hook.py` que demuestra fallo del hook
-  ante control chars en archivo textual.
-- Los tests previos de BOM/mojibake/question-mark siguen verdes.
-- `python -m pytest tests/test_encoding_integrity.py tests/unit/test_encoding_post_write_hook.py -v` pasa.
+- `scripts/closeout_steps/support.py:run_script` fija `encoding="utf-8",
+  errors="replace"` en su `subprocess.run`.
+- `scripts/closeout_steps/support.py:check_versioned_filenames` fija
+  `encoding="utf-8", errors="replace"` en su `subprocess.run`.
+- `scripts/closeout_steps/rotation.py:step_git_clean` fija
+  `encoding="utf-8", errors="replace"` en su `subprocess.run`.
+- Existe al menos un test de regresion en `tests/test_session_closeout.py` que
+  ejecuta la ruta real de `run_script` contra un script temporal que imprime
+  un em dash u otra salida UTF-8 alta y demuestra que la salida se captura sin
+  `UnicodeDecodeError`.
+- `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>`
+  deja de fallar por `UnicodeDecodeError` en Windows.
+- `python -m pytest tests/test_session_closeout.py -v` pasa.
 - `ruff check`, `uv run ruff format --check`, `python scripts/run_pytest_safe.py --level all`
   y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 
 ## CONTRACT_GAP
 
-Emitir `CG-WOT-2026-010v.md` y parar si la correccion exige interceptar
-Bash/heredoc, cambiar la semantica de allowlist, escanear binarios o introducir
-una segunda fuente de verdad distinta de `scripts.encoding_guard`.
+Emitir `CG-WOT-2026-010w.md` y parar si la correccion exige mover el fix al
+controller/reader-thread, tocar subprocess fuera de `closeout_steps` o
+reescribir la semantica funcional de los steps de cierre.
