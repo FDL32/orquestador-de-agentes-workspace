@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Ticket:** WOT-2026-008j
-- **Estado:** READY_FOR_REVIEW
+- **Estado:** COMPLETED
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 
@@ -58,3 +58,10 @@
 ### Cierre de evidencia - suite
 - run_pytest_safe --level all sobre 9d1d75b: 3014 passed, 20 skipped, 0 failed (653.58s).
 - last-run.json: finished, exit_code=0, tested_commit_sha=9d1d75b == HEAD.
+
+## Manager Closeout
+
+- decision_WOT-2026-008j.json actualizado a `APROBADO`.
+- `--manager-approve WOT-2026-008j` emitio `REVIEW_DECISION`, `STATE_CHANGED`
+  -> `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `STATE_CHANGED` -> `COMPLETED` y
+  `SUPERVISOR_CLOSED`.
