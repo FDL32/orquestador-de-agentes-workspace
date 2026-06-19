@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Ticket:** WOT-2026-010v
-- **Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 
@@ -59,3 +59,12 @@
 ### Cierre de evidencia - suite
 - run_pytest_safe --level all sobre 6e55f86: 3024 passed, 20 skipped, 0 failed (784.52s).
 - last-run.json: finished, exit_code=0, tested_commit_sha=6e55f86 == HEAD.
+
+
+## Cierre canonico
+
+- Manager approve ejecutado: `REVIEW_DECISION -> READY_TO_CLOSE -> CLOSE_CONFIRMED -> COMPLETED -> SUPERVISOR_CLOSED`.
+- `validate --json --project-root <repo_destino>` final: `0 errors / 0 warnings`.
+- `STATE.md`: `WOT-2026-010v / COMPLETED`.
+- `TURN.md`: rotado a `MANAGER / CREATE_PLAN` para el siguiente ciclo.
+- Ticket cerrado canonicamente sobre el commit productivo `6e55f86`.
