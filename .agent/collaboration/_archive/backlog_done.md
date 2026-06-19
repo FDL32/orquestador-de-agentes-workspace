@@ -2181,11 +2181,157 @@ antes de construir otra.
 - **deliverable_type:** mixed
 - **Depende de:** WOT-2026-008g
 - **Objetivo:** formalizar 
-ole: auditor en las skills que son propiedad real del rol auditor, sin renombrar directorios ni mezclar prompts udit_* de familia transversal.
+ole: auditor en las skills que son propiedad real del rol auditor, sin renombrar directorios ni mezclar prompts audit_* de familia transversal.
 - **Cierre:** cerrado canonico 2026-06-18 (motor fba7a39); role expuesto separado de owner; CONTRACT_OPT_IN_ROLES incluye auditor; suite 3012 passed; validate 0/0.
 - **Criterio de salida:** skills auditoras con 
-ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, alidate --json 0/0 y sin tocar ui-self-audit, prompts ni runtime.
+ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, validate --json 0/0 y sin tocar bui-self-audit, prompts ni runtime.
 
 
 | Alta | WOT-2026-008i | Rename atomico de 4 skills manager a manager-* | motor/skills-taxonomy | completed | WOT-2026-008g, WOT-2026-008e, WOT-2026-008h, WOT-2026-008k | session-2026-06-18-role-naming |  <!-- cerrado canonico 2026-06-19: motor b230b61; rename atomico de 4 skills manager-*, trigger_map byte-identico, suite 3013 passed, validate 0/0 --> |
 | Alta | WOT-2026-008j | Rename atomico de 4 skills builder a builder-* | motor/skills-taxonomy | completed | WOT-2026-008g, WOT-2026-008h, WOT-2026-008i, WOT-2026-008k | session-2026-06-19-role-naming |
+
+---
+
+## Movido por WOT-2026-012a (corte de 011j ya completed)
+
+Fila de tabla retirada de la cola viva:
+
+| Alta | WOT-2026-011j | Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a | motor/devex-encoding | completed | WOT-2026-011c | session-2026-06-19-011c-followup | - |
+
+Ficha retirada de la cola viva:
+
+### WOT-2026-011j - Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a
+- **Prioridad:** Alta
+- **Scope:** motor/devex-encoding
+- **Estado:** completed
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011c.
+- **Origen:** session-2026-06-19-011c-followup.
+- **Problema:** `WOT-2026-011c` verifico dos fenomenos distintos: el BOM proviene de escrituras PowerShell 5.1 con `Set-Content`/`Out-File -Encoding UTF8`, mientras que los 3 control chars ya NO viven en la cola activa sino solo en `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md`. Parchear esos archives a mano mezclaria fix de fuente con reconstruccion historica. La ruta segura es endurecer el writer PowerShell en `repo_motor` y dejar que `012a` regenere despues sus artefactos historicos desde la fuente viva ya limpia.
+- **Objetivo:** eliminar las escrituras BOM-prone in-scope del launcher/runtime PowerShell y dejar evidencia verificable de que `012a` debe reintentarse regenerando `_archive/backlog_*` desde el backlog vivo actual, no editando snapshots heredados a mano.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/launch_agent_terminals.ps1`
+  - Builder repo_motor: `tests/test_opencode_config_stability.py`
+  - Builder repo_motor: `tests/test_launch_agent_terminals_script.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; `.agent/collaboration/backlog.md`; `.agent/collaboration/_archive/backlog_done.md`; `.agent/collaboration/_archive/backlog_pre_012a.md`; `CG-WOT-2026-012a.md`; `.agent/agent_controller.py`; `scripts/check_encoding_guard.py`.
+- **Forbidden Surfaces:** editar a mano `_archive/backlog_done.md` o `_archive/backlog_pre_012a.md`; broad-strip de BOM/control chars en el repo; tocar `scripts/check_encoding_guard.py`; reintentar `012a` dentro de `011j`; tocar `TURN.md`/`STATE.md`/bus manualmente.
+- **Premisa operativa a verificar al arrancar:**
+  - `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` verde.
+  - `python scripts/check_encoding_guard.py .agent/collaboration/_archive/backlog_done.md .agent/collaboration/_archive/backlog_pre_012a.md` rojo por los 3 control chars historicos.
+  - `scripts/launch_agent_terminals.ps1` conserva al menos una escritura BOM-prone in-scope o, si no la conserva, el ticket debe bloquearse porque el fix ya no vive en la superficie declarada.
+- **Criterios binarios:**
+  - El diff elimina las escrituras PowerShell BOM-prone que este ticket declare in-scope y las sustituye por un patron BOM-safe verificable.
+  - Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por `011j`.
+  - `tests/test_opencode_config_stability.py` sigue verde y documenta que el patron BOM-safe existente no regresa.
+  - `011j` NO edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`; deja explicitado en `execution_log.md` que esos artefactos se regeneraran al reactivar `012a`.
+  - `python scripts/check_encoding_guard.py` sobre las superficies propias del ticket queda verde.
+  - `uv run ruff check` sobre los Python tocados, `python -m pytest` focal aplicable y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:**
+  - Si la premisa re-check demuestra que ya no existe ningun writer BOM-prone in-scope en `repo_motor`, detener y emitir `CONTRACT_GAP`: el follow-up ya no coincide con la superficie real.
+  - Si la unica forma de poner verde el ticket exige editar manualmente los archives de `012a`, detener: esa regeneracion pertenece al relanzamiento de `012a`, no a `011j`.
+  - Si el fix real exige tocar `agent_controller.py` o el guard de encoding en vez del launcher/runtime PowerShell declarado, detener y devolver a Contract Formation.
+- **Reactivation / salida esperada:** tras cerrar `011j`, `WOT-2026-012a` debe relanzarse para regenerar `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` desde la fuente viva ya limpia.
+
+---
+
+## Traza del corte: ### WOT-2026-012a (conservada integra por contrato)
+
+Copia integra de la ficha del ticket que ejecuto este corte, preservada en el
+historico como exige el criterio binario de T-012A-001.
+
+### WOT-2026-012a - Reestructurar backlog: cola viva vs historico + formato parseable
+- **Prioridad:** Alta
+- **Scope:** system/collab-hygiene
+- **Estado:** pending
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_destino
+- **Depende de:** -.
+- **Reactivation:** -.
+- **Supersede / Merge decision:** absorbe el objetivo de `WT-2026-250c`.
+  Decision `011e <-> 010m` ya tomada: `keep-both-with-boundary`.
+  `011e` queda acotado a runner local opt-in sobre subset unitario;
+  `010m` conserva el piloto CI/xdist aislado. `011e` no puede congelarse en
+  `work_plan.md` si su contrato vuelve a invadir el alcance CI de `010m`.
+- **Origen:** session-2026-06-19-backlog-contract.
+- **Deuda explicita fuera de scope:** el BOM/mojibake preexistente del propio scripts/launch_agent_terminals.ps1 NO se sanea en WOT-2026-012a; queda como follow-up de WOT-2026-011f (normalizacion de .gitattributes / line endings / PS1 source encoding).
+- **Problema:** `backlog.md` mezcla cola viva, fichas operativas e historico de
+  cierres. La politica escrita promete que los tickets cerrados pasan a
+  `CHANGELOG.md`, pero el archivo ha retenido terminales y comentarios forenses
+  hasta convertirse en un pseudo-CHANGELOG. La tabla activa tampoco es fuente
+  parseable robusta hoy, y las fichas `###` no cubren de forma consistente los
+  tickets vivos de alta prioridad.
+- **Objetivo:** dejar `backlog.md` como cola viva con formato parseable estable,
+  separar el historico mediante un paso explicito del Manager en commit normal
+  de documentacion y fijar el contrato minimo que luego consumira `012b`.
+- **Files Likely Touched:**
+  - Builder repo_destino: `.agent/collaboration/backlog.md`
+  - Builder repo_destino: `.agent/collaboration/_archive/backlog_done.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `CHANGELOG.md`; `STATE.md`; `TURN.md`;
+  `.agent/planning/ticket_contracts.md`; historico previo de `backlog.md`;
+  filas `011e`..`011i`; `WOT-2026-010m`.
+- **Contrato operativo a fijar:**
+  - La tabla activa es la unica fuente parseable; los comentarios HTML pueden
+    sobrevivir como nota humana, pero dejan de ser semantica obligatoria.
+  - La tabla activa usa columnas fijas y vocabulario cerrado para el estado.
+  - El schema entregable de la tabla activa incluye explicitamente la columna
+    `Reactivation`.
+  - `Reactivation` es obligatoria para `deferred` y `completed-partial`; para
+    el resto el valor puede ser `-`.
+  - Formato minimo de `Reactivation`: `-` es exclusivo de estados que no
+    requieren reactivacion (`pending`, `blocked`, `ready-for-review`,
+    `awaiting-manager`). Para `deferred` y `completed-partial`, debe existir un
+    trigger real y verificable con formato estructurado (`WOT-...`,
+    `commit:<sha>`, `external:<ref>` o `condition:<slug>`). Valores como `-`,
+    `N/A`, `pendiente` o equivalentes vagos no cumplen el contrato.
+  - La cola viva, a efectos de `012a` y del conteo objetivo, incluye solo
+    filas con `Status in {pending, blocked, deferred, ready-for-review,
+    awaiting-manager, completed-partial}`; los terminales viven fuera de la
+    cola activa.
+  - El movimiento de terminales al historico NO ocurre dentro de
+    `--session-close` ni `--mark-ready`: lo hace un paso explicito del Manager
+    en commit normal de documentacion.
+  - Antes de cualquier corte del historico debe existir un snapshot/backup del
+    `backlog.md` original como evidencia de recovery documental.
+  - El corte del historico debe hacerse por bloques logicos auditablemente
+    reconocibles (familias completas o grupos por estado terminal), no por
+    copy-paste disperso de lineas individuales.
+  - Una ficha `###` es obligatoria para cualquier ticket con `Priority=Alta` o
+    `Status in {pending, ready-for-review, awaiting-manager}`.
+  - El encabezado de cada ficha debe ser exactamente el ID canonico del ticket
+    (por ejemplo `### WOT-2026-012a`); no se permiten variantes abreviadas.
+- **Criterios binarios:**
+  - `backlog.md` activo deja de contener terminales vivos mezclados con la cola
+    operativa.
+  - Existe un historico separado (`_archive/backlog_done.md` o decision
+    equivalente documentada) mantenido por paso explicito del Manager, no por
+    el archivador del closeout.
+  - Antes de commitear el corte, existe evidencia mecanica de integridad del
+    movimiento (conteo de filas terminales y conteo de fichas `###` movidas,
+    antes/despues), suficiente para auditar que no se perdio historico.
+  - La tabla activa queda en formato parseable estable y documentado, sin
+    depender de HTML comments para semantica, e incluye la columna
+    `Reactivation` como parte del schema obligatorio.
+  - `deferred` y `completed-partial` declaran condicion de reactivacion y
+    criterio de salida.
+  - Las filas `011e`..`011i` quedan materializadas o reclasificadas de forma
+    coherente con el contrato nuevo.
+  - La decision `011e <-> 010m` queda resuelta como
+    `keep-both-with-boundary`, con frontera explicita entre runner local
+    opt-in (`011e`) y piloto CI/xdist (`010m`), antes de congelar `011e`.
+  - `backlog.md` activo reduce tamano de forma material; objetivo operativo
+    no bloqueante: aproximarse a una cola viva <= 200 lineas al cierre de
+    `012a`.
+  - `python scripts/check_encoding_guard.py` y
+    `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
+    quedan verdes.
+- **STOP:**
+  - Si separar vivo/historico exige tocar el archivador del closeout o anadir
+    renames automaticos al cierre, detener: eso pertenece a `011h`/follow-up
+    de runtime, no a `012a`.
+  - Si la decision `011e <-> 010m` requiere una apuesta de producto no
+    disponible, registrar `pending-human` y bloquear el congelado de `011e`
+    sin inventar una fusion.
+

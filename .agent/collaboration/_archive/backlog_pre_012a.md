@@ -2164,10 +2164,10 @@ antes de construir otra.
 - **deliverable_type:** mixed
 - **Depende de:** WOT-2026-008g
 - **Objetivo:** formalizar 
-ole: auditor en las skills que son propiedad real del rol auditor, sin renombrar directorios ni mezclar prompts udit_* de familia transversal.
+ole: auditor en las skills que son propiedad real del rol auditor, sin renombrar directorios ni mezclar prompts audit_* de familia transversal.
 - **Cierre:** cerrado canonico 2026-06-18 (motor fba7a39); role expuesto separado de owner; CONTRACT_OPT_IN_ROLES incluye auditor; suite 3012 passed; validate 0/0.
 - **Criterio de salida:** skills auditoras con 
-ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, alidate --json 0/0 y sin tocar ui-self-audit, prompts ni runtime.
+ole: auditor, discovery/catalog/index alineados, pruebas de contract/discovery verdes, validate --json 0/0 y sin tocar bui-self-audit, prompts ni runtime.
 
 
 | Alta | WOT-2026-008i | Rename atomico de 4 skills manager a manager-* | motor/skills-taxonomy | completed | WOT-2026-008g, WOT-2026-008e, WOT-2026-008h, WOT-2026-008k | session-2026-06-18-role-naming |  <!-- cerrado canonico 2026-06-19: motor b230b61; rename atomico de 4 skills manager-*, trigger_map byte-identico, suite 3013 passed, validate 0/0 --> |
