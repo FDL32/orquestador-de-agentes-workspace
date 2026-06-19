@@ -9,8 +9,8 @@
 - **deliverable_type:** code
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_motor
-- **repo_motor:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes
-- **repo_destino:** C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
+- **repo_motor:** <repo_motor> (resuelto por `cwd` del tooling)
+- **repo_destino:** <repo_destino> (resuelto por `--project-root` / `AGENT_PROJECT_ROOT`)
 
 ## Objetivo
 
