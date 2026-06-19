@@ -984,3 +984,37 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la fuente real del catalogo no puede derivar lifecycle para prompts stub sin ampliar el vocabulario `active|deprecated|draft`; parar si `--generate-index` o `--check-index` fallan antes de terminar el repoint; parar si un stub conserva consumidores operativos vivos que no pueden repointarse al canonico y tampoco pueden permanecer en `deprecated` sin romper el contrato vigente.
 - **Depende de:** WOT-2026-010w (COMPLETED).
+
+
+## T-011A-001 -- Session-close fail-closed ante archival-limbo
+
+- **ticket_id:** WOT-2026-011a
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011A-001
+- **Plan-Link:** PLAN-011A-001
+- **Premise:** `WOT-2026-010u` ya detecta `archive_rename_uncommitted`, pero la deteccion vive en `delivery_hygiene` / `pre_handoff` y llega tarde. `WOT-2026-011d` confirmo otra vez el patron: `--session-close` puede mover `AUDIT_/STRATEGY_` a `_archive/plan_audit/` y dejar `D old + ?? new` sin fallar el cierre; la contaminacion aparece en el ticket siguiente. `011a` debe endurecer el closeout para que el mismo cierre falle cerrado con remediacion auditable o, si el punto exacto exige una reconciliacion asistida, la exprese sin auto-commit.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-010u`, `WOT-2026-010w` y `WOT-2026-011d` COMPLETED; releer `scripts/closeout_steps/archival.py`, `scripts/session_closeout.py`, `scripts/delivery_hygiene_check.py` y `scripts/archive_collaboration_artifacts.py`; verificar que `step_archive_collaboration()` hoy devuelve `PASS` con `returncode == 0` sin comprobar la post-condicion; confirmar que `check_archive_rename_complete()` ya expone `archive_rename_uncommitted` + remediacion exacta; localizar tests vigentes en `tests/test_session_closeout.py`, `tests/test_pre_handoff_guard.py` y `tests/unit/test_delivery_hygiene_check.py`.
+- **Context Baseline Evidence:** recurrence_confirmed_in=`WOT-2026-011d`; existing_reason=`archive_rename_uncommitted`; late_detection_sites=`scripts/pre_handoff_guard.py`,`scripts/delivery_hygiene_check.py`; closeout_gap=`scripts/closeout_steps/archival.py`; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/closeout_steps/archival.py`
+  - Builder repo_motor: `scripts/session_closeout.py`
+  - Builder repo_motor: `scripts/delivery_hygiene_check.py`
+  - Builder repo_motor: `tests/test_session_closeout.py`
+  - Builder repo_motor: `tests/unit/test_delivery_hygiene_check.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/archive_collaboration_artifacts.py`; `tests/test_pre_handoff_guard.py`; `tests/unit/test_archive_collaboration_artifacts.py`; `.agent/runtime/memory/observations.jsonl`; `backlog.md`; `ticket_contracts.md`; `bus/runtime/events`.
+- **Forbidden Surfaces:** auto-commit dentro del archivador; borrado destructivo de artefactos archivados; bus/runtime/events manuales; dependencias; `privada/`; `.env`.
+- **DoD:**
+  - [ ] La ruta real de `--session-close` o `step_archive_collaboration()` falla con `FAIL` bloqueante si deja un `archive_rename_uncommitted`.
+  - [ ] El diagnostico conserva la razon estable y nombra origen, destino y el comando exacto de reconcile.
+  - [ ] El ticket no introduce auto-commit del archivador ni borra artefactos archivados.
+  - [ ] Existe al menos una prueba de regresion que falla sin el fix y pasa con el fix reproduciendo el limbo en la ruta real de closeout.
+  - [ ] El caso limpio sigue cerrando en `PASS`.
+  - [ ] `uv run ruff check`, tests focales, `python scripts/run_pytest_safe.py --project-root <repo_destino>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** reutiliza la barrera introducida por `010u`; no reabre la politica de auto-commit rechazada en `011a`; no debe romper el cierre Windows de `010w`.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commit del archivador, cambiar el contrato de `archive_collaboration_artifacts.py` mas alla de plan/audit, o tocar politica de bus/controller fuera del closeout declarado, emitir `CG-WOT-2026-011a.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; parar si la unica forma de cerrar el gap es mover la logica a un auto-commit silencioso; parar si el test no puede reproducir la mutacion real del closeout sin mocks vacios.
+- **Depende de:** WOT-2026-010u (COMPLETED); WOT-2026-010w (COMPLETED); WOT-2026-011d (COMPLETED).
