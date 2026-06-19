@@ -52,3 +52,17 @@ Terminal reopen requested by human for WOT-2026-012a
 - Quality gate documental: `python scripts/check_encoding_guard.py <backlog.md, _archive/backlog_done.md, _archive/backlog_pre_012a.md, execution_log.md>` -> exit 0, all surfaces passed (sin BOM, sin control chars residuales).
 - Validate: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> exit code 0, 0 errors, 0 warnings, passed.
 - Artefactos entregados y verificados en disco: backlog.md (cola viva, 199 lineas), _archive/backlog_done.md (historico + 011j + ### WOT-2026-012a), _archive/backlog_pre_012a.md (snapshot). Deliverable existence + encoding gate: passed.
+
+### Handoff BLOQUEADO - CONTRACT_GAP (deliverable_type)
+- pre-handoff guard como SCRIPT directo (flujo real): valid=False por UN subcheck:
+  commit_visible=no_visible_commit. Resto OK (canonical_suite=fresh_green level=all
+  sha=fb2c604, dirty_tree=False, missing_checkpoint=False, scope OK).
+- Causa: T-012A-001 declara deliverable_type=mixed, pero la entrega es 100% documental
+  en repo_destino (commit 9640511 toca solo .agent/collaboration/*.md). commit_visible
+  (no bypassable por --force/--scope-override, agent_controller:1554) exige commit de
+  codigo en motor para code/mixed -> incompatible con entrega documental en destino.
+- El guard mismo recomienda: "the ticket type should not be code/mixed".
+- Emitido CG-WOT-2026-012a.md: enmienda recomendada deliverable_type mixed->documentation.
+- Falso positivo informativo: import de delivery_hygiene_check falla en modo-modulo
+  pero NO en modo-script (flujo real); sin limbo de archivado real.
+- NO se fuerza mark-ready ni se inventa commit. Trabajo staged y correcto en 9640511.
