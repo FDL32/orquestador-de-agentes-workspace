@@ -83,3 +83,29 @@
 - --pre-handoff -> {"status":"success","plan_id":"WOT-2026-011a"}; --mark-ready -> OK, scope 3 files within FLT.
 - Eventos canonicos: BUILDER_EXIT + STATE_CHANGED -> READY_FOR_REVIEW.
 - mark-ready disparo el archivador, que dejo el rename de WOT-2026-011d en limbo (exactamente el patron que 011a bloquea en --session-close). Verificado rename real (sha identico), commiteado en repo_destino + proyecciones de handoff. Revalidacion: errors=0 warnings=0. Ambos repos limpios.
+
+## BUILDER - WOT-2026-011a - Fix de review (fail-open en exit no-cero / timeout)
+
+### Hallazgo Major del reviewer (valido)
+- archival.py corria check_archive_rename_complete() SOLO en la rama returncode==0. Un move parcial seguido de exit no-cero (o timeout) devolvia WARN, y session_closeout mapea WARN -> exit 0. El mismo limbo archive_rename_uncommitted sobrevivia al closeout si el archivador no salia limpio. Fail-open real.
+
+### Fix
+- check_archive_rename_complete() ahora corre INCONDICIONALMENTE tras el archivador, en toda ruta donde pudo haber movimiento: exit 0, exit no-cero, y TimeoutExpired. El limbo es lo que decide fail-closed, NO el exit code. Si hay limbo -> FAIL en cualquiera de esas rutas. FileNotFoundError (script nunca corrio -> sin mutacion) mantiene WARN. No false positive: exit no-cero sin limbo sigue WARN.
+
+### Tests nuevos (tests/test_session_closeout.py::TestArchiveRenameFailsClosed011a)
+- test_partial_move_then_nonzero_exit_fails_closed: move real + returncode!=0 -> FAIL con reason estable.
+- test_partial_move_then_timeout_fails_closed: move real + TimeoutExpired -> FAIL con reason estable.
+- test_nonzero_exit_without_limbo_stays_warn: exit no-cero sin limbo -> WARN (sin over-block).
+
+### Verificacion regresion (FAIL sin fix / PASS con fix)
+- Revertido archival.py a la version 4532d1a (barrera solo en exit 0): ambos tests de partial-failure FAIL (assert 'FAIL' == 'WARN'). Restaurado fix: 2 passed.
+
+### Gates
+- Focal: `python -m pytest tests/test_session_closeout.py tests/unit/test_delivery_hygiene_check.py -q` -> 66 passed in 3.68s
+- Ruff: All checks passed! | Ruff format: 2 files already formatted | Encoding: exit 0
+- (suite canonica + validate: al completar)
+
+### Gates finales (review-fix)
+- Suite canonica: `python scripts/run_pytest_safe.py` -> 3026 passed, 20 skipped, 5 deselected in 585.46s. EXIT=0. State-leak: silencioso.
+- Validate: errors=0 warnings=0.
+- Archivos tocados (review-fix): scripts/closeout_steps/archival.py, tests/test_session_closeout.py (ambos en FLT).
