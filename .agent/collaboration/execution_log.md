@@ -78,3 +78,8 @@
 - Suite canonica: `python scripts/run_pytest_safe.py` -> 3023 passed, 20 skipped, 5 deselected in 680.29s. EXIT=0. State-leak: silencioso.
 - Validate: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> errors=0 warnings=0.
 - Solo 3 archivos tocados (todos en FLT): scripts/closeout_steps/archival.py (+17), tests/test_session_closeout.py (+121), tests/unit/test_delivery_hygiene_check.py (+17). session_closeout.py y delivery_hygiene_check.py NO modificados: el cambio minimo cupo en archival.py reutilizando el helper existente.
+
+### Handoff (post mark-ready)
+- --pre-handoff -> {"status":"success","plan_id":"WOT-2026-011a"}; --mark-ready -> OK, scope 3 files within FLT.
+- Eventos canonicos: BUILDER_EXIT + STATE_CHANGED -> READY_FOR_REVIEW.
+- mark-ready disparo el archivador, que dejo el rename de WOT-2026-011d en limbo (exactamente el patron que 011a bloquea en --session-close). Verificado rename real (sha identico), commiteado en repo_destino + proyecciones de handoff. Revalidacion: errors=0 warnings=0. Ambos repos limpios.
