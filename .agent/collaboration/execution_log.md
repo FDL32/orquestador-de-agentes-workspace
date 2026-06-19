@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Ticket:** WOT-2026-010w
-- **Estado:** IN_PROGRESS
+- **Estado:** READY_FOR_REVIEW
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 
