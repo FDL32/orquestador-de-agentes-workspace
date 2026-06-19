@@ -1,4 +1,4 @@
-# ticket_contracts.md -- Plan WOT-2026-008
+﻿# ticket_contracts.md -- Plan WOT-2026-008
 
 > Solo contratos frozen pasan a work_plan.md. CONTRACT_GAP es la unica via para
 > invalidar el contrato activo.
@@ -893,7 +893,7 @@
   - Builder repo_motor: `tests/unit/test_encoding_post_write_hook.py`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
 - **Read/inspect only:** `AGENTS.md`; historicos de `008f`/`008j` en `execution_log.md`, `backlog.md`, `ticket_contracts.md`; `bus/runtime/events`.
-- **Forbidden Surfaces:** interceptar Bash/heredoc v1; ampliar scope a binarios/no-text; cambiar `TEXT_EXTENSIONS` sin necesidad contractual; introducir allowlists nuevas; tocar `validate`/bus/runtime/events; tocar dependencias; reescribir packets historicos para “limpiarlos”.
+- **Forbidden Surfaces:** interceptar Bash/heredoc v1; ampliar scope a binarios/no-text; cambiar `TEXT_EXTENSIONS` sin necesidad contractual; introducir allowlists nuevas; tocar `validate`/bus/runtime/events; tocar dependencias; reescribir packets historicos para â€œlimpiarlosâ€.
 - **DoD:**
   - [ ] `scripts/check_encoding_guard.py <archivo>` falla cerrado ante control chars ASCII `<32` no-whitespace en archivos de texto (`\x00`, `\x0b`, `\x0c`, etc.).
   - [ ] `\t`, `\n`, `\r` y CRLF legitimos NO disparan falso positivo.
@@ -904,7 +904,7 @@
   - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
 - **CONTRACT_GAP behavior:** si la correccion exige ampliar el ticket a interceptar Bash/heredoc, cambiar semantica de allowlist, escanear binarios o introducir una segunda fuente de verdad distinta de `scripts.encoding_guard`, emitir `CG-WOT-2026-010v.md` y bloquear.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseño mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
+- **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseÃ±o mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
 - **Depende de:** WOT-2026-010e (COMPLETED); WOT-2026-008j (COMPLETED).
 
 
@@ -931,7 +931,7 @@
   - [ ] `scripts/closeout_steps/support.py:check_versioned_filenames` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
   - [ ] `scripts/closeout_steps/rotation.py:step_git_clean` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
   - [ ] Existe al menos un test de regresion en `tests/test_session_closeout.py` que ejecuta la ruta real de `run_script` contra un script temporal que imprime un em dash u otra salida UTF-8 alta y demuestra que la salida se captura sin `UnicodeDecodeError`.
-  - [ ] Si se añade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
+  - [ ] Si se aÃ±ade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
   - [ ] `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>` deja de fallar por `UnicodeDecodeError` en Windows.
   - [ ] `python -m pytest tests/test_session_closeout.py -v` pasa.
   - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
@@ -1018,3 +1018,96 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; parar si la unica forma de cerrar el gap es mover la logica a un auto-commit silencioso; parar si el test no puede reproducir la mutacion real del closeout sin mocks vacios.
 - **Depende de:** WOT-2026-010u (COMPLETED); WOT-2026-010w (COMPLETED); WOT-2026-011d (COMPLETED).
+
+## T-012A-001 -- Backlog vivo vs historico + formato parseable
+
+- **ticket_id:** WOT-2026-012a
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_destino
+- **Objective-Link:** OBJ-012A-001
+- **Plan-Link:** PLAN-012A-001
+- **Premise:** `backlog.md` mezcla cola viva, fichas operativas e historico. `WT-2026-250c` queda absorbido por una familia nueva: `012a` fija formato parseable, separa vivo/historico por paso explicito del Manager y preserva el contrato operativo del Builder en `work_plan.md`, no en la propia seccion movible del backlog.
+- **Premise Re-check (read-only):** releer `backlog.md`, `CHANGELOG.md`, `STATE.md`, `TURN.md`, `ticket_contracts.md`; confirmar que `011e <-> 010m` ya esta resuelto como `keep-both-with-boundary`; confirmar evidencia de preflight de `delivery_authority: repo_destino` con `check_deliverables_exist.py` sobre FLT namespaced `### repo_destino` y ruta bare; verificar `validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** active_backlog_mixed_with_history=true; resolution_011e_010m=keep-both-with-boundary; repo_destino_deliverable_preflight=verified; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_destino: `.agent/collaboration/backlog.md`
+  - Builder repo_destino: `.agent/collaboration/_archive/backlog_done.md`
+  - Builder repo_destino: `.agent/collaboration/_archive/backlog_pre_012a.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `CHANGELOG.md`; `STATE.md`; `TURN.md`; `.agent/planning/ticket_contracts.md`; historico previo de `backlog.md`; filas `011e`..`011i`; `WOT-2026-010m`.
+- **Forbidden Surfaces:** tocar `--session-close` / `--mark-ready`; introducir renames automaticos del archivador; perder la seccion `### WOT-2026-012a`; prosa vaga en `Reactivation`; editar bus/runtime/events manualmente.
+- **DoD:**
+  - [ ] La tabla activa queda como unica fuente parseable, con schema que incluye `Reactivation`.
+  - [ ] `Reactivation` usa `-` solo para estados activos; `deferred` y `completed-partial` llevan trigger estructurado valido.
+  - [ ] La cola viva queda limitada a `pending|blocked|deferred|ready-for-review|awaiting-manager|completed-partial`; los terminales salen del backlog activo.
+  - [ ] Existe snapshot pre-corte como commit git explicito o `_archive/backlog_pre_012a.md` portable.
+  - [ ] El corte del historico se hace por bloques lógicos auditablemente reconocibles y conserva integra la seccion `### WOT-2026-012a` en el historico movido.
+  - [ ] Existe evidencia mecanica antes/despues del movimiento (conteo de filas terminales y fichas `###` movidas) suficiente para auditar no-perdida de historico.
+  - [ ] `backlog.md` muestra reduccion material verificable por diff; `<= 200` lineas de cola viva queda como objetivo operativo, no como gate binario.
+  - [ ] `python scripts/check_encoding_guard.py` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** mantiene `011h` fuera de scope; no reabre `250c`; preserva `011e <-> 010m` con frontera runner-local-vs-CI.
+- **CONTRACT_GAP behavior:** si el corte exige tocar el archivador del closeout, si el snapshot no puede materializarse de forma portable, o si la seccion `### WOT-2026-012a` no puede conservarse integra en el historico, emitir `CG-WOT-2026-012a.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si aparece perdida de historico no auditable; parar si el formato parseable exige leer HTML comments; parar si `delivery_authority: repo_destino` deja de pasar el preflight namespaced.
+- **Depende de:** -.
+
+## T-012B-001 -- Gate backlog fail-closed sobre cola viva
+
+- **ticket_id:** WOT-2026-012b
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-012B-001
+- **Plan-Link:** PLAN-012B-001
+- **Premise:** tras `012a`, el backlog activo ya tiene formato parseable estable. `012b` convierte ese contrato en barrera automatica fail-closed desde `repo_motor`, leyendo `repo_destino` solo via `--project-root` o `AGENT_PROJECT_ROOT`.
+- **Premise Re-check (read-only):** releer el backlog migrado por `012a`; confirmar que la tabla activa expone `Reactivation`; confirmar que el gate de deliverables y la resolucion de proyecto funcionan con `repo_destino`; verificar `run_gates_dispatch.py`, `check_deliverables_exist.py` y `validate_ticket_prose.py` antes de decidir la integracion.
+- **Context Baseline Evidence:** gate_target=repo_destino_backlog_active; requires_project_root=true; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/check_backlog_contract.py`
+  - Builder repo_motor: `tests/unit/test_check_backlog_contract.py`
+  - Builder repo_motor: `scripts/run_gates_dispatch.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** backlog migrado por `012a`; `STATE.md`; `TURN.md`; `check_deliverables_exist.py`; `validate_ticket_prose.py`.
+- **Forbidden Surfaces:** leer backlog relativo al cwd; depender de HTML comments o prose libre; degradar silenciosamente a warning fuera del rollout explicito; inventar vocabulario nuevo de estados; editar bus/runtime/events manualmente.
+- **DoD:**
+  - [ ] El gate falla con `exit != 0` ante cualquier violacion estructural o semantica obligatoria cuando opera en modo bloqueante.
+  - [ ] Falla cerrado si faltan `--project-root` y `AGENT_PROJECT_ROOT`.
+  - [ ] Parsea solo la tabla activa de `repo_destino` y valida estructura + contenido: columnas esperadas, encabezados `### WOT-...` exactos, vocabulario cerrado de `Status`, y valores permitidos de `Reactivation`.
+  - [ ] La lista de estados de cola viva queda codificada en el propio gate: `pending|blocked|deferred|ready-for-review|awaiting-manager|completed-partial`.
+  - [ ] Existe test que demuestra pass con `delivery_authority: repo_destino` / FLT namespaced correcto y fail-closed sin `--project-root` ni `AGENT_PROJECT_ROOT`.
+  - [ ] Ruff, tests focales, suite aplicable y `validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** depende de `012a`; no reemplaza el archivador ni el closeout; no toca politica de rollout warning->error fuera de lo declarado.
+- **CONTRACT_GAP behavior:** si el parser necesita HTML comments/prose, si el backlog post-012a no expone schema suficiente, o si la resolucion topologica del destino no puede fallar cerrada, emitir `CG-WOT-2026-012b.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el gate lee accidentalmente el seed del motor; parar si la validacion semantica de `Reactivation` no puede distinguir triggers validos de prosa vaga; parar si la integracion solo puede hacerse como warning permanente.
+- **Depende de:** WOT-2026-012a.
+
+## T-011C-001 -- BOM/control-char SOURCE audit (code-spike, sin fix)
+
+- **ticket_id:** WOT-2026-011c
+- **status:** frozen
+- **deliverable_type:** research
+- **delivery_authority:** repo_destino
+- **Objective-Link:** OBJ-011C-001
+- **Plan-Link:** PLAN-011C-001
+- **Premise:** superficies vivas de `.agent/collaboration/` aparecen con BOM UTF-8 y, en la region historica del backlog, con 3 control chars que se comieron la primera letra de palabras (`\x07udit`->audit, `\x0Balidate`->validate, `\x08ui-self`->bui-self). El encoding guard (WOT-2026-010v) ya los DETECTA; la FUENTE que los inyecta NO esta identificada. Recurre en 008f/008k/008j/010w y bloqueo de 012a. Este ticket es un SPIKE: identifica la fuente con evidencia y PARA; no aplica fix de fuente (eso es follow-up).
+- **Premise Re-check (read-only):** confirmar con bytes que el subconjunto {work_plan, TURN, backlog, execution_log} tiene BOM en working tree y NO en HEAD, mientras {STATE, notifications, review_queue} no lo tienen; confirmar que los 3 control chars viven en HEAD:backlog (region historica), no introducidos por edicion de agente.
+- **Context Baseline Evidence:** bom_surfaces_worktree=work_plan,TURN,backlog,execution_log; bom_absent=STATE,notifications,review_queue; head_has_bom=false; control_chars_in_HEAD_backlog=true; guard_detects=true(010v); source_identified=false; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_destino: `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md` (reporte de hallazgo)
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only (NO modificar):** `scripts/launch_agent_terminals.ps1`; `scripts/encoding_post_write_hook.py`; `bus/` y `.agent/agent_controller.py` (escritores de proyecciones); cualquier `Out-File`/`Set-Content`/`encoding=` que toque `.agent/collaboration/`; git history de las superficies con BOM.
+- **Forbidden Surfaces:** aplicar cualquier fix de fuente (strip BOM, reconstruir letras, cambiar el escritor); tocar el guard 010v; tocar superficies vivas para "limpiarlas"; tocar repo_motor (delivery_authority=repo_destino, solo lectura del motor permitida).
+- **DoD:**
+  - [ ] Existe `bom_source_audit_WOT-2026-011c.md` que nombra, con evidencia reproducible, el/los escritor(es) que inyectan BOM y, si es posible, el origen de los control chars.
+  - [ ] El reporte distingue VERIFICADO (con comando/bytes) de INFERENCIA RAZONABLE; no presenta hipotesis como hecho.
+  - [ ] El reporte declara explicitamente si hay fix de fuente viable o si 010v (defensa en profundidad) es suficiente, como RECOMENDACION, no como cambio aplicado.
+  - [ ] El reporte abre follow-up(s) concretos (ticket id sugerido) para el fix, si procede.
+  - [ ] `python scripts/check_encoding_guard.py <reporte> <execution_log>` verde sobre las superficies propias del ticket (el reporte nace limpio).
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> 0 errors / 0 warnings.
+- **Integracion cross-ticket:** desbloquea WOT-2026-012a (su CG recomienda secuenciar 011c antes). NO cierra 012a; solo entrega el hallazgo que permite decidir como regenerar el snapshot/historico limpios.
+- **CONTRACT_GAP behavior:** si identificar la fuente exigiera MODIFICAR un escritor (motor o destino) para probar la hipotesis, detener y emitir `CG-WOT-2026-011c.md`: el spike es read-only sobre escritores; probar-modificando ya es el fix, que es follow-up.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar y entregar el reporte en cuanto la fuente quede identificada con evidencia (no seguir hacia el fix); parar si la unica forma de avanzar es modificar un escritor; parar si la fuente resulta ser el entorno del host (PowerShell 5.1 Out-File default BOM) y el fix excede repo_destino.
+- **Depende de:** WOT-2026-010v.
