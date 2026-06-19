@@ -47,3 +47,8 @@ Terminal reopen requested by human for WOT-2026-012a
 
 ### Gates
 - Encoding guard (backlog.md + backlog_done.md + backlog_pre_012a.md + execution_log.md): exit 0.
+
+### Linea de evidencia de cierre (ticket mixed/documental)
+- Quality gate documental: `python scripts/check_encoding_guard.py <backlog.md, _archive/backlog_done.md, _archive/backlog_pre_012a.md, execution_log.md>` -> exit 0, all surfaces passed (sin BOM, sin control chars residuales).
+- Validate: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> exit code 0, 0 errors, 0 warnings, passed.
+- Artefactos entregados y verificados en disco: backlog.md (cola viva, 199 lineas), _archive/backlog_done.md (historico + 011j + ### WOT-2026-012a), _archive/backlog_pre_012a.md (snapshot). Deliverable existence + encoding gate: passed.
