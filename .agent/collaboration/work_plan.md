@@ -49,6 +49,9 @@ mismos triggers, no inventando un segundo resolver de aliases.
   `--check-naming`.
 - `008j` NO depende de stubs ejecutables de skill: la compatibilidad viva se
   mide sobre `triggers`, `source_prompt` y referencias operativas.
+- La leccion de `008i` queda absorbida aqui: `Files Likely Touched` se declara
+  a nivel fichero, no a nivel directorio, porque el `scope_gate` compara
+  ficheros del diff y no hace prefix matching sobre carpetas.
 
 ## Decision Arquitectonica
 
@@ -71,15 +74,30 @@ Si aparece un consumidor runtime real del path legacy `skills/bui-*`, eso es
 
 ### repo_motor
 
-- `skills/bui-implement-from-plan/`
-- `skills/bui-run-quality-gates/`
-- `skills/bui-self-audit/`
-- `skills/bui-write-deliverable/`
+- `skills/bui-implement-from-plan/SKILL.md`
+- `skills/bui-implement-from-plan/references/code-rules.md`
+- `skills/bui-implement-from-plan/references/log-format.md`
+- `skills/builder-implement-from-plan/SKILL.md`
+- `skills/builder-implement-from-plan/references/code-rules.md`
+- `skills/builder-implement-from-plan/references/log-format.md`
+- `skills/bui-run-quality-gates/SKILL.md`
+- `skills/bui-run-quality-gates/references/common-fixes.md`
+- `skills/builder-run-quality-gates/SKILL.md`
+- `skills/builder-run-quality-gates/references/common-fixes.md`
+- `skills/bui-self-audit/SKILL.md`
+- `skills/bui-self-audit/references/.gitkeep`
+- `skills/builder-self-audit/SKILL.md`
+- `skills/builder-self-audit/references/.gitkeep`
+- `skills/bui-write-deliverable/SKILL.md`
+- `skills/bui-write-deliverable/references/.gitkeep`
+- `skills/builder-write-deliverable/SKILL.md`
+- `skills/builder-write-deliverable/references/.gitkeep`
 - `prompts/orchestrator_launch_builder.md`
 - `prompts/orchestrator_pipeline.md`
 - `skills/orchestrate-pipeline/SKILL.md`
 - `.claude/agents/builder.md`
 - `.claude/commands/agent-build.md`
+- `scripts/closeout_steps/support.py`
 - `skills/project-finalize/SKILL.md`
 - `skills/refactor-manager/PROMPT_TEMPLATE.md`
 - `skills/repo-compare/PROMPT_TEMPLATE.md`
@@ -109,6 +127,8 @@ Si aparece un consumidor runtime real del path legacy `skills/bui-*`, eso es
 - `CHANGELOG.md`
 - `backlog.md`
 - `ticket_contracts.md`
+- `.agent/runtime/memory/memory_rules.md`
+- `.agent/runtime/memory/UPSTREAM_LEARNINGS.md`
 - `bus/runtime/events`
 
 ## Forbidden Surfaces
@@ -133,6 +153,8 @@ Si aparece un consumidor runtime real del path legacy `skills/bui-*`, eso es
 - `rg` de `bui-implement-from-plan|bui-run-quality-gates|bui-self-audit|bui-write-deliverable`
   sobre superficies operativas solo deja historia/DEC/changelog/backlog/tests de
   compatibilidad justificadas.
+- Referencias en `.agent/runtime/memory/` se toleran como historia viva; no se
+  actualizan en este ticket ni cuentan como consumidores operativos del lote.
 - `python scripts/discover_skills.py --check-contract` queda verde.
 - `python scripts/discover_skills.py --check-naming` queda verde.
 - `python scripts/check_skill_collisions.py` queda verde.

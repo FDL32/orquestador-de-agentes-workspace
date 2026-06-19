@@ -8,6 +8,9 @@
 - [ ] Los consumidores vivos declarados en FLT usan `builder-*`.
 - [ ] El `rg` de `bui-*` ya no deja consumidores operativos fuera de zonas
       historicas/compat justificadas.
+- [ ] `scripts/closeout_steps/support.py` no conserva prose viva `bui-*`.
+- [ ] `.agent/runtime/memory/*` no bloquea: se tolera como historia viva fuera
+      de scope productivo.
 - [ ] `discover_skills.py --check-naming` pasa.
 - [ ] `discover_skills.py --check-contract` pasa.
 - [ ] `check_skill_collisions.py` pasa.

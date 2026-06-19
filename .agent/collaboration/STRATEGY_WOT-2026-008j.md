@@ -6,8 +6,9 @@ Ticket de blast radius medio-alto: renombra cuatro skills builder desde el
 prefijo corto `bui-*` al canonico largo `builder-*`, preservando dispatch por
 triggers y bindings prompt<->skill. El riesgo real no esta en el rename fisico,
 si no en los consumidores prose/path vivos que aun apuntan al nombre legacy,
-en especial `orchestrator_launch_builder`, `.claude/agents/builder.md` y las
-skills que encadenan `bui-self-audit` y `bui-run-quality-gates` en el flujo.
+en especial `orchestrator_launch_builder`, `.claude/agents/builder.md`,
+`scripts/closeout_steps/support.py` y las skills que encadenan `bui-self-audit`
+y `bui-run-quality-gates` en el flujo.
 
 ## Fase 0 - Baseline y seams
 
@@ -31,6 +32,8 @@ skills que encadenan `bui-self-audit` y `bui-run-quality-gates` en el flujo.
    - `docs/registry/INDEX.md`
 5. Registrar en `execution_log.md` el baseline pre/post esperado y cualquier
    consumidor que parezca runtime real en vez de prose/documentacion.
+6. Tratar `.agent/runtime/memory/` como historia viva tolerada: se audita para
+   no sobrecontar falsos consumidores, pero no entra en scope productivo.
 
 ## Fase 1 - Implementacion minima
 
@@ -42,7 +45,8 @@ skills que encadenan `bui-self-audit` y `bui-run-quality-gates` en el flujo.
 3. Actualizar `prompts/orchestrator_launch_builder.md` para que el binding
    canonico apunte a `skills/builder-implement-from-plan/SKILL.md`,
    preservando `contract_id: cid-bui-implement-v1`.
-4. Actualizar consumidores vivos declarados en FLT a `builder-*`.
+4. Actualizar consumidores vivos declarados en FLT a `builder-*`, incluido
+   `scripts/closeout_steps/support.py`.
 5. Regenerar `docs/registry/INDEX.md` y alinear `skills/README.md`, `AGENTS.md`
    y `llms-full.txt` si reflejan los nombres canonicos.
 6. No tocar `triggers`, `contract_id`, `manager-*` ni `audit_*`.

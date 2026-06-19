@@ -808,16 +808,32 @@
 - **Premise:** `DEC-008G-001` congelo `008j` como el lote de expansion `bui-*` -> `builder-*` despues de `008h`/`008i`. Igual que en `008i`, la compatibilidad NO depende de stubs ejecutables de skill: la API publica viva sigue siendo `triggers` + `source_prompt` + referencias operativas, mientras que el nombre de directorio de la skill es detalle interno del bundle. La migracion debe ser atomica sobre consumidores vivos y preservar `trigger_map`/`check-contract`, no introducir un segundo mecanismo de alias runtime.
 - **Premise Re-check (read-only):** confirmar `WOT-2026-008g`, `008h`, `008i` y `008k` COMPLETED; releer `DEC-008G-001` secciones 2/5/6; inventariar las cuatro skills `bui-*`; capturar baseline de `python scripts/discover_skills.py --check-naming`, `--check-contract`, `--json`, `python scripts/check_skill_collisions.py` y `python scripts/discover_skills.py --check-index`; verificar consumidores vivos de `skills/bui-*` y `bui-*` en prompts, skills, `.claude`, docs operativos y tests; confirmar que `prompts/orchestrator_launch_builder.md` sigue siendo el prompt canonico del Builder y que conserva `contract_id: cid-bui-implement-v1`.
 - **Context Baseline Evidence:** roadmap_source=DEC-008G-001; builder_skill_dirs=4; canonical_prompt_orchestrator_launch_builder=true; live_operational_refs_confirmed=true; generated_at=2026-06-19.
+- **Leccion absorbida de 008i:** `Files Likely Touched` se declara a nivel fichero, no a nivel directorio, porque `scope_gate` compara contra `git diff --name-only` y no hace prefix matching sobre carpetas.
 - **Files Likely Touched:**
-  - Builder repo_motor: `skills/bui-implement-from-plan/`
-  - Builder repo_motor: `skills/bui-run-quality-gates/`
-  - Builder repo_motor: `skills/bui-self-audit/`
-  - Builder repo_motor: `skills/bui-write-deliverable/`
+  - Builder repo_motor: `skills/bui-implement-from-plan/SKILL.md`
+  - Builder repo_motor: `skills/bui-implement-from-plan/references/code-rules.md`
+  - Builder repo_motor: `skills/bui-implement-from-plan/references/log-format.md`
+  - Builder repo_motor: `skills/builder-implement-from-plan/SKILL.md`
+  - Builder repo_motor: `skills/builder-implement-from-plan/references/code-rules.md`
+  - Builder repo_motor: `skills/builder-implement-from-plan/references/log-format.md`
+  - Builder repo_motor: `skills/bui-run-quality-gates/SKILL.md`
+  - Builder repo_motor: `skills/bui-run-quality-gates/references/common-fixes.md`
+  - Builder repo_motor: `skills/builder-run-quality-gates/SKILL.md`
+  - Builder repo_motor: `skills/builder-run-quality-gates/references/common-fixes.md`
+  - Builder repo_motor: `skills/bui-self-audit/SKILL.md`
+  - Builder repo_motor: `skills/bui-self-audit/references/.gitkeep`
+  - Builder repo_motor: `skills/builder-self-audit/SKILL.md`
+  - Builder repo_motor: `skills/builder-self-audit/references/.gitkeep`
+  - Builder repo_motor: `skills/bui-write-deliverable/SKILL.md`
+  - Builder repo_motor: `skills/bui-write-deliverable/references/.gitkeep`
+  - Builder repo_motor: `skills/builder-write-deliverable/SKILL.md`
+  - Builder repo_motor: `skills/builder-write-deliverable/references/.gitkeep`
   - Builder repo_motor: `prompts/orchestrator_launch_builder.md`
   - Builder repo_motor: `prompts/orchestrator_pipeline.md`
   - Builder repo_motor: `skills/orchestrate-pipeline/SKILL.md`
   - Builder repo_motor: `.claude/agents/builder.md`
   - Builder repo_motor: `.claude/commands/agent-build.md`
+  - Builder repo_motor: `scripts/closeout_steps/support.py`
   - Builder repo_motor: `skills/project-finalize/SKILL.md`
   - Builder repo_motor: `skills/refactor-manager/PROMPT_TEMPLATE.md`
   - Builder repo_motor: `skills/repo-compare/PROMPT_TEMPLATE.md`
@@ -835,7 +851,7 @@
   - Builder repo_motor: `tests/test_registry_catalog.py`
   - Builder repo_motor: `tests/test_migration_bootstrap.py`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`; `docs/decisions/DEC-008D-001-naming-convention.md`; `docs/decisions/DEC-008B-002-discovery-triggers.md`; historicos `CHANGELOG.md`, `backlog.md`, `ticket_contracts.md`; `bus/runtime/events`.
+- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`; `docs/decisions/DEC-008D-001-naming-convention.md`; `docs/decisions/DEC-008B-002-discovery-triggers.md`; historicos `CHANGELOG.md`, `backlog.md`, `ticket_contracts.md`; `.agent/runtime/memory/memory_rules.md`; `.agent/runtime/memory/UPSTREAM_LEARNINGS.md`; `bus/runtime/events`.
 - **Forbidden Surfaces:** tocar `manager-*`; tocar `audit_*`; cambiar `triggers`; cambiar `contract_id`; introducir hardcode nuevo de dispatch o aliases runtime para skills; tocar prompts `audit_*`; tocar bus/runtime/events manualmente; tocar dependencias; tocar `privada/` o `.env`.
 - **DoD:**
   - [ ] Existen los cuatro directorios canonicos `skills/builder-implement-from-plan/`, `skills/builder-run-quality-gates/`, `skills/builder-self-audit/` y `skills/builder-write-deliverable/`.
@@ -849,6 +865,7 @@
   - [ ] La paridad pre/post de discovery preserva los mismos triggers funcionales; cualquier diff del JSON queda limitado a rutas/nombres derivados del rename declarado.
   - [ ] Existe al menos una barrera que detecta una referencia prose viva a `bui-*` en superficies operativas del lote.
   - [ ] `AGENTS.md`, `skills/README.md` y `llms-full.txt`, si mencionan estas skills, quedan alineados con `builder-*`.
+  - [ ] Referencias en `.agent/runtime/memory/` se toleran como historia viva; no se actualizan en este ticket ni cuentan como consumidores operativos del lote.
   - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
 - **Integracion cross-ticket:** ejecuta el lote de roadmap de `DEC-008G-001` para builder skills; deja `manager-*` y `role: auditor` intactos; no debe reabrir `008h`, `008i` ni `008k`.
 - **CONTRACT_GAP behavior:** si aparece un consumidor runtime real del path legacy `skills/bui-*`, si preservar compatibilidad exige un alias de skill no soportado limpiamente por discovery, si el rename deriva a `manager-*`/`audit_*`, o si la unica forma de cerrar el lote exige tocar dispatch/triggers, emitir `CG-WOT-2026-008j.md` y bloquear.
