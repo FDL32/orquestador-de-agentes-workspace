@@ -872,3 +872,36 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica via de compatibilidad exige un segundo mecanismo de alias de skill ad hoc; parar si el cambio deriva a migracion de prompts fuera de FLT o a cambios de trigger/dispatch; parar si la evidencia de migracion se basa solo en `--check-naming` y no en consumidores vivos; parar si aparece drift de packet no commiteado en `repo_destino` antes del handoff.
 - **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008h (COMPLETED); WOT-2026-008i (COMPLETED); WOT-2026-008k (COMPLETED).
+
+
+## T-010V-001 -- Hardening de encoding guard para control chars ASCII no-whitespace
+
+- **ticket_id:** WOT-2026-010v
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010V-001
+- **Plan-Link:** PLAN-010V-001
+- **Premise:** `WOT-2026-010e` introdujo deteccion temprana de encoding via `scripts.encoding_guard` compartido por `check_encoding_guard.py` y `encoding_post_write_hook.py`, pero el detector actual solo cubre BOM, mojibake y `?` intra-palabra. Tras `008f` y `008j` quedo verificado que control chars ASCII `<32` como `\x0b`, `\x0c` y `\x00` pueden corromper artefactos textuales y pasar los gates hasta handoff. El follow-up debe cerrar esa clase de fallo en la fuente de verdad compartida, no repararla caso a caso en packets.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-010e` y `WOT-2026-008j` COMPLETED; releer `AGENTS.md` seccion `Convencion de encoding y gap v1`; inspeccionar `scripts/encoding_guard.py`, `scripts/check_encoding_guard.py` y `scripts/encoding_post_write_hook.py`; confirmar que `file_issues()` es la fuente compartida; localizar tests existentes en `tests/test_encoding_integrity.py` y `tests/unit/test_encoding_post_write_hook.py`; registrar ejemplos reales de control chars detectados en `008j` (`\x07`, `\x0b`, `\x00`) como evidencia, no como fixtures historicos a reescribir.
+- **Context Baseline Evidence:** shared_detector=`scripts.encoding_guard.file_issues`; cli_guard=`scripts/check_encoding_guard.py`; hook=`scripts/encoding_post_write_hook.py`; regressions_seen_in=008f,008j; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/encoding_guard.py`
+  - Builder repo_motor: `scripts/check_encoding_guard.py`
+  - Builder repo_motor: `tests/test_encoding_integrity.py`
+  - Builder repo_motor: `tests/unit/test_encoding_post_write_hook.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/encoding_post_write_hook.py`; `AGENTS.md`; historicos de `008f`/`008j` en `execution_log.md`, `backlog.md`, `ticket_contracts.md`; `bus/runtime/events`.
+- **Forbidden Surfaces:** interceptar Bash/heredoc v1; ampliar scope a binarios/no-text; cambiar `TEXT_EXTENSIONS` sin necesidad contractual; introducir allowlists nuevas; tocar `validate`/bus/runtime/events; tocar dependencias; reescribir packets historicos para “limpiarlos”.
+- **DoD:**
+  - [ ] `scripts/check_encoding_guard.py <archivo>` falla cerrado ante control chars ASCII `<32` no-whitespace en archivos de texto (`\x00`, `\x0b`, `\x0c`, etc.).
+  - [ ] `\t`, `\n`, `\r` y CRLF legitimos NO disparan falso positivo.
+  - [ ] La deteccion vive en la fuente compartida (`scripts/encoding_guard.py`) de forma que el hook post-write hereda el comportamiento sin un segundo detector divergente.
+  - [ ] Existe al menos un test de regresion en `tests/test_encoding_integrity.py` para el CLI guard por ruta explicita y al menos un test en `tests/unit/test_encoding_post_write_hook.py` que demuestra fallo del hook ante control chars en archivo textual.
+  - [ ] Los tests existentes de BOM/mojibake/question-mark siguen verdes; no se degrada cobertura previa.
+  - [ ] `python -m pytest tests/test_encoding_integrity.py tests/unit/test_encoding_post_write_hook.py -v` pasa.
+  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **CONTRACT_GAP behavior:** si la correccion exige ampliar el ticket a interceptar Bash/heredoc, cambiar semantica de allowlist, escanear binarios o introducir una segunda fuente de verdad distinta de `scripts.encoding_guard`, emitir `CG-WOT-2026-010v.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseño mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
+- **Depende de:** WOT-2026-010e (COMPLETED); WOT-2026-008j (COMPLETED).
