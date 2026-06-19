@@ -4,7 +4,7 @@
 - **Contract ID:** T-012A-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** mixed
+- **deliverable_type:** documentation
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_destino
 - **repo_motor:** <repo_motor>
@@ -55,4 +55,4 @@ Reestructurar `backlog.md` para separar cola viva e historico, fijar formato par
 - Parar si el formato parseable exige volver a depender de comentarios HTML.
 - Parar si el corte exige tocar el archivador del closeout o el saneado del `.ps1` del motor.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-012a.md` si el snapshot no puede materializarse de forma portable, si la seccion `### WOT-2026-012a` no puede conservarse integra en el historico, o si la unica forma de verde exige absorber la deuda de `011f`.
+Emitir `CG-WOT-2026-012a.md` si el snapshot no puede materializarse de forma portable, si la seccion `### WOT-2026-012a` no puede conservarse integra en el historico, o si la unica forma de verde exige absorber la deuda de `011f`.

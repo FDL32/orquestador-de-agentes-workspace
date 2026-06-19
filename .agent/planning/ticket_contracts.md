@@ -1023,7 +1023,7 @@
 
 - **ticket_id:** WOT-2026-012a
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** documentation
 - **delivery_authority:** repo_destino
 - **Objective-Link:** OBJ-012A-001
 - **Plan-Link:** PLAN-012A-001
@@ -1081,7 +1081,7 @@
 - **CONTRACT_GAP behavior:** si el parser necesita HTML comments/prose, si el backlog post-012a no expone schema suficiente, o si la resolucion topologica del destino no puede fallar cerrada, emitir `CG-WOT-2026-012b.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el gate lee accidentalmente el seed del motor; parar si la validacion semantica de `Reactivation` no puede distinguir triggers validos de prosa vaga; parar si la integracion solo puede hacerse como warning permanente.
-- **Depende de:** WOT-2026-012a.
+- **Depende de:** WOT-2026-012a.
 
 ## T-011C-001 -- BOM/control-char SOURCE audit (code-spike, sin fix)
 
@@ -1110,7 +1110,7 @@
 - **CONTRACT_GAP behavior:** si identificar la fuente exigiera MODIFICAR un escritor (motor o destino) para probar la hipotesis, detener y emitir `CG-WOT-2026-011c.md`: el spike es read-only sobre escritores; probar-modificando ya es el fix, que es follow-up.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar y entregar el reporte en cuanto la fuente quede identificada con evidencia (no seguir hacia el fix); parar si la unica forma de avanzar es modificar un escritor; parar si la fuente resulta ser el entorno del host (PowerShell 5.1 Out-File default BOM) y el fix excede repo_destino.
-- **Depende de:** WOT-2026-010v.
+- **Depende de:** WOT-2026-010v.
 ## T-011J-001 -- Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a
 - **ticket_id:** WOT-2026-011j
 - **status:** frozen
