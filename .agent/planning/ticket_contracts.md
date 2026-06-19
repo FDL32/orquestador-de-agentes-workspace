@@ -795,3 +795,63 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica via de compatibilidad exige un segundo mecanismo de alias de skill ad hoc; parar si el cambio deriva a migracion de `bui-*`; parar si la evidencia de migracion se basa solo en `--check-naming` y no en consumidores vivos; parar si aparece drift de packet no commiteado en repo_destino antes del handoff.
 - **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008e (COMPLETED); WOT-2026-008h (COMPLETED); WOT-2026-008k (COMPLETED).
+
+
+## T-008J-001 -- Rename atomico de 4 skills builder a builder-*
+
+- **ticket_id:** WOT-2026-008j
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-008J-001
+- **Plan-Link:** PLAN-008J-001
+- **Premise:** `DEC-008G-001` congelo `008j` como el lote de expansion `bui-*` -> `builder-*` despues de `008h`/`008i`. Igual que en `008i`, la compatibilidad NO depende de stubs ejecutables de skill: la API publica viva sigue siendo `triggers` + `source_prompt` + referencias operativas, mientras que el nombre de directorio de la skill es detalle interno del bundle. La migracion debe ser atomica sobre consumidores vivos y preservar `trigger_map`/`check-contract`, no introducir un segundo mecanismo de alias runtime.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-008g`, `008h`, `008i` y `008k` COMPLETED; releer `DEC-008G-001` secciones 2/5/6; inventariar las cuatro skills `bui-*`; capturar baseline de `python scripts/discover_skills.py --check-naming`, `--check-contract`, `--json`, `python scripts/check_skill_collisions.py` y `python scripts/discover_skills.py --check-index`; verificar consumidores vivos de `skills/bui-*` y `bui-*` en prompts, skills, `.claude`, docs operativos y tests; confirmar que `prompts/orchestrator_launch_builder.md` sigue siendo el prompt canonico del Builder y que conserva `contract_id: cid-bui-implement-v1`.
+- **Context Baseline Evidence:** roadmap_source=DEC-008G-001; builder_skill_dirs=4; canonical_prompt_orchestrator_launch_builder=true; live_operational_refs_confirmed=true; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: `skills/bui-implement-from-plan/`
+  - Builder repo_motor: `skills/bui-run-quality-gates/`
+  - Builder repo_motor: `skills/bui-self-audit/`
+  - Builder repo_motor: `skills/bui-write-deliverable/`
+  - Builder repo_motor: `prompts/orchestrator_launch_builder.md`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_motor: `skills/orchestrate-pipeline/SKILL.md`
+  - Builder repo_motor: `.claude/agents/builder.md`
+  - Builder repo_motor: `.claude/commands/agent-build.md`
+  - Builder repo_motor: `skills/project-finalize/SKILL.md`
+  - Builder repo_motor: `skills/refactor-manager/PROMPT_TEMPLATE.md`
+  - Builder repo_motor: `skills/repo-compare/PROMPT_TEMPLATE.md`
+  - Builder repo_motor: `skills/deep-research/SKILL.md`
+  - Builder repo_motor: `skills/README.md`
+  - Builder repo_motor: `skills/validate_all.py`
+  - Builder repo_motor: `skills/create-agent-skill/SKILL.md`
+  - Builder repo_motor: `skills/create-agent-skill/references/frontmatter-template.md`
+  - Builder repo_motor: `docs/registry/INDEX.md`
+  - Builder repo_motor: `AGENTS.md`
+  - Builder repo_motor: `llms-full.txt`
+  - Builder repo_motor: `tests/test_discover_skills.py`
+  - Builder repo_motor: `tests/test_check_naming.py`
+  - Builder repo_motor: `tests/test_agent_readme_references.py`
+  - Builder repo_motor: `tests/test_registry_catalog.py`
+  - Builder repo_motor: `tests/test_migration_bootstrap.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/decisions/DEC-008G-001-vocabulary-and-role-naming.md`; `docs/decisions/DEC-008D-001-naming-convention.md`; `docs/decisions/DEC-008B-002-discovery-triggers.md`; historicos `CHANGELOG.md`, `backlog.md`, `ticket_contracts.md`; `bus/runtime/events`.
+- **Forbidden Surfaces:** tocar `manager-*`; tocar `audit_*`; cambiar `triggers`; cambiar `contract_id`; introducir hardcode nuevo de dispatch o aliases runtime para skills; tocar prompts `audit_*`; tocar bus/runtime/events manualmente; tocar dependencias; tocar `privada/` o `.env`.
+- **DoD:**
+  - [ ] Existen los cuatro directorios canonicos `skills/builder-implement-from-plan/`, `skills/builder-run-quality-gates/`, `skills/builder-self-audit/` y `skills/builder-write-deliverable/`.
+  - [ ] Los cuatro directorios `bui-*` dejan de ser consumidores vivos operativos; si sobrevive algun rastro, queda solo en historia, changelog, backlog, DEC o tests de compatibilidad explicitamente justificados.
+  - [ ] `prompts/orchestrator_launch_builder.md` referencia `skills/builder-implement-from-plan/SKILL.md` y conserva `contract_id: cid-bui-implement-v1` sin romper `--check-contract`.
+  - [ ] Los consumidores vivos declarados en FLT usan `builder-*` al cierre.
+  - [ ] `python scripts/discover_skills.py --check-contract` queda verde.
+  - [ ] `python scripts/discover_skills.py --check-naming` queda verde.
+  - [ ] `python scripts/check_skill_collisions.py` queda verde.
+  - [ ] `python scripts/discover_skills.py --check-index` queda verde tras regenerar `docs/registry/INDEX.md`.
+  - [ ] La paridad pre/post de discovery preserva los mismos triggers funcionales; cualquier diff del JSON queda limitado a rutas/nombres derivados del rename declarado.
+  - [ ] Existe al menos una barrera que detecta una referencia prose viva a `bui-*` en superficies operativas del lote.
+  - [ ] `AGENTS.md`, `skills/README.md` y `llms-full.txt`, si mencionan estas skills, quedan alineados con `builder-*`.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** ejecuta el lote de roadmap de `DEC-008G-001` para builder skills; deja `manager-*` y `role: auditor` intactos; no debe reabrir `008h`, `008i` ni `008k`.
+- **CONTRACT_GAP behavior:** si aparece un consumidor runtime real del path legacy `skills/bui-*`, si preservar compatibilidad exige un alias de skill no soportado limpiamente por discovery, si el rename deriva a `manager-*`/`audit_*`, o si la unica forma de cerrar el lote exige tocar dispatch/triggers, emitir `CG-WOT-2026-008j.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica via de compatibilidad exige un segundo mecanismo de alias de skill ad hoc; parar si el cambio deriva a migracion de prompts fuera de FLT o a cambios de trigger/dispatch; parar si la evidencia de migracion se basa solo en `--check-naming` y no en consumidores vivos; parar si aparece drift de packet no commiteado en `repo_destino` antes del handoff.
+- **Depende de:** WOT-2026-008g (COMPLETED); WOT-2026-008h (COMPLETED); WOT-2026-008i (COMPLETED); WOT-2026-008k (COMPLETED).
