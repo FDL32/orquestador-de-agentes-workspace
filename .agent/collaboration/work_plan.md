@@ -4,7 +4,7 @@
 
 - **ID:** WOT-2026-011d
 - **Contract ID:** T-011D-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** mixed
 - **Builder clarification budget:** 0
