@@ -1,4 +1,4 @@
-﻿# ticket_contracts.md -- Plan WOT-2026-008
+# ticket_contracts.md -- Plan WOT-2026-008
 
 > Solo contratos frozen pasan a work_plan.md. CONTRACT_GAP es la unica via para
 > invalidar el contrato activo.
@@ -1111,3 +1111,32 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar y entregar el reporte en cuanto la fuente quede identificada con evidencia (no seguir hacia el fix); parar si la unica forma de avanzar es modificar un escritor; parar si la fuente resulta ser el entorno del host (PowerShell 5.1 Out-File default BOM) y el fix excede repo_destino.
 - **Depende de:** WOT-2026-010v.
+## T-011J-001 -- Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a
+- **ticket_id:** WOT-2026-011j
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011J-001
+- **Plan-Link:** PLAN-011J-001
+- **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con Set-Content/Out-File -Encoding UTF8. A la vez, la cola viva actual (acklog.md) ya esta limpia; los 3 control chars que siguen bloqueando  12a viven solo en _archive/backlog_done.md y _archive/backlog_pre_012a.md. Por tanto  11j no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en epo_motor y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de  12a.
+- **Premise Re-check (read-only):** confirmar que python scripts/check_encoding_guard.py .agent/collaboration/backlog.md sale verde y que el mismo guard sobre _archive/backlog_done.md y _archive/backlog_pre_012a.md falla por los 3 control chars historicos; releer .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md; inspeccionar scripts/launch_agent_terminals.ps1 para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de WT-2026-248a; localizar barreras existentes en 	ests/test_opencode_config_stability.py y 	ests/test_launch_agent_terminals_script.py; ejecutar python .agent/agent_controller.py --validate --json --project-root <repo_destino> antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** 011c_report=completed; active_backlog_encoding=clean; archive_backlog_encoding=3_control_chars; launcher_bom_primitives=Set-Content -Encoding UTF8,Out-File -Encoding UTF8; generated_at=2026-06-19.
+- **Files Likely Touched:**
+  - Builder repo_motor: scripts/launch_agent_terminals.ps1
+  - Builder repo_motor: 	ests/test_opencode_config_stability.py
+  - Builder repo_motor: 	ests/test_launch_agent_terminals_script.py
+  - Builder repo_destino: .agent/collaboration/execution_log.md
+- **Read/inspect only:** .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md; .agent/collaboration/backlog.md; .agent/collaboration/_archive/backlog_done.md; .agent/collaboration/_archive/backlog_pre_012a.md; .agent/collaboration/CG-WOT-2026-012a.md; .agent/agent_controller.py; scripts/check_encoding_guard.py; 	ests/test_launcher_ps1_syntax.py.
+- **Forbidden Surfaces:** editar manualmente _archive/backlog_done.md o _archive/backlog_pre_012a.md; broad-strip de BOM/control chars en el repo; tocar scripts/check_encoding_guard.py; reintentar WOT-2026-012a dentro de  11j; tocar TURN.md / STATE.md / bus manualmente; introducir un fix que dependa de relajar el guard.
+- **DoD:**
+  - [ ] El diff elimina las escrituras PowerShell BOM-prone que  11j declare in-scope y las sustituye por un patron BOM-safe verificable.
+  - [ ] Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por  11j.
+  - [ ] 	ests/test_opencode_config_stability.py sigue verde y demuestra que el patron BOM-safe existente no regresa.
+  - [ ]  11j NO edita manualmente _archive/backlog_done.md ni _archive/backlog_pre_012a.md; deja explicito en execution_log.md que esos artefactos se regeneraran al relanzar  12a.
+  - [ ] python scripts/check_encoding_guard.py sobre las superficies propias del ticket queda verde.
+  - [ ] uv run ruff check sobre los Python tocados, python -m pytest focal aplicable, python scripts/run_pytest_safe.py --project-root <repo_destino> y python .agent/agent_controller.py --validate --json --project-root <repo_destino> quedan verdes.
+- **Integracion cross-ticket:** desbloquea el relanzamiento de WOT-2026-012a, pero no lo cierra ni regenera sus archives dentro del mismo ticket.  12a se relanza despues para reconstruir _archive/backlog_done.md y _archive/backlog_pre_012a.md desde la fuente viva ya limpia.
+- **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en epo_motor, o si el unico camino a verde exige editar manualmente los archives de  12a, o si el fix real cae en gent_controller.py / guard de encoding fuera de la superficie declarada, emitir CG-WOT-2026-011j.md, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el fix exige broadening a una caza general de writers PowerShell fuera de la superficie declarada; parar si el ticket deriva en reconstruccion manual de historico; parar si el rojo restante pertenece solo a  12a y requiere relanzar ese ticket en lugar de seguir ampliando  11j.
+- **Depende de:** WOT-2026-011c (COMPLETED); WOT-2026-010v (COMPLETED).

@@ -1,72 +1,54 @@
-# execution_log.md -- WOT-2026-011c
-
+# execution_log.md -- WOT-2026-011j
 ## Metadata
-
-- **Ticket:** WOT-2026-011c
-**Estado:** COMPLETED
-- **deliverable_type:** research
-- **delivery_authority:** repo_destino
-
-## Manager Preflight
-
-- Ticket siguiente seleccionado: `WOT-2026-011c`.
-- Motivo: `WOT-2026-012a` quedo en `CONTRACT_BLOCKED` y su desbloqueo recomendado
-  pasa por identificar la fuente del BOM/control-char antes de tocar fix alguno.
-- Hechos verificados antes del handoff:
-  - `T-011C-001` esta congelado en `.agent/planning/ticket_contracts.md`.
-  - `WOT-2026-012a` queda preservado en backlog como `blocked` y su evidencia de
-    bloqueo se conserva en `CG-WOT-2026-012a.md` + snapshot de `execution_log`.
-  - `validate --json --project-root <repo_destino>` esta en 0 errors / 0 warnings
-    al arrancar `011c`.
-- Pendiente de Builder:
-  1. medir bytes/BOM en surfaces vivas vs HEAD;
-  2. trazar escritores sin modificarlos;
-  3. emitir `bom_source_audit_WOT-2026-011c.md`;
-  4. validar reporte limpio y parar sin fix.
-
+- **Ticket:** WOT-2026-011j
+- **Estado:** IN_PROGRESS
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
 ## Manager Bootstrap
+- Ticket siguiente seleccionado: WOT-2026-011j.
+- Motivo: WOT-2026-011c ya identifico la fuente del BOM y el follow-up correcto es endurecer el writer PowerShell in-scope antes de relanzar 012a.
+- Contrato congelado: T-011J-001.
+- Runtime bootstrap esperado para Builder: STATE=IN_PROGRESS, TURN=BUILDER/IMPLEMENT, work_plan.md activo en 011j.
+## Premise Re-check requerido al Builder
+- `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` -> verde.
+- `python scripts/check_encoding_guard.py .agent/collaboration/_archive/backlog_done.md .agent/collaboration/_archive/backlog_pre_012a.md` -> rojo por 3 control chars historicos.
+- `scripts/launch_agent_terminals.ps1` conserva escrituras BOM-prone in-scope que justifican el fix.
+## Restriccion cross-ticket
+- 011j no edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`.
+- Si el rojo restante pertenece solo a la regeneracion de 012a, el Builder debe dejar evidencia y parar; no debe absorber 012a en este ticket.
 
-- Packet materializado para `WOT-2026-011c`.
-- `work_plan.md`, `STRATEGY_WOT-2026-011c.md` y `AUDIT_WOT-2026-011c.md`
-  quedan alineados al mismo contrato frozen.
-- El runtime deja `012a` preservado en `CONTRACT_BLOCKED` dentro del backlog y el
-  bus historico, pero activa `011c` como ticket de trabajo corriente.
-- `execution_log.md` queda reinicializado en `IN_PROGRESS` para arranque directo
-  del Builder.
+## BUILDER - WOT-2026-011j - Fix fuente BOM en launcher PowerShell
 
-## BUILDER - WOT-2026-011c - BOM/control-char SOURCE audit (spike research)
+### Fase 0 - Premise re-check (VERIFICADO)
+- check_encoding_guard backlog.md vivo -> exit 0 (verde).
+- check_encoding_guard _archive/backlog_done.md + backlog_pre_012a.md -> exit 1 SOLO por 3 control chars historicos (\x07udi/\x0Bali/\x08ui-). NO tocados (forbidden + scope 012a).
+- Writes BOM-prone in-scope localizados en scripts/launch_agent_terminals.ps1:
+  L1440 Set-Content -Encoding UTF8 ($ConfigPath, opencode.json) y L1904 Out-File -Encoding UTF8 ($lockPath, builder lock).
+- Patron BOM-safe canonico ya existente (WT-2026-248a): [IO.File]::WriteAllBytes / UTF8Encoding($false). Reutilizado, no se invento politica nueva.
 
-### Fase 0 - Baseline (VERIFICADO con bytes)
-- BOM working-tree pero NO en HEAD: work_plan, TURN, backlog, execution_log, ticket_contracts.
-- Sin BOM (working ni HEAD): STATE, notifications, review_queue (proyectadas por controller Python).
-- Control chars 0x07/0x0B/0x08 en HEAD:backlog offsets 176852/177183/177215, region historica.
-  Comandos: git show HEAD:<f> | byte-check; open(f,'rb').read()[:3].
+### Fase 1 - Implementacion
+- L1440: $config|ConvertTo-Json -> [IO.File]::WriteAllText($ConfigPath,$configJson,(New-Object System.Text.UTF8Encoding $false)).
+- L1904: $builderLockState|ConvertTo-Json -> [IO.File]::WriteAllText($lockPath,$builderLockJson,(UTF8Encoding $false)).
+- 0 writes BOM-prone (no-comentario) restantes (grep verificado).
+- Parser AST PowerShell: PARSE OK. Prueba funcional: WriteAllText UTF8($false) -> primeros bytes 7B 0D 0A (sin BOM).
+- _archive/backlog_done.md y _archive/backlog_pre_012a.md NO editados (verificado: read-only, sin cambios).
 
-### Fase 1 - Trazado de escritores (read-only, NINGUNO modificado)
-- agent_controller.py:write_file (L1052) escribe encoding="utf-8" SIN BOM -> no es fuente.
-- build_llms/discover_skills/local_audit usan utf-8-sig solo para LEER -> no son fuente.
-- launch_agent_terminals.ps1 L1803-1804 (WT-2026-248a) documenta: "Set-Content -Encoding UTF8
-  ALWAYS prepends the UTF-8 BOM"; usa Set-Content -Encoding UTF8 (L1440) + Out-File -Encoding UTF8 (L1904).
-- Confirmacion empirica BOM (temp file, repo intacto): powershell Set-Content -Encoding UTF8 -> EF BB BF.
-- Confirmacion empirica control chars: printf 'prompts \audit_* \validate \bui-self' produce
-  EXACTAMENTE \x07udit \x0balidat \x08ui-self (mismos bytes, mismo contexto). Reproducido 1:1.
+### Fase 2 - Barrera de regresion
+- tests/test_launch_agent_terminals_script.py::test_launcher_inscope_json_writes_are_bom_safe:
+  afirma 0 writes Set-Content/Out-File -Encoding UTF8 in-scope + presencia del patron WriteAllText UTF8($false) para ConfigPath y lockPath.
+- Verificacion FAIL-sin/PASS-con: revertido launcher a HEAD -> test FAIL (detecta los 2 writes BOM-prone); restaurado fix -> 1 passed.
 
-### Fase 2 - Hallazgo (DOS fuentes distintas, ambas VERIFICADAS)
-- Fuente BOM: PowerShell 5.1 Set-Content/Out-File -Encoding UTF8 (default BOM). VERIFICADO.
-- Fuente control chars: backslash-escape interpretation (\a \v \b) por printf/shell sobre texto
-  con \audit/\validate/\bui Windows-style. NO es encoding/BOM. VERIFICADO.
-- Reporte durable: .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md (104 lineas, limpio).
-- Follow-up recomendado (NO aplicado): `WOT-2026-011j` para fijar writer PowerShell BOM-safe
-  en superficies vivas y sanear los 3 control chars historicos de `HEAD:backlog`; tras ese
-  fix, `012a` puede regenerar snapshot/historico limpio y reintentar su handoff canonico.
-- INFERENCIA RAZONABLE acotada: no se instrumento el writer PS en vivo (contrato read-only); la
-  atribucion "via PowerShell" se apoya en discriminante controller-vs-resto + mecanismo empirico.
-- STOP respetado: identificado y parado; NINGUN fix aplicado; NINGUN writer modificado.
+### Hallazgo de scope (BOM/mojibake pre-existente del propio .ps1)
+- El launcher en HEAD YA tiene BOM + 1 mojibake (pre-existente, no introducido por 011j; mis lineas anadidas son ASCII puro, verificado git diff).
+- .ps1 NO esta en GLOB_PATTERNS del encoding guard (solo .md/.py); en staged-mode (commit normal) el guard NO lo chequea -> HEAD lo commitea con BOM sin bloqueo. El rojo solo aparece en modo explicito.
+- DECISION: NO sanear el BOM/mojibake del propio launcher. Esta fuera del scope de 011j (writes que PRODUCE el launcher, no encoding DEL launcher), no lo cubre el gate de commit, y tocarlo seria "caza general de writers" (STOP condition del contrato). Se deja como deuda separada (candidato a follow-up de encoding de .ps1, dominio de 011f .gitattributes / encoding).
 
-### Nota viva (evidencia del propio hallazgo)
-- execution_log.md reaparecio con BOM tras el bootstrap del runtime a 011c, pese a que
-  010v/012a lo habian limpiado. Es exactamente Fuente 1 del reporte: un write mediado por
-  PowerShell -Encoding UTF8 re-inyecta BOM en superficies vivas. Re-limpiado (superficie propia, FLT).
+### Follow-up 012a (explicito)
+- 011j corrige la FUENTE viva del BOM (writer PS). El saneado de _archive/backlog_done.md y _archive/backlog_pre_012a.md (3 control chars historicos) NO se hace aqui: WOT-2026-012a debera REGENERAR su historico limpio desde el backlog vivo al relanzarse, no por edicion manual de los archives.
 
-
-Manager approved canonical closeout for WOT-2026-011c
+### Gates finales (medicion canonica limpia sobre arbol 011j)
+- NOTA proceso: la corrida previa que parecio "2h" fue una corrida interrumpida + probable suspension del host (status=started, lock stale, PID muerto, wall-clock inflado). NO era regresion de rendimiento. La medicion limpia se relanzo sin procesos huerfanos.
+- Suite canonica: last-run.log -> "3027 passed, 20 skipped, 5 deselected in 339.67s (0:05:39)"; last-run.json status=finished exit=0 level=unit args_mode=default_discovery. 0 failed. 3027 = 3026 HEAD + 1 barrera nueva de 011j.
+- Validate: errors=0 warnings=0.
+- Encoding guard (superficies propias py+md): exit 0. El BOM/mojibake del propio .ps1 es pre-existente en HEAD y .ps1 NO esta en GLOB del guard (no bloquea commit); fuera de scope 011j (deuda separada).
+- Diff: scripts/launch_agent_terminals.ps1 (+10/-2), tests/test_launch_agent_terminals_script.py (+30). Dentro de FLT motor.

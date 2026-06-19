@@ -27,7 +27,7 @@
 | Alta | WOT-2026-011e | pytest-xdist opt-in + medicion + fallback seguro para subset unitario | motor/test-suite-perf | pending | - | session-2026-06-19-improvement-backlog | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
 | Alta | WOT-2026-012a | Reestructurar backlog: cola viva vs historico + formato parseable | system/collab-hygiene | blocked | - | session-2026-06-19-backlog-contract | WOT-2026-011j |
-| Alta | WOT-2026-011j | Corregir fuentes de encoding: writer PowerShell BOM-safe + saneado de 3 control chars historicos para desbloquear 012a | system/devex-encoding | pending | WOT-2026-011c | session-2026-06-19-011c-followup | - |
+| Alta | WOT-2026-011j | Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a | motor/devex-encoding | pending | WOT-2026-011c | session-2026-06-19-011c-followup | - |
 | Media | WOT-2026-011f | .gitattributes / line endings: normalizar contrato multiplataforma | motor/devex-encoding | pending | WOT-2026-010w, WOT-2026-011c | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-012b | Gate check_backlog_contract.py sobre cola viva | motor/quality-gates | pending | WOT-2026-012a | session-2026-06-19-backlog-contract | - |
@@ -39,7 +39,7 @@
 
 ## Fichas detalladas (tickets vivos)
 
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 011j, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha `###` se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
+> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha `###` se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 
 ### WOT-2026-012a - Reestructurar backlog: cola viva vs historico + formato parseable
 - **Prioridad:** Alta
@@ -133,6 +133,40 @@
   - Si la decision `011e <-> 010m` requiere una apuesta de producto no
     disponible, registrar `pending-human` y bloquear el congelado de `011e`
     sin inventar una fusion.
+
+### WOT-2026-011j - Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a
+- **Prioridad:** Alta
+- **Scope:** motor/devex-encoding
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011c.
+- **Origen:** session-2026-06-19-011c-followup.
+- **Problema:** `WOT-2026-011c` verifico dos fenomenos distintos: el BOM proviene de escrituras PowerShell 5.1 con `Set-Content`/`Out-File -Encoding UTF8`, mientras que los 3 control chars ya NO viven en la cola activa sino solo en `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md`. Parchear esos archives a mano mezclaria fix de fuente con reconstruccion historica. La ruta segura es endurecer el writer PowerShell en `repo_motor` y dejar que `012a` regenere despues sus artefactos historicos desde la fuente viva ya limpia.
+- **Objetivo:** eliminar las escrituras BOM-prone in-scope del launcher/runtime PowerShell y dejar evidencia verificable de que `012a` debe reintentarse regenerando `_archive/backlog_*` desde el backlog vivo actual, no editando snapshots heredados a mano.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/launch_agent_terminals.ps1`
+  - Builder repo_motor: `tests/test_opencode_config_stability.py`
+  - Builder repo_motor: `tests/test_launch_agent_terminals_script.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; `.agent/collaboration/backlog.md`; `.agent/collaboration/_archive/backlog_done.md`; `.agent/collaboration/_archive/backlog_pre_012a.md`; `CG-WOT-2026-012a.md`; `.agent/agent_controller.py`; `scripts/check_encoding_guard.py`.
+- **Forbidden Surfaces:** editar a mano `_archive/backlog_done.md` o `_archive/backlog_pre_012a.md`; broad-strip de BOM/control chars en el repo; tocar `scripts/check_encoding_guard.py`; reintentar `012a` dentro de `011j`; tocar `TURN.md`/`STATE.md`/bus manualmente.
+- **Premisa operativa a verificar al arrancar:**
+  - `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` verde.
+  - `python scripts/check_encoding_guard.py .agent/collaboration/_archive/backlog_done.md .agent/collaboration/_archive/backlog_pre_012a.md` rojo por los 3 control chars historicos.
+  - `scripts/launch_agent_terminals.ps1` conserva al menos una escritura BOM-prone in-scope o, si no la conserva, el ticket debe bloquearse porque el fix ya no vive en la superficie declarada.
+- **Criterios binarios:**
+  - El diff elimina las escrituras PowerShell BOM-prone que este ticket declare in-scope y las sustituye por un patron BOM-safe verificable.
+  - Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por `011j`.
+  - `tests/test_opencode_config_stability.py` sigue verde y documenta que el patron BOM-safe existente no regresa.
+  - `011j` NO edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`; deja explicitado en `execution_log.md` que esos artefactos se regeneraran al reactivar `012a`.
+  - `python scripts/check_encoding_guard.py` sobre las superficies propias del ticket queda verde.
+  - `uv run ruff check` sobre los Python tocados, `python -m pytest` focal aplicable y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:**
+  - Si la premisa re-check demuestra que ya no existe ningun writer BOM-prone in-scope en `repo_motor`, detener y emitir `CONTRACT_GAP`: el follow-up ya no coincide con la superficie real.
+  - Si la unica forma de poner verde el ticket exige editar manualmente los archives de `012a`, detener: esa regeneracion pertenece al relanzamiento de `012a`, no a `011j`.
+  - Si el fix real exige tocar `agent_controller.py` o el guard de encoding en vez del launcher/runtime PowerShell declarado, detener y devolver a Contract Formation.
+- **Reactivation / salida esperada:** tras cerrar `011j`, `WOT-2026-012a` debe relanzarse para regenerar `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` desde la fuente viva ya limpia.
 
 ### WOT-2026-012b - Gate check_backlog_contract.py sobre cola viva
 - **Prioridad:** Media

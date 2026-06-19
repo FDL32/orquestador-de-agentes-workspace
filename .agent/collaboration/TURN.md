@@ -1,33 +1,21 @@
 # TURNO ACTUAL
-
-**Ultima actualizacion:** 2026-06-19 19:48:12
-
+**Ultima actualizacion:** 2026-06-19 22:10:00
 ---
-
 ## Agente Activo
-
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WOT-2026-011j |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
-
+| **Accion** | IMPLEMENT |
 ---
-
 ## Instruccion
-
-> Ticket WOT-2026-011c closed. Create new work_plan.md for next cycle.
-
+> Ejecuta el preflight directo del Builder para WOT-2026-011j y corrige la fuente BOM in-scope sin editar manualmente el historico de 012a.
 ---
-
 ## Estado del Sistema
-
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
-
+| work_plan.md | APPROVED |
+| execution_log.md | IN_PROGRESS |
 ---
-
 *Generado por agent_controller.py v5*

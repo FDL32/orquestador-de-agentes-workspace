@@ -1,107 +1,61 @@
-﻿# work_plan.md -- WOT-2026-011c
-
+# work_plan.md -- WOT-2026-011j
 ## Metadata
-
-- **ID:** WOT-2026-011c
-- **Contract ID:** T-011C-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-011j
+- **Contract ID:** T-011J-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** research
+- **deliverable_type:** code
 - **Builder clarification budget:** 0
-- **delivery_authority:** repo_destino
-- **repo_motor:** <repo_motor> (solo lectura para este ticket)
-- **repo_destino:** <repo_destino> (resuelto por `--project-root` / `AGENT_PROJECT_ROOT`)
-
+- **delivery_authority:** repo_motor
+- **repo_motor:** <repo_motor>
+- **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-
-Identificar con evidencia reproducible la fuente que inyecta BOM UTF-8 en las
-superficies vivas de `.agent/collaboration/` y, si es posible, el origen de los
-3 control chars preservados en la region historica de `backlog.md`. Este ticket
-es un spike de investigacion: entrega un reporte de hallazgo y PARA, sin aplicar
-fix de fuente.
-
+Corregir la fuente BOM in-scope en el launcher/runtime PowerShell del repo_motor y dejar explicitado que WOT-2026-012a debe regenerar sus archives historicos una vez saneada la fuente viva, sin editar a mano `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md` dentro de este ticket.
 ## Non-goals
-
-- No aplicar ningun fix de fuente (strip BOM, reconstruir letras, cambiar
-  escritor, tocar hooks, controller o launcher).
-- No tocar `scripts/check_encoding_guard.py` ni la defensa 010v.
-- No limpiar superficies vivas "para dejarlo bonito".
-- No tocar `repo_motor` salvo lectura de evidencia.
-
+- No editar manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`.
+- No tocar `scripts/check_encoding_guard.py`.
+- No relanzar ni cerrar WOT-2026-012a dentro de 011j.
+- No ampliar el ticket a una caza general de writers PowerShell fuera de la superficie declarada.
 ## Premisas verificadas antes de Builder
-
-- `WOT-2026-012a` quedo bloqueado canonicamente en `CONTRACT_BLOCKED`; su
-  `CG-WOT-2026-012a.md` recomienda secuenciar `011c` antes de reintentar el
-  handoff.
-- El encoding guard ya detecta el sintoma, pero la fuente sigue sin estar
-  identificada.
-- Evidencia base ya conocida:
-  - `work_plan.md`, `TURN.md`, `backlog.md` y `execution_log.md` aparecen con
-    BOM en working tree en determinados ciclos, mientras `STATE.md`,
-    `notifications.md` y `review_queue.md` no.
-  - `HEAD:backlog.md` contiene 3 control chars en la region historica
-    (`\x07udit`, `\x0Balidate`, `\x08ui-self`).
-- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-  esta en 0 errors / 0 warnings al arrancar `011c`.
-
+- WOT-2026-011c quedo COMPLETED y su reporte durable existe en `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`.
+- `backlog.md` activo ya esta limpio para el encoding guard.
+- Los 3 control chars que siguen bloqueando 012a viven solo en `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md`.
+- `scripts/launch_agent_terminals.ps1` mantiene escrituras PowerShell BOM-prone in-scope (`Set-Content -Encoding UTF8`, `Out-File -Encoding UTF8`).
 ## Decision Arquitectonica
-
-`011c` es research puro. El Builder debe observar y correlacionar escritores,
-bytes y comportamiento del host, producir un reporte durable en
-`.agent/runtime/audit/`, y detenerse en cuanto la fuente quede identificada con
-evidencia suficiente. Si demostrar la hipotesis exige modificar un escritor, eso
-ya no es spike sino fix y debe bloquearse como `CONTRACT_GAP`.
-
+011j es un fix puntual de fuente en repo_motor, no una regeneracion de historico documental. El Builder debe endurecer el writer BOM-prone in-scope, probar la barrera de regresion y dejar en `execution_log.md` que el rojo restante de `_archive/backlog_*` se resuelve reactivando 012a para regenerar esos artefactos desde la fuente viva ya limpia.
 ## Files Likely Touched
-
+### repo_motor
+- scripts/launch_agent_terminals.ps1
+- tests/test_opencode_config_stability.py
+- tests/test_launch_agent_terminals_script.py
 ### repo_destino
-
-- `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`
-- `.agent/collaboration/execution_log.md`
-
+- .agent/collaboration/execution_log.md
 ## Read/inspect only
-
-- `scripts/launch_agent_terminals.ps1`
-- `scripts/encoding_post_write_hook.py`
-- `bus/`
-- `.agent/agent_controller.py`
-- cualquier `Out-File` / `Set-Content` / `encoding=` que toque `.agent/collaboration/`
-- git history y bytes de las superficies con BOM/control chars
-- `CG-WOT-2026-012a.md` y `CG-WOT-2026-012a.execution_log_snapshot.md`
-
+- .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md
+- .agent/collaboration/backlog.md
+- .agent/collaboration/_archive/backlog_done.md
+- .agent/collaboration/_archive/backlog_pre_012a.md
+- .agent/collaboration/CG-WOT-2026-012a.md
+- .agent/agent_controller.py
+- scripts/check_encoding_guard.py
+- tests/test_launcher_ps1_syntax.py
 ## Forbidden Surfaces
-
-- Aplicar cualquier fix de fuente.
-- Tocar escritores del motor o del destino para "probar" la hipotesis.
-- Tocar el guard 010v.
-- Reescribir `backlog.md`, `work_plan.md`, `TURN.md` o `execution_log.md` para
-  borrar sintoma en vez de identificar origen.
-- Tocar `repo_motor` productivamente.
-
+- .agent/collaboration/_archive/backlog_done.md
+- .agent/collaboration/_archive/backlog_pre_012a.md
+- scripts/check_encoding_guard.py
+- .agent/collaboration/TURN.md
+- .agent/collaboration/STATE.md
+- bus/runtime/events manuales
 ## Criterios binarios
-
-- Existe `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md` con la fuente
-  o fuentes candidatas nombradas con evidencia reproducible.
-- El reporte distingue `VERIFICADO` de `INFERENCIA RAZONABLE`; no presenta
-  hipotesis como hecho.
-- El reporte declara si hay fix de fuente viable o si 010v es defensa
-  suficiente, como recomendacion, no como cambio aplicado.
-- El reporte abre follow-up(s) concretos para el fix, si procede.
-- `python scripts/check_encoding_guard.py <reporte> <execution_log>` queda verde
-  sobre las superficies propias del ticket.
-- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-  queda en 0 errors / 0 warnings.
-
+- El diff elimina las escrituras PowerShell BOM-prone que 011j declare in-scope y las sustituye por un patron BOM-safe verificable.
+- Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por 011j.
+- `tests/test_opencode_config_stability.py` sigue verde y demuestra que el patron BOM-safe existente no regresa.
+- 011j no edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`; deja explicito en `execution_log.md` que esos artefactos se regeneraran al relanzar 012a.
+- `python scripts/check_encoding_guard.py` sobre las superficies propias del ticket queda verde.
+- `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` queda en 0 errors / 0 warnings.
 ## STOP conditions
-
-- Parar y entregar el reporte en cuanto la fuente quede identificada con
-  evidencia suficiente.
-- Parar si la unica forma de avanzar es modificar un escritor.
-- Parar si la fuente resulta ser el entorno host (por ejemplo, comportamiento de
-  PowerShell 5.1 / `Out-File`) y el fix excede `repo_destino`.
-
+- Parar si ya no existe ningun writer BOM-prone in-scope en repo_motor.
+- Parar si la unica forma de poner verde el ticket exige editar manualmente los archives de 012a.
+- Parar si el fix real exige tocar `agent_controller.py` o el guard de encoding fuera de la superficie declarada.
 ## CONTRACT_GAP
-
-Emitir `CG-WOT-2026-011c.md` y bloquear si identificar la fuente exige MODIFICAR
-un escritor del motor o del destino para probar la hipotesis, porque eso ya es
-el fix y pertenece a un follow-up separado.
+Emitir `CG-WOT-2026-011j.md` si el re-check demuestra que la superficie real del fix ya no coincide con el contrato o si el rojo restante pertenece solo a la regeneracion de 012a y no a un writer BOM-prone activo.
