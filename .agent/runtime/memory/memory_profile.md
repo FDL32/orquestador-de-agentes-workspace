@@ -1,13 +1,13 @@
 # Memory Profile (L3)
 
-Total observations: 56
+Total observations: 57
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
 - bus-architecture: 25 observations
-- delivery-hygiene: 14 observations
+- delivery-hygiene: 15 observations
 - review-quality: 8 observations
 - builder-contract: 5 observations
 - collaboration: 2 observations
@@ -36,6 +36,7 @@ High-level profile of project memory for quick context loading. This is the firs
 - WOT-2026-010a
 - WOT-2026-010c
 - WOT-2026-010j
+- WOT-2026-011e
 - WOT-2026-011j
 - WOT-AUDIT-A2a
 - WOT-AUDIT-A2b
@@ -55,6 +56,7 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
+- [motor-destino-topology] In motor+destino topology, the canonical closeout artifact for pytest-safe is repo_motor/.agent/runtime/pytest-safe/last-run.json. repo_destino may co (manager-review-topology-adjustment)
 - [canonical-suite-measurement] Do not report background wall-clock as canonical suite duration. If pytest-safe last-run.json is only status=started and the lock is stale or the PID  (manager-review-closeout)
 - [motor-destino-topology] In motor+destino topology, operational backlog.md lives in repo_destino/.agent/collaboration/, not in the repo_motor seed. Audits that inspect only re (chat-audit-second-pass)
 - [post-write-verification] For claims that an artifact was written, verify existence/readability separately from encoding. check_encoding_guard validates encoding of existing fi (chat-audit-second-pass)
@@ -64,4 +66,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [ticket-completion] Ticket WOT-2026-010c completado: Unknown (deliverable_type=code) (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010c (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-008c (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010a (session-close)

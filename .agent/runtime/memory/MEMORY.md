@@ -1,8 +1,8 @@
 # MEMORY
 
-Regenerated: 2026-06-19T22:48:42.180072+00:00
+Regenerated: 2026-06-20T07:43:43.075658+00:00
 
-Total observations: 56
+Total observations: 57
 
 - Architecture (21 observations)
 - Atomic-Requeue-Claim (1 observations)
@@ -20,7 +20,7 @@ Total observations: 56
 - Double-Requeue-Diagnostics (1 observations)
 - Dual-Contract-Sync (1 observations)
 - Manager-Is-Fix-Surface (1 observations)
-- Motor-Destino-Topology (1 observations)
+- Motor-Destino-Topology (2 observations)
 - One-Line-Fix-Contract-Pattern (1 observations)
 - Orthogonal-Validator-Tests (1 observations)
 - Plan-Test-Path-Verification (1 observations)
