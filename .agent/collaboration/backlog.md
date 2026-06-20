@@ -24,7 +24,6 @@
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-010x | Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml | motor/ci-security | pending | - | session-2026-06-19-gitleaks-ci | - |
 | Alta | WOT-2026-011b | Relaunch timeout determinism: fijar BUILDER_START_VERIFY_TIMEOUT_SECONDS en tests de relaunch | motor/test-suite-perf | pending | - | session-2026-06-19-process-debt | - |
-| Alta | WOT-2026-011e | pytest-xdist opt-in + medicion + fallback seguro para subset unitario | motor/test-suite-perf | pending | - | session-2026-06-19-improvement-backlog | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011f | .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma | motor/devex-encoding | pending | WOT-2026-010w, WOT-2026-011c, WOT-2026-011j | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
@@ -37,25 +36,28 @@
 
 ## Fichas detalladas (tickets vivos)
 
-### WOT-2026-011e - pytest-xdist opt-in + medicion + fallback seguro para subset unitario
-- **Prioridad:** Alta
-- **Scope:** motor/test-suite-perf
+
+### WOT-2026-011f - .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma
+- **Prioridad:** Media
+- **Scope:** motor/devex-encoding
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Reactivation:** -
 - **Origen:** session-2026-06-19-improvement-backlog.
-- **Problema (VERIFICADO):** `scripts/run_pytest_safe.py` sigue siendo secuencial y no ofrece un camino local, medido y opt-in para paralelizar un subset unitario. El ultimo cierre canonico del motor dejo `3051 passed, 20 skipped, 5 deselected` en ~`7m29s`; `010m` ya quedo separado como piloto CI y `011i` como evaluacion de default futuro.
-- **Objetivo:** anadir `pytest-xdist` como opt-in local para subset unitario explicito, con medicion auditable y fallback seguro a serial cuando el scope no sea apto, sin tocar el default del runner ni la semantica del cierre canonico.
+- **Problema (VERIFICADO):** `.gitattributes` aun no declara `*.ps1`; `scripts/launch_agent_terminals.ps1` sigue con BOM UTF-8 en origen y contiene secuencias mojibake visibles (`???` en lineas 91/100) mientras usa CRLF; `scripts/encoding_guard.py` ya reconoce `.ps1` como texto pero no los recorre en el barrido repo-wide porque `GLOB_PATTERNS` solo incluye `scripts/**/*.py`. Resultado: la principal superficie PowerShell del motor queda fuera del contrato automatico de encoding.
+- **Objetivo:** fijar el contrato multiplataforma de `.ps1` (line endings + fuente UTF-8 sin BOM), sanear `launch_agent_terminals.ps1` contra fuente confiable y meter los `.ps1` de `scripts/` bajo la barrera canonica de encoding sin reabrir la logica funcional ya endurecida por `011j`.
 - **Files Likely Touched:**
-  - repo_motor: `pyproject.toml`
-  - repo_motor: `uv.lock`
-  - repo_motor: `scripts/run_pytest_safe.py`
-  - repo_motor: `tests/unit/test_run_pytest_safe.py`
+  - repo_motor: `.gitattributes`
+  - repo_motor: `scripts/launch_agent_terminals.ps1`
+  - repo_motor: `scripts/encoding_guard.py`
+  - repo_motor: `tests/test_encoding_integrity.py`
+  - repo_motor: `tests/test_launch_agent_terminals_script.py`
   - repo_destino: `.agent/collaboration/execution_log.md`
-- **Criterios binarios:** el flag de xdist es explicitamente opt-in; fuera de subset unitario explicito cae a serial con razon auditable; registra `xdist_requested/enabled/workers/reason` en `last-run.json`; deja una medicion serial-vs-xdist en `execution_log.md`; `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `validate --json` quedan verdes.
-- **STOP:** parar si la unica via exige cambiar el default del runner, tocar CI (`010m`), o reabrir la semantica de cierre canonico que depende de `level=all` + `args_mode=default_discovery`.
-- **Depende de:** -.
+- **Criterios binarios:** `*.ps1` queda declarado explicitamente en `.gitattributes`; `launch_agent_terminals.ps1` queda sin BOM y conserva line endings coherentes con el contrato; las secuencias mojibake verificadas se reconstruyen desde contexto confiable, no por strip ciego; el barrido repo-wide de `encoding_guard.py` incluye `scripts/**/*.ps1` (o cobertura equivalente determinista); existe al menos una barrera FAIL-sin/PASS-con que demuestre que el launcher entra en scope del guard; `check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `validate --json` quedan verdes.
+- **STOP:** parar si la unica forma de arreglar el mojibake es adivinar contenido sin contexto confiable; parar si ampliar el guard a `scripts/**/*.ps1` saca deuda nueva fuera de scope que no se pueda acotar a los dos `.ps1` actuales; parar si normalizar el archivo obliga a reabrir semantica funcional del launcher en vez de contrato de fuente/encoding.
+- **Depende de:** WOT-2026-010w, WOT-2026-011c, WOT-2026-011j.
+
 ### WOT-2026-013a - Test de integracion fragil + guard de topologia
 - **Prioridad:** Media
 - **Scope:** motor/test-robustness

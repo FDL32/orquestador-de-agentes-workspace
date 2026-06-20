@@ -1,7 +1,7 @@
-# work_plan.md -- WOT-2026-011e
+# work_plan.md -- WOT-2026-011f
 ## Metadata
-- **ID:** WOT-2026-011e
-- **Contract ID:** T-011E-001
+- **ID:** WOT-2026-011f
+- **Contract ID:** T-011F-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
@@ -10,50 +10,49 @@
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Anadir `pytest-xdist` como opt-in local en `run_pytest_safe.py` para un subset unitario explicito, con medicion auditable y fallback seguro a ejecucion serial cuando el scope no sea apto, sin tocar el default del runner ni la semantica de cierre canonico.
+Normalizar el contrato multiplataforma de `*.ps1`: declarar line endings explicitamente en `.gitattributes`, sanear `scripts/launch_agent_terminals.ps1` para que quede sin BOM ni mojibake y meter los `.ps1` reales de `scripts/` bajo la barrera canonica de encoding, sin reabrir la logica funcional del launcher.
 ## Non-goals
-- No cambiar el default de `python scripts/run_pytest_safe.py` sin flags.
-- No paralelizar `--level all`, `--level integration` ni el cierre canonico.
-- No tocar CI/workflows ni reabrir `010m`.
-- No convertir xdist en politica por defecto; eso pertenece a `011i`.
-- No relajar la barrera de state-leak ni la validacion `tested_commit_sha/level/args_mode`.
+- No cambiar el comportamiento funcional del launcher salvo lo estrictamente necesario para normalizar su fuente.
+- No reabrir `011j` ni volver a tocar writers BOM-safe ya corregidos.
+- No tocar `pre_handoff_guard.py`, CI/workflows ni historicos de backlog/control-chars de `012a`.
+- No ampliar el alcance fuera de `scripts/launch_agent_terminals.ps1`, `scripts/test_manager_smoke.ps1`, `.gitattributes` y `scripts/encoding_guard.py`.
 ## Premisas verificadas antes de Builder
-- `010m` ya quedo separado como piloto CI y `011i` como follow-up si este opt-in local sale estable.
-- `scripts/run_pytest_safe.py` hoy solo distingue `unit|integration|all`, no ofrece flag xdist y el guard de handoff sigue exigiendo `level=all` + `args_mode=default_discovery`.
-- `pyproject.toml` no declara aun `pytest-xdist`.
+- `.gitattributes` no declara aun `*.ps1`.
+- `scripts/launch_agent_terminals.ps1` sigue con BOM UTF-8 en origen, usa CRLF y contiene secuencias mojibake verificadas (`???` en lineas 91/100).
+- `scripts/encoding_guard.py` incluye `.ps1` en `TEXT_EXTENSIONS`, pero su barrido repo-wide omite `scripts/**/*.ps1`.
+- `scripts/test_manager_smoke.ps1` ya esta limpio, por lo que el blast radius actual de la cobertura `.ps1` es acotable.
 ## Decision Arquitectonica
-`011e` implementa un camino local y explicito: un flag de paralelizacion que solo se activa sobre subset unitario explicito, registra si xdist se habilito o si se replego a serial, y deja intacto el camino canonico que usa el closeout. La frontera queda asi: `011e` = runner local opt-in medido; `010m` = CI; `011i` = evaluar default futuro.
+`011f` cierra la deuda de fuente, no la de writers: el launcher se normaliza como artefacto versionado y el guard pasa a cubrir los `.ps1` reales del motor. El contrato objetivo es `*.ps1` versionados con line endings explicitamente declarados, UTF-8 sin BOM y barrera automatica repo-wide. El fix debe reconstruir el mojibake desde contexto confiable, no por reemplazo ciego.
 ## Files Likely Touched
 ### repo_motor
-- pyproject.toml
-- uv.lock
-- scripts/run_pytest_safe.py
-- tests/unit/test_run_pytest_safe.py
+- .gitattributes
+- scripts/launch_agent_terminals.ps1
+- scripts/encoding_guard.py
+- tests/test_encoding_integrity.py
+- tests/test_launch_agent_terminals_script.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- scripts/pre_handoff_guard.py
-- docs/test_performance/test_performance_baseline_WOT-2026-010j.md
-- docs/test_performance/test_performance_followup_WOT-2026-010k.md
-- .agent/runtime/pytest-safe/last-run.json
-- .agent/collaboration/backlog.md
+- tests/test_opencode_config_stability.py
+- tests/unit/test_launcher_powershell_syntax.py
+- scripts/test_manager_smoke.ps1
+- .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md
+- scripts/check_encoding_guard.py
 ## Forbidden Surfaces
-- cambiar la logica de handoff de `scripts/pre_handoff_guard.py`
-- tocar `scripts/run_gates_dispatch.py` o workflows de CI
-- convertir xdist en default implicito
-- aceptar pass-open silencioso cuando el scope no sea seguro
-- tocar `privada/`, `.env` o `bus/runtime/events` manualmente
+- reabrir la logica funcional del launcher fuera de normalizacion de fuente
+- broad-strip de BOM/mojibake fuera de las superficies declaradas
+- tocar pre_handoff_guard.py o workflows de CI
+- editar historicos de backlog/control-chars congelados
 ## Criterios binarios
-- `pytest-xdist` queda declarado en dependencias dev y reflejado en `uv.lock`.
-- `scripts/run_pytest_safe.py` expone un flag opt-in de xdist y mantiene backward-compat total cuando no se usa.
-- El flag solo habilita paralelizacion para subset unitario explicito; fuera de ese contrato el runner cae a serial con razon auditable.
-- El runner registra en `last-run.json` si xdist fue solicitado, habilitado, con cuantos workers y, si no, el motivo de fallback.
-- Existe al menos una prueba FAIL-sin/PASS-con para la ruta xdist y otra para el fallback seguro.
-- El Builder deja en `execution_log.md` una medicion comparando el mismo subset unitario en serial vs xdist sobre este host.
-- `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- `.gitattributes` declara explicitamente el contrato de `*.ps1`.
+- `scripts/launch_agent_terminals.ps1` queda sin BOM y con line endings coherentes con el contrato fijado.
+- Las secuencias mojibake verificadas del launcher se reconstruyen desde contexto confiable.
+- `scripts/encoding_guard.py` incorpora `scripts/**/*.ps1` (o cobertura repo-wide equivalente) al scope real del guard.
+- Existe al menos una barrera FAIL-sin/PASS-con para demostrar que el launcher entra en scope del guard y que el estado previo habria fallado.
+- `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si la unica implementacion viable cambia el default del runner o afecta el camino canonico de closeout.
-- Parar si xdist obliga a relajar la barrera de state-leak o rompe cobertura/semantica del subset.
-- Parar si el subset seguro no puede definirse sin tocar CI o sin mezclar `010m`/`011i`.
+- Parar si el target de line endings no puede verificarse en este host Windows.
+- Parar si arreglar el mojibake exige adivinar contenido sin contexto confiable.
+- Parar si ampliar el guard a `.ps1` saca deuda nueva fuera de `scripts/launch_agent_terminals.ps1` y `scripts/test_manager_smoke.ps1`.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-011e.md` si el opt-in local requiere alterar `pre_handoff_guard.py`, si `pytest-xdist` no puede integrarse sin abrir el default del runner, o si el fallback seguro no puede distinguir subset unitario apto de suite canonica.
+Emitir `CG-WOT-2026-011f.md` si normalizar el launcher exige tocar logica funcional ajena al contrato de fuente, si el mojibake no puede reconstruirse con evidencia, o si la cobertura repo-wide de `.ps1` revela deuda adicional no acotable dentro del scope declarado.

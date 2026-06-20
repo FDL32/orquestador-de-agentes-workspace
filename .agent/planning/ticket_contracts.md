@@ -1177,3 +1177,36 @@ epo_motor, o si el unico camino a verde exige editar manualmente los archives de
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica implementacion viable toca CI o cambia el default del runner; parar si xdist rompe state-leak/cobertura del subset; parar si el subset seguro no puede definirse sin mezclar `010m` o `011i`.
 - **Depende de:** -.
+
+## T-011F-001 -- Contrato PS1 multiplataforma + launcher sin BOM/mojibake
+
+- **ticket_id:** WOT-2026-011f
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011F-001
+- **Plan-Link:** PLAN-011F-001
+- **Premise:** `.gitattributes` aun no declara `*.ps1`; `scripts/launch_agent_terminals.ps1` conserva BOM UTF-8 en origen y secuencias mojibake (`???` verificado en lineas 91/100) aunque ya usa CRLF; `scripts/encoding_guard.py` conoce `.ps1` como texto pero su barrido repo-wide omite `scripts/**/*.ps1`, dejando fuera la principal superficie PowerShell del motor. `011j` ya cerro los writers BOM-safe in-scope; `011f` fija el contrato de fuente, no reabre la logica funcional del fix anterior.
+- **Premise Re-check (read-only):** releer `.gitattributes`, `scripts/launch_agent_terminals.ps1`, `scripts/encoding_guard.py`, `tests/test_encoding_integrity.py`, `tests/test_launch_agent_terminals_script.py`, `tests/test_opencode_config_stability.py` y el reporte `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; verificar por bytes que `launch_agent_terminals.ps1` sigue con BOM y CRLF; confirmar que `test_manager_smoke.ps1` ya esta limpio; ejecutar `validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** gitattributes_ps1_rule=false; launcher_bom=true; launcher_crlf=true; launcher_mojibake_lines=91,100; encoding_guard_ps1_extension=true; encoding_guard_repo_wide_ps1_scope=false; generated_at=2026-06-20.
+- **Files Likely Touched:**
+  - Builder repo_motor: `.gitattributes`
+  - Builder repo_motor: `scripts/launch_agent_terminals.ps1`
+  - Builder repo_motor: `scripts/encoding_guard.py`
+  - Builder repo_motor: `tests/test_encoding_integrity.py`
+  - Builder repo_motor: `tests/test_launch_agent_terminals_script.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `tests/test_opencode_config_stability.py`; `tests/unit/test_launcher_powershell_syntax.py`; `scripts/test_manager_smoke.ps1`; `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; `scripts/check_encoding_guard.py`.
+- **Forbidden Surfaces:** reabrir la logica funcional del launcher ya corregida por `011j`; broad-strip de BOM/mojibake fuera de las superficies declaradas; tocar `pre_handoff_guard.py`; tocar CI/workflows; editar historicos de backlog/control-chars congelados en 012a.
+- **DoD:**
+  - [ ] `.gitattributes` declara explicitamente el contrato de `*.ps1` (line endings deterministas y portables).
+  - [ ] `scripts/launch_agent_terminals.ps1` queda sin UTF-8 BOM y conserva line endings coherentes con el contrato fijado.
+  - [ ] Las secuencias mojibake verificadas del launcher se reconstruyen desde contexto confiable; no se aceptan strips ciegos ni sustituciones ambiguas.
+  - [ ] `scripts/encoding_guard.py` incluye `scripts/**/*.ps1` (o cobertura repo-wide equivalente) dentro del scope real del guard.
+  - [ ] Existe al menos una barrera FAIL-sin/PASS-con que demuestra que el launcher entra en scope del guard y que el estado previo con BOM habria fallado.
+  - [ ] `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** depende de `011c` (fuente del fenomeno) y `011j` (writers BOM-safe ya corregidos), pero no reabre `011i`, `010m` ni la semantica de xdist. Conserva `010w` como dependencia de cierre Windows ya resuelta.
+- **CONTRACT_GAP behavior:** si reconstruir el mojibake del launcher exige adivinar contenido sin contexto confiable, si ampliar el guard a `scripts/**/*.ps1` destapa deuda nueva fuera de las dos superficies PowerShell actuales, o si normalizar el archivo obliga a tocar logica funcional del launcher ajena al contrato de fuente, emitir `CG-WOT-2026-011f.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el target de line endings no puede verificarse en este host Windows; parar si el launcher deja de parsear sintacticamente tras la normalizacion; parar si el guard repo-wide sobre `.ps1` rompe por artefactos no declarados fuera de `scripts/launch_agent_terminals.ps1` y `scripts/test_manager_smoke.ps1`.
+- **Depende de:** WOT-2026-010w (COMPLETED); WOT-2026-011c (COMPLETED); WOT-2026-011j (COMPLETED).

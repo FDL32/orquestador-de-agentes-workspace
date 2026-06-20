@@ -88,6 +88,29 @@
   - `scripts/pre_handoff_guard.py` (read-only; contrato canonico `level=all` + `args_mode=default_discovery`)
   - `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
   - frontera `011e <-> 010m <-> 011i` (local opt-in vs CI vs default futuro)
+
+
+## PLAN-011F-001 -- Contrato PS1 multiplataforma y barrera de encoding
+
+- objetivo: fijar el contrato de fuente para PowerShell (`*.ps1`) en el motor: line endings explicitos, launcher sin BOM ni mojibake, y cobertura determinista del guard de encoding sobre los scripts PowerShell reales.
+- tickets: [WOT-2026-011f]
+- depends_on: [WOT-2026-010w, WOT-2026-011c, WOT-2026-011j]
+- superficies_archivo:
+  - repo_motor/.gitattributes
+  - repo_motor/scripts/launch_agent_terminals.ps1
+  - repo_motor/scripts/encoding_guard.py
+  - repo_motor/tests/test_encoding_integrity.py
+  - repo_motor/tests/test_launch_agent_terminals_script.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - contrato git de `*.ps1` en `.gitattributes`
+  - barrido repo-wide de `scripts/encoding_guard.py`
+  - CLI `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`
+- shared_dependencies:
+  - evidencia de fuente `WOT-2026-011c` (BOM por `-Encoding UTF8` en PS 5.1)
+  - fix funcional previo `WOT-2026-011j` (writers BOM-safe ya in-scope)
+  - tests estructurales del launcher y estabilidad de opencode (read-only)
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -97,6 +120,7 @@
 
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
 | PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
+| PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
