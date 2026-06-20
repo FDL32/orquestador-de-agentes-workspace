@@ -1,59 +1,59 @@
-# work_plan.md -- WOT-2026-012a
+# work_plan.md -- WOT-2026-012b
 ## Metadata
-- **ID:** WOT-2026-012a
-- **Contract ID:** T-012A-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-012b
+- **Contract ID:** T-012B-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** documentation
+- **deliverable_type:** code
 - **Builder clarification budget:** 0
-- **delivery_authority:** repo_destino
+- **delivery_authority:** repo_motor
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Reestructurar `backlog.md` para separar cola viva e historico, fijar formato parseable estable y regenerar `_archive/backlog_done.md` / `_archive/backlog_pre_012a.md` desde la fuente viva ya limpia tras el cierre de `011j`.
+Convertir el contrato de cola viva fijado por `012a` en un gate fail-closed ejecutable desde `repo_motor`, leyendo `repo_destino/.agent/collaboration/backlog.md` solo por `--project-root` o `AGENT_PROJECT_ROOT`.
 ## Non-goals
-- No tocar `scripts/launch_agent_terminals.ps1` ni sanear el BOM/mojibake preexistente del propio `.ps1`; esa deuda queda explicitamente en `011f`.
-- No modificar `--session-close`, `--mark-ready` ni el archivador del closeout.
+- No reestructurar otra vez `backlog.md`; `012a` ya fijo el formato.
+- No tocar `scripts/archive_collaboration_artifacts.py`, `scripts/session_closeout.py`, `--mark-ready` ni el archivador del closeout.
+- No depender de comentarios HTML o prose libre para extraer semantica.
+- No degradar silenciosamente a warning permanente; el rollout solo puede ser explicito y acotado.
 - No editar `bus/runtime/events` manualmente.
-- No introducir nuevos tickets ni reabrir `011j` dentro de `012a`.
 ## Premisas verificadas antes de Builder
-- `WOT-2026-011j` quedo `COMPLETED` y corrigio la fuente BOM-safe del writer PowerShell in-scope.
-- `backlog.md` sigue mezclando cola viva + historico + ticket terminal `011j`, por lo que la deuda estructural de `012a` sigue vigente.
-- `T-012A-001` ya esta congelado en `ticket_contracts.md`.
-- La deuda del BOM/mojibake preexistente del propio `scripts/launch_agent_terminals.ps1` queda fuera de scope de `012a` y pasa a `011f`.
+- `WOT-2026-012a` ya quedo `COMPLETED` y dejo la cola viva en formato parseable con columna `Reactivation`.
+- `T-012B-001` ya esta congelado en `ticket_contracts.md`.
+- El gate debe ejecutarse desde `repo_motor`, pero leer `repo_destino` de forma topologica; depender del cwd dogfooding seria un bug.
+- La cola viva ya no debe contener `012a` como ticket activo ni terminal mezclado.
 ## Decision Arquitectonica
-`012a` se limita al corte documental y estructural del backlog en `repo_destino`. La fuente BOM del writer PowerShell ya fue corregida en `011j`; el BOM/mojibake preexistente del propio archivo `.ps1` del motor es una deuda distinta de encoding fuente y se seguira por `011f`, para no mezclar regeneracion historica de backlog con saneado del launcher.
+`012b` introduce una barrera unica en `repo_motor`: validar solo la tabla activa del backlog vivo y fallar cerrada ante drift estructural o semantico. La autoridad del dato sigue en `repo_destino`; el motor solo la consume via `--project-root` o `AGENT_PROJECT_ROOT`, sin leer seeds del motor ni acoplarse al archivador del closeout.
 ## Files Likely Touched
+### repo_motor
+- scripts/check_backlog_contract.py
+- tests/unit/test_check_backlog_contract.py
+- scripts/run_gates_dispatch.py
 ### repo_destino
-- .agent/collaboration/backlog.md
-- .agent/collaboration/_archive/backlog_done.md
-- .agent/collaboration/_archive/backlog_pre_012a.md
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- CHANGELOG.md
+- .agent/collaboration/backlog.md
 - .agent/collaboration/STATE.md
 - .agent/collaboration/TURN.md
-- .agent/planning/ticket_contracts.md
-- historico previo de backlog.md
-- filas 011e..011i
-- WOT-2026-010m
+- scripts/check_deliverables_exist.py
+- scripts/validate_ticket_prose.py
 ## Forbidden Surfaces
-- scripts/archive_collaboration_artifacts.py
-- scripts/session_closeout.py
-- --session-close / --mark-ready
-- edicion manual de bus/runtime/events
-- cualquier saneado del `.ps1` del motor dentro de este ticket
+- lectura de `backlog.md` relativa al cwd
+- dependencia en HTML comments o prose libre
+- vocabulario nuevo de estados fuera del cerrado por `012a`
+- edicion manual de `bus/runtime/events`
+- tocar archivador, session close o barreras de cierre ajenas
 ## Criterios binarios
-- `backlog.md` activo deja de contener terminales mezclados con la cola operativa.
-- Existe un historico separado mantenido por paso explicito del Manager, no por el archivador del closeout.
-- La tabla activa queda como unica fuente parseable con columna `Reactivation`.
-- La seccion `### WOT-2026-012a` se conserva integra en el historico movido.
-- Existe snapshot pre-corte portable en `_archive/backlog_pre_012a.md` o evidencia equivalente documentada.
-- `python scripts/check_encoding_guard.py` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- Existe `scripts/check_backlog_contract.py` y falla con `exit != 0` ante violaciones estructurales o semanticas obligatorias.
+- Falla cerrado si faltan `--project-root` y `AGENT_PROJECT_ROOT`.
+- Parsea solo la tabla activa y valida columnas, encabezados `### WOT-...`, vocabulario cerrado de `Status` y formato permitido de `Reactivation`.
+- La lista de estados vivos queda codificada en el gate: `pending`, `blocked`, `deferred`, `ready-for-review`, `awaiting-manager`, `completed-partial`.
+- Existe barrera de regresion que demuestra PASS con backlog valido y FAIL sin `--project-root`/`AGENT_PROJECT_ROOT`.
+- `ruff`, tests focales, suite aplicable y `validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si aparece perdida de historico no auditable.
-- Parar si el formato parseable exige volver a depender de comentarios HTML.
-- Parar si el corte exige tocar el archivador del closeout o el saneado del `.ps1` del motor.
+- Parar si el parser necesita HTML comments o prose libre.
+- Parar si el gate lee accidentalmente el seed del motor en vez del `repo_destino`.
+- Parar si la semantica de `Reactivation` no puede distinguir trigger estructurado de prosa vaga.
+- Parar si la unica integracion posible es warning permanente.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-012a.md` si el snapshot no puede materializarse de forma portable, si la seccion `### WOT-2026-012a` no puede conservarse integra en el historico, o si la unica forma de verde exige absorber la deuda de `011f`.
-
+Emitir `CG-WOT-2026-012b.md` si el backlog post-`012a` no expone schema suficiente, si la resolucion topologica del destino no puede fallar cerrada, o si la integracion exige acoplar el gate al archivador del closeout.

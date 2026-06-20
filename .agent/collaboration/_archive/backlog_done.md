@@ -2335,3 +2335,11 @@ historico como exige el criterio binario de T-012A-001.
     disponible, registrar `pending-human` y bloquear el congelado de `011e`
     sin inventar una fusion.
 
+
+---
+
+## Movido por cierre canonico posterior de WOT-2026-012a
+
+Fila retirada de la cola viva:
+
+| Alta | WOT-2026-012a | Reestructurar backlog: cola viva vs historico + formato parseable | system/collab-hygiene | completed | - | session-2026-06-19-backlog-contract | - |

@@ -1,6 +1,6 @@
 # Memory Rules (L2)
 
-Total rules: 29
+Total rules: 30
 
 Rules derived deterministically from observations.jsonl. Each rule carries an ID (R-XXX), domain, wing, source ticket, and signal text.
 
@@ -33,11 +33,20 @@ When a critical bus trigger outlives its main consumer, the durable fix is to en
 *Source: WT-2026-212*
 
 
+### Domain: collaboration
+
+#### R-010: In motor+destino topology, operational backlog.md lives in repo_destino/.agent/c
+
+In motor+destino topology, operational backlog.md lives in repo_destino/.agent/collaboration/, not in the repo_motor seed. Audits that inspect only repo_motor may falsely conclude backlog changes were not materialized.
+
+*Source: WOT-2026-010j*
+
+
 ## Wing: meta
 
 ### Domain: collaboration
 
-#### R-010: When a ticket is re-scoped or closed through follow-up reviews, the backlog tabl
+#### R-011: When a ticket is re-scoped or closed through follow-up reviews, the backlog tabl
 
 When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and detailed sections tell the same truth.
 
@@ -46,31 +55,31 @@ When a ticket is re-scoped or closed through follow-up reviews, the backlog tabl
 
 ### Domain: delivery-hygiene
 
-#### R-015: This system starts every plan with a base `...a` ticket; `...b` and later letter
+#### R-016: This system starts every plan with a base `...a` ticket; `...b` and later letter
 
 This system starts every plan with a base `...a` ticket; `...b` and later letters are for plan splits or post-close fixes. When a shell-launched Builder leaves the bus short of canonical termination, analyze the root cause first, close the `...a` by chat, and move remediation to derived tickets instead of trying to fix the bus through the live bus path.
 
 *Source: WT-2026-243a*
 
-#### R-016: Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra
+#### R-017: Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra
 
 Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra rutas git-trackeadas del repo_destino (deliverable_type=code)
 
 *Source: WOT-2026-003d*
 
-#### R-017: Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
+#### R-018: Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
 
 Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
 
 *Source: WOT-2026-009d*
 
-#### R-018: Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
+#### R-019: Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
 
 Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
 
 *Source: WOT-2026-010c*
 
-#### R-019: Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
+#### R-020: Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
 
 Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a prefijos de 2-3 letras (deliverable_type=code)
 
@@ -79,49 +88,49 @@ Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
 
 ### Domain: review-quality
 
-#### R-021: Any regex, import path, literal string, or code snippet inside a plan acts as ex
+#### R-022: Any regex, import path, literal string, or code snippet inside a plan acts as ex
 
 Any regex, import path, literal string, or code snippet inside a plan acts as executable specification because Builder tends to copy it verbatim. Validate those snippets before launch; a bad escape sequence or malformed literal turns the contract itself into the source of a failing test.
 
 *Source: WT-2026-201*
 
-#### R-022: Before closing a technical plan, verify proposed test file paths against the fil
+#### R-023: Before closing a technical plan, verify proposed test file paths against the fil
 
 Before closing a technical plan, verify proposed test file paths against the filesystem. Wrong test paths have caused repeated planning drift and can make Builder create tests in the wrong location.
 
 *Source: WT-2026-191*
 
-#### R-023: Before freezing 'Tests Esperados' in a plan or audit, verify whether each named
+#### R-024: Before freezing 'Tests Esperados' in a plan or audit, verify whether each named
 
 Before freezing 'Tests Esperados' in a plan or audit, verify whether each named test already exists in the suite. Existing tests are non-regression checks, not new Builder deliverables; listing them as new can cause duplicated tests or scope confusion.
 
 *Source: WT-2026-201*
 
-#### R-024: For concurrency or cross-process coordination fixes, passing tests is necessary
+#### R-025: For concurrency or cross-process coordination fixes, passing tests is necessary
 
 For concurrency or cross-process coordination fixes, passing tests is necessary but not sufficient. Confirm at least one runtime cycle with real bus evidence, because scheduler timing and process races can stay invisible to unit tests even when the code and mocks look correct.
 
 *Source: WT-2026-199*
 
-#### R-025: For one-line fixes with high regression risk, the minimum useful contract is sma
+#### R-026: For one-line fixes with high regression risk, the minimum useful contract is sma
 
 For one-line fixes with high regression risk, the minimum useful contract is small and exact: name the symbol or line that changes as old -> new, name the test that breaks by design, and name the symmetric anti-regressions on both sides of the change. Beyond that, contract detail tends to have diminishing returns.
 
 *Source: WT-2026-200*
 
-#### R-026: The Manager is not an untouchable narrator layer. If the fault lives in review i
+#### R-027: The Manager is not an untouchable narrator layer. If the fault lives in review i
 
 The Manager is not an untouchable narrator layer. If the fault lives in review instructions, prompt contracts, or parser expectations, correcting the Manager itself is part of normal system hardening and should be documented as such.
 
 *Source: WOT-2026-001c*
 
-#### R-027: The strongest review role is an auditor who searches for counterexamples in the
+#### R-028: The strongest review role is an auditor who searches for counterexamples in the
 
 The strongest review role is an auditor who searches for counterexamples in the real codebase and test suite, not a second pass that only judges whether the contract sounds plausible. That role catches failure modes the Manager can miss when the contract is internally consistent but still wrong.
 
 *Source: WT-2026-199*
 
-#### R-028: When a planning correction lands during review, apply it to both `work_plan.md`
+#### R-029: When a planning correction lands during review, apply it to both `work_plan.md`
 
 When a planning correction lands during review, apply it to both `work_plan.md` and `PLAN_WT-*`. They are not redundant copies: `work_plan.md` drives validation and canonical state, while `PLAN_WT-*` is the technical contract Builder reads. In WT-2026-193, fixing paths in only one file and the function name in only the other caused two extra review rounds.
 
@@ -165,31 +174,31 @@ When the implementation is already verified but the bus or session-close path dr
 
 ### Domain: delivery-hygiene
 
-#### R-011: After the canonical session-close pipeline runs on a tracked destination, it can
+#### R-012: After the canonical session-close pipeline runs on a tracked destination, it can
 
 After the canonical session-close pipeline runs on a tracked destination, it can legitimately leave versioned memory artifacts dirty (`MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `session_close_report.md`). The session is operationally closed, but git may still require one final closeout commit.
 
 *Source: WOT-2026-003d*
 
-#### R-012: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
+#### R-013: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
 
 El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descriptivo. Patron observado: WT-2026-186 commiteado como WP-2026-176, WT-2026-189 sin commit hasta cierre manual, WT-2026-187 con mensajes pre-handoff checkpoint. El Builder cierra el trabajo tecnico correctamente pero el packaging del commit falla sistematicamente.
 
 *Source: WT-2026-189*
 
-#### R-013: If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different roun
+#### R-014: If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different roun
 
 If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different rounds, requeue_ticket() ran twice for the same decision. And when outcome=success appears in older bus history, it only proves launcher exit 0, not Builder liveness; the new taxonomy must distinguish builder_started_verified from builder_launch_unverified.
 
 *Source: WT-2026-199*
 
-#### R-014: In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after cano
+#### R-015: In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after cano
 
 In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after canonical closeout shortens safe restarts because the next session can trust one local snapshot first instead of reconstructing context from scattered collaboration files.
 
 *Source: WT-2026-242c*
 
-#### R-020: UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
+#### R-021: UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
 
 UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics, write UTF-8 without BOM and force UTF-8 decoding in subprocesses.
 
@@ -198,7 +207,7 @@ UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
 
 ### Domain: testing
 
-#### R-029: For validators with multiple failure modes, keep tests orthogonal: each test sho
+#### R-030: For validators with multiple failure modes, keep tests orthogonal: each test sho
 
 For validators with multiple failure modes, keep tests orthogonal: each test should exercise exactly one failure mode while all other fields remain valid. Avoid using one dramatic invalid fixture to cover multiple checks, because it hides which rule failed and can leave validators under-specified.
 

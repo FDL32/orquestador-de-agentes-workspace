@@ -1,8 +1,8 @@
 # MEMORY
 
-Regenerated: 2026-06-16T17:17:38.217399+00:00
+Regenerated: 2026-06-19T22:48:42.180072+00:00
 
-Total observations: 50
+Total observations: 56
 
 - Architecture (21 observations)
 - Atomic-Requeue-Claim (1 observations)
@@ -13,22 +13,27 @@ Total observations: 50
 - Builder-Validates-Existing-Work (1 observations)
 - Bus-First-Read-Authority (1 observations)
 - Canonical-Consumer-Recovery (1 observations)
+- Canonical-Suite-Measurement (1 observations)
 - Chat-Manager-Builder-Recovery (1 observations)
 - Cleanup-Vs-Bus-Reconcile (1 observations)
 - Delivery-Hygiene (1 observations)
 - Double-Requeue-Diagnostics (1 observations)
 - Dual-Contract-Sync (1 observations)
 - Manager-Is-Fix-Surface (1 observations)
+- Motor-Destino-Topology (1 observations)
 - One-Line-Fix-Contract-Pattern (1 observations)
 - Orthogonal-Validator-Tests (1 observations)
 - Plan-Test-Path-Verification (1 observations)
 - Planning-Snippets-Are-Executable-Spec (1 observations)
 - Planning-Test-Existence-Check (1 observations)
+- Post-Write-Verification (2 observations)
 - Recovery-Idempotency (1 observations)
+- Runtime-Memory-Storage (1 observations)
 - Runtime-Proof-For-Concurrency-Fixes (1 observations)
 - Scope-Gate-Path-Format (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
+- Suite-Performance (1 observations)
 - Ticket-Completion (4 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
@@ -68,12 +73,7 @@ Total observations: 50
 ## canonical-consumer-recovery
 - When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_
 
-## chat-manager-builder-recovery
-- When the implementation is already verified but the bus or session-close path drifts, the low-noise recovery is to close the base `...a` by chat with evidence and move infra fixes to derived tickets. 
-
-## cleanup-vs-bus-reconcile
-- Local runtime cleanup and bus reconciliation are different recovery classes. If the previous ticket is already terminal in the bus, clean stale local runtime only; if it is non-terminal with confirmed
-
+## canonical-suite-measurement
 
 ---
 

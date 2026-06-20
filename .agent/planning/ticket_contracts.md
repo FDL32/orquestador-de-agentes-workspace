@@ -216,7 +216,7 @@
 
 - **ticket_id:** WOT-2026-010i
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-010I-001
 - **Plan-Link:** PLAN-010I-001
@@ -258,7 +258,7 @@
 
 - **ticket_id:** WOT-2026-010l
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-010L-001
 - **Plan-Link:** PLAN-010L-001
@@ -388,7 +388,7 @@
 
 - **ticket_id:** WOT-2026-010s
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-010S-001
 - **Plan-Link:** PLAN-010S-001
@@ -417,7 +417,7 @@
 
 - **ticket_id:** WOT-2026-010u
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-010U-001
 - **Plan-Link:** PLAN-010U-001
@@ -442,7 +442,7 @@
 
 - **ticket_id:** WOT-2026-008c
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008C-001
 - **Plan-Link:** PLAN-008C-001
@@ -482,7 +482,7 @@
 
 - **ticket_id:** WOT-2026-008d
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008D-001
 - **Plan-Link:** PLAN-008D-001
@@ -530,7 +530,7 @@
 
 - **ticket_id:** WOT-2026-008e
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008E-001
 - **Plan-Link:** PLAN-008E-001
@@ -571,7 +571,7 @@
 
 - **ticket_id:** WOT-2026-008f
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008F-001
 - **Plan-Link:** PLAN-008F-001
@@ -646,7 +646,7 @@
 
 - **ticket_id:** WOT-2026-008h
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008H-001
 - **Plan-Link:** PLAN-008H-001
@@ -704,7 +704,7 @@
 
 - **ticket_id:** WOT-2026-008k
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008K-001
 - **Plan-Link:** PLAN-008K-001
@@ -746,7 +746,7 @@
 
 - **ticket_id:** WOT-2026-008i
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008I-001
 - **Plan-Link:** PLAN-008I-001
@@ -801,7 +801,7 @@
 
 - **ticket_id:** WOT-2026-008j
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-008J-001
 - **Plan-Link:** PLAN-008J-001
@@ -945,7 +945,7 @@
 
 - **ticket_id:** WOT-2026-011d
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-011D-001
 - **Plan-Link:** PLAN-011D-001
@@ -1056,7 +1056,7 @@
 
 - **ticket_id:** WOT-2026-012b
 - **status:** frozen
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-012B-001
 - **Plan-Link:** PLAN-012B-001

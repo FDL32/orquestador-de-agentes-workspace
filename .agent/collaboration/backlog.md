@@ -26,7 +26,6 @@
 | Alta | WOT-2026-011b | Relaunch timeout determinism: fijar BUILDER_START_VERIFY_TIMEOUT_SECONDS en tests de relaunch | motor/test-suite-perf | pending | - | session-2026-06-19-process-debt | - |
 | Alta | WOT-2026-011e | pytest-xdist opt-in + medicion + fallback seguro para subset unitario | motor/test-suite-perf | pending | - | session-2026-06-19-improvement-backlog | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
-| Alta | WOT-2026-012a | Reestructurar backlog: cola viva vs historico + formato parseable | system/collab-hygiene | pending | - | session-2026-06-19-backlog-contract | - |
 | Media | WOT-2026-011f | .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma | motor/devex-encoding | pending | WOT-2026-010w, WOT-2026-011c, WOT-2026-011j | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-012b | Gate check_backlog_contract.py sobre cola viva | motor/quality-gates | pending | WOT-2026-012a | session-2026-06-19-backlog-contract | - |
@@ -38,107 +37,13 @@
 
 ## Fichas detalladas (tickets vivos)
 
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha `###` se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
-
-### WOT-2026-012a - Reestructurar backlog: cola viva vs historico + formato parseable
-- **Prioridad:** Alta
-- **Scope:** system/collab-hygiene
-- **Estado:** pending
-- **deliverable_type:** mixed
-- **delivery_authority:** repo_destino
-- **Depende de:** -.
-- **Reactivation:** -.
-- **Supersede / Merge decision:** absorbe el objetivo de `WT-2026-250c`.
-  Decision `011e <-> 010m` ya tomada: `keep-both-with-boundary`.
-  `011e` queda acotado a runner local opt-in sobre subset unitario;
-  `010m` conserva el piloto CI/xdist aislado. `011e` no puede congelarse en
-  `work_plan.md` si su contrato vuelve a invadir el alcance CI de `010m`.
-- **Origen:** session-2026-06-19-backlog-contract.
-- **Deuda explicita fuera de scope:** el BOM/mojibake preexistente del propio scripts/launch_agent_terminals.ps1 NO se sanea en WOT-2026-012a; queda como follow-up de WOT-2026-011f (normalizacion de .gitattributes / line endings / PS1 source encoding).
-- **Problema:** `backlog.md` mezcla cola viva, fichas operativas e historico de
-  cierres. La politica escrita promete que los tickets cerrados pasan a
-  `CHANGELOG.md`, pero el archivo ha retenido terminales y comentarios forenses
-  hasta convertirse en un pseudo-CHANGELOG. La tabla activa tampoco es fuente
-  parseable robusta hoy, y las fichas `###` no cubren de forma consistente los
-  tickets vivos de alta prioridad.
-- **Objetivo:** dejar `backlog.md` como cola viva con formato parseable estable,
-  separar el historico mediante un paso explicito del Manager en commit normal
-  de documentacion y fijar el contrato minimo que luego consumira `012b`.
-- **Files Likely Touched:**
-  - Builder repo_destino: `.agent/collaboration/backlog.md`
-  - Builder repo_destino: `.agent/collaboration/_archive/backlog_done.md`
-  - Builder repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** `CHANGELOG.md`; `STATE.md`; `TURN.md`;
-  `.agent/planning/ticket_contracts.md`; historico previo de `backlog.md`;
-  filas `011e`..`011i`; `WOT-2026-010m`.
-- **Contrato operativo a fijar:**
-  - La tabla activa es la unica fuente parseable; los comentarios HTML pueden
-    sobrevivir como nota humana, pero dejan de ser semantica obligatoria.
-  - La tabla activa usa columnas fijas y vocabulario cerrado para el estado.
-  - El schema entregable de la tabla activa incluye explicitamente la columna
-    `Reactivation`.
-  - `Reactivation` es obligatoria para `deferred` y `completed-partial`; para
-    el resto el valor puede ser `-`.
-  - Formato minimo de `Reactivation`: `-` es exclusivo de estados que no
-    requieren reactivacion (`pending`, `blocked`, `ready-for-review`,
-    `awaiting-manager`). Para `deferred` y `completed-partial`, debe existir un
-    trigger real y verificable con formato estructurado (`WOT-...`,
-    `commit:<sha>`, `external:<ref>` o `condition:<slug>`). Valores como `-`,
-    `N/A`, `pendiente` o equivalentes vagos no cumplen el contrato.
-  - La cola viva, a efectos de `012a` y del conteo objetivo, incluye solo
-    filas con `Status in {pending, blocked, deferred, ready-for-review,
-    awaiting-manager, completed-partial}`; los terminales viven fuera de la
-    cola activa.
-  - El movimiento de terminales al historico NO ocurre dentro de
-    `--session-close` ni `--mark-ready`: lo hace un paso explicito del Manager
-    en commit normal de documentacion.
-  - Antes de cualquier corte del historico debe existir un snapshot/backup del
-    `backlog.md` original como evidencia de recovery documental.
-  - El corte del historico debe hacerse por bloques logicos auditablemente
-    reconocibles (familias completas o grupos por estado terminal), no por
-    copy-paste disperso de lineas individuales.
-  - Una ficha `###` es obligatoria para cualquier ticket con `Priority=Alta` o
-    `Status in {pending, ready-for-review, awaiting-manager}`.
-  - El encabezado de cada ficha debe ser exactamente el ID canonico del ticket
-    (por ejemplo `### WOT-2026-012a`); no se permiten variantes abreviadas.
-- **Criterios binarios:**
-  - `backlog.md` activo deja de contener terminales vivos mezclados con la cola
-    operativa.
-  - Existe un historico separado (`_archive/backlog_done.md` o decision
-    equivalente documentada) mantenido por paso explicito del Manager, no por
-    el archivador del closeout.
-  - Antes de commitear el corte, existe evidencia mecanica de integridad del
-    movimiento (conteo de filas terminales y conteo de fichas `###` movidas,
-    antes/despues), suficiente para auditar que no se perdio historico.
-  - La tabla activa queda en formato parseable estable y documentado, sin
-    depender de HTML comments para semantica, e incluye la columna
-    `Reactivation` como parte del schema obligatorio.
-  - `deferred` y `completed-partial` declaran condicion de reactivacion y
-    criterio de salida.
-  - Las filas `011e`..`011i` quedan materializadas o reclasificadas de forma
-    coherente con el contrato nuevo.
-  - La decision `011e <-> 010m` queda resuelta como
-    `keep-both-with-boundary`, con frontera explicita entre runner local
-    opt-in (`011e`) y piloto CI/xdist (`010m`), antes de congelar `011e`.
-  - `backlog.md` activo reduce tamano de forma material; objetivo operativo
-    no bloqueante: aproximarse a una cola viva <= 200 lineas al cierre de
-    `012a`.
-  - `python scripts/check_encoding_guard.py` y
-    `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`
-    quedan verdes.
-- **STOP:**
-  - Si separar vivo/historico exige tocar el archivador del closeout o anadir
-    renames automaticos al cierre, detener: eso pertenece a `011h`/follow-up
-    de runtime, no a `012a`.
-  - Si la decision `011e <-> 010m` requiere una apuesta de producto no
-    disponible, registrar `pending-human` y bloquear el congelado de `011e`
-    sin inventar una fusion.
+> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 
 ### WOT-2026-012b - Gate check_backlog_contract.py sobre cola viva
 - **Prioridad:** Media
 - **Scope:** motor/quality-gates
 - **Estado:** pending
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-012a.
 - **Origen:** session-2026-06-19-backlog-contract.
@@ -195,5 +100,3 @@
   - Si la unica forma de mantener el historico sin limbo obliga a acoplar el
     gate al archivador del closeout, detener y coordinar con `011h` en vez de
     duplicar barreras.
-
-

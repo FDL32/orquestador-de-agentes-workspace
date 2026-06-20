@@ -46,6 +46,29 @@
   - `pre_handoff_guard.py` y `--mark-ready`
   - `run_pytest_safe.py` / `validate --json` como gates de cierre
 
+
+## PLAN-012B-001 -- Gate backlog fail-closed sobre cola viva
+
+- objetivo: convertir el contrato de cola viva fijado por `012a` en una barrera
+  automatica fail-closed ejecutable desde `repo_motor`, leyendo
+  `repo_destino/.agent/collaboration/backlog.md` solo via `--project-root` o
+  `AGENT_PROJECT_ROOT`.
+- tickets: [WOT-2026-012b]
+- depends_on: [WOT-2026-012a]
+- superficies_archivo:
+  - repo_motor/scripts/check_backlog_contract.py
+  - repo_motor/tests/unit/test_check_backlog_contract.py
+  - repo_motor/scripts/run_gates_dispatch.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `scripts/check_backlog_contract.py --project-root <repo_destino>`
+  - dispatcher `scripts/run_gates_dispatch.py`
+  - tabla activa de `repo_destino/.agent/collaboration/backlog.md`
+- shared_dependencies:
+  - resolucion topologica `--project-root` / `AGENT_PROJECT_ROOT`
+  - `scripts/check_deliverables_exist.py` y `scripts/validate_ticket_prose.py` (read-only)
+  - contrato de estados/`Reactivation` fijado por `012a`
+  - `validate --json --project-root <repo_destino>` como gate de cierre
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -53,6 +76,7 @@
 | PLAN-001 | un manifiesto nuevo en repo_destino | contratos prompt-skill y discovery del motor en lectura | inventario obsoleto si otro ticket mueve prompts/skills durante el analisis | congelar HEAD inicial y repetir inventario antes del handoff | no |
 | PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
+| PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -78,3 +102,6 @@ completa sobre la union de cambios.
 Para 010d, cualquier merge con otro ticket que toque bus/controller/supervisor
 requiere revalidar la union con `run_pytest_safe`, `validate --json --project-root <repo_destino>`
 y una auditoria especifica de secuencias/eventos de pausa y resume.
+Para 012b, cualquier merge con tickets que toquen `run_gates_dispatch.py`, el
+schema del backlog o reglas de `Reactivation` obliga a revalidar la union con
+tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <repo_destino>`.

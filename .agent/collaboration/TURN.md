@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-20 00:38:30
+**Ultima actualizacion:** 2026-06-20 01:10:00
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | WOT-2026-012b |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WOT-2026-012a closed. Create new work_plan.md for next cycle.
+> Implementa `WOT-2026-012b` segun `work_plan.md`, `STRATEGY_WOT-2026-012b.md` y `AUDIT_WOT-2026-012b.md`.
 
 ---
 
@@ -25,8 +25,8 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 
