@@ -1,8 +1,8 @@
 # MEMORY
 
-Regenerated: 2026-06-20T07:43:43.075658+00:00
+Regenerated: 2026-06-20T23:14:46.435621+00:00
 
-Total observations: 57
+Total observations: 58
 
 - Architecture (21 observations)
 - Atomic-Requeue-Claim (1 observations)
@@ -20,6 +20,7 @@ Total observations: 57
 - Double-Requeue-Diagnostics (1 observations)
 - Dual-Contract-Sync (1 observations)
 - Manager-Is-Fix-Surface (1 observations)
+- Manual-Review-Hygiene (1 observations)
 - Motor-Destino-Topology (2 observations)
 - One-Line-Fix-Contract-Pattern (1 observations)
 - Orthogonal-Validator-Tests (1 observations)
@@ -73,7 +74,6 @@ Total observations: 57
 ## canonical-consumer-recovery
 - When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_
 
-## canonical-suite-measurement
 
 ---
 

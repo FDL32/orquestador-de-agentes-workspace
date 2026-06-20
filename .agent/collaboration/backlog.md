@@ -25,7 +25,6 @@
 | Alta | WOT-2026-010x | Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml | motor/ci-security | pending | - | session-2026-06-19-gitleaks-ci | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
-| Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) por drift de topologia sandbox (fix test-only) | motor/test-robustness | pending | - | session-2026-06-20-hermes-audit | - |
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | deferred | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance | condition:011e-estable-y-barrera-state-leak-verde |
 | Baja | WOT-2026-011i | Si 011e sale estable: evaluar default unit en run_pytest_safe.py | motor/test-suite-perf | pending | WOT-2026-011e | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -35,39 +34,27 @@
 ## Fichas detalladas (tickets vivos)
 
 
-### WOT-2026-013a - Test de integracion fragil + guard de topologia
+
+### WOT-2026-011g - Politica explicita de loop rapido vs cierre canonico
 - **Prioridad:** Media
-- **Scope:** motor/test-robustness
+- **Scope:** motor/protocol-docs
 - **Estado:** pending
-- **deliverable_type:** code
+- **deliverable_type:** documentation
 - **delivery_authority:** repo_motor
 - **Reactivation:** -
-- **Origen:** session-2026-06-20-hermes-audit (unico hallazgo verificado de la auditoria externa de Hermes).
-- **Problema (VERIFICADO):** tests/test_controller_integration.py::test_approved_pending_returns_builder_implement
-  es fragil ante el entorno de ejecucion: falla al correrse AISLADO (`pytest -k approved_pending`) y pasa
-  dentro de la suite canonica (`run_pytest_safe --level all` = 0 failed). Causa raiz: el fixture copia
-  agent_controller.py a un sandbox y el controller resuelve el proyecto via `__file__.parent.parent`, que en
-  la copia apunta al sandbox (sin bus/scripts/prompts), no al motor real -> el controller devuelve
-  role=UNKNOWN y data is None. NO es bug de produccion: el controller real funciona.
-- **Objetivo:** hacer el fixture robusto -> usar AGENT_PROJECT_ROOT real o PYTHONPATH en vez de copiar
-  `agent_controller.py` al sandbox, de modo que el test falle solo ante un bug real del controller.
-  `--validate-topology` queda explicitamente fuera de scope en `013a` y solo podria salir como follow-up separado
-  si el fix test-only no bastara.
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** la politica de `loop rapido` (reruns focales, checks locales, evidencia diagnostica) frente a `cierre canonico` (suite canonia en HEAD, `validate 0/0`, handoff con eventos reales y cierre Manager) existe hoy repartida entre `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md` y `QUICKSTART.md`, pero no queda declarada en una narrativa corta y consistente. En la sesion 011j -> 011e -> 013a esto obligo a corregir varias veces claims sobre suite stale, wall-clock en background y `READY_FOR_REVIEW` narrativo.
+- **Objetivo:** dejar una politica explicita y consistente de `loop rapido` vs `cierre canonico` en los prompts/documentacion del motor, sin tocar tooling ni gates, para que Builder y Manager usen la misma frontera de evidencia.
 - **Files Likely Touched:**
-  - repo_motor: `tests/test_controller_integration.py`
-- **Criterios binarios:** el test falla SIN el fix solo ante bug real (no por fixture); pasa CON el fix tanto
-  aislado como en suite; barrera de regresion que demuestre la diferencia; ruff + run_pytest_safe --level all
-  0 failed; validate 0/0.
-- **STOP:** si robustecer el fixture exige tocar `.agent/agent_controller.py`, anadir `--validate-topology` o
-  reescribir la arquitectura de sandbox fuera del propio test, parar y abrir follow-up separado en vez de ampliar
-  scope.
-- **Depende de:** -.
-- **Descartado de la auditoria de Hermes (ruido, NO accionar):** H-05 settings.json permissions.allow
-  (FALSO: el archivo real no lo tiene, guard de portabilidad pasa); H-03/H-06/H-11 (conocidos por diseno);
-  confusion motor-vs-destino (artefacto de su clon shallow Linux sin destino).
+  - repo_motor: `prompts/orchestrator_launch_builder.md`
+  - repo_motor: `prompts/manager_review.md`
+  - repo_motor: `prompts/orchestrator_pipeline.md`
+  - repo_motor: `QUICKSTART.md`
+- **Criterios binarios:** existe una seccion explicita que nombre ambos modos (`loop rapido` y `cierre canonico`) y delimite que evidencia vale para cada uno; `orchestrator_launch_builder.md`, `manager_review.md`, `orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si; ningun texto sigue permitiendo presentar pytest focal, wall-clock en background o tests verdes aislados como sustituto de suite canonica / handoff / cierre; no se tocan scripts, gates ni codigo; `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si para mantener la documentacion veraz hace falta tocar `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py`, `review_bridge.py` o cualquier gate/product code, parar y abrir follow-up de codigo en vez de ampliar `011g`.
+- **Depende de:** WOT-2026-010c, WOT-2026-010q.
 
-
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011g, 011h, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
+> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011h, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 
 ### WOT-2026-012b - Gate check_backlog_contract.py sobre cola viva
 - **Prioridad:** Media

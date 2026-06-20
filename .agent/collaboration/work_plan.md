@@ -1,51 +1,54 @@
-# work_plan.md -- WOT-2026-013a
+# work_plan.md -- WOT-2026-011g
 ## Metadata
-- **ID:** WOT-2026-013a
-- **Contract ID:** T-013A-001
+- **ID:** WOT-2026-011g
+- **Contract ID:** T-011G-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** code
+- **deliverable_type:** documentation
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_motor
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Hacer robusto `tests/test_controller_integration.py::test_approved_pending_returns_builder_implement` en aislamiento, arreglando el drift de topologia del fixture sandbox sin tocar codigo productivo del controller ni introducir una feature nueva.
+Explicitar y unificar en prompts/docs la diferencia entre `loop rapido` de diagnostico local y `cierre canonico` de ticket, para que Builder, Manager y Orchestrator no presenten evidencia parcial como handoff o cierre real.
 ## Non-goals
-- No tocar `.agent/agent_controller.py` ni anadir `--validate-topology` en este ticket.
-- No tocar `runtime/`, `bus/`, `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py` ni CI/workflows.
-- No convertir el fix en una reescritura general del sandbox ni en una deuda arquitectonica encubierta.
+- No tocar `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py`, `.agent/agent_controller.py`, `scripts/run_gates_dispatch.py` ni `bus/review_bridge.py`.
+- No cambiar semantica de suite, handoff o closeout; solo documentar y alinear la politica ya vigente.
+- No retirar ni reabrir `011h` dentro de este ticket; cualquier normalizacion de backlog sobre ese ticket queda fuera de scope.
 ## Premisas verificadas antes de Builder
-- `python -m pytest tests/test_controller_integration.py -k approved_pending -q` sigue fallando hoy con `AssertionError: No JSON en output del controller`.
-- El rojo esta acotado al fixture/driver de `tests/test_controller_integration.py`, no a una regresion productiva confirmada del controller real.
-- El ticket se congela como fix test-only: si para volverlo verde hay que tocar controller productivo, el resultado correcto es `CONTRACT_GAP`.
+- La politica actual existe como fragmentos en `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md` y `QUICKSTART.md`, pero no queda declarada como una frontera corta y consistente.
+- Las observaciones `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor` documentan confusion recurrente reciente sobre que cuenta como evidencia canonica.
+- El ticket es puramente documental: si la documentacion veraz exigiera tocar tooling, el resultado correcto es `CONTRACT_GAP`.
 ## Decision Arquitectonica
-`013a` resuelve solo la topologia de prueba. La via preferida es ejecutar el controller real con `project_root`/entorno apuntando al sandbox o eliminar la dependencia de `__file__.parent.parent` dentro del propio test, pero sin convertir ese aprendizaje en una feature nueva de produccion. El contrato prohibe tocar `.agent/agent_controller.py`; si eso no basta, el Builder debe bloquear y devolver follow-up.
+`011g` centraliza la politica en texto y alinea sus consumidores, pero no reabre tooling. La via preferida es anadir una seccion explicita en `QUICKSTART.md` y sincronizar el lenguaje de los prompts principales con esa misma distincion: `loop rapido` sirve para diagnostico local; `cierre canonico` exige suite canonia en HEAD, `validate 0/0` y handoff/cierre con eventos reales.
 ## Files Likely Touched
 ### repo_motor
-- tests/test_controller_integration.py
+- prompts/orchestrator_launch_builder.md
+- prompts/manager_review.md
+- prompts/orchestrator_pipeline.md
+- QUICKSTART.md
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- .agent/agent_controller.py
-- runtime/
-- bus/
-- .agent/runtime/pytest-safe/last-run.json
-- .agent/collaboration/backlog.md
+- prompts/audit_agent_output.md
+- AGENTS.md
+- PROJECT.md
+- .agent/runtime/memory/observations.jsonl
+- .agent/runtime/memory/MEMORY.md
 ## Forbidden Surfaces
-- tocar `.agent/agent_controller.py`
-- anadir `--validate-topology` o cualquier feature nueva de produccion
-- tocar runtime, bus, handoff, runner o CI
-- escribir eventos del bus manualmente
+- tocar tooling (`run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py`, `review_bridge.py`)
+- tocar tests, CI/workflows o gates
+- introducir criterios de codigo en un ticket documental
+- usar `011g` para normalizar `011h` o cualquier otra deuda de backlog no documental
 ## Criterios binarios
-- `python -m pytest tests/test_controller_integration.py -k approved_pending -q` pasa en aislamiento.
-- El fix permanece acotado a `tests/test_controller_integration.py`.
-- Existe barrera FAIL-sin/PASS-con para el mismo test aislado.
-- `python -m pytest tests/test_controller_integration.py -q`, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
-- `execution_log.md` deja constancia explicita de que el ticket resolvio drift de topologia de test sin tocar produccion.
+- Existe una seccion explicita y corta que nombre `loop rapido` y `cierre canonico`, y delimite que evidencia vale para cada uno.
+- `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si sobre suite canonia, `validate`, handoff y cierre.
+- Ningun texto tocado sigue permitiendo presentar pytest focal, wall-clock en background o tests aislados verdes como sustituto de suite canonica / `READY_FOR_REVIEW` / cierre canonico.
+- El diff permanece documental: no toca scripts, gates, controller, tests ni CI.
+- `python scripts/check_encoding_guard.py <docs_tocados>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si el unico fix viable toca `.agent/agent_controller.py` o exige feature nueva de topologia.
-- Parar si el sandbox requiere reescritura sistemica fuera del test.
-- Parar si el test ya no reproduce el rojo aislado al re-check.
+- Parar si la unica forma de resolver contradicciones documentales exige tocar tooling productivo.
+- Parar si el ticket deja de ser puramente documental y necesita gates de codigo o sandbox.
+- Parar si otro ticket activo cambia las mismas superficies de prompt/doc y obliga a serializacion antes de seguir.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-013a.md` si el rojo aislado no puede resolverse dentro de `tests/test_controller_integration.py`, si el fix exige tocar el controller productivo, o si la deuda real resulta ser una arquitectura de sandbox fuera del alcance del ticket.
+Emitir `CG-WOT-2026-011g.md` si dejar la politica veraz y consistente exige cambiar semantica de `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py` o `review_bridge.py`, o si la deuda real no es documental sino de tooling.

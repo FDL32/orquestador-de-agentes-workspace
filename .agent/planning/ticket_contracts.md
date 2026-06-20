@@ -1268,3 +1268,33 @@ epo_motor, o si el unico camino a verde exige editar manualmente los archives de
 - **STOP conditions:** parar si el unico fix viable cae en codigo productivo del controller; parar si el sandbox necesita reescritura sistemica fuera del test; parar si el mismo test ya no reproduce el fallo aislado al re-check.
 - **Depende de:** -.
 
+## T-011G-001 -- Politica explicita de loop rapido vs cierre canonico
+
+- **ticket_id:** WOT-2026-011g
+- **status:** frozen
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011G-001
+- **Plan-Link:** PLAN-011G-001
+- **Premise:** la frontera entre `loop rapido` (diagnostico local, reruns focales, evidencia provisional) y `cierre canonico` (suite canonia en HEAD, `validate 0/0`, handoff con eventos reales y cierre Manager) existe hoy como reglas dispersas en prompts y docs, pero no como politica corta, explicita y consistente. Las sesiones 011j, 011e y 013a obligaron a corregir varias veces claims sobre suite stale, wall-clock en background, `READY_FOR_REVIEW` por narrativa y cuando un ticket documental debe o no exigir pytest/ruff.
+- **Premise Re-check (read-only):** releer `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md`, `QUICKSTART.md` y `AGENTS.md`; releer observaciones persistentes `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor`; verificar que la politica actual aparece fragmentada y que no hace falta tocar tooling para dejarla explicita.
+- **Context Baseline Evidence:** stale_suite_rule_fragmented=true; canonical_last_run_in_motor=true; background_wallclock_noncanonical=true; handoff_requires_events=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `prompts/orchestrator_launch_builder.md`
+  - Builder repo_motor: `prompts/manager_review.md`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_motor: `QUICKSTART.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `prompts/audit_agent_output.md`; `AGENTS.md`; `PROJECT.md`; `.agent/runtime/memory/observations.jsonl`; `.agent/runtime/memory/MEMORY.md`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `scripts/run_gates_dispatch.py`; `.agent/agent_controller.py`; `bus/review_bridge.py`; tests; CI/workflows; cualquier cambio de semantica de handoff/cierre mas alla de documentarla; normalizar o retirar `011h` dentro de este ticket.
+- **DoD:**
+  - [ ] Existe una seccion explicita y corta que nombre `loop rapido` y `cierre canonico`, y delimite que evidencia cuenta para cada uno.
+  - [ ] `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si respecto a suite canonia, `validate`, handoff y cierre.
+  - [ ] Ningun texto tocado sigue permitiendo presentar pytest focal, wall-clock en background o tests aislados verdes como sustituto de suite canonica / `READY_FOR_REVIEW` / cierre canonico.
+  - [ ] El ticket permanece documental: no toca scripts, gates, controller, review bridge, tests ni CI.
+  - [ ] `python scripts/check_encoding_guard.py <docs_tocados>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** reutiliza y hace visible la politica ya fijada por `010c`/`010q` y por las lecciones de `011j`/`011e`/`013a`; no reabre `011h`, `011i`, `010m` ni cambia tooling.
+- **CONTRACT_GAP behavior:** si dejar la documentacion veraz exige cambiar semantica de `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py` o `review_bridge.py`, emitir `CG-WOT-2026-011g.md` y bloquear: `011g` es solo politica/documentacion.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica forma de resolver contradicciones documentales es tocar tooling productivo; parar si el ticket deja de ser puramente documental; parar si aparece conflicto con un ticket activo que toque los mismos prompts/docs y requiera serializacion.
+- **Depende de:** WOT-2026-010c (COMPLETED); WOT-2026-010q (COMPLETED).

@@ -147,6 +147,26 @@
   - fix funcional previo `WOT-2026-011j` (writers BOM-safe ya in-scope)
   - tests estructurales del launcher y estabilidad de opencode (read-only)
 
+## PLAN-011G-001 -- Politica explicita de loop rapido vs cierre canonico
+
+- objetivo: explicitar en prompts y Quickstart la frontera entre diagnostico rapido local y cierre canonico de ticket, alineando Builder, Manager y Orchestrator sin tocar tooling ni gates.
+- tickets: [WOT-2026-011g]
+- depends_on: [WOT-2026-010c, WOT-2026-010q]
+- superficies_archivo:
+  - repo_motor/prompts/orchestrator_launch_builder.md
+  - repo_motor/prompts/manager_review.md
+  - repo_motor/prompts/orchestrator_pipeline.md
+  - repo_motor/QUICKSTART.md
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - artefacto canonico de suite `repo_motor/.agent/runtime/pytest-safe/last-run.json`
+  - handoff/cierre `--pre-handoff`, `--mark-ready`, `--manager-approve`
+  - terminologia `loop rapido` vs `cierre canonico`
+- shared_dependencies:
+  - `prompts/audit_agent_output.md` (read-only; principio de evidencia)
+  - `AGENTS.md` y `QUICKSTART.md` (contrato publico de comandos)
+  - observaciones `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor`
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -154,6 +174,7 @@
 | PLAN-001 | un manifiesto nuevo en repo_destino | contratos prompt-skill y discovery del motor en lectura | inventario obsoleto si otro ticket mueve prompts/skills durante el analisis | congelar HEAD inicial y repetir inventario antes del handoff | no |
 | PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
+| PLAN-011G-001 | prompts/documentacion de Builder/Manager/Orchestrator y Quickstart; bitacora en repo_destino | semantica canonica de suite/handoff/cierre ya fijada por tooling y memoria reciente | conflicto si otro ticket toca los mismos prompts/docs y reintroduce lenguaje ambiguo sobre evidencia diagnostica vs cierre | serializar con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md`; revalidar encoding + `validate --json` al cerrar | no |
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
 | PLAN-011B-001 | seam de timeout en relaunch (`bus/builder_relaunch.py`) + tests de supervisor; bitacora en repo_destino | `bus/supervisor.py`, eventos `BUILDER_RELAUNCH_ATTEMPTED`, cierre canonico `--level all` | conflicto si otro ticket toca relaunch/supervisor o cambia timeouts/politica de cierre mientras 011b vuelve deterministas las pruebas | serializar con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o criterios de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013A-001 | fixture/driver de `tests/test_controller_integration.py`; bitacora en repo_destino | `.agent/agent_controller.py` read-only, runtime/bus copiados por sandbox, cierre canonico `--level all` | conflicto si otro ticket toca el mismo test o cambia la forma de resolver project_root/topologia del controller mientras 013a arregla el fixture | serializar con tickets que toquen `tests/test_controller_integration.py` o la resolucion de project_root del controller; revalidar test aislado + archivo completo + `--level all` al cerrar | no |
@@ -189,3 +210,4 @@ schema del backlog o reglas de `Reactivation` obliga a revalidar la union con
 tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <repo_destino>`.
 Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o la politica de cierre/performance obliga a revalidar la union con tests focales de relaunch, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013a, cualquier merge con tickets que toquen `tests/test_controller_integration.py` o la resolucion de `project_root` del controller obliga a revalidar el test aislado, el archivo completo y `python scripts/run_pytest_safe.py --level all`.
+Para 011g, cualquier merge con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md` obliga a revalidar la coherencia textual de `loop rapido` vs `cierre canonico`, `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>`.

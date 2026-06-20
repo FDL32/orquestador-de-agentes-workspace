@@ -2375,3 +2375,39 @@ Fila retirada de la cola viva:
 - **Criterios binarios:** las pruebas de relaunch que ejercen verificacion temporal fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista dentro del propio test; el contrato productivo conserva `BUILDER_START_VERIFY_TIMEOUT_SECONDS` y `20.0` como default salvo refactor semantico neutro; existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host; las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable; `pytest` focal, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
 - **STOP:** parar si la unica forma de volver deterministas los tests cambia la semantica productiva del relaunch o el default runtime; parar si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`; parar si para probar la ruta temporizada hace falta depender de sleeps wall-clock o procesos de launcher reales no acotables.
 - **Depende de:** -.
+
+## Movido por cierre canonico WOT-2026-013a (COMPLETED 2026-06-21)
+
+| Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) por drift de topologia sandbox (fix test-only) | motor/test-robustness | completed | - | session-2026-06-20-hermes-audit | - |
+
+### WOT-2026-013a - Test de integracion fragil (fix test-only)
+- **Prioridad:** Media
+- **Scope:** motor/test-robustness
+- **Estado:** completed
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Reactivation:** -
+- **Origen:** session-2026-06-20-hermes-audit (unico hallazgo verificado de la auditoria externa de Hermes).
+- **Problema (VERIFICADO):** tests/test_controller_integration.py::test_approved_pending_returns_builder_implement
+  es fragil ante el entorno de ejecucion: falla al correrse AISLADO (`pytest -k approved_pending`) y pasa
+  dentro de la suite canonica (`run_pytest_safe --level all` = 0 failed). Causa raiz: el fixture copia
+  agent_controller.py a un sandbox y el controller resuelve el proyecto via `__file__.parent.parent`, que en
+  la copia apunta al sandbox (sin bus/scripts/prompts), no al motor real -> el controller devuelve
+  role=UNKNOWN y data is None. NO es bug de produccion: el controller real funciona.
+- **Objetivo:** hacer el fixture robusto -> usar AGENT_PROJECT_ROOT real o PYTHONPATH en vez de copiar
+  `agent_controller.py` al sandbox, de modo que el test falle solo ante un bug real del controller.
+  `--validate-topology` queda explicitamente fuera de scope en `013a` y solo podria salir como follow-up separado
+  si el fix test-only no bastara.
+- **Files Likely Touched:**
+  - repo_motor: `tests/test_controller_integration.py`
+- **Criterios binarios:** el test falla SIN el fix solo ante bug real (no por fixture); pasa CON el fix tanto
+  aislado como en suite; barrera de regresion que demuestre la diferencia; ruff + run_pytest_safe --level all
+  0 failed; validate 0/0.
+- **STOP:** si robustecer el fixture exige tocar `.agent/agent_controller.py`, anadir `--validate-topology` o
+  reescribir la arquitectura de sandbox fuera del propio test, parar y abrir follow-up separado en vez de ampliar
+  scope.
+- **Depende de:** -.
+- **Descartado de la auditoria de Hermes (ruido, NO accionar):** H-05 settings.json permissions.allow
+  (FALSO: el archivo real no lo tiene, guard de portabilidad pasa); H-03/H-06/H-11 (conocidos por diseno);
+  confusion motor-vs-destino (artefacto de su clon shallow Linux sin destino).
+
