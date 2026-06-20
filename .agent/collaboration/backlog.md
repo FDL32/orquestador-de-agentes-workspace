@@ -28,7 +28,7 @@
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011f | .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma | motor/devex-encoding | pending | WOT-2026-010w, WOT-2026-011c, WOT-2026-011j | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
-| Media | WOT-2026-012b | Gate check_backlog_contract.py sobre cola viva | motor/quality-gates | pending | WOT-2026-012a | session-2026-06-19-backlog-contract | - |
+| Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) + --validate-topology guard contra __file__ drift en sandbox | motor/test-robustness | pending | - | session-2026-06-20-hermes-audit | - |
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | deferred | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance | condition:011e-estable-y-barrera-state-leak-verde |
 | Baja | WOT-2026-011i | Si 011e sale estable: evaluar default unit en run_pytest_safe.py | motor/test-suite-perf | pending | WOT-2026-011e | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -36,6 +36,38 @@
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist/sharding en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
+
+### WOT-2026-013a - Test de integracion fragil + guard de topologia
+- **Prioridad:** Media
+- **Scope:** motor/test-robustness
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Reactivation:** -
+- **Origen:** session-2026-06-20-hermes-audit (unico hallazgo verificado de la auditoria externa de Hermes).
+- **Problema (VERIFICADO):** tests/test_controller_integration.py::test_approved_pending_returns_builder_implement
+  es fragil ante el entorno de ejecucion: falla al correrse AISLADO (`pytest -k approved_pending`) y pasa
+  dentro de la suite canonica (`run_pytest_safe --level all` = 0 failed). Causa raiz: el fixture copia
+  agent_controller.py a un sandbox y el controller resuelve el proyecto via `__file__.parent.parent`, que en
+  la copia apunta al sandbox (sin bus/scripts/prompts), no al motor real -> el controller devuelve
+  role=UNKNOWN y data is None. NO es bug de produccion: el controller real funciona.
+- **Objetivo:** (1) hacer el fixture robusto -> usar AGENT_PROJECT_ROOT real o PYTHONPATH en vez de copiar
+  agent_system/, de modo que el test falle solo ante un bug real del controller; (2) opcional, anadir un
+  guard `--validate-topology` en agent_controller que verifique que `__file__.parent.parent` cae dentro del
+  repo_motor y no en un sandbox copiado, cerrando esta clase de drift.
+- **Files Likely Touched:**
+  - repo_motor: `tests/test_controller_integration.py`
+  - repo_motor: `.agent/agent_controller.py` (solo si se implementa --validate-topology)
+- **Criterios binarios:** el test falla SIN el fix solo ante bug real (no por fixture); pasa CON el fix tanto
+  aislado como en suite; barrera de regresion que demuestre la diferencia; ruff + run_pytest_safe --level all
+  0 failed; validate 0/0.
+- **STOP:** si robustecer el fixture exige reescribir la arquitectura de copia de agent_system/ (deuda H-07),
+  parar y abrir follow-up separado en vez de ampliar scope.
+- **Depende de:** -.
+- **Descartado de la auditoria de Hermes (ruido, NO accionar):** H-05 settings.json permissions.allow
+  (FALSO: el archivo real no lo tiene, guard de portabilidad pasa); H-03/H-06/H-11 (conocidos por diseno);
+  confusion motor-vs-destino (artefacto de su clon shallow Linux sin destino).
+
 
 > Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 

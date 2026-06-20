@@ -2343,3 +2343,10 @@ historico como exige el criterio binario de T-012A-001.
 Fila retirada de la cola viva:
 
 | Alta | WOT-2026-012a | Reestructurar backlog: cola viva vs historico + formato parseable | system/collab-hygiene | completed | - | session-2026-06-19-backlog-contract | - |
+
+---
+
+## Movido por cierre canonico WOT-2026-012b (COMPLETED 2026-06-20)
+
+| Media | WOT-2026-012b | Gate check_backlog_contract.py sobre cola viva | motor/quality-gates | pending | WOT-2026-012a | session-2026-06-19-backlog-contract | - |
+
