@@ -28,6 +28,8 @@ Convertir el contrato de cola viva fijado por `012a` en un gate fail-closed ejec
 ### repo_motor
 - scripts/check_backlog_contract.py
 - tests/unit/test_check_backlog_contract.py
+- tests/unit/test_no_legacy_topology_terms.py
+- tests/unit/test_run_gates_dispatch.py
 - scripts/run_gates_dispatch.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
