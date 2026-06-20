@@ -1240,3 +1240,31 @@ epo_motor, o si el unico camino a verde exige editar manualmente los archives de
 - **STOP conditions:** parar si la unica implementacion viable toca `scripts/run_pytest_safe.py` o `pre_handoff_guard.py`; parar si el fix convierte el timeout productivo en parametro solo de test; parar si el rojo real pertenece a otra familia de relaunch fuera del scope declarado.
 - **Depende de:** -.
 
+## T-013A-001 -- Robustecer test_approved_pending contra drift de topologia sandbox
+
+- **ticket_id:** WOT-2026-013a
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013A-001
+- **Plan-Link:** PLAN-013A-001
+- **Premise:** `tests/test_controller_integration.py::test_approved_pending_returns_builder_implement` sigue fallando en aislamiento (`pytest -k approved_pending`) con `AssertionError: No JSON en output del controller`, mientras el ticket documenta que la causa es topologica: el fixture copia `agent_controller.py` dentro de un sandbox y el controller resuelve el proyecto desde `__file__.parent.parent`, apuntando al sandbox copiado en vez del motor real. La deuda de `013a` es de robustez del fixture/entorno de prueba; no debe convertirse en un rediseno del controller ni en una feature nueva de topologia.
+- **Premise Re-check (read-only):** releer `tests/test_controller_integration.py`, `tests/test_controller_integration.py::sandbox`, `_run()`, `_REAL_CONTROLLER`, `EventBus` y `.agent/agent_controller.py`; reejecutar `python -m pytest tests/test_controller_integration.py -k approved_pending -q` para confirmar el rojo aislado actual; verificar que el fallo no proviene de `run_pytest_safe --level all` sino del fixture sandbox.
+- **Context Baseline Evidence:** isolated_test_red=true; failing_test=`test_approved_pending_returns_builder_implement`; failure_signature=`No JSON en output del controller`; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `tests/test_controller_integration.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `.agent/agent_controller.py`; `runtime/`; `bus/`; `tests/test_controller_integration.py` adyacentes; `.agent/runtime/pytest-safe/last-run.json`; `.agent/collaboration/backlog.md`.
+- **Forbidden Surfaces:** anadir `--validate-topology` o cualquier feature nueva del controller en este ticket; tocar `.agent/agent_controller.py`; tocar `runtime/`, `bus/`, `scripts/run_pytest_safe.py`, `pre_handoff_guard.py`, CI/workflows o eventos del bus; convertir el fix en una reescritura general del sandbox.
+- **DoD:**
+  - [ ] `python -m pytest tests/test_controller_integration.py -k approved_pending -q` pasa en aislamiento.
+  - [ ] El fix permanece acotado al fixture/driver de `tests/test_controller_integration.py`; no toca codigo productivo del controller.
+  - [ ] Existe barrera FAIL-sin/PASS-con para el mismo test aislado, demostrada con worktree o revert parcial seguro.
+  - [ ] `python -m pytest tests/test_controller_integration.py -q`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `execution_log.md` registra explicitamente que `013a` resolvio drift de topologia del test sin introducir feature nueva en produccion.
+- **Integracion cross-ticket:** no reabre `011g`, `011h`, `011i` ni la deuda arquitectonica opcional de `--validate-topology`; si esa feature se vuelve necesaria, debe salir como follow-up separado.
+- **CONTRACT_GAP behavior:** si el rojo aislado no puede resolverse sin tocar `.agent/agent_controller.py` o anadir una feature nueva de topologia, emitir `CG-WOT-2026-013a.md` y bloquear; `013a` esta congelado como fix test-only.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el unico fix viable cae en codigo productivo del controller; parar si el sandbox necesita reescritura sistemica fuera del test; parar si el mismo test ya no reproduce el fallo aislado al re-check.
+- **Depende de:** -.
+

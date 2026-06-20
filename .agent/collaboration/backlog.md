@@ -23,10 +23,9 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-010x | Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml | motor/ci-security | pending | - | session-2026-06-19-gitleaks-ci | - |
-| Alta | WOT-2026-011b | Relaunch timeout determinism: fijar BUILDER_START_VERIFY_TIMEOUT_SECONDS en tests de relaunch | motor/test-suite-perf | pending | - | session-2026-06-19-process-debt | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
-| Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) + --validate-topology guard contra __file__ drift en sandbox | motor/test-robustness | pending | - | session-2026-06-20-hermes-audit | - |
+| Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) por drift de topologia sandbox (fix test-only) | motor/test-robustness | pending | - | session-2026-06-20-hermes-audit | - |
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | deferred | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance | condition:011e-estable-y-barrera-state-leak-verde |
 | Baja | WOT-2026-011i | Si 011e sale estable: evaluar default unit en run_pytest_safe.py | motor/test-suite-perf | pending | WOT-2026-011e | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -34,25 +33,6 @@
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist/sharding en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
-
-### WOT-2026-011b - Relaunch timeout determinism en tests de relaunch
-- **Prioridad:** Alta
-- **Scope:** motor/test-suite-perf
-- **Estado:** pending
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Reactivation:** -
-- **Origen:** session-2026-06-19-process-debt.
-- **Problema (VERIFICADO):** `bus/builder_relaunch.py` ya expone la costura `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` con default `20.0`, pero la familia de relaunch sigue apoyandose en helpers/polling temporizado y hoy no tiene un contrato explicito que fuerce tiempos cortos y deterministas al ejercer las rutas de verificacion. La deuda no es de producto sino de robustez de test: evitar waits dependientes del host y dejar evidencia clara de las rutas `builder_started_verified` / `builder_launch_unverified` sin tocar la semantica productiva del relaunch.
-- **Objetivo:** fijar un contrato determinista para las pruebas de relaunch usando la costura existente de timeout, de modo que los tests que ejerzan la verificacion de arranque no dependan del timeout default ni del wall-clock del host, manteniendo intacta la semantica productiva y el valor por defecto del runtime.
-- **Files Likely Touched:**
-  - repo_motor: `bus/builder_relaunch.py`
-  - repo_motor: `tests/test_supervisor.py`
-  - repo_destino: `.agent/collaboration/execution_log.md`
-- **Criterios binarios:** las pruebas de relaunch que ejercen verificacion temporal fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista dentro del propio test; el contrato productivo conserva `BUILDER_START_VERIFY_TIMEOUT_SECONDS` y `20.0` como default salvo refactor semantico neutro; existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host; las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable; `pytest` focal, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** parar si la unica forma de volver deterministas los tests cambia la semantica productiva del relaunch o el default runtime; parar si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`; parar si para probar la ruta temporizada hace falta depender de sleeps wall-clock o procesos de launcher reales no acotables.
-- **Depende de:** -.
-
 
 
 ### WOT-2026-013a - Test de integracion fragil + guard de topologia
@@ -69,25 +49,25 @@
   agent_controller.py a un sandbox y el controller resuelve el proyecto via `__file__.parent.parent`, que en
   la copia apunta al sandbox (sin bus/scripts/prompts), no al motor real -> el controller devuelve
   role=UNKNOWN y data is None. NO es bug de produccion: el controller real funciona.
-- **Objetivo:** (1) hacer el fixture robusto -> usar AGENT_PROJECT_ROOT real o PYTHONPATH en vez de copiar
-  agent_system/, de modo que el test falle solo ante un bug real del controller; (2) opcional, anadir un
-  guard `--validate-topology` en agent_controller que verifique que `__file__.parent.parent` cae dentro del
-  repo_motor y no en un sandbox copiado, cerrando esta clase de drift.
+- **Objetivo:** hacer el fixture robusto -> usar AGENT_PROJECT_ROOT real o PYTHONPATH en vez de copiar
+  `agent_controller.py` al sandbox, de modo que el test falle solo ante un bug real del controller.
+  `--validate-topology` queda explicitamente fuera de scope en `013a` y solo podria salir como follow-up separado
+  si el fix test-only no bastara.
 - **Files Likely Touched:**
   - repo_motor: `tests/test_controller_integration.py`
-  - repo_motor: `.agent/agent_controller.py` (solo si se implementa --validate-topology)
 - **Criterios binarios:** el test falla SIN el fix solo ante bug real (no por fixture); pasa CON el fix tanto
   aislado como en suite; barrera de regresion que demuestre la diferencia; ruff + run_pytest_safe --level all
   0 failed; validate 0/0.
-- **STOP:** si robustecer el fixture exige reescribir la arquitectura de copia de agent_system/ (deuda H-07),
-  parar y abrir follow-up separado en vez de ampliar scope.
+- **STOP:** si robustecer el fixture exige tocar `.agent/agent_controller.py`, anadir `--validate-topology` o
+  reescribir la arquitectura de sandbox fuera del propio test, parar y abrir follow-up separado en vez de ampliar
+  scope.
 - **Depende de:** -.
 - **Descartado de la auditoria de Hermes (ruido, NO accionar):** H-05 settings.json permissions.allow
   (FALSO: el archivo real no lo tiene, guard de portabilidad pasa); H-03/H-06/H-11 (conocidos por diseno);
   confusion motor-vs-destino (artefacto de su clon shallow Linux sin destino).
 
 
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011b, 011f, 011g, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
+> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011g, 011h, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 
 ### WOT-2026-012b - Gate check_backlog_contract.py sobre cola viva
 - **Prioridad:** Media

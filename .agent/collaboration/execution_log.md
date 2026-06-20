@@ -1,45 +1,44 @@
-# execution_log.md -- WOT-2026-011b
+# execution_log.md -- WOT-2026-013a
 ## Metadata
-- **Ticket:** WOT-2026-011b
-- **Estado:** READY_FOR_REVIEW
+- **Ticket:** WOT-2026-013a
+- **Estado:** IN_PROGRESS
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 ## Manager Bootstrap
-- Ticket siguiente seleccionado: WOT-2026-011b.
-- Motivo: `011h` no se relanza porque la barrera de archivado que pedia ya existe en `scripts/pre_handoff_guard.py` y su test de regresion; `011b` sigue siendo deuda viva y no tiene contrato congelado aun.
-- Contrato congelado: `T-011B-001`.
-- Frontera fijada antes de Builder: `011b` endurece determinismo de tests de relaunch sobre la costura `BUILDER_START_VERIFY_TIMEOUT_SECONDS`; NO cambia semantica productiva, runner, handoff ni CI.
-- Runtime bootstrap esperado para Builder: `STATE=IN_PROGRESS`, `TURN=BUILDER/IMPLEMENT`, `work_plan.md` activo en `011b`.
+- Ticket siguiente seleccionado: WOT-2026-013a.
+- Motivo: `011h` no se prepara porque la barrera que pedia ya aparece implementada en `scripts/pre_handoff_guard.py`; `013a` si mantiene un rojo aislado verificable hoy y tiene scope minimizable a test-only.
+- Contrato congelado: `T-013A-001`.
+- Frontera fijada antes de Builder: `013a` arregla solo `tests/test_controller_integration.py`; tocar `.agent/agent_controller.py` o anadir feature nueva de topologia dispara `CONTRACT_GAP`.
+- Runtime bootstrap esperado para Builder: `STATE=IN_PROGRESS`, `TURN=BUILDER/IMPLEMENT`, `work_plan.md` activo en `013a`.
 ## Premise Re-check requerido al Builder
-- Releer `bus/builder_relaunch.py` y confirmar que el env var canonico y el default `20.0` siguen presentes.
-- Releer `tests/test_supervisor.py` y `tests/test_relaunch_evidence_capsule.py` para identificar la familia de relaunch afectada.
-- Confirmar que `bus/supervisor.py` permanece read-only salvo evidencia contraria.
+- Reejecutar `python -m pytest tests/test_controller_integration.py -k approved_pending -q` y registrar el rojo exacto.
+- Releer `sandbox()`, `_run()` y `_REAL_CONTROLLER` en `tests/test_controller_integration.py`.
+- Confirmar que `.agent/agent_controller.py` permanece read-only salvo evidencia que fuerce `CONTRACT_GAP`.
 - Ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes de empezar la implementacion.
 ## Restriccion cross-ticket
-- `011b` no reabre `011e`, `011i` ni `010m`; no toca `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py` ni la politica de cierre canonico.
-- Si el seam real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`, el ticket para con `CG-WOT-2026-011b.md`.
+- `013a` no reabre `011g`, `011h`, `011i` ni la deuda opcional de `--validate-topology`.
+- Si el rojo aislado solo se arregla tocando produccion, el ticket para con `CG-WOT-2026-013a.md`.
 
-## BUILDER - WOT-2026-011b - Relaunch timeout determinism
+## BUILDER - WOT-2026-013a - Robustez test_approved_pending (drift topologia sandbox)
 
-### Fase 0 - Premisa VERIFICADA
-- Seam confirmado en bus/builder_relaunch.py: _BUILDER_START_VERIFY_TIMEOUT_ENV (L29), _BUILDER_START_VERIFY_TIMEOUT_DEFAULT=20.0 (L30), _get_verify_timeout() (L168), _verify_builder_start() (L180, bucle while time.time()<deadline + sleep(0.5)).
-- Causa raiz medida (durations): EXACTAMENTE 2 tests pagan ~20s c/u via _verify_builder_start sin fijar el env:
-  test_relaunch_uses_resume_flag (20.41s) y test_relaunch_seam_allows_monkeypatch_without_pytest_check (20.25s).
-  El resto del subset relaunch corre en ms. Subset completo: 41s. Coincide con la premisa del contrato ("2 tests x 20s").
-- bus/supervisor.py read-only confirmado (no requiere cambio).
+### Fase 0 - Diagnostico (VERIFICADO)
+- Rojo aislado reproducido: `python -m pytest tests/test_controller_integration.py -k approved_pending -q` -> AssertionError "No JSON en output del controller" (tests/test_controller_integration.py:145). Firma identica al Context Baseline Evidence.
+- Drift confirmado: sandbox() (L41-42) COPIA el controller (_REAL_CONTROLLER.read_text -> agent_dir/agent_controller.py) y copia runtime/+bus/. _run() (L48-65) invoca el controller COPIADO (agent_dir/agent_controller.py) con cwd=root. El controller resuelve proyecto via __file__.parent.parent; para la copia en sandbox/.agent/, eso = sandbox/ (sin scripts/prompts) -> no produce JSON -> data is None.
+- Causa = fixture/topologia, NO regresion productiva: el controller REAL funciona (verificado abajo). .agent/agent_controller.py leido read-only.
+- SEAM VERIFICADO (experimento read-only): controller REAL del motor (.agent/agent_controller.py) + --project-root <sandbox> (SIN copiar) -> rc=0, JSON {role:BUILDER, action_type:IMPLEMENT}. El controller soporta --project-root (doc L21). Este es el fix: ejercer el controller real apuntando al sandbox por --project-root, en vez de copiarlo.
+- Scope: fix vive solo en tests/test_controller_integration.py. Sin tocar controller, runtime, bus, --validate-topology.
 
-### Fase 1 - Seam determinista (cambio minimo)
-- monkeypatch.setenv("BUILDER_START_VERIFY_TIMEOUT_SECONDS","0.5") anadido a los 2 tests lentos. Reutiliza el seam canonico; NO toca el default productivo (sigue 20.0) ni bus/builder_relaunch.py.
-- Efecto medido: cada test 20.4s -> 0.52s. Subset relaunch completo 41s -> 1.48s (28x).
-- DECISION CEM: builder_relaunch.py NO se toca pese a estar en FLT. El seam ya existe y funciona; el contrato dice "reutilizar, no inventar segundo mecanismo". Tocar el productivo seria cambio innecesario. Cambio acotado a tests/test_supervisor.py.
+### Fase 1 - Fix (test-only, controller productivo INTACTO)
+- 3 ediciones en tests/test_controller_integration.py:
+  (1) _run() invoca _REAL_CONTROLLER (motor) + --project-root str(root) en vez del controller copiado.
+  (2) subprocess inline de test_validate_returns_empty_arrays -> mismo patron (real + --project-root).
+  (3) sandbox() deja de copiar el controller (controller_src write eliminado): una copia solo reintroduciria el drift __file__.
+- .agent/agent_controller.py NO tocado. Sin --validate-topology. Sin runtime/bus/scripts modificados.
 
-### Fase 2 - Barreras (4 nuevas en test_supervisor.py)
-- test_verify_timeout_seam_reads_env_var: el env override funciona.
-- test_verify_timeout_default_preserved: sin env -> 20.0 (default productivo intacto).
-- test_verify_timeout_invalid_env_falls_back_to_default: valores malos -> default, sin crash.
-- test_verify_builder_start_bounded_by_env_not_host_default: el verify retorna <5s con env=0.5 (no paga el default de 20s).
-- FAIL-sin/PASS-con: sin env -> _get_verify_timeout()=20.0 (el bucle pagaria 20s, medido en Fase 0); con env=0.5 -> los 2 tests pasan en 1.13s. Rutas builder_started_verified y builder_launch_unverified siguen cubiertas (semantica intacta).
+### HALLAZGO (no desviacion de scope): el drift afecta a los 3 tests del archivo
+- El baseline solo anclo approved_pending (el que Hermes destapo), pero en aislamiento fallaban los 3 (approved_pending, completed, validate) por la MISMA causa raiz (controller copiado). Arreglar el fixture cura los 3 a la vez = cambio minimo correcto (FLT = el archivo entero; el contrato pide "no romper los otros del archivo"). Arreglar solo approved_pending dejaria 2 rojos aislados.
 
-### Gates
-- Tests focales: `uv run python -m pytest tests/test_supervisor.py -k relaunch` -> 18 passed in 1.48s (+ 4 barreras = 22 passed).
-- Ruff: All checks passed! | Ruff format: 2 files already formatted | Encoding: exit 0.
+### Fase 2 - Barreras
+- FAIL-sin/PASS-con: revertido el archivo a HEAD -> approved_pending aislado FAIL (1 failed); restaurado fix -> 1 passed.
+- Anti-falso-verde (test negativo): el controller real DISCRIMINA estados -> APPROVED+PENDING=BUILDER/IMPLEMENT vs COMPLETED+DONE=MANAGER/CREATE_PLAN. El test ejerce el controller real; sus asserts detectarian un bug real, no es atajo del fixture.
+- Archivo completo aislado: 3 passed.

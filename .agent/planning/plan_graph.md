@@ -71,6 +71,23 @@
   - `validate --json --project-root <repo_destino>` como gate de cierre
 
 
+
+## PLAN-013A-001 -- Robustez del test approved_pending sin drift de topologia
+
+- objetivo: reparar el rojo aislado de `test_approved_pending_returns_builder_implement` endureciendo solo el fixture/driver de `tests/test_controller_integration.py`, sin tocar codigo productivo del controller ni introducir features nuevas de topologia.
+- tickets: [WOT-2026-013a]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/tests/test_controller_integration.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `python -m pytest tests/test_controller_integration.py -k approved_pending -q`
+  - fixture `sandbox()` y helper `_run()` en `tests/test_controller_integration.py`
+- shared_dependencies:
+  - `.agent/agent_controller.py` (read-only; no feature nueva en este ticket)
+  - `runtime/` y `bus/` copiados por el fixture (read-only)
+  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+
 ## PLAN-011B-001 -- Determinismo del timeout de relaunch en tests
 
 - objetivo: hacer determinista la familia de pruebas de relaunch que ejerce verificaciones temporizadas, reutilizando la costura existente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` sin cambiar la semantica productiva ni el timeout default del runtime.
@@ -139,6 +156,7 @@
 
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
 | PLAN-011B-001 | seam de timeout en relaunch (`bus/builder_relaunch.py`) + tests de supervisor; bitacora en repo_destino | `bus/supervisor.py`, eventos `BUILDER_RELAUNCH_ATTEMPTED`, cierre canonico `--level all` | conflicto si otro ticket toca relaunch/supervisor o cambia timeouts/politica de cierre mientras 011b vuelve deterministas las pruebas | serializar con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o criterios de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
+| PLAN-013A-001 | fixture/driver de `tests/test_controller_integration.py`; bitacora en repo_destino | `.agent/agent_controller.py` read-only, runtime/bus copiados por sandbox, cierre canonico `--level all` | conflicto si otro ticket toca el mismo test o cambia la forma de resolver project_root/topologia del controller mientras 013a arregla el fixture | serializar con tickets que toquen `tests/test_controller_integration.py` o la resolucion de project_root del controller; revalidar test aislado + archivo completo + `--level all` al cerrar | no |
 | PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
 | PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
@@ -170,3 +188,4 @@ Para 012b, cualquier merge con tickets que toquen `run_gates_dispatch.py`, el
 schema del backlog o reglas de `Reactivation` obliga a revalidar la union con
 tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <repo_destino>`.
 Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o la politica de cierre/performance obliga a revalidar la union con tests focales de relaunch, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 013a, cualquier merge con tickets que toquen `tests/test_controller_integration.py` o la resolucion de `project_root` del controller obliga a revalidar el test aislado, el archivo completo y `python scripts/run_pytest_safe.py --level all`.

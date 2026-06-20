@@ -2352,3 +2352,26 @@ Fila retirada de la cola viva:
 
 | Media | WOT-2026-012b | Gate check_backlog_contract.py sobre cola viva | motor/quality-gates | pending | WOT-2026-012a | session-2026-06-19-backlog-contract | - |
 
+---
+
+## Movido por cierre canonico WOT-2026-011b (COMPLETED 2026-06-21)
+
+| Alta | WOT-2026-011b | Relaunch timeout determinism: fijar BUILDER_START_VERIFY_TIMEOUT_SECONDS en tests de relaunch | motor/test-suite-perf | completed | - | session-2026-06-19-process-debt | - |
+
+### WOT-2026-011b - Relaunch timeout determinism en tests de relaunch
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-perf
+- **Estado:** completed
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-process-debt.
+- **Problema (VERIFICADO):** `bus/builder_relaunch.py` ya expone la costura `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` con default `20.0`, pero la familia de relaunch sigue apoyandose en helpers/polling temporizado y hoy no tiene un contrato explicito que fuerce tiempos cortos y deterministas al ejercer las rutas de verificacion. La deuda no es de producto sino de robustez de test: evitar waits dependientes del host y dejar evidencia clara de las rutas `builder_started_verified` / `builder_launch_unverified` sin tocar la semantica productiva del relaunch.
+- **Objetivo:** fijar un contrato determinista para las pruebas de relaunch usando la costura existente de timeout, de modo que los tests que ejerzan la verificacion de arranque no dependan del timeout default ni del wall-clock del host, manteniendo intacta la semantica productiva y el valor por defecto del runtime.
+- **Files Likely Touched:**
+  - repo_motor: `bus/builder_relaunch.py`
+  - repo_motor: `tests/test_supervisor.py`
+  - repo_destino: `.agent/collaboration/execution_log.md`
+- **Criterios binarios:** las pruebas de relaunch que ejercen verificacion temporal fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista dentro del propio test; el contrato productivo conserva `BUILDER_START_VERIFY_TIMEOUT_SECONDS` y `20.0` como default salvo refactor semantico neutro; existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host; las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable; `pytest` focal, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** parar si la unica forma de volver deterministas los tests cambia la semantica productiva del relaunch o el default runtime; parar si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`; parar si para probar la ruta temporizada hace falta depender de sleeps wall-clock o procesos de launcher reales no acotables.
+- **Depende de:** -.
