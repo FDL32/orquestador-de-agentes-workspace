@@ -25,7 +25,6 @@
 | Alta | WOT-2026-010x | Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml | motor/ci-security | pending | - | session-2026-06-19-gitleaks-ci | - |
 | Alta | WOT-2026-011b | Relaunch timeout determinism: fijar BUILDER_START_VERIFY_TIMEOUT_SECONDS en tests de relaunch | motor/test-suite-perf | pending | - | session-2026-06-19-process-debt | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
-| Media | WOT-2026-011f | .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma | motor/devex-encoding | pending | WOT-2026-010w, WOT-2026-011c, WOT-2026-011j | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
 | Media | WOT-2026-013a | Test de integracion fragil (test_approved_pending) + --validate-topology guard contra __file__ drift en sandbox | motor/test-robustness | pending | - | session-2026-06-20-hermes-audit | - |
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | deferred | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance | condition:011e-estable-y-barrera-state-leak-verde |
@@ -36,27 +35,25 @@
 
 ## Fichas detalladas (tickets vivos)
 
-
-### WOT-2026-011f - .gitattributes / line endings / PS1 source encoding: normalizar contrato multiplataforma
-- **Prioridad:** Media
-- **Scope:** motor/devex-encoding
+### WOT-2026-011b - Relaunch timeout determinism en tests de relaunch
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-perf
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Reactivation:** -
-- **Origen:** session-2026-06-19-improvement-backlog.
-- **Problema (VERIFICADO):** `.gitattributes` aun no declara `*.ps1`; `scripts/launch_agent_terminals.ps1` sigue con BOM UTF-8 en origen y contiene secuencias mojibake visibles (`???` en lineas 91/100) mientras usa CRLF; `scripts/encoding_guard.py` ya reconoce `.ps1` como texto pero no los recorre en el barrido repo-wide porque `GLOB_PATTERNS` solo incluye `scripts/**/*.py`. Resultado: la principal superficie PowerShell del motor queda fuera del contrato automatico de encoding.
-- **Objetivo:** fijar el contrato multiplataforma de `.ps1` (line endings + fuente UTF-8 sin BOM), sanear `launch_agent_terminals.ps1` contra fuente confiable y meter los `.ps1` de `scripts/` bajo la barrera canonica de encoding sin reabrir la logica funcional ya endurecida por `011j`.
+- **Origen:** session-2026-06-19-process-debt.
+- **Problema (VERIFICADO):** `bus/builder_relaunch.py` ya expone la costura `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` con default `20.0`, pero la familia de relaunch sigue apoyandose en helpers/polling temporizado y hoy no tiene un contrato explicito que fuerce tiempos cortos y deterministas al ejercer las rutas de verificacion. La deuda no es de producto sino de robustez de test: evitar waits dependientes del host y dejar evidencia clara de las rutas `builder_started_verified` / `builder_launch_unverified` sin tocar la semantica productiva del relaunch.
+- **Objetivo:** fijar un contrato determinista para las pruebas de relaunch usando la costura existente de timeout, de modo que los tests que ejerzan la verificacion de arranque no dependan del timeout default ni del wall-clock del host, manteniendo intacta la semantica productiva y el valor por defecto del runtime.
 - **Files Likely Touched:**
-  - repo_motor: `.gitattributes`
-  - repo_motor: `scripts/launch_agent_terminals.ps1`
-  - repo_motor: `scripts/encoding_guard.py`
-  - repo_motor: `tests/test_encoding_integrity.py`
-  - repo_motor: `tests/test_launch_agent_terminals_script.py`
+  - repo_motor: `bus/builder_relaunch.py`
+  - repo_motor: `tests/test_supervisor.py`
   - repo_destino: `.agent/collaboration/execution_log.md`
-- **Criterios binarios:** `*.ps1` queda declarado explicitamente en `.gitattributes`; `launch_agent_terminals.ps1` queda sin BOM y conserva line endings coherentes con el contrato; las secuencias mojibake verificadas se reconstruyen desde contexto confiable, no por strip ciego; el barrido repo-wide de `encoding_guard.py` incluye `scripts/**/*.ps1` (o cobertura equivalente determinista); existe al menos una barrera FAIL-sin/PASS-con que demuestre que el launcher entra en scope del guard; `check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `validate --json` quedan verdes.
-- **STOP:** parar si la unica forma de arreglar el mojibake es adivinar contenido sin contexto confiable; parar si ampliar el guard a `scripts/**/*.ps1` saca deuda nueva fuera de scope que no se pueda acotar a los dos `.ps1` actuales; parar si normalizar el archivo obliga a reabrir semantica funcional del launcher en vez de contrato de fuente/encoding.
-- **Depende de:** WOT-2026-010w, WOT-2026-011c, WOT-2026-011j.
+- **Criterios binarios:** las pruebas de relaunch que ejercen verificacion temporal fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista dentro del propio test; el contrato productivo conserva `BUILDER_START_VERIFY_TIMEOUT_SECONDS` y `20.0` como default salvo refactor semantico neutro; existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host; las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable; `pytest` focal, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** parar si la unica forma de volver deterministas los tests cambia la semantica productiva del relaunch o el default runtime; parar si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`; parar si para probar la ruta temporizada hace falta depender de sleeps wall-clock o procesos de launcher reales no acotables.
+- **Depende de:** -.
+
+
 
 ### WOT-2026-013a - Test de integracion fragil + guard de topologia
 - **Prioridad:** Media

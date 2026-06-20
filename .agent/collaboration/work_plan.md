@@ -1,7 +1,7 @@
-# work_plan.md -- WOT-2026-011f
+# work_plan.md -- WOT-2026-011b
 ## Metadata
-- **ID:** WOT-2026-011f
-- **Contract ID:** T-011F-001
+- **ID:** WOT-2026-011b
+- **Contract ID:** T-011B-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
@@ -10,49 +10,42 @@
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Normalizar el contrato multiplataforma de `*.ps1`: declarar line endings explicitamente en `.gitattributes`, sanear `scripts/launch_agent_terminals.ps1` para que quede sin BOM ni mojibake y meter los `.ps1` reales de `scripts/` bajo la barrera canonica de encoding, sin reabrir la logica funcional del launcher.
+Volver determinista la familia de tests de relaunch que ejerce verificacion temporal, reutilizando la costura existente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` para evitar waits dependientes del host, sin cambiar la semantica productiva del relaunch ni su timeout default.
 ## Non-goals
-- No cambiar el comportamiento funcional del launcher salvo lo estrictamente necesario para normalizar su fuente.
-- No reabrir `011j` ni volver a tocar writers BOM-safe ya corregidos.
-- No tocar `pre_handoff_guard.py`, CI/workflows ni historicos de backlog/control-chars de `012a`.
-- No ampliar el alcance fuera de `scripts/launch_agent_terminals.ps1`, `scripts/test_manager_smoke.ps1`, `.gitattributes` y `scripts/encoding_guard.py`.
+- No cambiar la semantica productiva de `builder_started_verified`, `builder_launch_unverified` ni `timeout`.
+- No tocar `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py`, CI/workflows ni la politica de handoff.
+- No convertir el timeout productivo en un parametro exclusivo de test ni abrir la puerta a sleeps wall-clock fragiles.
 ## Premisas verificadas antes de Builder
-- `.gitattributes` no declara aun `*.ps1`.
-- `scripts/launch_agent_terminals.ps1` sigue con BOM UTF-8 en origen, usa CRLF y contiene secuencias mojibake verificadas (`???` en lineas 91/100).
-- `scripts/encoding_guard.py` incluye `.ps1` en `TEXT_EXTENSIONS`, pero su barrido repo-wide omite `scripts/**/*.ps1`.
-- `scripts/test_manager_smoke.ps1` ya esta limpio, por lo que el blast radius actual de la cobertura `.ps1` es acotable.
+- `bus/builder_relaunch.py` ya declara `BUILDER_START_VERIFY_TIMEOUT_SECONDS` y `_BUILDER_START_VERIFY_TIMEOUT_DEFAULT = 20.0`.
+- La familia de relaunch en `tests/test_supervisor.py` ya cubre `builder_started_verified`, `timeout` y `builder_launch_unverified`.
+- La deuda abierta por `011b` es de determinismo de test, no de funcionalidad de producto ni de topologia.
 ## Decision Arquitectonica
-`011f` cierra la deuda de fuente, no la de writers: el launcher se normaliza como artefacto versionado y el guard pasa a cubrir los `.ps1` reales del motor. El contrato objetivo es `*.ps1` versionados con line endings explicitamente declarados, UTF-8 sin BOM y barrera automatica repo-wide. El fix debe reconstruir el mojibake desde contexto confiable, no por reemplazo ciego.
+`011b` debe resolver la robustez de las pruebas alrededor de la costura ya existente, no inventar otra. El seam de timeout vive en `bus/builder_relaunch.py`; el Builder puede endurecer el helper o las pruebas, pero el resultado debe preservar la semantica productiva y dejar evidencia explicita de que la ruta temporizada ya no depende del timeout default del host.
 ## Files Likely Touched
 ### repo_motor
-- .gitattributes
-- scripts/launch_agent_terminals.ps1
-- scripts/encoding_guard.py
-- tests/test_encoding_integrity.py
-- tests/test_launch_agent_terminals_script.py
+- bus/builder_relaunch.py
+- tests/test_supervisor.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- tests/test_opencode_config_stability.py
-- tests/unit/test_launcher_powershell_syntax.py
-- scripts/test_manager_smoke.ps1
-- .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md
-- scripts/check_encoding_guard.py
+- bus/supervisor.py
+- tests/test_relaunch_evidence_capsule.py
+- .agent/runtime/pytest-safe/last-run.json
+- .agent/collaboration/backlog.md
 ## Forbidden Surfaces
-- reabrir la logica funcional del launcher fuera de normalizacion de fuente
-- broad-strip de BOM/mojibake fuera de las superficies declaradas
-- tocar pre_handoff_guard.py o workflows de CI
-- editar historicos de backlog/control-chars congelados
+- cambiar la semantica productiva del relaunch
+- tocar scripts/run_pytest_safe.py, scripts/pre_handoff_guard.py o CI/workflows
+- relajar el cierre canonico por `--level all`
+- escribir eventos del bus manualmente
 ## Criterios binarios
-- `.gitattributes` declara explicitamente el contrato de `*.ps1`.
-- `scripts/launch_agent_terminals.ps1` queda sin BOM y con line endings coherentes con el contrato fijado.
-- Las secuencias mojibake verificadas del launcher se reconstruyen desde contexto confiable.
-- `scripts/encoding_guard.py` incorpora `scripts/**/*.ps1` (o cobertura repo-wide equivalente) al scope real del guard.
-- Existe al menos una barrera FAIL-sin/PASS-con para demostrar que el launcher entra en scope del guard y que el estado previo habria fallado.
-- `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `validate --json --project-root <repo_destino>` quedan verdes.
+- Las pruebas temporizadas de relaunch fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista.
+- `_BUILDER_START_VERIFY_TIMEOUT_DEFAULT = 20.0` y el env var canonico se conservan salvo refactor semantico neutro.
+- Existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host.
+- Las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable.
+- `pytest` focal, `ruff`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si el target de line endings no puede verificarse en este host Windows.
-- Parar si arreglar el mojibake exige adivinar contenido sin contexto confiable.
-- Parar si ampliar el guard a `.ps1` saca deuda nueva fuera de `scripts/launch_agent_terminals.ps1` y `scripts/test_manager_smoke.ps1`.
+- Parar si la unica implementacion viable cambia la semantica productiva del relaunch o su default runtime.
+- Parar si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`.
+- Parar si para probar la ruta temporizada hace falta depender de sleeps wall-clock o procesos reales no acotables.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-011f.md` si normalizar el launcher exige tocar logica funcional ajena al contrato de fuente, si el mojibake no puede reconstruirse con evidencia, o si la cobertura repo-wide de `.ps1` revela deuda adicional no acotable dentro del scope declarado.
+Emitir `CG-WOT-2026-011b.md` si la deuda real resulta estar fuera de las superficies declaradas, si el fix exige tocar runner/handoff/CI, o si el determinismo no puede lograrse sin modificar la semantica productiva del relaunch.

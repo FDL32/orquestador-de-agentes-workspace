@@ -70,6 +70,25 @@
   - contrato de estados/`Reactivation` fijado por `012a`
   - `validate --json --project-root <repo_destino>` como gate de cierre
 
+
+## PLAN-011B-001 -- Determinismo del timeout de relaunch en tests
+
+- objetivo: hacer determinista la familia de pruebas de relaunch que ejerce verificaciones temporizadas, reutilizando la costura existente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` sin cambiar la semantica productiva ni el timeout default del runtime.
+- tickets: [WOT-2026-011b]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/bus/builder_relaunch.py
+  - repo_motor/tests/test_supervisor.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - env var `BUILDER_START_VERIFY_TIMEOUT_SECONDS`
+  - helper `bus/builder_relaunch.py::_verify_builder_start()`
+  - eventos `BUILDER_RELAUNCH_ATTEMPTED`
+- shared_dependencies:
+  - `bus/supervisor.py` (read-only; wrapper/topologia de relaunch)
+  - `tests/test_relaunch_evidence_capsule.py` (read-only; familia de relaunch relacionada)
+  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+
 ## PLAN-011E-001 -- xdist opt-in local medido para subset unitario
 
 - objetivo: introducir un camino local y explicito de paralelizacion xdist para subset unitario, con medicion auditable y fallback seguro a serial, sin tocar el cierre canonico ni el default del runner.
@@ -119,6 +138,7 @@
 | PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
+| PLAN-011B-001 | seam de timeout en relaunch (`bus/builder_relaunch.py`) + tests de supervisor; bitacora en repo_destino | `bus/supervisor.py`, eventos `BUILDER_RELAUNCH_ATTEMPTED`, cierre canonico `--level all` | conflicto si otro ticket toca relaunch/supervisor o cambia timeouts/politica de cierre mientras 011b vuelve deterministas las pruebas | serializar con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o criterios de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
 | PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
@@ -149,3 +169,4 @@ y una auditoria especifica de secuencias/eventos de pausa y resume.
 Para 012b, cualquier merge con tickets que toquen `run_gates_dispatch.py`, el
 schema del backlog o reglas de `Reactivation` obliga a revalidar la union con
 tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <repo_destino>`.
+Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o la politica de cierre/performance obliga a revalidar la union con tests focales de relaunch, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.

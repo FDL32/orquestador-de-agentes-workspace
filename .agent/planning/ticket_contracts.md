@@ -1210,3 +1210,33 @@ epo_motor, o si el unico camino a verde exige editar manualmente los archives de
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el target de line endings no puede verificarse en este host Windows; parar si el launcher deja de parsear sintacticamente tras la normalizacion; parar si el guard repo-wide sobre `.ps1` rompe por artefactos no declarados fuera de `scripts/launch_agent_terminals.ps1` y `scripts/test_manager_smoke.ps1`.
 - **Depende de:** WOT-2026-010w (COMPLETED); WOT-2026-011c (COMPLETED); WOT-2026-011j (COMPLETED).
+
+## T-011B-001 -- Relaunch timeout determinism en tests de relaunch
+
+- **ticket_id:** WOT-2026-011b
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011B-001
+- **Plan-Link:** PLAN-011B-001
+- **Premise:** `bus/builder_relaunch.py` ya expone la costura `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` con default `20.0`, y la familia de relaunch en `tests/test_supervisor.py` ya distingue los outcomes `builder_started_verified`, `timeout` y `builder_launch_unverified`. La deuda abierta por `011b` no es funcional sino de determinismo: cualquier prueba que dependa de la verificacion temporizada debe fijar su timeout de forma explicita y auditable para no heredar esperas del host ni del default productivo.
+- **Premise Re-check (read-only):** releer `bus/builder_relaunch.py`, `bus/supervisor.py`, `tests/test_supervisor.py` (casos `test_relaunch_outcome_builder_started_verified`, `test_relaunch_emits_event_timeout`, `test_relaunch_outcome_builder_launch_unverified_when_no_signal`) y `tests/test_relaunch_evidence_capsule.py`; verificar que `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` sigue declarado en `bus/builder_relaunch.py` con default `20.0`; confirmar que la semantica canonica del relaunch no debe cambiarse en este ticket; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** verify_timeout_env_declared=true; verify_timeout_default=20.0; relaunch_outcomes_covered=builder_started_verified|timeout|builder_launch_unverified; generated_at=2026-06-20.
+- **Files Likely Touched:**
+  - Builder repo_motor: `bus/builder_relaunch.py`
+  - Builder repo_motor: `tests/test_supervisor.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `bus/supervisor.py`; `tests/test_relaunch_evidence_capsule.py`; `.agent/runtime/pytest-safe/last-run.json`; `.agent/collaboration/backlog.md`.
+- **Forbidden Surfaces:** `scripts/pre_handoff_guard.py`; `scripts/run_pytest_safe.py`; CI/workflows; cambio del default runtime fuera del contrato de prueba; relajar el cierre canonico (`--level all`); `.env`; `privada/`; eventos del bus escritos manualmente.
+- **DoD:**
+  - [ ] Las pruebas de relaunch que ejercen verificacion temporal fijan explicitamente `BUILDER_START_VERIFY_TIMEOUT_SECONDS` o una costura equivalente determinista dentro del propio test.
+  - [ ] El contrato productivo conserva `_BUILDER_START_VERIFY_TIMEOUT_DEFAULT = 20.0` y el env var canonico, salvo refactor semantico neutro.
+  - [ ] Existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host.
+  - [ ] Las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable.
+  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** no reabre `011e`, `011i` ni `010m`; no cambia politica de xdist, runner ni handoff. `011b` solo endurece el seam de timeout del relaunch y sus pruebas.
+- **CONTRACT_GAP behavior:** si volver deterministas los tests exige cambiar la semantica productiva del relaunch, si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`, o si la unica forma de probar la ruta temporizada depende de sleeps wall-clock no acotables, emitir `CG-WOT-2026-011b.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica implementacion viable toca `scripts/run_pytest_safe.py` o `pre_handoff_guard.py`; parar si el fix convierte el timeout productivo en parametro solo de test; parar si el rojo real pertenece a otra familia de relaunch fuera del scope declarado.
+- **Depende de:** -.
+
