@@ -37,6 +37,25 @@
 
 ## Fichas detalladas (tickets vivos)
 
+### WOT-2026-011e - pytest-xdist opt-in + medicion + fallback seguro para subset unitario
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-perf
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** `scripts/run_pytest_safe.py` sigue siendo secuencial y no ofrece un camino local, medido y opt-in para paralelizar un subset unitario. El ultimo cierre canonico del motor dejo `3051 passed, 20 skipped, 5 deselected` en ~`7m29s`; `010m` ya quedo separado como piloto CI y `011i` como evaluacion de default futuro.
+- **Objetivo:** anadir `pytest-xdist` como opt-in local para subset unitario explicito, con medicion auditable y fallback seguro a serial cuando el scope no sea apto, sin tocar el default del runner ni la semantica del cierre canonico.
+- **Files Likely Touched:**
+  - repo_motor: `pyproject.toml`
+  - repo_motor: `uv.lock`
+  - repo_motor: `scripts/run_pytest_safe.py`
+  - repo_motor: `tests/unit/test_run_pytest_safe.py`
+  - repo_destino: `.agent/collaboration/execution_log.md`
+- **Criterios binarios:** el flag de xdist es explicitamente opt-in; fuera de subset unitario explicito cae a serial con razon auditable; registra `xdist_requested/enabled/workers/reason` en `last-run.json`; deja una medicion serial-vs-xdist en `execution_log.md`; `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `validate --json` quedan verdes.
+- **STOP:** parar si la unica via exige cambiar el default del runner, tocar CI (`010m`), o reabrir la semantica de cierre canonico que depende de `level=all` + `args_mode=default_discovery`.
+- **Depende de:** -.
 ### WOT-2026-013a - Test de integracion fragil + guard de topologia
 - **Prioridad:** Media
 - **Scope:** motor/test-robustness

@@ -69,6 +69,25 @@
   - `scripts/check_deliverables_exist.py` y `scripts/validate_ticket_prose.py` (read-only)
   - contrato de estados/`Reactivation` fijado por `012a`
   - `validate --json --project-root <repo_destino>` como gate de cierre
+
+## PLAN-011E-001 -- xdist opt-in local medido para subset unitario
+
+- objetivo: introducir un camino local y explicito de paralelizacion xdist para subset unitario, con medicion auditable y fallback seguro a serial, sin tocar el cierre canonico ni el default del runner.
+- tickets: [WOT-2026-011e]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/pyproject.toml
+  - repo_motor/uv.lock
+  - repo_motor/scripts/run_pytest_safe.py
+  - repo_motor/tests/unit/test_run_pytest_safe.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers <N|auto> -- tests/unit`
+  - artefacto runtime `.agent/runtime/pytest-safe/last-run.json`
+- shared_dependencies:
+  - `scripts/pre_handoff_guard.py` (read-only; contrato canonico `level=all` + `args_mode=default_discovery`)
+  - `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
+  - frontera `011e <-> 010m <-> 011i` (local opt-in vs CI vs default futuro)
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -77,6 +96,7 @@
 | PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
+| PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,

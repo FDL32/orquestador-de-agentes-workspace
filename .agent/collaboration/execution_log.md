@@ -1,74 +1,46 @@
-# execution_log.md -- WOT-2026-012b
+# execution_log.md -- WOT-2026-011e
 ## Metadata
-- **Ticket:** WOT-2026-012b
-**Estado:** COMPLETED
+- **Ticket:** WOT-2026-011e
+- **Estado:** IN_PROGRESS
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 ## Manager Bootstrap
-- Ticket siguiente seleccionado: WOT-2026-012b.
-- Motivo: `012a` ya fijo el contrato de cola viva; ahora toca convertirlo en barrera automatica antes de seguir acumulando deuda sobre el backlog.
-- Contrato congelado: `T-012B-001`.
-- Ajuste previo de cola viva: `012a` se reconcilia fuera del backlog activo porque ya esta `COMPLETED`; su traza historica ya vive en `_archive/backlog_done.md`.
-- Runtime bootstrap esperado para Builder: `STATE=IN_PROGRESS`, `TURN=BUILDER/IMPLEMENT`, `work_plan.md` activo en `012b`.
+- Ticket siguiente seleccionado: WOT-2026-011e.
+- Motivo: tras cerrar `012b`, el siguiente paso real pendiente es habilitar un camino local y medido de xdist sin tocar CI ni el default del runner.
+- Contrato congelado: `T-011E-001`.
+- Frontera fijada antes de Builder: `011e` = local opt-in; `010m` = CI; `011i` = posible default futuro solo si este ticket sale estable.
+- Runtime bootstrap esperado para Builder: `STATE=IN_PROGRESS`, `TURN=BUILDER/IMPLEMENT`, `work_plan.md` activo en `011e`.
 ## Premise Re-check requerido al Builder
-- Releer `.agent/collaboration/backlog.md` y confirmar que la tabla activa expone `Reactivation` y que `012a` ya no aparece como ticket vivo.
-- Verificar que `scripts/run_gates_dispatch.py`, `scripts/check_deliverables_exist.py` y `scripts/validate_ticket_prose.py` no ofrecen ya una barrera equivalente.
-- Confirmar que la resolucion de proyecto para leer `repo_destino` falla cerrada sin `--project-root` ni `AGENT_PROJECT_ROOT`.
+- Confirmar que `pyproject.toml` aun no declara `pytest-xdist` y que `run_pytest_safe.py` no expone hoy un flag de paralelizacion.
+- Releer `scripts/pre_handoff_guard.py` y preservar intacta la exigencia de `level=all` + `args_mode=default_discovery` para handoff.
+- Confirmar la frontera `011e <-> 010m <-> 011i` antes de tocar el runner.
+- Elegir un subset unitario explicito y reproducible para la medicion serial-vs-xdist en este host.
 ## Restriccion cross-ticket
-- `012b` no reabre `012a`, no toca el archivador del closeout y no cambia la politica de cierre canonico.
-- `011f` permanece como ticket separado de encoding/line endings; no mezclarlo con este gate.
-
-## BUILDER - WOT-2026-012b - Gate check_backlog_contract.py
+- `011e` no toca CI, no toca `run_gates_dispatch.py`, no toca `pre_handoff_guard.py` y no cambia el default del runner.
+- Si el opt-in local no puede mantenerse dentro de esa frontera, el ticket para con `CG-WOT-2026-011e.md`.
+## BUILDER - WOT-2026-011e - pytest-xdist opt-in con medicion
 
 ### Fase 0 - Diagnostico (VERIFICADO)
-- backlog migrado por 012a: tabla 'Vista rapida' con 8 columnas (Prioridad|Ticket|Titulo|Scope|Estado|Depende de|Origen|Reactivation); 012a ya no es fila viva.
-- Estados vivos presentes: pending (react=-), blocked/deferred/completed-partial (react=condition:<slug>).
-- NO existe gate equivalente (scripts/check_backlog_contract.py ausente; run_gates_dispatch/check_deliverables/validate_ticket_prose no validan la tabla del backlog).
-- Patron de resolucion: runtime.project_root.resolve_project_root() usa AGENT_PROJECT_ROOT con fallback a __file__. Para 012b se requiere resolucion ESTRICTA sin fallback (leer backlog relativo al cwd = motor seed, incorrecto).
+- pytest-xdist ausente de pyproject/uv.lock antes del ticket.
+- run_pytest_safe.py soporta --level unit|integration|all + --select-from-diff, sin flag xdist.
+- pre_handoff_guard.py exige level=all + args_mode=default_discovery (NO tocado).
+- Frontera 011e(local opt-in) / 010m(CI) / 011i(default futuro) respetada.
 
 ### Fase 1 - Implementacion
-- scripts/check_backlog_contract.py: resuelve destino via --project-root o AGENT_PROJECT_ROOT, fail-closed (exit 2) sin root. Parsea SOLO la tabla bajo '## Vista rapida' (nunca HTML/prose). Valida: 8 columnas, header exacto, Status en vocabulario cerrado (pending|blocked|deferred|ready-for-review|awaiting-manager|completed-partial), semantica Reactivation (- solo activos sin trigger; condition:/commit:/external:/ticket-id para blocked/deferred/completed-partial; rechaza N/A/prosa vaga), encabezados ### WOT-/WT-/WP- bien formados. Sin mutacion.
-- Integrado en scripts/run_gates_dispatch.py como barrera independiente de deliverable_type (mismo patron que --check-contract/--check-naming), pasando --project-root PROJECT_ROOT.
+- pytest-xdist>=3.6 anadido a [dependency-groups].dev via `uv add --dev`; instalado 3.8.0 (+execnet 2.1.2); uv.lock actualizado.
+- Flag opt-in --xdist-workers <N|auto> en run_pytest_safe.py. resolve_xdist() habilita xdist SOLO si level==unit AND args_mode==default_discovery; auto = min(8, max(2, cpu//2)). Fuera de ese contrato -> serial con fallback_reason auditable. Inyecta `-n <N>` solo cuando habilitado.
+- Metadata en last-run.json: xdist={requested,requested_value,enabled,workers,fallback_reason}.
+- Rutas verificadas (--dry-run): sin flag->serial(not_requested); auto+unit->-n 8 enabled; auto+--level all->serial fallback "xdist only for level=unit"; valor invalido->serial fallback. El camino canonico (--level all) NUNCA paraleliza.
 
-### Fase 2 - Tests (tests/unit/test_check_backlog_contract.py, 11 tests)
-- PASS valido; fail-closed sin root (exit 2); via AGENT_PROJECT_ROOT; terminal en cola viva bloquea; deferred sin trigger bloquea; Reactivation vaga (N/A) bloquea; Reactivation no estructurada (prosa) bloquea; conteo de columnas; ficha malformada; falta 'Vista rapida'; header de columnas mismatch.
-- Verificacion FAIL-sin/PASS-con: sin el gate -> error de coleccion (FileNotFoundError); con el gate -> 11 passed.
+### Fase 2 - Tests (tests/unit/test_run_pytest_safe.py, 7 nuevos)
+- enabled unit subset; explicit worker count; not-requested backward-compat; fallback level=all; fallback non-default-discovery; fallback invalid value; fallback <2 workers.
+- FAIL-sin/PASS-con: revertido run_pytest_safe a HEAD -> 7 failed (resolve_xdist ausente); restaurado -> 7 passed.
 
-### Gates (comandos + resultado literal)
-- Tests focales: `python -m pytest tests/unit/test_check_backlog_contract.py -v` -> 11 passed in 0.15s
-- Ruff: `uv run ruff check scripts/check_backlog_contract.py tests/unit/test_check_backlog_contract.py scripts/run_gates_dispatch.py` -> All checks passed!
-- Ruff format: `uv run ruff format --check <mismos>` -> 3 files already formatted
-- Encoding: `python scripts/check_encoding_guard.py <3 archivos>` -> exit 0 (todos no-BOM, ASCII, 0 ctrl chars)
-- (suite canonica --level all + validate: al completar)
-
-### Suite canonica --level all: 1 failed AJENO a 012b (bloqueo externo)
-- Resultado: 1 failed, 3047 passed, 20 skipped (level=all, sha=1a04ec9).
-- Test que falla: tests/unit/test_no_legacy_topology_terms.py::test_repo_has_no_live_retired_topology_terms.
-- Causa: tests/test_hermes_build_context_bundle.py:79 contiene `assert "Model B" not in context`. El guard LEGACY_PATTERN (Model B / Modelo B / model_b) lo detecta como reintroduccion del termino retirado -> FALSO POSITIVO (un test anti-"Model B" contiene el literal por construccion).
-- VERIFICADO ajeno a 012b: (1) el archivo hermes NO esta en mi working set ni FLT; (2) entro en commit 2ab3b42 'feat: add Hermes context bundle generator' (trabajo paralelo, no de mi pipeline); (3) stash de mi diff -> el test SIGUE fallando en HEAD limpio (1a04ec9). Mi diff no influye.
-- Mi trabajo 012b es correcto y verde en aislamiento (11 focales passed, ruff/format/encoding OK).
-- DECISION: no hago handoff con suite roja (gate fail-closed correcto), pero NO arreglo un archivo ajeno (hermes) fuera de mi FLT (scope creep). HANDOFF bloqueado por causa externa. Requiere decision de Manager/Orquestador: (a) hotfix separado del falso positivo (excluir el archivo de test del guard, o ajustar el patron para no auto-detectarse), o (b) revertir/corregir el commit hermes 2ab3b42.
-
-### Ronda 2 - Fix del CHANGES del Manager (BLOCKER integracion)
-- BLOCKER confirmado y reproducido: run_gates_dispatch invocaba "scripts/check_backlog_contract.py" (relativo) con cwd=PROJECT_ROOT=repo_destino -> "can't open file ...workspace\scripts\check_backlog_contract.py". El script vive solo en el motor.
-- FIX: anadido MOTOR_SCRIPTS_DIR = Path(__file__).resolve().parent (siempre el motor); la invocacion del backlog gate usa ruta absoluta del motor + cwd=motor, manteniendo --project-root=destino. Verificado end-to-end desde cwd=destino -> exit 0 ejecutando el gate real contra el backlog del destino.
-- Barrera de integracion anadida (2 tests): test_gate_invocable_by_absolute_path_from_foreign_cwd (PASS: ruta absoluta corre desde cwd ajeno) + test_relative_path_from_destino_cwd_is_the_bug (documenta el BLOCKER: relativo desde destino -> can't open file). Verificacion FAIL-sin/PASS-con del dispatcher: revertido a relativo -> el gate falla 'can't open file' desde destino; restaurado -> exit 0.
-- Gates: ruff All checks passed; format 3 files clean; 13 focales passed; encoding exit 0.
-
-### HALLAZGO sistemico (PRE-EXISTENTE, ajeno a 012b -> follow-up)
-- Al ejercer run_gates_dispatch end-to-end desde el destino, falla ANTES de mi gate en discover_skills.py: "can't open file ...workspace\scripts\discover_skills.py". Las invocaciones de check_deliverables_exist.py (L144), discover_skills.py --check-contract (L164) y --check-naming (L176) usan TODAS ruta relativa con cwd=PROJECT_ROOT(destino) -> rotas en topologia destino-motor. VERIFICADO pre-existente (no en mi git diff). NO las arreglo en 012b (scope creep, fuera de FLT). Follow-up recomendado: dispatcher debe invocar TODOS los gates por ruta absoluta del motor.
-
-### Bloqueo restante para handoff (externo, no 012b)
-- Suite --level all sigue con 1 failed por hermes Model B (commit 2ab3b42, ajeno). Requiere hotfix del falso positivo o decision sobre el commit hermes ANTES de commit+handoff de 012b.### Ronda 3 - Cierre canonico tras fix sistemico del dispatcher
-- Se cerró el hallazgo sistemico del Manager: 
-un_gates_dispatch.py ya no invoca solo un gate por ruta absoluta, sino TODA la cadena de gates del motor con cwd=repo_motor, manteniendo AGENT_PROJECT_ROOT/--project-root para leer el runtime del destino. Ademas se eliminó la dependencia fragile a 
-untime.* importable por nombre: el dispatcher resuelve localmente PROJECT_ROOT y MOTOR_ROOT, evitando colision con .agent/runtime.
-- Ajuste adicional para permitir el cierre real del ticket: 	ests/unit/test_no_legacy_topology_terms.py ahora ignora asserts negativos del tipo ssert "Model B" not in ..., de modo que el guard no se auto-dispare contra un test anti-regresion de Hermes. Este unblocker de suite quedó incorporado al FLT del ticket.
-- Commit productivo repo_motor: 2e0de38 (ix(WOT-2026-012b): harden topology-safe gate dispatch).
-- Suite canonica sobre el SHA final: python scripts/run_gates_dispatch.py con AGENT_PROJECT_ROOT=<repo_destino> -> 3051 passed, 20 skipped, 5 deselected in 449.14s (0:07:29); 
-uff check y 
-uff format --check verdes; discover_skills --check-contract/--check-naming verdes; check_backlog_contract.py OK contra el backlog vivo del destino.
-- Validate final: python .agent/agent_controller.py --validate --json --project-root <repo_destino> -> errors=0 warnings=0.
-- Resultado: el bloqueo externo de Hermes quedó absorbido por la corrección del guard de terminología; 012b queda cerrable sin CONTRACT_GAP restante.
-
-Manager approved canonical closeout for WOT-2026-012b
+### MEDICION serial vs xdist (mismo subset tests/unit, mismo host)
+- NOTA entorno: xdist vive en .venv del proyecto; sys.executable bajo `uv run` = .venv/python (lo carga). Con python global, `-n` da "unrecognized arguments" (xdist no instalado ahi). El runner usa sys.executable, correcto bajo el launcher/uv.
+- SERIAL (uv run, sin -n): 1276 passed, 1 skipped, 138.20s.
+- XDIST -n 8: 1273 passed, **3 failed**, 16.34s (~8.5x mas rapido).
+- HALLAZGO CRITICO: xdist introduce 3 flakes por estado compartido entre workers (no aislados con tmp_path):
+  test_detect_version.py::test_upgrade_path_suggestion, test_project_scanner.py::test_scan_current_project,
+  test_no_inline_ticket_regex.py::test_no_inline_ticket_regex. Pasan en serial, fallan en paralelo.
+- CONCLUSION: la velocidad (8.5x) es real pero la suite NO es paralelo-segura aun. Esto JUSTIFICA el diseno opt-in del contrato: 011e entrega la herramienta + la medicion que DEMUESTRA que xdist NO debe ser default todavia. Activar por defecto (011i) o en CI (010m) requiere antes aislar esos 3 (y verificar 0 flakes en varias corridas) -> follow-up para 011i/010m, fuera de scope de 011e.

@@ -1,8 +1,8 @@
-# work_plan.md -- WOT-2026-012b
+# work_plan.md -- WOT-2026-011e
 ## Metadata
-- **ID:** WOT-2026-012b
-- **Contract ID:** T-012B-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-011e
+- **Contract ID:** T-011E-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **Builder clarification budget:** 0
@@ -10,52 +10,50 @@
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Convertir el contrato de cola viva fijado por `012a` en un gate fail-closed ejecutable desde `repo_motor`, leyendo `repo_destino/.agent/collaboration/backlog.md` solo por `--project-root` o `AGENT_PROJECT_ROOT`.
+Anadir `pytest-xdist` como opt-in local en `run_pytest_safe.py` para un subset unitario explicito, con medicion auditable y fallback seguro a ejecucion serial cuando el scope no sea apto, sin tocar el default del runner ni la semantica de cierre canonico.
 ## Non-goals
-- No reestructurar otra vez `backlog.md`; `012a` ya fijo el formato.
-- No tocar `scripts/archive_collaboration_artifacts.py`, `scripts/session_closeout.py`, `--mark-ready` ni el archivador del closeout.
-- No depender de comentarios HTML o prose libre para extraer semantica.
-- No degradar silenciosamente a warning permanente; el rollout solo puede ser explicito y acotado.
-- No editar `bus/runtime/events` manualmente.
+- No cambiar el default de `python scripts/run_pytest_safe.py` sin flags.
+- No paralelizar `--level all`, `--level integration` ni el cierre canonico.
+- No tocar CI/workflows ni reabrir `010m`.
+- No convertir xdist en politica por defecto; eso pertenece a `011i`.
+- No relajar la barrera de state-leak ni la validacion `tested_commit_sha/level/args_mode`.
 ## Premisas verificadas antes de Builder
-- `WOT-2026-012a` ya quedo `COMPLETED` y dejo la cola viva en formato parseable con columna `Reactivation`.
-- `T-012B-001` ya esta congelado en `ticket_contracts.md`.
-- El gate debe ejecutarse desde `repo_motor`, pero leer `repo_destino` de forma topologica; depender del cwd dogfooding seria un bug.
-- La cola viva ya no debe contener `012a` como ticket activo ni terminal mezclado.
+- `010m` ya quedo separado como piloto CI y `011i` como follow-up si este opt-in local sale estable.
+- `scripts/run_pytest_safe.py` hoy solo distingue `unit|integration|all`, no ofrece flag xdist y el guard de handoff sigue exigiendo `level=all` + `args_mode=default_discovery`.
+- `pyproject.toml` no declara aun `pytest-xdist`.
 ## Decision Arquitectonica
-`012b` introduce una barrera unica en `repo_motor`: validar solo la tabla activa del backlog vivo y fallar cerrada ante drift estructural o semantico. La autoridad del dato sigue en `repo_destino`; el motor solo la consume via `--project-root` o `AGENT_PROJECT_ROOT`, sin leer seeds del motor ni acoplarse al archivador del closeout.
+`011e` implementa un camino local y explicito: un flag de paralelizacion que solo se activa sobre subset unitario explicito, registra si xdist se habilito o si se replego a serial, y deja intacto el camino canonico que usa el closeout. La frontera queda asi: `011e` = runner local opt-in medido; `010m` = CI; `011i` = evaluar default futuro.
 ## Files Likely Touched
 ### repo_motor
-- scripts/check_backlog_contract.py
-- tests/unit/test_check_backlog_contract.py
-- tests/unit/test_no_legacy_topology_terms.py
-- tests/unit/test_run_gates_dispatch.py
-- scripts/run_gates_dispatch.py
+- pyproject.toml
+- uv.lock
+- scripts/run_pytest_safe.py
+- tests/unit/test_run_pytest_safe.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
+- scripts/pre_handoff_guard.py
+- docs/test_performance/test_performance_baseline_WOT-2026-010j.md
+- docs/test_performance/test_performance_followup_WOT-2026-010k.md
+- .agent/runtime/pytest-safe/last-run.json
 - .agent/collaboration/backlog.md
-- .agent/collaboration/STATE.md
-- .agent/collaboration/TURN.md
-- scripts/check_deliverables_exist.py
-- scripts/validate_ticket_prose.py
 ## Forbidden Surfaces
-- lectura de `backlog.md` relativa al cwd
-- dependencia en HTML comments o prose libre
-- vocabulario nuevo de estados fuera del cerrado por `012a`
-- edicion manual de `bus/runtime/events`
-- tocar archivador, session close o barreras de cierre ajenas
+- cambiar la logica de handoff de `scripts/pre_handoff_guard.py`
+- tocar `scripts/run_gates_dispatch.py` o workflows de CI
+- convertir xdist en default implicito
+- aceptar pass-open silencioso cuando el scope no sea seguro
+- tocar `privada/`, `.env` o `bus/runtime/events` manualmente
 ## Criterios binarios
-- Existe `scripts/check_backlog_contract.py` y falla con `exit != 0` ante violaciones estructurales o semanticas obligatorias.
-- Falla cerrado si faltan `--project-root` y `AGENT_PROJECT_ROOT`.
-- Parsea solo la tabla activa y valida columnas, encabezados `### WOT-...`, vocabulario cerrado de `Status` y formato permitido de `Reactivation`.
-- La lista de estados vivos queda codificada en el gate: `pending`, `blocked`, `deferred`, `ready-for-review`, `awaiting-manager`, `completed-partial`.
-- Existe barrera de regresion que demuestra PASS con backlog valido y FAIL sin `--project-root`/`AGENT_PROJECT_ROOT`.
-- `ruff`, tests focales, suite aplicable y `validate --json --project-root <repo_destino>` quedan verdes.
+- `pytest-xdist` queda declarado en dependencias dev y reflejado en `uv.lock`.
+- `scripts/run_pytest_safe.py` expone un flag opt-in de xdist y mantiene backward-compat total cuando no se usa.
+- El flag solo habilita paralelizacion para subset unitario explicito; fuera de ese contrato el runner cae a serial con razon auditable.
+- El runner registra en `last-run.json` si xdist fue solicitado, habilitado, con cuantos workers y, si no, el motivo de fallback.
+- Existe al menos una prueba FAIL-sin/PASS-con para la ruta xdist y otra para el fallback seguro.
+- El Builder deja en `execution_log.md` una medicion comparando el mismo subset unitario en serial vs xdist sobre este host.
+- `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si el parser necesita HTML comments o prose libre.
-- Parar si el gate lee accidentalmente el seed del motor en vez del `repo_destino`.
-- Parar si la semantica de `Reactivation` no puede distinguir trigger estructurado de prosa vaga.
-- Parar si la unica integracion posible es warning permanente.
+- Parar si la unica implementacion viable cambia el default del runner o afecta el camino canonico de closeout.
+- Parar si xdist obliga a relajar la barrera de state-leak o rompe cobertura/semantica del subset.
+- Parar si el subset seguro no puede definirse sin tocar CI o sin mezclar `010m`/`011i`.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-012b.md` si el backlog post-`012a` no expone schema suficiente, si la resolucion topologica del destino no puede fallar cerrada, o si la integracion exige acoplar el gate al archivador del closeout.
+Emitir `CG-WOT-2026-011e.md` si el opt-in local requiere alterar `pre_handoff_guard.py`, si `pytest-xdist` no puede integrarse sin abrir el default del runner, o si el fallback seguro no puede distinguir subset unitario apto de suite canonica.

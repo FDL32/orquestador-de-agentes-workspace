@@ -1081,7 +1081,8 @@
 - **CONTRACT_GAP behavior:** si el parser necesita HTML comments/prose, si el backlog post-012a no expone schema suficiente, o si la resolucion topologica del destino no puede fallar cerrada, emitir `CG-WOT-2026-012b.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el gate lee accidentalmente el seed del motor; parar si la validacion semantica de `Reactivation` no puede distinguir triggers validos de prosa vaga; parar si la integracion solo puede hacerse como warning permanente.
-- **Depende de:** WOT-2026-012a.
+- **Depende de:** WOT-2026-012a.
+
 
 ## T-011C-001 -- BOM/control-char SOURCE audit (code-spike, sin fix)
 
@@ -1110,7 +1111,8 @@
 - **CONTRACT_GAP behavior:** si identificar la fuente exigiera MODIFICAR un escritor (motor o destino) para probar la hipotesis, detener y emitir `CG-WOT-2026-011c.md`: el spike es read-only sobre escritores; probar-modificando ya es el fix, que es follow-up.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar y entregar el reporte en cuanto la fuente quede identificada con evidencia (no seguir hacia el fix); parar si la unica forma de avanzar es modificar un escritor; parar si la fuente resulta ser el entorno del host (PowerShell 5.1 Out-File default BOM) y el fix excede repo_destino.
-- **Depende de:** WOT-2026-010v.
+- **Depende de:** WOT-2026-010v.
+
 ## T-011J-001 -- Corregir fuente BOM en writer PowerShell y preparar regeneracion limpia de 012a
 - **ticket_id:** WOT-2026-011j
 - **status:** frozen
@@ -1118,7 +1120,8 @@
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-011J-001
 - **Plan-Link:** PLAN-011J-001
-- **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con Set-Content/Out-File -Encoding UTF8. A la vez, la cola viva actual (acklog.md) ya esta limpia; los 3 control chars que siguen bloqueando  12a viven solo en _archive/backlog_done.md y _archive/backlog_pre_012a.md. Por tanto  11j no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en epo_motor y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de  12a.
+- **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con Set-Content/Out-File -Encoding UTF8. A la vez, la cola viva actual (acklog.md) ya esta limpia; los 3 control chars que siguen bloqueando  12a viven solo en _archive/backlog_done.md y _archive/backlog_pre_012a.md. Por tanto  11j no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en 
+epo_motor y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de  12a.
 - **Premise Re-check (read-only):** confirmar que python scripts/check_encoding_guard.py .agent/collaboration/backlog.md sale verde y que el mismo guard sobre _archive/backlog_done.md y _archive/backlog_pre_012a.md falla por los 3 control chars historicos; releer .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md; inspeccionar scripts/launch_agent_terminals.ps1 para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de WT-2026-248a; localizar barreras existentes en 	ests/test_opencode_config_stability.py y 	ests/test_launch_agent_terminals_script.py; ejecutar python .agent/agent_controller.py --validate --json --project-root <repo_destino> antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** 011c_report=completed; active_backlog_encoding=clean; archive_backlog_encoding=3_control_chars; launcher_bom_primitives=Set-Content -Encoding UTF8,Out-File -Encoding UTF8; generated_at=2026-06-19.
 - **Files Likely Touched:**
@@ -1136,7 +1139,41 @@
   - [ ] python scripts/check_encoding_guard.py sobre las superficies propias del ticket queda verde.
   - [ ] uv run ruff check sobre los Python tocados, python -m pytest focal aplicable, python scripts/run_pytest_safe.py --project-root <repo_destino> y python .agent/agent_controller.py --validate --json --project-root <repo_destino> quedan verdes.
 - **Integracion cross-ticket:** desbloquea el relanzamiento de WOT-2026-012a, pero no lo cierra ni regenera sus archives dentro del mismo ticket.  12a se relanza despues para reconstruir _archive/backlog_done.md y _archive/backlog_pre_012a.md desde la fuente viva ya limpia.
-- **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en epo_motor, o si el unico camino a verde exige editar manualmente los archives de  12a, o si el fix real cae en gent_controller.py / guard de encoding fuera de la superficie declarada, emitir CG-WOT-2026-011j.md, bloquear y devolver a Contract Formation.
+- **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en 
+epo_motor, o si el unico camino a verde exige editar manualmente los archives de  12a, o si el fix real cae en gent_controller.py / guard de encoding fuera de la superficie declarada, emitir CG-WOT-2026-011j.md, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el fix exige broadening a una caza general de writers PowerShell fuera de la superficie declarada; parar si el ticket deriva en reconstruccion manual de historico; parar si el rojo restante pertenece solo a  12a y requiere relanzar ese ticket en lugar de seguir ampliando  11j.
 - **Depende de:** WOT-2026-011c (COMPLETED); WOT-2026-010v (COMPLETED).
+
+## T-011E-001 -- pytest-xdist opt-in local medido para subset unitario
+
+- **ticket_id:** WOT-2026-011e
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011E-001
+- **Plan-Link:** PLAN-011E-001
+- **Premise:** `scripts/run_pytest_safe.py` ya soporta `level=unit|integration|all`, selector focal y cierre canonico por `last-run.json`, pero no ofrece un camino local, medido y opt-in para paralelizar un subset unitario con `pytest-xdist`. `010m` ya quedo acotado a CI (`keep-both-with-boundary`) y `011i` queda reservado a evaluar un cambio por defecto solo si este opt-in local sale estable.
+- **Premise Re-check (read-only):** releer `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `scripts/pre_handoff_guard.py`, `pyproject.toml`, `uv.lock` y `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; verificar que `pytest-xdist` aun no esta declarado; verificar que el guard de handoff sigue exigiendo `level=all` + `args_mode=default_discovery` y no debe cambiarse en este ticket.
+- **Context Baseline Evidence:** canonical_suite_recent=`3051 passed, 20 skipped, 5 deselected in 449.14s`; xdist_declared=false; boundary_010m=`local-vs-CI`; generated_at=2026-06-20.
+- **Files Likely Touched:**
+  - Builder repo_motor: `pyproject.toml`
+  - Builder repo_motor: `uv.lock`
+  - Builder repo_motor: `scripts/run_pytest_safe.py`
+  - Builder repo_motor: `tests/unit/test_run_pytest_safe.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/pre_handoff_guard.py`; `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; `docs/test_performance/test_performance_followup_WOT-2026-010k.md`; `.agent/runtime/pytest-safe/last-run.json`; `.agent/collaboration/backlog.md`.
+- **Forbidden Surfaces:** `scripts/pre_handoff_guard.py`; `scripts/run_gates_dispatch.py`; CI/workflows; cambio implicito del default de `run_pytest_safe.py`; relax de `level=all` o `args_mode=default_discovery`; `privada/`; `.env`; `bus/runtime/events` manuales.
+- **DoD:**
+  - [ ] `pytest-xdist` queda declarado en dependencias dev y reflejado en `uv.lock`.
+  - [ ] `scripts/run_pytest_safe.py` expone un flag opt-in de xdist con backward-compat total cuando no se usa.
+  - [ ] El camino xdist solo se activa para subset unitario explicito; fuera de ese contrato el runner cae a serial con razon auditable, no a pass-open silencioso.
+  - [ ] `last-run.json` registra `xdist_requested`, `xdist_enabled`, `xdist_workers` y `xdist_reason` (o equivalente semantico estable).
+  - [ ] Existe al menos una barrera FAIL-sin/PASS-con para la ruta xdist y otra para el fallback seguro.
+  - [ ] El Builder deja en `execution_log.md` una medicion serial-vs-xdist sobre el mismo subset unitario y el mismo host.
+  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** mantiene `010m` fuera de scope (CI) y `011i` fuera de scope (default futuro). No puede tocar la barrera canonica de handoff ni degradar el cierre a un run focal.
+- **CONTRACT_GAP behavior:** si el opt-in local exige cambiar `pre_handoff_guard.py`, si `pytest-xdist` no puede integrarse sin abrir el default del runner, o si el fallback seguro no puede distinguir subset unitario apto de suite canonica, emitir `CG-WOT-2026-011e.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica implementacion viable toca CI o cambia el default del runner; parar si xdist rompe state-leak/cobertura del subset; parar si el subset seguro no puede definirse sin mezclar `010m` o `011i`.
+- **Depende de:** -.
