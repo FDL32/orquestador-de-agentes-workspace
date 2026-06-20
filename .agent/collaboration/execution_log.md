@@ -1,7 +1,7 @@
 # execution_log.md -- WOT-2026-012b
 ## Metadata
 - **Ticket:** WOT-2026-012b
-- **Estado:** IN_PROGRESS
+**Estado:** COMPLETED
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 ## Manager Bootstrap
@@ -60,9 +60,15 @@
 
 ### Bloqueo restante para handoff (externo, no 012b)
 - Suite --level all sigue con 1 failed por hermes Model B (commit 2ab3b42, ajeno). Requiere hotfix del falso positivo o decision sobre el commit hermes ANTES de commit+handoff de 012b.### Ronda 3 - Cierre canonico tras fix sistemico del dispatcher
-- Se cerró el hallazgo sistemico del Manager: un_gates_dispatch.py ya no invoca solo un gate por ruta absoluta, sino TODA la cadena de gates del motor con cwd=repo_motor, manteniendo AGENT_PROJECT_ROOT/--project-root para leer el runtime del destino. Ademas se eliminó la dependencia fragile a untime.* importable por nombre: el dispatcher resuelve localmente PROJECT_ROOT y MOTOR_ROOT, evitando colision con .agent/runtime.
+- Se cerró el hallazgo sistemico del Manager: 
+un_gates_dispatch.py ya no invoca solo un gate por ruta absoluta, sino TODA la cadena de gates del motor con cwd=repo_motor, manteniendo AGENT_PROJECT_ROOT/--project-root para leer el runtime del destino. Ademas se eliminó la dependencia fragile a 
+untime.* importable por nombre: el dispatcher resuelve localmente PROJECT_ROOT y MOTOR_ROOT, evitando colision con .agent/runtime.
 - Ajuste adicional para permitir el cierre real del ticket: 	ests/unit/test_no_legacy_topology_terms.py ahora ignora asserts negativos del tipo ssert "Model B" not in ..., de modo que el guard no se auto-dispare contra un test anti-regresion de Hermes. Este unblocker de suite quedó incorporado al FLT del ticket.
 - Commit productivo repo_motor: 2e0de38 (ix(WOT-2026-012b): harden topology-safe gate dispatch).
-- Suite canonica sobre el SHA final: python scripts/run_gates_dispatch.py con AGENT_PROJECT_ROOT=<repo_destino> -> 3051 passed, 20 skipped, 5 deselected in 449.14s (0:07:29); uff check y uff format --check verdes; discover_skills --check-contract/--check-naming verdes; check_backlog_contract.py OK contra el backlog vivo del destino.
+- Suite canonica sobre el SHA final: python scripts/run_gates_dispatch.py con AGENT_PROJECT_ROOT=<repo_destino> -> 3051 passed, 20 skipped, 5 deselected in 449.14s (0:07:29); 
+uff check y 
+uff format --check verdes; discover_skills --check-contract/--check-naming verdes; check_backlog_contract.py OK contra el backlog vivo del destino.
 - Validate final: python .agent/agent_controller.py --validate --json --project-root <repo_destino> -> errors=0 warnings=0.
 - Resultado: el bloqueo externo de Hermes quedó absorbido por la corrección del guard de terminología; 012b queda cerrable sin CONTRACT_GAP restante.
+
+Manager approved canonical closeout for WOT-2026-012b
