@@ -254,6 +254,31 @@
 - solucion vigente: opt-in xdist 011e + piloto CI 010m. `--level all` serial e intacto.
 - sucesor recomendado (no contratado): ticket de PRODUCTO para escaneo robusto ante borrados concurrentes.
 
+
+## PLAN-013D-001 -- Escaneo robusto de proyecto ante borrados concurrentes
+
+- objetivo: endurecer las 3 travesias de escaneo verificadas en PRODUCTO (`scripts/project_scanner.py` en `_collect_local_modules()` y `scan_project()`, `agent_system/scripts/project_paths.py` en `resolve_paths()`) para que toleren subdirectorios volatiles borrados por otros workers, sin tocar la politica del runner ni mover el sandbox fuera del arbol.
+- tickets: [WOT-2026-013d]
+- depends_on: [WOT-2026-013c]
+- superficies_archivo:
+  - repo_motor/scripts/project_scanner.py
+  - repo_motor/agent_system/scripts/project_paths.py
+  - repo_motor/tests/unit/test_project_scanner.py
+  - repo_motor/tests/test_project_paths.py
+  - repo_motor/tests/unit/test_detect_version.py
+  - repo_motor/tests/unit/test_no_inline_ticket_regex.py
+  - repo_motor/tests/conftest.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `scan_project()`
+  - `_collect_local_modules()`
+  - `ProjectPathsResolver.resolve_paths()`
+  - `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load`
+- shared_dependencies:
+  - `tests/sandbox/test_runtime/` como superficie volatil real (baseline `session_dirs=566`); su limpieza se expresa via `tests/conftest.py`, no como edicion manual del arbol sandbox
+  - `scripts/run_pytest_safe.py` y politica xdist/default (read-only; frontera cerrada por 011e/010m/011i)
+  - `tests/unit/test_windows_safe_temp_runtime.py` como guardia de la invariante sandbox-dentro (read-only)
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -273,6 +298,7 @@
 | PLAN-013B-002 | [CANCELADO/ABSORBED] sin superficie operativa | n/a (absorbido por PLAN-011I-001) | n/a -- premisa refutada (ver `CG-WOT-2026-013b.md`); no se planifica | ninguna; la deuda real (politica de reparto) la lleva PLAN-011I-001 | n/a |
 | PLAN-011I-001 | [NOT-PURSUED] sin superficie operativa | n/a (default xdist no perseguido; ver `CG-WOT-2026-011i.md`) | n/a -- premisa loadscope refutada; opt-in 011e+010m es el estado final | ninguna; follow-up opcional = robustecer 3 tests global-state (no contratado) | n/a |
 | PLAN-013C-001 | [BLOCKED-FINAL] sin superficie operativa | n/a (cura en producto; ver `CG-WOT-2026-013c.md`) | n/a -- la cura toca rglob de producto o rompe invariante sandbox; tests-only no basta | ninguna; sucesor = ticket de producto (escaneo robusto a borrados concurrentes) | n/a |
+| PLAN-013D-001 | product scanner/project_paths + tests focales/fixture de sandbox; bitacora en repo_destino | `tests/sandbox/test_runtime` volatil, runner xdist read-only, invariante sandbox-dentro | conflicto si otro ticket toca `project_scanner`, `project_paths`, `tests/conftest.py` o reabre la politica xdist/default mientras 013d endurece el escaneo | serializar con tickets que toquen escaneo de proyecto, fixture de sandbox o politica xdist; revalidar triple xdist x3 + tests focales + `--level all` + `validate` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -308,4 +334,5 @@ Para 011h, cualquier merge con tickets que toquen `.agent/agent_controller.py`, 
 Para 013b, cualquier merge con tickets que toquen `tests/unit/test_project_root_resolution.py`, `scripts/run_pytest_safe.py` o `runtime/project_root.py` obliga a revalidar la union con `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`, `python -m pytest tests/unit -q`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 011i, cualquier merge con tickets que toquen `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `quality-gates.yml` o la politica xdist/default obliga a revalidar la union con tests focales del runner, `python scripts/run_pytest_safe.py --level unit`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Nota historica 013c (BLOCKED-FINAL, ver `CG-WOT-2026-013c.md`): el aislamiento tests-only no era viable; la cura pertenece a un ticket de producto (rglob robusto a borrados concurrentes). No hay plan activo de 013c que serializar.
+Para 013d, cualquier merge con tickets que toquen `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/conftest.py` o la politica de xdist/default obliga a revalidar la union con el triple xdist (`test_upgrade_path_suggestion`, `test_scan_current_project`, `test_no_inline_ticket_regex`) en 3 corridas consecutivas, los tests focales de scanner/project_paths, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 

@@ -22,9 +22,33 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
+| Alta | WOT-2026-013d | Escaneo robusto de proyecto ante borrados concurrentes | motor/project-scan | pending | WOT-2026-013c | session-2026-06-21-013c-product-followup | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> No quedan tickets accionables vivos. `013c` cerro como `blocked-final` (CG): la cura de los 3 tests global-state exige tocar el rglob de PRODUCTO (project_scanner/project_paths) o romper la invariante sandbox-dentro (test_windows_safe). La deuda pasa a un ticket de producto futuro (escaneo robusto a borrados concurrentes). `011i`/`013b` cerrados (not-pursued/absorbed). `002c` (`completed-partial`) y `256a` (`blocked` externo) fuera por naturaleza.
+> `013c` cerro como `blocked-final` (CG) y su follow-up correcto ya no es tests-only: `013d` recoge la cura en PRODUCTO sobre `project_scanner` / `project_paths`, con prueba xdist estable y limpieza determinista del sandbox volatil. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+
+
+### WOT-2026-013d - Escaneo robusto de proyecto ante borrados concurrentes
+- **Prioridad:** Alta
+- **Scope:** motor/project-scan
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-013c
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-013c-product-followup.
+- **Problema (VERIFICADO):** `013c` demostro que el rojo xdist no nace en una familia aislable de tests, sino en el escaneo de PRODUCTO: `scripts/project_scanner.py` hace `rglob("*.py")` en `_collect_local_modules()` y `rglob("*")` en `scan_project()`, mientras `agent_system/scripts/project_paths.py` hace `rglob(".agent")` en `resolve_paths()`. Los tres recorridos pueden descender a `tests/sandbox/test_runtime/session_*` mientras otros workers borran subarboles, provocando `FileNotFoundError`/`Acceso denegado` antes del filtro de exclusion. Baseline verificado: `tests/sandbox/test_runtime` contiene `session_dirs=566`.
+- **Objetivo:** volver robusto el escaneo de proyecto ante borrados concurrentes y ruido de sandbox volatil, sin tocar la politica del runner ni reabrir el default xdist. El entregable es producto + barreras de test que demuestren que el triple rojo historico queda estable bajo xdist.
+- **Files Likely Touched:**
+  - repo_motor: `scripts/project_scanner.py`
+  - repo_motor: `agent_system/scripts/project_paths.py`
+  - repo_motor: `tests/unit/test_project_scanner.py`
+  - repo_motor: `tests/test_project_paths.py`
+  - repo_motor: `tests/unit/test_detect_version.py`
+  - repo_motor: `tests/unit/test_no_inline_ticket_regex.py`
+  - repo_motor: `tests/conftest.py`
+- **Criterios binarios:** los 3 puntos de escaneo verificados (`scripts/project_scanner.py` en `_collect_local_modules` y `scan_project`, `agent_system/scripts/project_paths.py` en `resolve_paths`) quedan robustos frente a subdirectorios que desaparecen durante la travesia; existe limpieza determinista del ruido en `tests/sandbox/test_runtime`, gestionada via fixture/harness en `tests/conftest.py` (el sandbox es efecto colateral controlado, no superficie de edicion manual), y el baseline/post queda registrado en `execution_log.md`; `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` queda verde en al menos 3 corridas consecutivas sobre el mismo host; `python -m pytest tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py -q`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes; el diff productivo queda acotado a escaneo de producto + tests/fixtures declarados, sin tocar runner, CI ni default xdist.
+- **STOP:** si la unica cura segura exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, CI o la politica default/opt-in de xdist; si la unica forma de estabilizar el triple verde exige mover el sandbox fuera del arbol o romper la invariante custodiada por `tests/unit/test_windows_safe_temp_runtime.py`; o si la reproduccion deja de concentrarse en las superficies declaradas y reaparece como deuda de runner/global-state ajena, parar y emitir `CG-WOT-2026-013d.md`.

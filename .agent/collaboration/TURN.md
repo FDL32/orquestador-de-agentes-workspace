@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-21 18:16:47
+**Ultima actualizacion:** 2026-06-21 18:45:00
 
 ---
 
@@ -9,7 +9,7 @@
 | Campo | Valor |
 |-------|-------|
 | **ROL** | **BUILDER** |
-| **Plan ID** | WOT-2026-013c |
+| **Plan ID** | WOT-2026-013d |
 | **Tipo** | IMPLEMENT |
 | **Accion** | IMPLEMENT |
 
@@ -17,7 +17,7 @@
 
 ## Instruccion
 
-> Implementa WOT-2026-013c segun T-013C-001. Reproduce primero el triple serial/xdist; si el rojo deja de pertenecer a esos 3 tests o exige tocar runner/CI/producto, para y emite CONTRACT_GAP.
+> Implementa WOT-2026-013d segun T-013D-001. Reproduce primero el triple xdist y recaptura el baseline del sandbox; si la unica cura exige tocar runner/CI o mover el sandbox fuera del arbol, para y emite CONTRACT_GAP.
 
 ---
 
@@ -30,4 +30,4 @@
 
 ---
 
-*Preparado documentalmente para WOT-2026-013c*
+*Preparado documentalmente para WOT-2026-013d*
