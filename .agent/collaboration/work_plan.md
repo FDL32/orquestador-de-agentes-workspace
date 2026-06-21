@@ -35,6 +35,7 @@ Anadir un piloto CI xdist estrictamente aditivo en `.github/workflows/quality-ga
 - docs/test_performance/test_performance_baseline_WOT-2026-010j.md
 - docs/test_performance/test_performance_followup_WOT-2026-010k.md
 - .agent/runtime/pytest-safe/last-run.json
+- .agent/collaboration/backlog.md
 - .agent/collaboration/_archive/backlog_done.md
 ## Forbidden Surfaces
 - tocar `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `scripts/pre_handoff_guard.py` o `scripts/run_gates_dispatch.py`

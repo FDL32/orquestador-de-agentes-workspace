@@ -1157,14 +1157,14 @@
   - Builder repo_motor: `.github/workflows/quality-gates.yml`
   - Builder repo_motor: `tests/unit/test_quality_gates_workflow.py`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `.agent/runtime/pytest-safe/last-run.json`; `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; `docs/test_performance/test_performance_followup_WOT-2026-010k.md`; `.agent/collaboration/backlog.md`.
+- **Read/inspect only:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `.agent/runtime/pytest-safe/last-run.json`; `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; `docs/test_performance/test_performance_followup_WOT-2026-010k.md`; `.agent/collaboration/backlog.md`; `.agent/collaboration/_archive/backlog_done.md`.
 - **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `scripts/run_gates_dispatch.py`; cambio implicito del default del runner o del camino canonico `--level all`; otros workflows; `privada/`; `.env`; eventos del bus escritos manualmente.
 - **DoD:**
   - [ ] `.github/workflows/quality-gates.yml` incorpora un piloto CI xdist aditivo y explicitamente acotado, sin eliminar ni alterar la corrida serial canonica existente.
   - [ ] El piloto usa `scripts/run_pytest_safe.py` con `--xdist-workers <N>` solo sobre la superficie permitida del ticket; el camino canonico en CI sigue sin xdist.
   - [ ] `tests/unit/test_quality_gates_workflow.py` aporta una barrera FAIL-sin/PASS-con que falla si desaparece el piloto o si la corrida canonica adopta xdist por accidente.
   - [ ] `execution_log.md` deja evidencia auditable de la separacion entre piloto CI y cierre canonico, con resultado o medicion del piloto.
-  - [ ] `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff check tests/unit/test_quality_gates_workflow.py`, `uv run ruff format --check tests/unit/test_quality_gates_workflow.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 - **Integracion cross-ticket:** consume la capacidad xdist creada por `011e`, pero no la reabre; no convierte el piloto en default (`011i`) ni toca la barrera canonica de handoff. Si los tests no parallel-safe exigen aislar subset adicional fuera del workflow/test declarados, el ticket debe parar.
 - **CONTRACT_GAP behavior:** si el piloto CI no puede definirse sin tocar `scripts/run_pytest_safe.py`, si la unica via verde convierte xdist en default o lo mete en el camino canonico `--level all`, o si el subset seguro exige expansion a nuevas superficies del runner/selector, emitir `CG-WOT-2026-010m.md` y bloquear.
 - **Builder clarification budget:** 0.
