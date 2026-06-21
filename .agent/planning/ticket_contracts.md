@@ -1356,32 +1356,74 @@
 - **STOP conditions:** parar si la deteccion solo puede expresarse como `dirty tree` generico; parar si reproducir el limbo real exige tocar `--session-close` en vez de la ruta de handoff; parar si el fix solo puede vivir fuera de las superficies declaradas.
 - **Depende de:** WOT-2026-011a (COMPLETED); WOT-2026-011d (COMPLETED).
 
-## T-013B-001 -- Aislar los 3 tests no parallel-safe del subset unitario xdist
+## T-013B-001 -- Hacer parallel-safe `tests/unit/test_project_root_resolution.py` (re-contrato split)
 
 - **ticket_id:** WOT-2026-013b
 - **status:** frozen
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-013B-001
-- **Plan-Link:** PLAN-013B-001
-- **Premise:** `011e` ya entrego `pytest-xdist` como opt-in local y `010m` ya lo consumio en CI como piloto non-blocking, pero el default del runner sigue bloqueado porque el subset unitario aun contiene 3 tests no parallel-safe bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`. La cantidad y el efecto estan documentados; los nombres exactos deben rederivarse en Fase 0 desde una reproduccion actual antes de fijar el diff productivo.
-- **Premise Re-check (read-only):** confirmar `WOT-2026-011e` y `WOT-2026-010m` COMPLETED; releer `.agent/collaboration/_archive/backlog_done.md`, `.agent/collaboration/execution_log.md` y `tests/unit/`; confirmar que el cierre de `011e` sigue declarando 3 tests no parallel-safe y que `010m` mantuvo el piloto como non-blocking por esa razon; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
-- **Context Baseline Evidence:** xdist_opt_in_completed=true; xdist_ci_pilot_completed=true; documented_non_parallel_safe_count=3; exact_test_names_materialized=false; generated_at=2026-06-21.
+- **Plan-Link:** PLAN-013B-002
+- **Revision:** re-contrato tras `CG-WOT-2026-013b.md` (2026-06-21). La premisa original
+  ("aislar 3 tests no parallel-safe") quedo refutada por la reproduccion de Fase 0: el
+  rojo bajo xdist son 11-12 fallos inestables (un test flaky entra/sale), no 3, y 11 de
+  ellos pertenecen a un unico archivo `tests/unit/test_project_root_resolution.py` con la
+  misma causa raiz: `importlib.reload(runtime.project_root)` muta estado global de modulo
+  compartido entre workers, dando `ImportError: runtime.project_root not in sys.modules`
+  segun el reparto de carga. Evidencia: un test representativo pasa aislado y con `-n 2`,
+  solo falla con 8 workers. El contrato se re-acota a la familia real y unica.
+- **Premise (revisada y verificada):** la falta de parallel-safety del subset unit se
+  origina en `tests/unit/test_project_root_resolution.py` (13 tests, casi todos hacen
+  `importlib.reload` de `runtime.project_root`). Volver ese archivo parallel-safe SIN tocar
+  el runner es suficiente y necesario para la familia 013b. La politica de distribucion del
+  runner (`--dist loadscope`, default xdist) NO pertenece a este ticket: es de la familia
+  `011e`/`011i`.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-011e` y `WOT-2026-010m` COMPLETED;
+  releer `tests/unit/test_project_root_resolution.py` y `runtime/project_root.py`; reproducir
+  el rojo con `uv run python scripts/run_pytest_safe.py --level unit --xdist-workers auto`
+  y confirmar que el grueso del rojo es ese archivo con firma `not in sys.modules`; ejecutar
+  `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`.
+- **Context Baseline Evidence:** xdist_opt_in_completed=true; xdist_ci_pilot_completed=true;
+  red_is_single_file_family=true; family_file=`tests/unit/test_project_root_resolution.py`;
+  root_cause=`importlib.reload-on-shared-global-module`; documented_count_refuted=3;
+  reproduced_red_count="11-12 (unstable)"; generated_at=2026-06-21.
 - **Files Likely Touched:**
-  - Builder repo_motor: `tests/unit/`
+  - Builder repo_motor: `tests/unit/test_project_root_resolution.py`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** `scripts/run_pytest_safe.py`; `.agent/runtime/pytest-safe/last-run.json`; `.agent/collaboration/_archive/backlog_done.md`; `.agent/collaboration/execution_log.md`; docs de performance `WOT-2026-010j`/`010k`.
-- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; workflows/CI; `.agent/agent_controller.py`; codigo productivo fuera de tests; `privada/`; `.env`; eventos del bus manualmente.
+- **Read/inspect only:** `runtime/project_root.py`; `scripts/run_pytest_safe.py`;
+  `.agent/runtime/pytest-safe/last-run.json`; `CG-WOT-2026-013b.md`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py` (incluido cualquier cambio de
+  distribucion como `--dist loadscope`/default xdist -> es 011e/011i, NO 013b);
+  `scripts/pre_handoff_guard.py`; workflows/CI; `.agent/agent_controller.py`; `runtime/`
+  ni codigo productivo fuera de tests; otros archivos de `tests/unit/` salvo que la Fase 0
+  demuestre que comparten exactamente la misma causa raiz de modulo global; `privada/`;
+  `.env`; eventos del bus manualmente.
 - **DoD:**
-  - [ ] La Fase 0 deja en `execution_log.md` los nombres exactos y la firma del rojo reproducido bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`.
-  - [ ] El diff productivo queda acotado a `tests/unit/`; no toca runner ni codigo productivo.
-  - [ ] `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` queda verde en el mismo host.
-  - [ ] Existe al menos una demostracion FAIL-sin/PASS-con sobre el set reproducido, no sobre un proxy cosmético.
-  - [ ] `python -m pytest tests/unit -q`, `ruff check tests/unit`, `uv run ruff format --check tests/unit`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
-- **Integracion cross-ticket:** desbloquea `011i` sin reabrir `011e` ni `010m`; si el rojo apunta al runner o a producto, ese follow-up pertenece a otra familia y `013b` debe bloquear.
-- **CONTRACT_GAP behavior:** si el rerun no reproduce un set estable y exige investigacion mas amplia, si algun rojo queda fuera de `tests/unit/`, o si la unica via verde toca runner, handoff, workflows o codigo productivo, emitir `CG-WOT-2026-013b.md` y bloquear.
+  - [ ] La Fase 0 deja en `execution_log.md` la reproduccion actual (conteo, nombres y firma
+        `not in sys.modules`) y confirma que la familia es `test_project_root_resolution.py`.
+  - [ ] El diff productivo queda acotado a `tests/unit/test_project_root_resolution.py`:
+        sus tests dejan de depender de `importlib.reload` de un modulo global compartido
+        (p.ej. aislar el import por test / restaurar `sys.modules` con cleanup determinista),
+        sin cambiar lo que cada test verifica.
+  - [ ] `uv run python scripts/run_pytest_safe.py --level unit --xdist-workers auto` queda
+        verde y ESTABLE (>=2 corridas seguidas sin el rojo de `not in sys.modules`) en el mismo host.
+  - [ ] Existe demostracion FAIL-sin/PASS-con sobre el rojo real (no un proxy cosmetico):
+        el archivo previo falla bajo `-n 8`, el reescrito pasa.
+  - [ ] `python -m pytest tests/unit -q`, `ruff check tests/unit/test_project_root_resolution.py`,
+        `uv run ruff format --check tests/unit/test_project_root_resolution.py`,
+        `python scripts/run_pytest_safe.py --level all` y
+        `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** desbloquea `011i` sin reabrir `011e` ni `010m`. La decision de
+  activar xdist por defecto para `--level unit` (y/o `--dist loadscope`) sigue siendo de `011i`,
+  que depende de que ESTE ticket cierre verde. Si la Fase 0 mostrara que la causa NO es el
+  `importlib.reload` de este archivo sino el runner, `013b` vuelve a bloquear (no se expande).
+- **CONTRACT_GAP behavior:** emitir `CG-WOT-2026-013b.md` si la unica via verde exige tocar el
+  runner/distribucion, si el rojo reproducido ya no es mayoritariamente `test_project_root_resolution.py`,
+  o si volver el archivo parallel-safe requiere cambiar `runtime/project_root.py` (codigo productivo).
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si los tests rojos actuales no son exactamente una familia de aislamiento de suite; parar si el fix exige tocar `scripts/run_pytest_safe.py` o cambiar la semantica de `--level unit`; parar si el rerun ya no reproduce y no hay evidencia suficiente para un diff responsable.
+- **STOP conditions:** parar si el fix exige tocar `scripts/run_pytest_safe.py` o la semantica de
+  `--level unit`; parar si el rojo deja de reproducirse y no hay evidencia para un diff responsable;
+  parar si la parallel-safety solo se logra modificando codigo productivo en `runtime/`.
 - **Depende de:** WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED).
 
 ## T-011I-001 -- Default xdist para `--level unit` tras aislar flakes

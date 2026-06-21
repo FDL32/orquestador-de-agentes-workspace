@@ -23,7 +23,7 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
-| Alta | WOT-2026-013b | Aislar los 3 tests no parallel-safe antes de promover xdist por defecto | motor/test-suite-hygiene | pending | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-pipeline-prep | - |
+| Alta | WOT-2026-013b | Hacer parallel-safe `test_project_root_resolution.py` antes de promover xdist por defecto | motor/test-suite-hygiene | pending | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-pipeline-prep | - |
 | Media | WOT-2026-011i | Tras 013b: activar xdist por defecto para `--level unit` | motor/test-suite-perf | pending | WOT-2026-011e, WOT-2026-010m, WOT-2026-013b | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 
@@ -50,7 +50,7 @@
 - **Criterios binarios:** `--mark-ready` bloquea con razon estable `archive_rename_uncommitted` si su auto-archivado deja limbo; el diagnostico conserva origen, destino y remediacion exacta; el caso limpio sigue dejando `READY_FOR_REVIEW` sin falso positivo; existe al menos una barrera FAIL-sin/PASS-con sobre la ruta real de `--mark-ready`; `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 - **STOP:** si la unica forma de cerrar el hueco es auto-commitear el archivador; si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; o si reproducir la mutacion real exige tocar `--session-close` otra vez en vez de la ruta de handoff, parar y emitir `CG-WOT-2026-011h.md`.
 
-### WOT-2026-013b - Aislar los 3 tests no parallel-safe antes de promover xdist por defecto
+### WOT-2026-013b - Hacer parallel-safe `test_project_root_resolution.py` antes de promover xdist por defecto
 - **Prioridad:** Alta
 - **Scope:** motor/test-suite-hygiene
 - **Estado:** pending
@@ -59,12 +59,12 @@
 - **Depende de:** WOT-2026-011e, WOT-2026-010m
 - **Reactivation:** -
 - **Origen:** session-2026-06-21-pipeline-prep.
-- **Problema (VERIFICADO):** `011e` dejo `pytest-xdist` como opt-in local y `010m` lo consumio en CI como piloto non-blocking, pero el default del runner sigue bloqueado por 3 tests no parallel-safe bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`. El numero y la existencia del problema estan documentados; los nombres exactos deben rederivarse con un rerun xdist actual antes de fijar el diff productivo.
-- **Objetivo:** reproducir el rojo xdist del subset unitario, fijar por evidencia los tests exactos y aislarlos del estado compartido del workspace/runtime para que `--level unit --xdist-workers auto` quede verde sin tocar runner, CI ni codigo productivo.
+- **Problema (VERIFICADO):** el `CG-WOT-2026-013b.md` refuto la premisa original de "3 tests". El rojo xdist reproducido son 11-12 fallos inestables, 11 de ellos concentrados en `tests/unit/test_project_root_resolution.py`, con firma dominante `ImportError: runtime.project_root not in sys.modules` al usar `importlib.reload()` sobre un modulo global compartido. El problema real es la falta de parallel-safety de ese archivo, no la politica del runner.
+- **Objetivo:** volver `tests/unit/test_project_root_resolution.py` parallel-safe para que `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` quede verde sin tocar runner, CI, `--dist loadscope`, default xdist ni codigo productivo en `runtime/`.
 - **Files Likely Touched:**
-  - repo_motor: `tests/unit/`
-- **Criterios binarios:** la Fase 0 deja en `execution_log.md` los nombres exactos y la firma del rojo reproducido; el diff productivo queda acotado a `tests/unit/`; `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` pasa en el mismo host; existe al menos una demostracion FAIL-sin/PASS-con sobre el set reproducido; `python -m pytest tests/unit -q`, `ruff check tests/unit`, `uv run ruff format --check tests/unit`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** si el rerun ya no reproduce un set estable y obliga a abrir una investigacion mas amplia; si algun rojo queda fuera de `tests/unit/`; o si la unica via verde toca `scripts/run_pytest_safe.py`, workflows, `pre_handoff_guard.py` o codigo productivo, parar y emitir `CG-WOT-2026-013b.md`.
+  - repo_motor: `tests/unit/test_project_root_resolution.py`
+- **Criterios binarios:** la Fase 0 deja en `execution_log.md` el conteo, los nombres y la firma `not in sys.modules`, confirmando que la familia real es `test_project_root_resolution.py`; el diff productivo queda acotado a ese archivo y deja de depender de `importlib.reload()` sobre un modulo global compartido; `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` queda verde y estable en >=2 corridas seguidas; existe demostracion FAIL-sin/PASS-con sobre el rojo real; `python -m pytest tests/unit -q`, `ruff check tests/unit/test_project_root_resolution.py`, `uv run ruff format --check tests/unit/test_project_root_resolution.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la unica via verde exige tocar `scripts/run_pytest_safe.py`, `--dist loadscope`, la politica default xdist, workflows o `pre_handoff_guard.py`; si el rojo reproducido deja de ser mayoritariamente `test_project_root_resolution.py`; o si volver el archivo parallel-safe exige tocar `runtime/project_root.py`, parar y emitir `CG-WOT-2026-013b.md`.
 
 ### WOT-2026-011i - Tras 013b: activar xdist por defecto para `--level unit`
 - **Prioridad:** Media
