@@ -2526,3 +2526,32 @@ Fila retirada de la cola viva:
 - **STOP:** si cualquier fix exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, `runtime/`, controller o codigo de producto; si al corregir esos 3 aparece otra familia roja dominante bajo xdist; o si la reproduccion deja de estar anclada en estos tests y pasa a ser deuda de runner otra vez, parar y emitir `CG-WOT-2026-013c.md`.
 
 - **Cierre:** blocked-final via CG-WOT-2026-013c.md. Causa raiz: el rglob de producto (scripts/project_scanner.py, agent_system/scripts/project_paths.py) recorre tests/sandbox/session_<PID> volatil y scandir explota antes del filtro ya-existente. Tests-only no basta: la alternativa solo-conftest (sandbox fuera) volvia verde el triple xdist estable x3 pero rompia test_windows_safe_temp_runtime (10 failed en --level all). Sucesor recomendado: ticket de PRODUCTO acotado a escaneo robusto ante borrados concurrentes (os.walk con poda, o ignorar FileNotFoundError).
+
+
+## Movido por cierre canonico WOT-2026-013d (COMPLETED 2026-06-21)
+
+| Alta | WOT-2026-013d | Escaneo robusto de proyecto ante borrados concurrentes | motor/project-scan | completed | WOT-2026-013c | session-2026-06-21-013c-product-followup | - |
+
+### WOT-2026-013d - Escaneo robusto de proyecto ante borrados concurrentes
+- **Prioridad:** Alta
+- **Scope:** motor/project-scan
+- **Estado:** completed (motor e251bd7; manager APPROVE)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-013c
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-013c-product-followup.
+- **Problema (VERIFICADO):** `013c` demostro que el rojo xdist no nace en una familia aislable de tests, sino en el escaneo de PRODUCTO: `scripts/project_scanner.py` hace `rglob("*.py")` en `_collect_local_modules()` y `rglob("*")` en `scan_project()`, mientras `agent_system/scripts/project_paths.py` hace `rglob(".agent")` en `resolve_paths()`. Los tres recorridos pueden descender a `tests/sandbox/test_runtime/session_*` mientras otros workers borran subarboles, provocando `FileNotFoundError`/`Acceso denegado` antes del filtro de exclusion. Baseline verificado: `tests/sandbox/test_runtime` contiene `session_dirs=566`.
+- **Objetivo:** volver robusto el escaneo de proyecto ante borrados concurrentes y ruido de sandbox volatil, sin tocar la politica del runner ni reabrir el default xdist. El entregable es producto + barreras de test que demuestren que el triple rojo historico queda estable bajo xdist.
+- **Files Likely Touched:**
+  - repo_motor: `scripts/project_scanner.py`
+  - repo_motor: `agent_system/scripts/project_paths.py`
+  - repo_motor: `tests/unit/test_project_scanner.py`
+  - repo_motor: `tests/test_project_paths.py`
+  - repo_motor: `tests/unit/test_detect_version.py`
+  - repo_motor: `tests/unit/test_no_inline_ticket_regex.py`
+  - repo_motor: `tests/conftest.py`
+- **Criterios binarios:** los 3 puntos de escaneo verificados (`scripts/project_scanner.py` en `_collect_local_modules` y `scan_project`, `agent_system/scripts/project_paths.py` en `resolve_paths`) quedan robustos frente a subdirectorios que desaparecen durante la travesia; existe limpieza determinista del ruido en `tests/sandbox/test_runtime`, gestionada via fixture/harness en `tests/conftest.py` (el sandbox es efecto colateral controlado, no superficie de edicion manual), y el baseline/post queda registrado en `execution_log.md`; `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` queda verde en al menos 3 corridas consecutivas sobre el mismo host; `python -m pytest tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py -q`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes; el diff productivo queda acotado a escaneo de producto + tests/fixtures declarados, sin tocar runner, CI ni default xdist.
+- **STOP:** si la unica cura segura exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, CI o la politica default/opt-in de xdist; si la unica forma de estabilizar el triple verde exige mover el sandbox fuera del arbol o romper la invariante custodiada por `tests/unit/test_windows_safe_temp_runtime.py`; o si la reproduccion deja de concentrarse en las superficies declaradas y reaparece como deuda de runner/global-state ajena, parar y emitir `CG-WOT-2026-013d.md`.
+
+- **Cierre:** completed. `scripts/project_scanner.py` y `agent_system/scripts/project_paths.py` sustituyen los `rglob` crudos por recorridos robustos con poda previa del sandbox volatil; `tests/conftest.py` limpia hu?rfanos `session_<PID>` al inicio; el triple xdist quedo verde en 3 corridas consecutivas y `run_pytest_safe.py --level all` cerro `3091 passed, 20 skipped, 0 failed` sobre `e251bd7`. Cierre canonico confirmado por bus (`REVIEW_DECISION`, `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `COMPLETED`, `SUPERVISOR_CLOSED`).

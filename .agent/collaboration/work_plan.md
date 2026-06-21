@@ -2,7 +2,7 @@
 ## Metadata
 - **ID:** WOT-2026-013d
 - **Contract ID:** T-013D-001
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **Builder clarification budget:** 0
