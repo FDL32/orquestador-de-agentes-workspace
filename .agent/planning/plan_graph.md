@@ -234,28 +234,16 @@
 - tickets: [WOT-2026-013b] (absorbed)
 - sucesor: PLAN-011I-001 (la politica de reparto `--dist loadscope` vive ahi).
 
-## PLAN-011I-001 -- Default xdist + `--dist loadscope` para `--level unit` (absorbe 013b)
+## PLAN-011I-001 -- [NOT-PURSUED]
 
-- objetivo: promover xdist a default para `python scripts/run_pytest_safe.py --level unit` usando
-  `--dist loadscope` (agrupa por archivo) para eliminar la contencion de reparto cross-archivo que
-  hace no determinista (12<->37) el subset bajo `--dist load`; manteniendo `--level all` serial y un
-  escape serial explicito (`--xdist-workers 1`).
-- tickets: [WOT-2026-011i]
-- depends_on: [WOT-2026-011e, WOT-2026-010m]
-- absorbs: [WOT-2026-013b]
-- superficies_archivo:
-  - repo_motor/scripts/run_pytest_safe.py
-  - repo_motor/tests/unit/test_run_pytest_safe.py
-  - repo_destino/.agent/collaboration/execution_log.md
-- interfaces:
-  - CLI `python scripts/run_pytest_safe.py --level unit` (default xdist + loadscope)
-  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers 1` (escape serial)
-  - cierre canonico `python scripts/run_pytest_safe.py --level all` (serial, intacto)
-- shared_dependencies:
-  - `quality-gates.yml` (read-only; 010m consumidor CI del contrato del runner)
-  - `scripts/pre_handoff_guard.py` (read-only; `--level all` sigue canonico)
-  - `CG-WOT-2026-013b.md` (read-only; evidencia del no-determinismo que justifica loadscope)
-  - `last-run.json` como evidencia de default/loadscope/fallback
+- estado: not-pursued (ver `CG-WOT-2026-011i.md`; `ticket_contracts.md` T-011I-001).
+- objetivo (ANULADO): "default xdist + loadscope para --level unit" quedo refutado. loadscope no estabiliza
+  el subset (3 corridas: 3->1->3 failed); los 3 tests persistentes pasan serial y dependen de estado global
+  del proceso (cwd/git/escaneo), no aislable por reparto. Este plan NO es un grafo operativo activo.
+- tickets: [WOT-2026-011i] (not-pursued); absorbio [WOT-2026-013b] (tambien cerrado)
+- solucion vigente: opt-in local `011e` + piloto CI non-blocking `010m`. `--level all` serial e intacto.
+- follow-up opcional (no contratado): robustecer los 3 tests global-state-bound para paralelizacion.
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -273,7 +261,7 @@
 | PLAN-010M-001 | workflow `quality-gates.yml` + barrera dedicada del workflow; bitacora en repo_destino | runner xdist ya fijado por `011e`, handoff canonico `--level all`, frontera con `011i` | conflicto si otro ticket toca `quality-gates.yml`, la politica xdist o el default del runner mientras 010m introduce el piloto CI | serializar con tickets que toquen `quality-gates.yml`, `scripts/run_pytest_safe.py` o la politica xdist/default; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-011H-001 | `mark-ready` en `.agent/agent_controller.py` + barreras de handoff/guard; bitacora en repo_destino | razon estable `archive_rename_uncommitted`, auto-archivado de plan/audit, cierre canonico `--level all` | conflicto si otro ticket toca `--mark-ready`, `pre_handoff_guard`, auto-archivado o contrato de cierres mientras 011h endurece el handoff | serializar con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py`; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013B-002 | [CANCELADO/ABSORBED] sin superficie operativa | n/a (absorbido por PLAN-011I-001) | n/a -- premisa refutada (ver `CG-WOT-2026-013b.md`); no se planifica | ninguna; la deuda real (politica de reparto) la lleva PLAN-011I-001 | n/a |
-| PLAN-011I-001 | runner local `run_pytest_safe.py` + barrera `test_run_pytest_safe.py`; bitacora en repo_destino | `quality-gates.yml` read-only, `pre_handoff_guard.py` read-only, frontera 011e/010m (013b absorbido) | conflicto si otro ticket toca `run_pytest_safe.py`, `test_run_pytest_safe.py`, la politica de distribucion xdist/`--dist loadscope`/default o CI mientras 011i promueve el default unitario con loadscope | serializar con tickets que toquen runner local, workflow `quality-gates.yml` o contratos de cierre; revalidar default+loadscope unit estable (>=3 corridas) + `--level all` + `validate` al cerrar | no |
+| PLAN-011I-001 | [NOT-PURSUED] sin superficie operativa | n/a (default xdist no perseguido; ver `CG-WOT-2026-011i.md`) | n/a -- premisa loadscope refutada; opt-in 011e+010m es el estado final | ninguna; follow-up opcional = robustecer 3 tests global-state (no contratado) | n/a |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,

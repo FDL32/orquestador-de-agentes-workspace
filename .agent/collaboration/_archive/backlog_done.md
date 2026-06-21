@@ -2455,3 +2455,24 @@ Fila retirada de la cola viva:
 - **STOP:** si la unica via verde exige tocar `scripts/run_pytest_safe.py`, `--dist loadscope`, la politica default xdist, workflows o `pre_handoff_guard.py`; si el rojo reproducido deja de ser mayoritariamente `test_project_root_resolution.py`; o si volver el archivo parallel-safe exige tocar `runtime/project_root.py`, parar y emitir `CG-WOT-2026-013b.md`.
 
 - **Cierre:** absorbed por WOT-2026-011i. El rojo xdist del subset unit es contencion de reparto cross-archivo (no determinista 12<->37 en 3 corridas), no una familia de tests aislable; la solucion (`--dist loadscope`) pertenece al runner y vive en 011i.
+
+| Media | WOT-2026-011i | Default xdist + `--dist loadscope` para `--level unit` | motor/test-suite-perf | not-pursued | WOT-2026-011e, WOT-2026-010m | session-2026-06-19-improvement-backlog | - |  <!-- not-pursued: loadscope no estabiliza; 3 tests con estado global no aislables por xdist (CG-WOT-2026-011i.md) -->
+
+### WOT-2026-011i - Default xdist + `--dist loadscope` para `--level unit` (absorbe 013b)
+- **Prioridad:** Media
+- **Scope:** motor/test-suite-perf
+- **Estado:** not-pursued (opt-in 011e+010m es el estado final; ver CG-WOT-2026-011i.md)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** `011e` resolvio el opt-in local y `010m` cerro el piloto CI sin contaminar el cierre canonico. `013b` (absorbido aqui; ver `CG-WOT-2026-013b.md`) demostro con 3 corridas que el rojo del subset unit bajo xdist NO es una familia de tests aislable: con reparto por defecto (`--dist load`) el conteo oscila 12<->37 y el archivo dominante cambia entre corridas identicas (cada archivo pasa aislado bajo `-n 8`). Es contencion de reparto cross-archivo, propiedad del runner. La via verde es `--dist loadscope` (agrupa por archivo), que es justo lo que 013b tenia prohibido tocar. Por eso 013b se absorbe y la politica de reparto vive aqui.
+- **Objetivo:** convertir `python scripts/run_pytest_safe.py --level unit` en un camino xdist por defecto, AUDITABLE y ESTABLE, usando `--dist loadscope` para eliminar la contencion cross-archivo demostrada por 013b; preservando `--level all` serial, respetando args explicitos y manteniendo un escape estable a serial (`--xdist-workers 1`).
+- **Files Likely Touched:**
+  - repo_motor: `scripts/run_pytest_safe.py`
+  - repo_motor: `tests/unit/test_run_pytest_safe.py`
+- **Criterios binarios:** `python scripts/run_pytest_safe.py --level unit` habilita xdist por defecto CON `--dist loadscope` y metadata estable en `last-run.json`; el subset unit queda verde y ESTABLE en >=3 corridas seguidas (refutando el no-determinismo 12<->37 que documento 013b); `python scripts/run_pytest_safe.py --level unit --xdist-workers 1` conserva un camino serial auditable; `python scripts/run_pytest_safe.py --level all` sigue serial; la barrera `tests/unit/test_run_pytest_safe.py` protege el nuevo default, el modo loadscope y el escape a serial; `python -m pytest tests/unit/test_run_pytest_safe.py -q`, `ruff check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `uv run ruff format --check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si activar el default unitario exige tocar CI, `pre_handoff_guard.py`, el dispatcher o cambiar la semantica de `--level all`; si no existe un escape serial estable con el CLI actual; o si `--dist loadscope` NO estabiliza el subset unit (sigue habiendo rojo no determinista), parar y emitir `CG-WOT-2026-011i.md`.
+
+- **Cierre:** not-pursued. La Fase 0 refuto la premisa loadscope (3 corridas: 3->1->3 failed, set variable). Los 3 flakes (test_upgrade_path_suggestion, test_scan_current_project, test_no_inline_ticket_regex) pasan serial y dependen de estado global del proceso (cwd/git/escaneo), no aislable por politica de reparto xdist. Solucion suficiente: opt-in local (011e) + piloto CI (010m). Follow-up opcional: robustecer esos 3 tests (no contratado).
