@@ -224,41 +224,38 @@
   - closeout endurecido por `011a` (read-only; fuente del contrato de razon/remediacion)
   - cierre canonico `python scripts/run_pytest_safe.py --level all`
 
-## PLAN-013B-002 -- Parallel-safety de `test_project_root_resolution.py` antes del default unitario
+## PLAN-013B-002 -- [CANCELADO / ABSORBED por PLAN-011I-001]
 
-- objetivo: volver `tests/unit/test_project_root_resolution.py` parallel-safe tras el `CG-WOT-2026-013b.md`, dejando verde `--level unit --xdist-workers auto` sin tocar runner, politica xdist/default ni codigo productivo.
-- tickets: [WOT-2026-013b]
-- depends_on: [WOT-2026-011e, WOT-2026-010m]
-- superficies_archivo:
-  - repo_motor/tests/unit/test_project_root_resolution.py
-  - repo_destino/.agent/collaboration/execution_log.md
-- interfaces:
-  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`
-  - suite `python -m pytest tests/unit -q`
-  - artefacto runtime `.agent/runtime/pytest-safe/last-run.json`
-- shared_dependencies:
-  - `scripts/run_pytest_safe.py` (read-only; contrato xdist ya fijado)
-  - `runtime/project_root.py` (read-only; producto fuera de scope)
-  - frontera `011e <-> 010m <-> 011i`
-  - `CG-WOT-2026-013b.md` como evidencia de re-contrato
+- estado: absorbed (cancelado por premisa falsa; ver `CG-WOT-2026-013b.md` FINAL y `ticket_contracts.md` T-013B-001).
+- objetivo (ANULADO): "hacer parallel-safe `test_project_root_resolution.py`" quedo refutado. El rojo del
+  subset unit bajo xdist no es una familia de tests aislable sino contencion de reparto cross-archivo
+  (propiedad del runner): 3 corridas dieron 12<->37 fallos con archivo dominante variable; cada archivo pasa
+  aislado bajo `-n 8`. Este plan NO es un grafo operativo activo y no debe planificarse.
+- tickets: [WOT-2026-013b] (absorbed)
+- sucesor: PLAN-011I-001 (la politica de reparto `--dist loadscope` vive ahi).
 
-## PLAN-011I-001 -- Default xdist para `--level unit`
+## PLAN-011I-001 -- Default xdist + `--dist loadscope` para `--level unit` (absorbe 013b)
 
-- objetivo: promover xdist a default solo para `python scripts/run_pytest_safe.py --level unit`, manteniendo `--level all` serial y un escape serial explicito con el CLI actual.
+- objetivo: promover xdist a default para `python scripts/run_pytest_safe.py --level unit` usando
+  `--dist loadscope` (agrupa por archivo) para eliminar la contencion de reparto cross-archivo que
+  hace no determinista (12<->37) el subset bajo `--dist load`; manteniendo `--level all` serial y un
+  escape serial explicito (`--xdist-workers 1`).
 - tickets: [WOT-2026-011i]
-- depends_on: [WOT-2026-011e, WOT-2026-010m, WOT-2026-013b]
+- depends_on: [WOT-2026-011e, WOT-2026-010m]
+- absorbs: [WOT-2026-013b]
 - superficies_archivo:
   - repo_motor/scripts/run_pytest_safe.py
   - repo_motor/tests/unit/test_run_pytest_safe.py
   - repo_destino/.agent/collaboration/execution_log.md
 - interfaces:
-  - CLI `python scripts/run_pytest_safe.py --level unit`
-  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers 1`
-  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+  - CLI `python scripts/run_pytest_safe.py --level unit` (default xdist + loadscope)
+  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers 1` (escape serial)
+  - cierre canonico `python scripts/run_pytest_safe.py --level all` (serial, intacto)
 - shared_dependencies:
   - `quality-gates.yml` (read-only; 010m consumidor CI del contrato del runner)
   - `scripts/pre_handoff_guard.py` (read-only; `--level all` sigue canonico)
-  - `last-run.json` como evidencia de default/fallback
+  - `CG-WOT-2026-013b.md` (read-only; evidencia del no-determinismo que justifica loadscope)
+  - `last-run.json` como evidencia de default/loadscope/fallback
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -275,8 +272,8 @@
 | PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
 | PLAN-010M-001 | workflow `quality-gates.yml` + barrera dedicada del workflow; bitacora en repo_destino | runner xdist ya fijado por `011e`, handoff canonico `--level all`, frontera con `011i` | conflicto si otro ticket toca `quality-gates.yml`, la politica xdist o el default del runner mientras 010m introduce el piloto CI | serializar con tickets que toquen `quality-gates.yml`, `scripts/run_pytest_safe.py` o la politica xdist/default; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-011H-001 | `mark-ready` en `.agent/agent_controller.py` + barreras de handoff/guard; bitacora en repo_destino | razon estable `archive_rename_uncommitted`, auto-archivado de plan/audit, cierre canonico `--level all` | conflicto si otro ticket toca `--mark-ready`, `pre_handoff_guard`, auto-archivado o contrato de cierres mientras 011h endurece el handoff | serializar con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py`; revalidar tests focales + `--level all` + `validate` al cerrar | no |
-| PLAN-013B-002 | `test_project_root_resolution.py` + bitacora en repo_destino | runner xdist read-only, `runtime/project_root.py` read-only, `CG-WOT-2026-013b.md`, `last-run.json` | conflicto si otro ticket toca ese test, reabre politica del runner o modifica `runtime/project_root.py` mientras 013b vuelve parallel-safe el archivo | serializar con tickets que toquen `tests/unit/test_project_root_resolution.py`, `scripts/run_pytest_safe.py` o `runtime/project_root.py`; revalidar xdist unit + `--level all` + `validate` al cerrar | no |
-| PLAN-011I-001 | runner local + barrera `test_run_pytest_safe.py`; bitacora en repo_destino | `quality-gates.yml` read-only, `pre_handoff_guard.py` read-only, frontera 011e/010m/013b | conflicto si otro ticket toca `run_pytest_safe.py`, `test_run_pytest_safe.py`, la politica xdist/default o CI mientras 011i promueve el default unitario | serializar con tickets que toquen runner local, workflow `quality-gates.yml` o contratos de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
+| PLAN-013B-002 | [CANCELADO/ABSORBED] sin superficie operativa | n/a (absorbido por PLAN-011I-001) | n/a -- premisa refutada (ver `CG-WOT-2026-013b.md`); no se planifica | ninguna; la deuda real (politica de reparto) la lleva PLAN-011I-001 | n/a |
+| PLAN-011I-001 | runner local `run_pytest_safe.py` + barrera `test_run_pytest_safe.py`; bitacora en repo_destino | `quality-gates.yml` read-only, `pre_handoff_guard.py` read-only, frontera 011e/010m (013b absorbido) | conflicto si otro ticket toca `run_pytest_safe.py`, `test_run_pytest_safe.py`, la politica de distribucion xdist/`--dist loadscope`/default o CI mientras 011i promueve el default unitario con loadscope | serializar con tickets que toquen runner local, workflow `quality-gates.yml` o contratos de cierre; revalidar default+loadscope unit estable (>=3 corridas) + `--level all` + `validate` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,

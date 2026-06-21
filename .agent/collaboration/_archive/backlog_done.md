@@ -2435,3 +2435,23 @@ Fila retirada de la cola viva:
 - **Criterios binarios:** existe una seccion explicita que nombre ambos modos y delimite que evidencia vale para cada uno; `orchestrator_launch_builder.md`, `manager_review.md`, `orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados; ningun texto tocado permite presentar pytest focal, wall-clock en background o tests verdes aislados como sustituto de suite canonica / handoff / cierre; no se tocan scripts, gates ni codigo; `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>` quedan verdes.
 - **STOP:** si para mantener la documentacion veraz hace falta tocar tooling productivo, parar y abrir follow-up de codigo en vez de ampliar `011g`.
 - **Depende de:** WOT-2026-010c, WOT-2026-010q.
+
+| Alta | WOT-2026-013b | Hacer parallel-safe `test_project_root_resolution.py` antes de promover xdist por defecto | motor/test-suite-hygiene | absorbed | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-pipeline-prep | WOT-2026-011i |  <!-- absorbed por 011i; premisa familia-unica refutada (CG-WOT-2026-013b.md FINAL) -->
+
+### WOT-2026-013b - Hacer parallel-safe `test_project_root_resolution.py` antes de promover xdist por defecto
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-hygiene
+- **Estado:** absorbed (premisa refutada; ver CG-WOT-2026-013b.md FINAL)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-pipeline-prep.
+- **Problema (VERIFICADO):** el `CG-WOT-2026-013b.md` refuto la premisa original de "3 tests". El rojo xdist reproducido son 11-12 fallos inestables, 11 de ellos concentrados en `tests/unit/test_project_root_resolution.py`, con firma dominante `ImportError: runtime.project_root not in sys.modules` al usar `importlib.reload()` sobre un modulo global compartido. El problema real es la falta de parallel-safety de ese archivo, no la politica del runner.
+- **Objetivo:** volver `tests/unit/test_project_root_resolution.py` parallel-safe para que `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` quede verde sin tocar runner, CI, `--dist loadscope`, default xdist ni codigo productivo en `runtime/`.
+- **Files Likely Touched:**
+  - repo_motor: `tests/unit/test_project_root_resolution.py`
+- **Criterios binarios:** la Fase 0 deja en `execution_log.md` el conteo, los nombres y la firma `not in sys.modules`, confirmando que la familia real es `test_project_root_resolution.py`; el diff productivo queda acotado a ese archivo y deja de depender de `importlib.reload()` sobre un modulo global compartido; `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` queda verde y estable en >=2 corridas seguidas; existe demostracion FAIL-sin/PASS-con sobre el rojo real; `python -m pytest tests/unit -q`, `ruff check tests/unit/test_project_root_resolution.py`, `uv run ruff format --check tests/unit/test_project_root_resolution.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la unica via verde exige tocar `scripts/run_pytest_safe.py`, `--dist loadscope`, la politica default xdist, workflows o `pre_handoff_guard.py`; si el rojo reproducido deja de ser mayoritariamente `test_project_root_resolution.py`; o si volver el archivo parallel-safe exige tocar `runtime/project_root.py`, parar y emitir `CG-WOT-2026-013b.md`.
+
+- **Cierre:** absorbed por WOT-2026-011i. El rojo xdist del subset unit es contencion de reparto cross-archivo (no determinista 12<->37 en 3 corridas), no una familia de tests aislable; la solucion (`--dist loadscope`) pertenece al runner y vive en 011i.
