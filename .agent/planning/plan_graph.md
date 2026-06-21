@@ -167,6 +167,25 @@
   - `AGENTS.md` y `QUICKSTART.md` (contrato publico de comandos)
   - observaciones `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor`
 
+
+## PLAN-010X-001 -- Reemplazo OSS de gitleaks en CI
+
+- objetivo: sustituir en `security-audit.yml` el uso de `gitleaks/gitleaks-action@v2` por una invocacion CLI OSS de gitleaks, manteniendo el escaneo fail-closed y una barrera de regresion del workflow sin tocar la politica portable de allowlists.
+- tickets: [WOT-2026-010x]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/.github/workflows/security-audit.yml
+  - repo_motor/tests/unit/test_hook_ci_alignment.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - GitHub Actions workflow `security-audit.yml`
+  - paso `Run Gitleaks`
+  - barrera `tests/unit/test_hook_ci_alignment.py`
+- shared_dependencies:
+  - `agent_system/templates/gitleaks.config.toml` (read-only; politica portable ya fijada)
+  - `.pre-commit-config.yaml` (read-only; el workflow sigue delegando pre-commit por separado)
+  - historico `WOT-2026-004a` / `WOT-2026-004b` (read-only; contexto de politica y falsos positivos)
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -175,6 +194,7 @@
 | PLAN-010D-001 | lifecycle del controller, supervisor, guard de handoff, tests y artefacto runtime `paused/*.json` | bus global, proyecciones markdown, delivery_authority=repo_motor con estado operativo en repo_destino | drift si otro ticket toca bus/controller/supervisor o si Builder intenta cerrar con una pausa activa ajena | serializar contra tickets que toquen bus/controller/supervisor; derivar estado desde bus primero; ejecutar `validate --json --project-root <repo_destino>` y `run_pytest_safe` final sobre la union | no |
 
 | PLAN-011G-001 | prompts/documentacion de Builder/Manager/Orchestrator y Quickstart; bitacora en repo_destino | semantica canonica de suite/handoff/cierre ya fijada por tooling y memoria reciente | conflicto si otro ticket toca los mismos prompts/docs y reintroduce lenguaje ambiguo sobre evidencia diagnostica vs cierre | serializar con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md`; revalidar encoding + `validate --json` al cerrar | no |
+| PLAN-010X-001 | workflow de seguridad CI + barrera de alineacion del workflow; bitacora en repo_destino | semilla portable de gitleaks, `.pre-commit-config.yaml`, historico 004a/004b | conflicto si otro ticket toca `security-audit.yml`, la politica de gitleaks o `test_hook_ci_alignment.py` mientras 010x migra el paso OSS | serializar con tickets que toquen workflow de seguridad, politica de gitleaks o la barrera de alineacion; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-012B-001 | gate nuevo + tests + integracion en dispatcher del motor; bitacora en repo_destino | resolucion topologica del destino, contrato backlog fijado por 012a, dispatch de gates y closeout | conflicto si otro ticket toca `run_gates_dispatch.py`, cambia el schema de backlog o relaja `Reactivation`/estados mientras 012b implementa el gate | serializar con tickets que toquen backlog contract, dispatch de gates o barreras de cierre; validar siempre contra `repo_destino` real | no |
 | PLAN-011B-001 | seam de timeout en relaunch (`bus/builder_relaunch.py`) + tests de supervisor; bitacora en repo_destino | `bus/supervisor.py`, eventos `BUILDER_RELAUNCH_ATTEMPTED`, cierre canonico `--level all` | conflicto si otro ticket toca relaunch/supervisor o cambia timeouts/politica de cierre mientras 011b vuelve deterministas las pruebas | serializar con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o criterios de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013A-001 | fixture/driver de `tests/test_controller_integration.py`; bitacora en repo_destino | `.agent/agent_controller.py` read-only, runtime/bus copiados por sandbox, cierre canonico `--level all` | conflicto si otro ticket toca el mismo test o cambia la forma de resolver project_root/topologia del controller mientras 013a arregla el fixture | serializar con tickets que toquen `tests/test_controller_integration.py` o la resolucion de project_root del controller; revalidar test aislado + archivo completo + `--level all` al cerrar | no |
@@ -211,3 +231,4 @@ tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <r
 Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o la politica de cierre/performance obliga a revalidar la union con tests focales de relaunch, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013a, cualquier merge con tickets que toquen `tests/test_controller_integration.py` o la resolucion de `project_root` del controller obliga a revalidar el test aislado, el archivo completo y `python scripts/run_pytest_safe.py --level all`.
 Para 011g, cualquier merge con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md` obliga a revalidar la coherencia textual de `loop rapido` vs `cierre canonico`, `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>`.
+Para 010x, cualquier merge con tickets que toquen `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py` o la politica/config de gitleaks obliga a revalidar la union con `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.

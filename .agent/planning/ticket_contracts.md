@@ -1298,3 +1298,32 @@ epo_motor, o si el unico camino a verde exige editar manualmente los archives de
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica forma de resolver contradicciones documentales es tocar tooling productivo; parar si el ticket deja de ser puramente documental; parar si aparece conflicto con un ticket activo que toque los mismos prompts/docs y requiera serializacion.
 - **Depende de:** WOT-2026-010c (COMPLETED); WOT-2026-010q (COMPLETED).
+
+## T-010X-001 -- Sustituir gitleaks-action licenciado por CLI OSS
+
+- **ticket_id:** WOT-2026-010x
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010X-001
+- **Plan-Link:** PLAN-010X-001
+- **Premise:** `.github/workflows/security-audit.yml` aun invoca `gitleaks/gitleaks-action@v2`, mientras el motor ya dispone de semilla portable de configuracion (`agent_system/templates/gitleaks.config.toml`) y de una barrera de alineacion del workflow en `tests/unit/test_hook_ci_alignment.py`. La deuda abierta por `010x` es reemplazar la dependencia del action licenciado/runtime JS por una invocacion CLI OSS de gitleaks, no redisenar la politica de allowlists ni el resto del workflow de seguridad.
+- **Premise Re-check (read-only):** releer `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py`, `agent_system/templates/gitleaks.config.toml`, `.pre-commit-config.yaml` y las notas historicas de `WOT-2026-004a` / `WOT-2026-004b` en `_archive/backlog_done.md`; verificar que el workflow sigue usando `gitleaks/gitleaks-action@v2`; confirmar que la semilla portable existe y que `test_hook_ci_alignment.py` sigue siendo la barrera natural del workflow; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes de arrancar.
+- **Context Baseline Evidence:** workflow_uses_licensed_action=true; portable_seed_exists=true; ci_alignment_test_exists=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `.github/workflows/security-audit.yml`
+  - Builder repo_motor: `tests/unit/test_hook_ci_alignment.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `agent_system/templates/gitleaks.config.toml`; `.pre-commit-config.yaml`; `scripts/install_agent_system.py`; `_archive/backlog_done.md`; `.agent/runtime/pytest-safe/last-run.json`.
+- **Forbidden Surfaces:** `agent_system/templates/gitleaks.config.toml`; `.pre-commit-config.yaml`; `scripts/install_agent_system.py`; `tests/unit/test_install_agent_system.py`; `scripts/pip_audit_project.py`; otros workflows de GitHub Actions; cambios de politica de allowlist o de ignores de seguridad; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD:**
+  - [ ] `.github/workflows/security-audit.yml` deja de referenciar `gitleaks/gitleaks-action@v2`.
+  - [ ] El workflow ejecuta gitleaks por CLI OSS directa y no requiere `GITLEAKS_LICENSE` ni `GITHUB_TOKEN` para el paso de gitleaks.
+  - [ ] La invocacion preserva semantica fail-closed ante leaks y usa una fuente de configuracion ya existente en el repo, sin reabrir la politica de allowlists.
+  - [ ] `tests/unit/test_hook_ci_alignment.py` gana al menos una barrera FAIL-sin/PASS-con que falle si reaparece el action licenciado y pase con la invocacion CLI.
+  - [ ] `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `ruff check tests/unit/test_hook_ci_alignment.py`, `uv run ruff format --check tests/unit/test_hook_ci_alignment.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** reutiliza el trabajo de politica/config ya fijado por `WOT-2026-004a` y `WOT-2026-004b`, pero no reabre esa politica ni mezcla `pip-audit`, `011g` o deudas de dependencias bloqueadas como `WT-2026-256a`.
+- **CONTRACT_GAP behavior:** si la sustitucion OSS solo puede hacerse introduciendo otro action de terceros/licenciado, si exige tocar la politica/config de gitleaks fuera de las superficies declaradas, o si el unico camino verde relaja el fail-closed del escaneo, emitir `CG-WOT-2026-010x.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el workflow necesita redisenarse mas alla del paso de gitleaks; parar si la invocacion CLI exige cambios de politica/config fuera de scope; parar si la barrera de `tests/unit/test_hook_ci_alignment.py` no puede expresar la regresion sin tocar otras familias de tests o workflows.
+- **Depende de:** -.

@@ -2411,3 +2411,25 @@ Fila retirada de la cola viva:
   (FALSO: el archivo real no lo tiene, guard de portabilidad pasa); H-03/H-06/H-11 (conocidos por diseno);
   confusion motor-vs-destino (artefacto de su clon shallow Linux sin destino).
 
+## Movido por cierre canonico WOT-2026-011g (COMPLETED 2026-06-21)
+
+| Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | completed | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
+
+### WOT-2026-011g - Politica explicita de loop rapido vs cierre canonico
+- **Prioridad:** Media
+- **Scope:** motor/protocol-docs
+- **Estado:** completed
+- **deliverable_type:** documentation
+- **delivery_authority:** repo_motor
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** la politica de `loop rapido` (reruns focales, checks locales, evidencia diagnostica) frente a `cierre canonico` (suite canonia en HEAD, `validate 0/0`, handoff con eventos reales y cierre Manager) existia repartida entre prompts y docs, pero no quedaba declarada de forma corta y consistente.
+- **Objetivo:** dejar una politica explicita y consistente de `loop rapido` vs `cierre canonico` en prompts/documentacion del motor, sin tocar tooling ni gates.
+- **Files Likely Touched:**
+  - repo_motor: `prompts/orchestrator_launch_builder.md`
+  - repo_motor: `prompts/manager_review.md`
+  - repo_motor: `prompts/orchestrator_pipeline.md`
+  - repo_motor: `QUICKSTART.md`
+- **Criterios binarios:** existe una seccion explicita que nombre ambos modos y delimite que evidencia vale para cada uno; `orchestrator_launch_builder.md`, `manager_review.md`, `orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados; ningun texto tocado permite presentar pytest focal, wall-clock en background o tests verdes aislados como sustituto de suite canonica / handoff / cierre; no se tocan scripts, gates ni codigo; `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si para mantener la documentacion veraz hace falta tocar tooling productivo, parar y abrir follow-up de codigo en vez de ampliar `011g`.
+- **Depende de:** WOT-2026-010c, WOT-2026-010q.

@@ -1,40 +1,44 @@
-# execution_log.md -- WOT-2026-011g
+# execution_log.md -- WOT-2026-010x
 ## Metadata
-- **Ticket:** WOT-2026-011g
-- **Estado:** READY_FOR_REVIEW
-- **deliverable_type:** documentation
+- **Ticket:** WOT-2026-010x
+- **Estado:** IN_PROGRESS
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 ## Manager Bootstrap
-- Ticket siguiente seleccionado: WOT-2026-011g.
-- Motivo: `011h` no se prepara como siguiente Builder porque la barrera de archive rename en handoff ya existe en `scripts/pre_handoff_guard.py` y esta cubierta por `tests/test_pre_handoff_guard.py`; `011g` sigue siendo deuda documental real y acotada.
-- Contrato congelado: `T-011G-001`.
-- Frontera fijada antes de Builder: `011g` solo alinea prompts/docs sobre `loop rapido` vs `cierre canonico`; tocar tooling, gates, tests o CI dispara `CONTRACT_GAP`.
-- `013a` ya se retiro de la cola viva y pasa a historico documental antes del nuevo arranque.
+- Ticket siguiente seleccionado: WOT-2026-010x.
+- Motivo: `011g` ya cerro canonicamente; `011i` sigue condicionado por los 3 tests no paraleloseguros expuestos por `011e`; `011h` requiere antes normalizar la contradiccion backlog-vs-codigo. `010x` queda como ticket alto, independiente y con root cause ya verificado en CI.
+- Contrato congelado: `T-010X-001`.
+- Frontera fijada antes de Builder: solo workflow `.github/workflows/security-audit.yml` + barrera `tests/unit/test_hook_ci_alignment.py`; tocar politica/config de gitleaks o otros workflows dispara `CONTRACT_GAP`.
 ## Premise Re-check requerido al Builder
-- Releer `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md` y `QUICKSTART.md`.
-- Confirmar que la politica actual aparece fragmentada y que el ticket puede resolverse solo con texto.
-- Releer observaciones `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor` como evidencia de la confusion reciente.
+- Releer `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py`, `agent_system/templates/gitleaks.config.toml` y `.pre-commit-config.yaml`.
+- Confirmar que el workflow aun usa `gitleaks/gitleaks-action@v2` y que la semilla portable ya existe.
 - Ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes de empezar la implementacion.
 ## Restriccion cross-ticket
-- `011g` no reabre `011h`, `011i`, `010m` ni `010x`.
-- Si la documentacion veraz exige tocar tooling, el ticket para con `CG-WOT-2026-011g.md`.
+- `010x` no reabre la politica de gitleaks de `004a/004b` ni mezcla `WT-2026-256a`, `011g`, `011i` o cambios en otros workflows.
+- Si la sustitucion OSS exige tocar config/politica de gitleaks fuera del workflow y la barrera, el resultado correcto es `CG-WOT-2026-010x.md`.
 
-## BUILDER - WOT-2026-011g - Politica loop rapido vs cierre canonico (documental)
 
-### Fase 0 - Baseline
-- Ninguno de los 4 docs (launch_builder, manager_review, pipeline, QUICKSTART) tenia una formulacion NOMBRADA de "loop rapido vs cierre canonico". Las reglas de suite/handoff estaban dispersas (launch_builder ya tenia las mas fuertes tras el protocolo reciente). Confirmado: resoluble solo con texto, sin tocar tooling (sin CONTRACT_GAP).
+## BUILDER - WOT-2026-010x - Gitleaks CLI OSS en security-audit.yml
 
-### Fase 1 - Politica canonica (fuente unica)
-- prompts/orchestrator_launch_builder.md: nueva seccion "## Loop rapido vs cierre canonico (politica WOT-2026-011g)" tras Quality gates. Define: loop rapido = diagnostico local (focal/-k/--select-from-diff/--level unit/background/aislados) que NO autoriza handoff ni cierre; cierre canonico = suite --level all en HEAD (last-run.json tested_sha==HEAD, exit 0) + validate 0/0 + mark-ready con BUILDER_EXIT+STATE_CHANGED + manager-approve cuando aplique. Es la fuente que los demas referencian.
+### Fase 0 - Baseline (VERIFICADO)
+- .github/workflows/security-audit.yml paso "Run Gitleaks" usaba `uses: gitleaks/gitleaks-action@v2` + `env: GITHUB_TOKEN` (action licenciado).
+- Plantilla seed portable EXISTE: agent_system/templates/gitleaks.config.toml (useDefault + allowlist generic-api-key-on-SHA). No hay .gitleaks.toml vivo en raiz; el action@v2 corria sin --config (reglas default).
+- tests/unit/test_hook_ci_alignment.py parsea el workflow (fixture ci_config) pero NO tenia barrera sobre gitleaks -> superficie natural a extender.
+- Historico 004a (commit 3e23873) / 004b (9c7c91d): la politica/config de gitleaks queda FUERA de scope; 010x solo cambia el paso del workflow + barrera de test.
 
-### Fase 2 - Alineacion de consumidores (terminologia unica)
-- manager_review.md: bullet en Paso 2 "Comprueba:" -> el Manager rechaza con CHANGES cualquier handoff que presente loop rapido como cierre canonico; referencia a la fuente.
-- orchestrator_pipeline.md: bullet en 0.c "Reglas derivadas" -> la orquestacion distingue diagnostico local de publicable; loop rapido nunca autoriza handoff.
-- QUICKSTART.md: nota publica corta tras "Quality gates diarios"; referencia a la fuente.
-- Verificado: los 4 docs usan "loop rapido" + "cierre canonico" coherentemente.
+### Fase 1 - CLI OSS (cambio minimo)
+- Paso "Run Gitleaks (OSS CLI)": descarga el binario release OSS de gitleaks v8.30.1 (curl + tar) y corre `./gitleaks detect --source . --config agent_system/templates/gitleaks.config.toml --redact --exit-code 1 --log-opts="--all"`.
+- SIN gitleaks-action (uses eliminado), SIN GITLEAKS_LICENSE, SIN GITHUB_TOKEN para el paso (env solo GITLEAKS_VERSION). fail-closed via --exit-code 1. Reutiliza la config seed existente (no reabre allowlist). Resto del workflow intacto.
+- YAML valido (yaml.safe_load); shell con set -euo pipefail; un comando por linea (sin continuaciones \ fragiles). encoding exit 0.
 
-### Gates (documental)
-- Encoding: `python scripts/check_encoding_guard.py prompts/orchestrator_launch_builder.md prompts/manager_review.md prompts/orchestrator_pipeline.md QUICKSTART.md` -> exit 0.
-- Diff: 100% documental (4 .md), 0 scripts/tests/controller/CI tocados.
-- Validate: registrado abajo.
-- Artefactos declarados existen en disco; deliverable_type documentation respetado (sin pytest/ruff como gate principal).
+### Fase 2 - Barreras (tests/unit/test_hook_ci_alignment.py, 5 nuevas en TestHookCIAlignment)
+- test_gitleaks_does_not_use_licensed_action: no `gitleaks-action` en uses.
+- test_gitleaks_runs_oss_cli: `gitleaks detect` presente en run.
+- test_gitleaks_is_fail_closed: `--exit-code 1` presente.
+- test_gitleaks_reuses_existing_config: usa la plantilla seed.
+- test_gitleaks_step_has_no_license_or_token: env sin GITLEAKS_LICENSE ni GITHUB_TOKEN.
+- Verificacion FAIL-sin/PASS-con: revertido el workflow a HEAD (action@v2) -> 5 failed; restaurado fix -> 5 passed.
+
+### Gates
+- Tests focales: `python -m pytest tests/unit/test_hook_ci_alignment.py -q` -> 13 passed in 0.12s (8 pip-audit + 5 gitleaks).
+- Ruff: All checks passed! | Ruff format: 1 file already formatted | Encoding (workflow+test): exit 0.

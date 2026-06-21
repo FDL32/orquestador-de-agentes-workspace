@@ -24,7 +24,6 @@
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-010x | Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml | motor/ci-security | pending | - | session-2026-06-19-gitleaks-ci | - |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
-| Media | WOT-2026-011g | Prompts/politica: explicitar 'loop rapido' vs 'cierre canonico' | motor/protocol-docs | pending | WOT-2026-010c, WOT-2026-010q | session-2026-06-19-improvement-backlog | - |
 | Baja | WOT-2026-010m | Piloto xdist/sharding en CI para subset unitario aislado | motor/ci-performance | deferred | WOT-2026-010j, WOT-2026-010k | session-2026-06-17-suite-performance | condition:011e-estable-y-barrera-state-leak-verde |
 | Baja | WOT-2026-011i | Si 011e sale estable: evaluar default unit en run_pytest_safe.py | motor/test-suite-perf | pending | WOT-2026-011e | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -35,26 +34,25 @@
 
 
 
-### WOT-2026-011g - Politica explicita de loop rapido vs cierre canonico
-- **Prioridad:** Media
-- **Scope:** motor/protocol-docs
+
+### WOT-2026-010x - Sustituir gitleaks-action licenciado por CLI OSS en security-audit.yml
+- **Prioridad:** Alta
+- **Scope:** motor/ci-security
 - **Estado:** pending
-- **deliverable_type:** documentation
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Reactivation:** -
-- **Origen:** session-2026-06-19-improvement-backlog.
-- **Problema (VERIFICADO):** la politica de `loop rapido` (reruns focales, checks locales, evidencia diagnostica) frente a `cierre canonico` (suite canonia en HEAD, `validate 0/0`, handoff con eventos reales y cierre Manager) existe hoy repartida entre `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md` y `QUICKSTART.md`, pero no queda declarada en una narrativa corta y consistente. En la sesion 011j -> 011e -> 013a esto obligo a corregir varias veces claims sobre suite stale, wall-clock en background y `READY_FOR_REVIEW` narrativo.
-- **Objetivo:** dejar una politica explicita y consistente de `loop rapido` vs `cierre canonico` en los prompts/documentacion del motor, sin tocar tooling ni gates, para que Builder y Manager usen la misma frontera de evidencia.
+- **Origen:** session-2026-06-19-gitleaks-ci.
+- **Problema (VERIFICADO):** `.github/workflows/security-audit.yml` sigue usando `gitleaks/gitleaks-action@v2`. El follow-up ya documentado en backlog/historico lo atribuye a dependencia de un action licenciado y acoplado a runtime JS/API, mientras el motor ya dispone de semilla portable de configuracion (`agent_system/templates/gitleaks.config.toml`) y de una barrera de alineacion CI/pre-commit en `tests/unit/test_hook_ci_alignment.py`.
+- **Objetivo:** sustituir el action licenciado por una invocacion CLI OSS de gitleaks dentro de `security-audit.yml`, sin `GITLEAKS_LICENSE`, sin depender del runtime JS del action y con una barrera de regresion que impida volver a introducirlo.
 - **Files Likely Touched:**
-  - repo_motor: `prompts/orchestrator_launch_builder.md`
-  - repo_motor: `prompts/manager_review.md`
-  - repo_motor: `prompts/orchestrator_pipeline.md`
-  - repo_motor: `QUICKSTART.md`
-- **Criterios binarios:** existe una seccion explicita que nombre ambos modos (`loop rapido` y `cierre canonico`) y delimite que evidencia vale para cada uno; `orchestrator_launch_builder.md`, `manager_review.md`, `orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si; ningun texto sigue permitiendo presentar pytest focal, wall-clock en background o tests verdes aislados como sustituto de suite canonica / handoff / cierre; no se tocan scripts, gates ni codigo; `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** si para mantener la documentacion veraz hace falta tocar `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py`, `review_bridge.py` o cualquier gate/product code, parar y abrir follow-up de codigo en vez de ampliar `011g`.
-- **Depende de:** WOT-2026-010c, WOT-2026-010q.
+  - repo_motor: `.github/workflows/security-audit.yml`
+  - repo_motor: `tests/unit/test_hook_ci_alignment.py`
+- **Criterios binarios:** el workflow ya no referencia `gitleaks/gitleaks-action@v2`; el paso de gitleaks usa CLI OSS directa y no requiere `GITLEAKS_LICENSE` ni `GITHUB_TOKEN` para ese paso; la invocacion conserva semantica fail-closed ante leaks y usa una fuente de configuracion ya existente en el repo sin reabrir la politica de allowlists; `tests/unit/test_hook_ci_alignment.py` gana una barrera que falla si reaparece el action licenciado o desaparece la invocacion CLI; `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `ruff check tests/unit/test_hook_ci_alignment.py`, `uv run ruff format --check tests/unit/test_hook_ci_alignment.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la sustitucion exige introducir otro action de terceros/licenciado, cambiar la politica de gitleaks fuera del workflow/test declarados, o relajar la semantica fail-closed del escaneo, parar y emitir `CG-WOT-2026-010x.md` en vez de ampliar scope.
+- **Depende de:** -.
 
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011h, 011i, 010m, 010x, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
+> Solo tickets vivos con ficha congelada. El resto de tickets vivos (011h, 011i, 010m, 002c, 256a) tienen su contrato resumido en la tabla; su ficha ### se materializa al congelar cada uno (deuda senalada por WOT-2026-012a).
 
 ### WOT-2026-012b - Gate check_backlog_contract.py sobre cola viva
 - **Prioridad:** Media

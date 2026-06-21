@@ -1,54 +1,54 @@
-# work_plan.md -- WOT-2026-011g
+# work_plan.md -- WOT-2026-010x
 ## Metadata
-- **ID:** WOT-2026-011g
-- **Contract ID:** T-011G-001
+- **ID:** WOT-2026-010x
+- **Contract ID:** T-010X-001
 - **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** documentation
+- **deliverable_type:** code
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_motor
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Explicitar y unificar en prompts/docs la diferencia entre `loop rapido` de diagnostico local y `cierre canonico` de ticket, para que Builder, Manager y Orchestrator no presenten evidencia parcial como handoff o cierre real.
+Sustituir `gitleaks/gitleaks-action@v2` por una invocacion CLI OSS de gitleaks en `.github/workflows/security-audit.yml`, manteniendo el escaneo fail-closed y una barrera de regresion en `tests/unit/test_hook_ci_alignment.py`, sin reabrir la politica portable de allowlists.
 ## Non-goals
-- No tocar `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py`, `.agent/agent_controller.py`, `scripts/run_gates_dispatch.py` ni `bus/review_bridge.py`.
-- No cambiar semantica de suite, handoff o closeout; solo documentar y alinear la politica ya vigente.
-- No retirar ni reabrir `011h` dentro de este ticket; cualquier normalizacion de backlog sobre ese ticket queda fuera de scope.
+- No tocar `agent_system/templates/gitleaks.config.toml`, `.pre-commit-config.yaml`, `scripts/install_agent_system.py`, `scripts/pip_audit_project.py` ni otros workflows.
+- No cambiar la politica de allowlists, ignores de seguridad o semantica general del `security-audit` mas alla del paso de gitleaks.
+- No mezclar `010x` con `011g`, `011i`, `WT-2026-256a` ni follow-ups de dependencias.
 ## Premisas verificadas antes de Builder
-- La politica actual existe como fragmentos en `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md`, `prompts/audit_agent_output.md` y `QUICKSTART.md`, pero no queda declarada como una frontera corta y consistente.
-- Las observaciones `obs-20260619-background-wallclock-not-canonical` y `obs-20260620-last-run-canonical-lives-in-motor` documentan confusion recurrente reciente sobre que cuenta como evidencia canonica.
-- El ticket es puramente documental: si la documentacion veraz exigiera tocar tooling, el resultado correcto es `CONTRACT_GAP`.
+- `.github/workflows/security-audit.yml` sigue usando `gitleaks/gitleaks-action@v2`.
+- El motor ya dispone de semilla portable de configuracion en `agent_system/templates/gitleaks.config.toml`.
+- `tests/unit/test_hook_ci_alignment.py` ya es la barrera natural para evitar drift entre CI y la politica de seguridad del workflow.
+- El ticket debe resolverse dentro del workflow y su barrera; si requiere tocar politica/config de gitleaks fuera de esas superficies, el resultado correcto es `CONTRACT_GAP`.
 ## Decision Arquitectonica
-`011g` centraliza la politica en texto y alinea sus consumidores, pero no reabre tooling. La via preferida es anadir una seccion explicita en `QUICKSTART.md` y sincronizar el lenguaje de los prompts principales con esa misma distincion: `loop rapido` sirve para diagnostico local; `cierre canonico` exige suite canonia en HEAD, `validate 0/0` y handoff/cierre con eventos reales.
+`010x` se mantiene acotado a la invocacion de CI: el workflow deja de depender del action licenciado y la regresion se fija en `tests/unit/test_hook_ci_alignment.py`. La politica portable de gitleaks ya fijada por `004a/004b` queda read-only.
 ## Files Likely Touched
 ### repo_motor
-- prompts/orchestrator_launch_builder.md
-- prompts/manager_review.md
-- prompts/orchestrator_pipeline.md
-- QUICKSTART.md
+- .github/workflows/security-audit.yml
+- tests/unit/test_hook_ci_alignment.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- prompts/audit_agent_output.md
-- AGENTS.md
-- PROJECT.md
-- .agent/runtime/memory/observations.jsonl
-- .agent/runtime/memory/MEMORY.md
+- agent_system/templates/gitleaks.config.toml
+- .pre-commit-config.yaml
+- scripts/install_agent_system.py
+- .agent/collaboration/_archive/backlog_done.md
+- .agent/runtime/pytest-safe/last-run.json
 ## Forbidden Surfaces
-- tocar tooling (`run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py`, `review_bridge.py`)
-- tocar tests, CI/workflows o gates
-- introducir criterios de codigo en un ticket documental
-- usar `011g` para normalizar `011h` o cualquier otra deuda de backlog no documental
+- tocar la politica/config de gitleaks (`agent_system/templates/gitleaks.config.toml`)
+- tocar `.pre-commit-config.yaml`, `scripts/install_agent_system.py`, `scripts/pip_audit_project.py` u otros workflows
+- introducir otro action de terceros/licenciado para resolver el mismo paso
+- mezclar el ticket con ignores de dependencias o deuda de `WT-2026-256a`
 ## Criterios binarios
-- Existe una seccion explicita y corta que nombre `loop rapido` y `cierre canonico`, y delimite que evidencia vale para cada uno.
-- `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si sobre suite canonia, `validate`, handoff y cierre.
-- Ningun texto tocado sigue permitiendo presentar pytest focal, wall-clock en background o tests aislados verdes como sustituto de suite canonica / `READY_FOR_REVIEW` / cierre canonico.
-- El diff permanece documental: no toca scripts, gates, controller, tests ni CI.
-- `python scripts/check_encoding_guard.py <docs_tocados>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- `.github/workflows/security-audit.yml` deja de referenciar `gitleaks/gitleaks-action@v2`.
+- El paso de gitleaks usa CLI OSS directa y no requiere `GITLEAKS_LICENSE` ni `GITHUB_TOKEN` para ese paso.
+- La invocacion conserva semantica fail-closed y usa una fuente de configuracion ya existente en el repo, sin reabrir la politica de allowlists.
+- `tests/unit/test_hook_ci_alignment.py` gana una barrera FAIL-sin/PASS-con que falle si reaparece el action licenciado y pase con la invocacion CLI.
+- `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `ruff check tests/unit/test_hook_ci_alignment.py`, `uv run ruff format --check tests/unit/test_hook_ci_alignment.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
 ## STOP conditions
-- Parar si la unica forma de resolver contradicciones documentales exige tocar tooling productivo.
-- Parar si el ticket deja de ser puramente documental y necesita gates de codigo o sandbox.
-- Parar si otro ticket activo cambia las mismas superficies de prompt/doc y obliga a serializacion antes de seguir.
+- Parar si la sustitucion exige tocar politica/config de gitleaks fuera de las superficies declaradas.
+- Parar si la unica via OSS viable introduce otro action de terceros/licenciado o redisenia el workflow completo.
+- Parar si la barrera de `tests/unit/test_hook_ci_alignment.py` no puede expresar la regresion sin mezclar otras familias de workflow/security.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-011g.md` si dejar la politica veraz y consistente exige cambiar semantica de `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py` o `review_bridge.py`, o si la deuda real no es documental sino de tooling.
+Emitir `CG-WOT-2026-010x.md` si la sustitucion OSS solo puede hacerse tocando politica/config de gitleaks fuera del workflow y la barrera declarada, si el unico camino verde relaja el fail-closed del escaneo, o si la solucion exige un action de terceros/licenciado diferente.
+
