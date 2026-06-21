@@ -2499,3 +2499,30 @@ Fila retirada de la cola viva:
 - **STOP:** si la unica forma de cerrar el hueco es auto-commitear el archivador; si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; o si reproducir la mutacion real exige tocar `--session-close` otra vez en vez de la ruta de handoff, parar y emitir `CG-WOT-2026-011h.md`.
 
 - **Cierre:** completed. `--mark-ready` ahora falla cerrado ante el limbo `D old + ?? new` del auto-archivado, reutilizando el detector estable `archive_rename_uncommitted` sin auto-commit. Barrera FAIL-sin/PASS-con (test directo del helper + 3 e2e). Suite --level all 3086 passed; validate 0/0; bus CLOSE_CONFIRMED->COMPLETED.
+
+| Alta | WOT-2026-013c | Robustecer 3 tests global-state para ejecucion paralela | motor/test-suite-hygiene | blocked-final | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-post-011h-followup | - |  <!-- blocked-final: cura exige tocar rglob de producto o romper invariante sandbox (CG-WOT-2026-013c.md); sucesor = ticket de producto -->
+
+### WOT-2026-013c - Robustecer 3 tests global-state para ejecucion paralela
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-hygiene
+- **Estado:** blocked-final (CG-WOT-2026-013c.md; cura en superficie de producto)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-post-011h-followup.
+- **Problema (VERIFICADO):** `011i` cerro como `not-pursued` la via de runner/default: los 3 tests persistentes `test_upgrade_path_suggestion`, `test_scan_current_project` y `test_no_inline_ticket_regex` pasan serial y siguen ligados a estado global del proceso/repo (`cwd`, git y escaneo del proyecto vivo). La deuda real ya no es de politica xdist, sino de higiene de tests.
+- **Objetivo:** volver esos 3 tests parallel-safe sin tocar `scripts/run_pytest_safe.py`, CI ni el default xdist. El entregable es de aislamiento de tests; cualquier recuperacion futura del default se decide despues, con evidencia nueva.
+- **Files Likely Touched:**
+  - repo_motor: `tests/unit/test_detect_version.py`
+  - repo_motor: `tests/unit/test_project_scanner.py`
+  - repo_motor: `tests/unit/test_no_inline_ticket_regex.py`
+  - repo_motor: `tests/conftest.py`
+- **Criterios binarios:**
+  - Los 3 tests citados quedan verdes en serial y tambien verdes juntos bajo `python -m pytest <triple> -q -n 8 --dist load`.
+  - El diff productivo queda acotado a superficies de test/fixture; no toca runner, CI, controller ni codigo de producto.
+  - Existe al menos una barrera FAIL-sin/PASS-con sobre el rojo real de concurrencia/estado compartido.
+  - `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q`, `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q -n 8 --dist load`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si cualquier fix exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, `runtime/`, controller o codigo de producto; si al corregir esos 3 aparece otra familia roja dominante bajo xdist; o si la reproduccion deja de estar anclada en estos tests y pasa a ser deuda de runner otra vez, parar y emitir `CG-WOT-2026-013c.md`.
+
+- **Cierre:** blocked-final via CG-WOT-2026-013c.md. Causa raiz: el rglob de producto (scripts/project_scanner.py, agent_system/scripts/project_paths.py) recorre tests/sandbox/session_<PID> volatil y scandir explota antes del filtro ya-existente. Tests-only no basta: la alternativa solo-conftest (sandbox fuera) volvia verde el triple xdist estable x3 pero rompia test_windows_safe_temp_runtime (10 failed en --level all). Sucesor recomendado: ticket de PRODUCTO acotado a escaneo robusto ante borrados concurrentes (os.walk con poda, o ignorar FileNotFoundError).

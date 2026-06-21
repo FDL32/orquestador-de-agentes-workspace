@@ -244,21 +244,16 @@
 - solucion vigente: opt-in local `011e` + piloto CI non-blocking `010m`. `--level all` serial e intacto.
 - follow-up opcional (no contratado): robustecer los 3 tests global-state-bound para paralelizacion.
 
-## PLAN-013C-001
+## PLAN-013C-001 -- [BLOCKED-FINAL]
 
-- estado: planned
-- objetivo: volver parallel-safe `test_upgrade_path_suggestion`, `test_scan_current_project` y `test_no_inline_ticket_regex` sin tocar runner, CI ni politica xdist/default.
-- tickets: [WOT-2026-013c]
-- superficies:
-  - `tests/unit/test_detect_version.py`
-  - `tests/unit/test_project_scanner.py`
-  - `tests/unit/test_no_inline_ticket_regex.py`
-  - `tests/conftest.py`
-  - `.agent/collaboration/execution_log.md`
-- shared_dependencies:
-  - `scripts/run_pytest_safe.py` (read-only; evidencia/final gates)
-  - cierres de `011e`, `010m`, `011i` y `013b` (read-only; frontera de politica ya decidida)
-  - `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` al cierre
+- estado: blocked-final (ver `CG-WOT-2026-013c.md`; `ticket_contracts.md` T-013C-001).
+- objetivo (ANULADO): "robustecer 3 tests global-state tests-only" quedo refutado: la cura exige tocar el
+  rglob de producto (project_scanner/project_paths) o romper la invariante sandbox-dentro (test_windows_safe).
+  Este plan NO es un grafo operativo activo.
+- tickets: [WOT-2026-013c] (blocked-final)
+- solucion vigente: opt-in xdist 011e + piloto CI 010m. `--level all` serial e intacto.
+- sucesor recomendado (no contratado): ticket de PRODUCTO para escaneo robusto ante borrados concurrentes.
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -277,7 +272,7 @@
 | PLAN-011H-001 | `mark-ready` en `.agent/agent_controller.py` + barreras de handoff/guard; bitacora en repo_destino | razon estable `archive_rename_uncommitted`, auto-archivado de plan/audit, cierre canonico `--level all` | conflicto si otro ticket toca `--mark-ready`, `pre_handoff_guard`, auto-archivado o contrato de cierres mientras 011h endurece el handoff | serializar con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py`; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013B-002 | [CANCELADO/ABSORBED] sin superficie operativa | n/a (absorbido por PLAN-011I-001) | n/a -- premisa refutada (ver `CG-WOT-2026-013b.md`); no se planifica | ninguna; la deuda real (politica de reparto) la lleva PLAN-011I-001 | n/a |
 | PLAN-011I-001 | [NOT-PURSUED] sin superficie operativa | n/a (default xdist no perseguido; ver `CG-WOT-2026-011i.md`) | n/a -- premisa loadscope refutada; opt-in 011e+010m es el estado final | ninguna; follow-up opcional = robustecer 3 tests global-state (no contratado) | n/a |
-| PLAN-013C-001 | 3 tests unitarios concretos + fixture compartido; bitacora en repo_destino | runner xdist y cierres 011e/010m/011i solo en lectura; cierre canonico `--level all` | conflicto si otro ticket toca esos mismos tests, `tests/conftest.py` o reabre politica del runner mientras 013c aisla estado global | serializar con tickets que toquen `tests/unit/test_detect_version.py`, `tests/unit/test_project_scanner.py`, `tests/unit/test_no_inline_ticket_regex.py`, `tests/conftest.py` o `scripts/run_pytest_safe.py`; revalidar triple serial+xdist, `--level all` y `validate` al cerrar | no |
+| PLAN-013C-001 | [BLOCKED-FINAL] sin superficie operativa | n/a (cura en producto; ver `CG-WOT-2026-013c.md`) | n/a -- la cura toca rglob de producto o rompe invariante sandbox; tests-only no basta | ninguna; sucesor = ticket de producto (escaneo robusto a borrados concurrentes) | n/a |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -312,5 +307,5 @@ Para 010x, cualquier merge con tickets que toquen `.github/workflows/security-au
 Para 011h, cualquier merge con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py` obliga a revalidar la union con tests focales de handoff/archivado, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013b, cualquier merge con tickets que toquen `tests/unit/test_project_root_resolution.py`, `scripts/run_pytest_safe.py` o `runtime/project_root.py` obliga a revalidar la union con `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`, `python -m pytest tests/unit -q`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 011i, cualquier merge con tickets que toquen `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `quality-gates.yml` o la politica xdist/default obliga a revalidar la union con tests focales del runner, `python scripts/run_pytest_safe.py --level unit`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
-Para 013c, cualquier merge con tickets que toquen `tests/unit/test_detect_version.py`, `tests/unit/test_project_scanner.py`, `tests/unit/test_no_inline_ticket_regex.py`, `tests/conftest.py` o `scripts/run_pytest_safe.py` obliga a revalidar la union con el triple serial+xdist, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Nota historica 013c (BLOCKED-FINAL, ver `CG-WOT-2026-013c.md`): el aislamiento tests-only no era viable; la cura pertenece a un ticket de producto (rglob robusto a borrados concurrentes). No hay plan activo de 013c que serializar.
 
