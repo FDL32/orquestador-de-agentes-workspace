@@ -1,10 +1,10 @@
 # MEMORY
 
-Regenerated: 2026-06-20T23:14:46.435621+00:00
+Regenerated: 2026-06-21T20:51:54.272593+00:00
 
-Total observations: 58
+Total observations: 75
 
-- Architecture (21 observations)
+- Architecture (37 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
 - Backlog-Summary-Detail-Reconcile-After-Rescope (1 observations)
@@ -35,20 +35,20 @@ Total observations: 58
 - Session-Bootstrap-Audit-Snapshot (1 observations)
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
 - Suite-Performance (1 observations)
-- Ticket-Completion (4 observations)
+- Ticket-Completion (5 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
 ## architecture
-- Decisiones arquitectonicas documentadas en WOT-2026-010c
-- Decisiones arquitectonicas documentadas en WOT-2026-008c
-- Decisiones arquitectonicas documentadas en WOT-2026-010a
-- Decisiones arquitectonicas documentadas en WOT-2026-009g
-- Decisiones arquitectonicas documentadas en WOT-2026-008b
-- Decisiones arquitectonicas documentadas en WOT-2026-009d
-- Decisiones arquitectonicas documentadas en WOT-2026-003d
-- Decisiones arquitectonicas documentadas en WOT-2026-005d
-- Decisiones arquitectonicas documentadas en WOT-2026-005c
-- Decisiones arquitectonicas documentadas en WOT-2026-005b
+- Decisiones arquitectonicas documentadas en WOT-2026-013d
+- Decisiones arquitectonicas documentadas en WOT-2026-011h
+- Decisiones arquitectonicas documentadas en WOT-2026-010m
+- Decisiones arquitectonicas documentadas en WOT-2026-010x
+- Decisiones arquitectonicas documentadas en WOT-2026-011g
+- Decisiones arquitectonicas documentadas en WOT-2026-013a
+- Decisiones arquitectonicas documentadas en WOT-2026-011b
+- Decisiones arquitectonicas documentadas en WOT-2026-011f
+- Decisiones arquitectonicas documentadas en WOT-2026-011e
+- Decisiones arquitectonicas documentadas en WOT-2026-012b
 
 ## atomic-requeue-claim
 - Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super
