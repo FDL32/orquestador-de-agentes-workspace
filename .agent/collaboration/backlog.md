@@ -22,30 +22,47 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Media | WOT-2026-013e | Auditar valor, uso y poda segura de la suite de tests | motor/test-suite-audit | pending | WOT-2026-013d | session-2026-06-21-test-suite-audit-followup | - |
+| Media | WOT-2026-013f | Podar tests/deprecated/ (Goose retirado, ya fuera del runner) | motor/test-suite-prune | pending | WOT-2026-013e | session-2026-06-22-test-suite-audit-followup | - |
+| Baja | WOT-2026-013g | Diagnosticar coste no explicado de test_upgrade_path_suggestion (~60-70s) | motor/test-performance | pending | WOT-2026-013e | session-2026-06-22-test-suite-audit-followup | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> `013d` ya cerro canonicamente como `completed`: endurecio el escaneo de PRODUCTO ante borrados concurrentes y dejo verde el triple xdist sin reabrir la politica del runner. `013e` queda como unico ticket accionable vivo para auditar valor, duplicidad y poda segura de la suite de tests. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. De sus 4 follow-ups, solo se promueven los dos accionables de bajo riesgo: `013f` (poda limpia de `tests/deprecated/`) y `013g` (diagnostico del unico coste `unknown`). FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013e - Auditar valor, uso y poda segura de la suite de tests
+### WOT-2026-013f - Podar tests/deprecated/ (Goose retirado, ya fuera del runner)
 - **Prioridad:** Media
-- **Scope:** motor/test-suite-audit
+- **Scope:** motor/test-suite-prune
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-013e
+- **Reactivation:** -
+- **Origen:** session-2026-06-22-test-suite-audit-followup (FU-013E-2).
+- **Problema:** `tests/deprecated/test_goose_triggers.py` y `tests/deprecated/test_goose_realworld.py` cubren Goose, motor DEPRECATED por WT-2026-254a. Ya estan excluidos del runner via `norecursedirs` en `pytest.ini`, asi que su valor de regresion es nulo y solo aportan ruido en disco.
+- **Objetivo:** retirar `tests/deprecated/` con justificacion, dejando constancia (estilo `tests/integration/RETIRED_TESTS.md`) de que la cobertura retirada es de un subsistema deprecado, no de producto vivo.
+- **Files Likely Touched:**
+  - repo_motor: `tests/deprecated/`
+  - repo_destino: `.agent/collaboration/execution_log.md`
+- **Criterios binarios:** `git rm` acotado a `tests/deprecated/`; `pytest tests --collect-only -q` sigue dando 3111 (los borrados ya no se recolectaban); `run_pytest_safe.py --level all` verde; ningun otro test/producto tocado; `validate` 0/0.
+- **STOP:** si algun consumidor vivo (discovery, resolver, docs) referencia esos archivos como fuente; si borrarlos cambia el conteo recolectado; si aparece valor historico no replicable -> conservar y documentar en vez de borrar.
+
+### WOT-2026-013g - Diagnosticar coste no explicado de test_upgrade_path_suggestion
+- **Prioridad:** Baja
+- **Scope:** motor/test-performance
 - **Estado:** pending
 - **deliverable_type:** analysis
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013d
+- **Depende de:** WOT-2026-013e
 - **Reactivation:** -
-- **Origen:** session-2026-06-21-test-suite-audit-followup.
-- **Problema (HIPOTESIS A VERIFICAR):** la suite ya supera los 3000 tests y probablemente mezcla regresiones core, barreras estructurales, tests legacy y candidatos redundantes. Hoy no existe un inventario auditable que distinga "proteccion imprescindible" de "ruido historico" antes de proponer podas.
-- **Objetivo:** producir un inventario razonado de la suite por familias y riesgo, clasificando cada bloque como `core regression`, `structural gate`, `legacy candidate`, `redundant candidate` o `unknown`, con evidencia suficiente para abrir tickets pequenos de poda sin borrar a ciegas.
+- **Origen:** session-2026-06-22-test-suite-audit-followup (FU-013E-3).
+- **Problema:** `test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion` aparece como outlier #2-#3 (~59-70s en baselines 010j/010p) con cuerpo trivial (3 asserts). El coste no es atribuible a logica propia visible; 010j lo dejo como observacion abierta. Es el unico `unknown` de coste del inventario 013e.
+- **Objetivo:** explicar la causa real del coste (p.ej. setup de clase/modulo caro atribuido por pytest al primer test, fixture compartida, escaneo) con `--durations` aislado por test, sin tocar el test, y proponer (o descartar con evidencia) una optimizacion local tipo 010k.
 - **Files Likely Touched:**
-  - repo_motor: `docs/test_performance/test_suite_audit_WOT-2026-013e.md`
+  - repo_motor: `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`
   - repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:**
-  - repo_motor: `tests/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_followup.md`, `docs/test_performance/test_selection.md`, `tests/README.md`, `tests/ARCHITECTURE.md`
-- **Criterios binarios:** existe inventario por familias con conteo y clasificacion; se listan tests lentos, saltados, barreras estructurales y candidatos redundantes con evidencia; no se borra ni relaja ningun test en este ticket; el resultado deja follow-ups pequenos y verificables, no una propuesta masiva de poda.
-- **STOP:** si la auditoria exige borrar o reescribir tests en el mismo ticket; si no puede distinguir evidencia de uso/valor real frente a intuicion; o si la poda segura requiere mezclar runner, CI y producto en una sola pasada, parar y re-encuadrar.
+- **Read/inspect only:** repo_motor `tests/unit/test_detect_version.py`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md`
+- **Criterios binarios:** reporte durable que explique el coste con medicion reproducible; separa [V] verificado de [I] inferencia; recomienda optimizacion local o cierra "sin optimizacion segura" con evidencia; no toca el test ni producto en este ticket; `validate` 0/0.
+- **STOP:** si explicar el coste exige reescribir el test o tocar producto -> re-encuadrar como ticket code aparte; si la medicion no es reproducible entre corridas, documentar la varianza y parar.

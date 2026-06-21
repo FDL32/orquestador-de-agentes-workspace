@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013e
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## MANAGER - WOT-2026-013e - Bootstrap operativo
 
@@ -67,3 +67,26 @@ Evidencia de lectura/verificacion del artefacto:
 Desviaciones de scope / CONTRACT_GAP: ninguna. No fue necesario emitir CG-WOT-2026-013e.md.
 
 Reporte docs/test_performance/test_suite_audit_WOT-2026-013e.md creado. Validate: exit code 0, 0 errors, 0 warnings.
+
+
+Manager approved canonical closeout for WOT-2026-013e
+
+## ORQUESTADOR - WOT-2026-013e - Cierre canonico + backlog follow-ups
+
+Cierre verificado contra el bus (no auto-reporte):
+- `--manager-approve WOT-2026-013e --force` => exit 0, "Ticket WOT-2026-013e closed canonically".
+- Bus: REVIEW_DECISION (MANAGER, seq 1299) -> READY_TO_CLOSE (1300) -> CLOSE_CONFIRMED (1301) -> COMPLETED (1302) -> SUPERVISOR_CLOSED (1303).
+- STATE.md: ACTIVE_TICKET WOT-2026-013e / STATUS COMPLETED. validate 0 errors / 0 warnings.
+- Review: agente Manager (read-only) reprodujo conteos (3111/slow=1/integration=5), confirmo diff motor = solo el reporte, gates verdes => DECISION: APPROVE.
+
+Backlog (commit de documentacion, manual; NO via archivador del closeout):
+- 013e retirado de cola viva y registrado en `_archive/backlog_done.md` (tabla cierres post-012a).
+- Anadidos a cola viva los 2 follow-ups accionables de bajo riesgo:
+  - WOT-2026-013f (code, motor/test-suite-prune): poda de `tests/deprecated/` (Goose retirado, ya fuera del runner).
+  - WOT-2026-013g (analysis, motor/test-performance): diagnostico del coste unknown de `test_upgrade_path_suggestion`.
+- FU-013E-1 y FU-013E-4 NO promovidos (FU-4 tocaria structural-gate por solape no confirmado).
+- Gate `check_backlog_contract.py` => OK (live queue contract holds).
+
+Higiene de encoding (incidente menor, no del scope 013e):
+- `check_encoding_guard.py` marco `backlog_done.md` por question-mark corruption (la palabra "huerfanos" con la 'e' acentuada degradada a signo de interrogacion) en la ficha historica de 013d (linea 2558). VERIFICADO preexistente: ausente en HEAD del archivo, no introducido por esta edicion; el guard escanea archivo completo.
+- Corregido al equivalente ASCII "huerfanos" (fiel al historico sin acentos). encoding guard re-corrido => exit 0 sobre ambos archivos de backlog.
