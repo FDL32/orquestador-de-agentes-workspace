@@ -1425,3 +1425,34 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el workflow necesita redisenarse mas alla del paso de gitleaks; parar si la invocacion CLI exige cambios de politica/config fuera de scope; parar si la barrera de `tests/unit/test_hook_ci_alignment.py` no puede expresar la regresion sin tocar otras familias de tests o workflows.
 - **Depende de:** -.
+
+## T-013C-001 -- Robustecer 3 tests global-state para ejecucion paralela
+
+- **ticket_id:** WOT-2026-013c
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013C-001
+- **Plan-Link:** PLAN-013C-001
+- **Premise:** `011i` ya cerro como `not-pursued`: la via `--dist loadscope` / default xdist quedo refutada como politica de runner. El rojo persistente restante vive en tres tests concretos (`test_upgrade_path_suggestion`, `test_scan_current_project`, `test_no_inline_ticket_regex`) que pasan serial y dependen de estado global del proceso/repo (`cwd`, git y escaneo del proyecto vivo). La deuda honesta siguiente ya no es runner ni CI: es aislamiento de tests.
+- **Premise Re-check (read-only):** releer `tests/unit/test_detect_version.py`, `tests/unit/test_project_scanner.py`, `tests/unit/test_no_inline_ticket_regex.py`, `tests/conftest.py`, `scripts/run_pytest_safe.py`, `_archive/backlog_done.md` (cierres de `011i` / `013b`) y `ticket_contracts.md` (`T-011I-001`, `T-013B-001`); reejecutar en lectura `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q` y `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q -n 8 --dist load`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** persistent_global_state_tests=`test_upgrade_path_suggestion|test_scan_current_project|test_no_inline_ticket_regex`; serial_green_expected=true; xdist_shared_state_red_expected=true; runner_policy_already_closed=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `tests/unit/test_detect_version.py`
+  - Builder repo_motor: `tests/unit/test_project_scanner.py`
+  - Builder repo_motor: `tests/unit/test_no_inline_ticket_regex.py`
+  - Builder repo_motor: `tests/conftest.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; `docs/test_performance/test_performance_followup_WOT-2026-010k.md`; `docs/test_performance/test_performance_variance_WOT-2026-010p.md`; `_archive/backlog_done.md`; `.agent/runtime/pytest-safe/last-run.json`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `quality-gates.yml`; `.github/workflows/*`; `.agent/agent_controller.py`; `runtime/`; `bus/`; `pre_handoff_guard.py`; CI/pipeline policy; cualquier cambio del default xdist o de la semantica de `--level all`; codigo de producto fuera de tests/fixtures.
+- **DoD:**
+  - [ ] Los 3 tests citados pasan serialmente y tambien verdes juntos bajo `python -m pytest <triple> -q -n 8 --dist load`.
+  - [ ] El diff productivo queda acotado a superficies de test/fixture declaradas; no toca runner, CI ni codigo de producto.
+  - [ ] Existe al menos una barrera FAIL-sin/PASS-con contra el rojo real de estado compartido / concurrencia.
+  - [ ] La correccion preserva el sentido de cada test: no sustituye aserciones reales por mocks o floors triviales.
+  - [ ] `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q`, `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q -n 8 --dist load`, `ruff check tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `uv run ruff format --check tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** nace del cierre honesto de `011i` / `013b`, pero no los reabre ni reescribe. `011e` y `010m` permanecen como solucion vigente de xdist opt-in / piloto CI; `013c` trabaja solo sobre aislamiento de tests para dejar evidencia nueva, no para cambiar politica por decreto.
+- **CONTRACT_GAP behavior:** si volver verdes los 3 tests exige tocar runner, CI, politica xdist/default o codigo de producto; si el rojo dominante migra a otra familia distinta al corregir estos tres; o si el fix requiere ampliar superficie mas alla de tests/fixtures declarados, emitir `CG-WOT-2026-013c.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica via verde toca `scripts/run_pytest_safe.py`, `quality-gates.yml` o `runtime/`; parar si la reproduccion deja de centrarse en estos tres tests; parar si el rojo restante tras el fix pertenece ya a otra familia y exige un ticket nuevo en vez de ensanchar `013c`.
+- **Depende de:** WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED).

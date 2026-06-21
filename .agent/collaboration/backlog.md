@@ -21,11 +21,34 @@
 
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
+| Alta | WOT-2026-013c | Robustecer 3 tests global-state para ejecucion paralela | motor/test-suite-hygiene | pending | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-post-011h-followup | - |
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
-
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> No quedan tickets accionables vivos. `011h` cerrado canonicamente (COMPLETED, motor 79d6a1c). `011i` (not-pursued) y `013b` (absorbed) cerrados: el default xdist no es perseguible sin reescribir 3 tests con estado global (ver `CG-WOT-2026-011i.md`). `002c` (`completed-partial`) y `256a` (`blocked` externo) quedan fuera por naturaleza.
+### WOT-2026-013c - Robustecer 3 tests global-state para ejecucion paralela
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-hygiene
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-post-011h-followup.
+- **Problema (VERIFICADO):** `011i` cerro como `not-pursued` la via de runner/default: los 3 tests persistentes `test_upgrade_path_suggestion`, `test_scan_current_project` y `test_no_inline_ticket_regex` pasan serial y siguen ligados a estado global del proceso/repo (`cwd`, git y escaneo del proyecto vivo). La deuda real ya no es de politica xdist, sino de higiene de tests.
+- **Objetivo:** volver esos 3 tests parallel-safe sin tocar `scripts/run_pytest_safe.py`, CI ni el default xdist. El entregable es de aislamiento de tests; cualquier recuperacion futura del default se decide despues, con evidencia nueva.
+- **Files Likely Touched:**
+  - repo_motor: `tests/unit/test_detect_version.py`
+  - repo_motor: `tests/unit/test_project_scanner.py`
+  - repo_motor: `tests/unit/test_no_inline_ticket_regex.py`
+  - repo_motor: `tests/conftest.py`
+- **Criterios binarios:**
+  - Los 3 tests citados quedan verdes en serial y tambien verdes juntos bajo `python -m pytest <triple> -q -n 8 --dist load`.
+  - El diff productivo queda acotado a superficies de test/fixture; no toca runner, CI, controller ni codigo de producto.
+  - Existe al menos una barrera FAIL-sin/PASS-con sobre el rojo real de concurrencia/estado compartido.
+  - `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q`, `python -m pytest tests/unit/test_detect_version.py tests/unit/test_project_scanner.py tests/unit/test_no_inline_ticket_regex.py -q -n 8 --dist load`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si cualquier fix exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, `runtime/`, controller o codigo de producto; si al corregir esos 3 aparece otra familia roja dominante bajo xdist; o si la reproduccion deja de estar anclada en estos tests y pasa a ser deuda de runner otra vez, parar y emitir `CG-WOT-2026-013c.md`.
+
+> Tickets vivos accionables: `013c` es el unico. `002c` (`completed-partial`) y `256a` (`blocked` externo) quedan fuera por naturaleza. `011i` y `013b` cerraron honestamente como `not-pursued` / `absorbed`: el default xdist no se reabre por inercia, solo si `013c` deja evidencia nueva.
