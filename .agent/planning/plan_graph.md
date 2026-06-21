@@ -186,6 +186,23 @@
   - `.pre-commit-config.yaml` (read-only; el workflow sigue delegando pre-commit por separado)
   - historico `WOT-2026-004a` / `WOT-2026-004b` (read-only; contexto de politica y falsos positivos)
 
+## PLAN-010M-001 -- Piloto CI xdist acotado sobre quality-gates
+
+- objetivo: anadir un piloto CI xdist aditivo y acotado en `quality-gates.yml`, reutilizando la capacidad opt-in creada por `011e` sin tocar el default del runner ni el cierre canonico `--level all`.
+- tickets: [WOT-2026-010m]
+- depends_on: [WOT-2026-010j, WOT-2026-010k, WOT-2026-011e]
+- superficies_archivo:
+  - repo_motor/.github/workflows/quality-gates.yml
+  - repo_motor/tests/unit/test_quality_gates_workflow.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - GitHub Actions workflow `quality-gates.yml`
+  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers <N>`
+  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+- shared_dependencies:
+  - `scripts/run_pytest_safe.py` y `tests/unit/test_run_pytest_safe.py` (read-only; contrato xdist ya fijado por 011e)
+  - `scripts/pre_handoff_guard.py` (read-only; el handoff sigue exigiendo `--level all`)
+  - frontera `011e <-> 010m <-> 011i` (local opt-in vs piloto CI vs default futuro)
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -200,6 +217,7 @@
 | PLAN-013A-001 | fixture/driver de `tests/test_controller_integration.py`; bitacora en repo_destino | `.agent/agent_controller.py` read-only, runtime/bus copiados por sandbox, cierre canonico `--level all` | conflicto si otro ticket toca el mismo test o cambia la forma de resolver project_root/topologia del controller mientras 013a arregla el fixture | serializar con tickets que toquen `tests/test_controller_integration.py` o la resolucion de project_root del controller; revalidar test aislado + archivo completo + `--level all` al cerrar | no |
 | PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
 | PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
+| PLAN-010M-001 | workflow `quality-gates.yml` + barrera dedicada del workflow; bitacora en repo_destino | runner xdist ya fijado por `011e`, handoff canonico `--level all`, frontera con `011i` | conflicto si otro ticket toca `quality-gates.yml`, la politica xdist o el default del runner mientras 010m introduce el piloto CI | serializar con tickets que toquen `quality-gates.yml`, `scripts/run_pytest_safe.py` o la politica xdist/default; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -225,9 +243,8 @@ completa sobre la union de cambios.
 Para 010d, cualquier merge con otro ticket que toque bus/controller/supervisor
 requiere revalidar la union con `run_pytest_safe`, `validate --json --project-root <repo_destino>`
 y una auditoria especifica de secuencias/eventos de pausa y resume.
-Para 012b, cualquier merge con tickets que toquen `run_gates_dispatch.py`, el
-schema del backlog o reglas de `Reactivation` obliga a revalidar la union con
-tests del gate, `run_pytest_safe` si aplica y `validate --json --project-root <repo_destino>`.
+
+Para 010m, cualquier merge con tickets que toquen `quality-gates.yml`, `scripts/run_pytest_safe.py` o la politica de xdist/default exige revalidar la union con `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bus/supervisor.py` o la politica de cierre/performance obliga a revalidar la union con tests focales de relaunch, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013a, cualquier merge con tickets que toquen `tests/test_controller_integration.py` o la resolucion de `project_root` del controller obliga a revalidar el test aislado, el archivo completo y `python scripts/run_pytest_safe.py --level all`.
 Para 011g, cualquier merge con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md` obliga a revalidar la coherencia textual de `loop rapido` vs `cierre canonico`, `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>`.

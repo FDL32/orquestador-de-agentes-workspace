@@ -15,6 +15,7 @@
 |--------|--------|------|
 | WOT-2026-012b | completed | cerrado canonico 2026-06-20; gate backlog fail-closed aprobado y cerrado por Manager. |
 | WOT-2026-011e | completed | cerrado canonico 2026-06-20; xdist opt-in local entregado; default del runner sigue intacto por 3 tests no parallel-safe. |
+| WOT-2026-010x | completed | cerrado canonico 2026-06-21; security-audit.yml migro a gitleaks CLI OSS sin action licenciado. |
 | WOT-2026-011c | completed | cerrado canonico 2026-06-19; spike research completado. Follow-up registrado: `WOT-2026-011j`. |
 
 # Backlog

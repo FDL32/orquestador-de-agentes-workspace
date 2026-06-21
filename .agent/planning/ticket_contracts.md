@@ -893,7 +893,7 @@
   - Builder repo_motor: `tests/unit/test_encoding_post_write_hook.py`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
 - **Read/inspect only:** `AGENTS.md`; historicos de `008f`/`008j` en `execution_log.md`, `backlog.md`, `ticket_contracts.md`; `bus/runtime/events`.
-- **Forbidden Surfaces:** interceptar Bash/heredoc v1; ampliar scope a binarios/no-text; cambiar `TEXT_EXTENSIONS` sin necesidad contractual; introducir allowlists nuevas; tocar `validate`/bus/runtime/events; tocar dependencias; reescribir packets historicos para â€œlimpiarlosâ€.
+- **Forbidden Surfaces:** interceptar Bash/heredoc v1; ampliar scope a binarios/no-text; cambiar `TEXT_EXTENSIONS` sin necesidad contractual; introducir allowlists nuevas; tocar `validate`/bus/runtime/events; tocar dependencias; reescribir packets historicos para "limpiarlos".
 - **DoD:**
   - [ ] `scripts/check_encoding_guard.py <archivo>` falla cerrado ante control chars ASCII `<32` no-whitespace en archivos de texto (`\x00`, `\x0b`, `\x0c`, etc.).
   - [ ] `\t`, `\n`, `\r` y CRLF legitimos NO disparan falso positivo.
@@ -904,7 +904,7 @@
   - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
 - **CONTRACT_GAP behavior:** si la correccion exige ampliar el ticket a interceptar Bash/heredoc, cambiar semantica de allowlist, escanear binarios o introducir una segunda fuente de verdad distinta de `scripts.encoding_guard`, emitir `CG-WOT-2026-010v.md` y bloquear.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseÃ±o mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
+- **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseno mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
 - **Depende de:** WOT-2026-010e (COMPLETED); WOT-2026-008j (COMPLETED).
 
 
@@ -931,7 +931,7 @@
   - [ ] `scripts/closeout_steps/support.py:check_versioned_filenames` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
   - [ ] `scripts/closeout_steps/rotation.py:step_git_clean` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
   - [ ] Existe al menos un test de regresion en `tests/test_session_closeout.py` que ejecuta la ruta real de `run_script` contra un script temporal que imprime un em dash u otra salida UTF-8 alta y demuestra que la salida se captura sin `UnicodeDecodeError`.
-  - [ ] Si se aÃ±ade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
+  - [ ] Si se anade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
   - [ ] `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>` deja de fallar por `UnicodeDecodeError` en Windows.
   - [ ] `python -m pytest tests/test_session_closeout.py -v` pasa.
   - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
@@ -1042,7 +1042,7 @@
   - [ ] `Reactivation` usa `-` solo para estados activos; `deferred` y `completed-partial` llevan trigger estructurado valido.
   - [ ] La cola viva queda limitada a `pending|blocked|deferred|ready-for-review|awaiting-manager|completed-partial`; los terminales salen del backlog activo.
   - [ ] Existe snapshot pre-corte como commit git explicito o `_archive/backlog_pre_012a.md` portable.
-  - [ ] El corte del historico se hace por bloques lógicos auditablemente reconocibles y conserva integra la seccion `### WOT-2026-012a` en el historico movido.
+  - [ ] El corte del historico se hace por bloques logicos auditablemente reconocibles y conserva integra la seccion `### WOT-2026-012a` en el historico movido.
   - [ ] Existe evidencia mecanica antes/despues del movimiento (conteo de filas terminales y fichas `###` movidas) suficiente para auditar no-perdida de historico.
   - [ ] `backlog.md` muestra reduccion material verificable por diff; `<= 200` lineas de cola viva queda como objetivo operativo, no como gate binario.
   - [ ] `python scripts/check_encoding_guard.py` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
@@ -1120,31 +1120,56 @@
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-011J-001
 - **Plan-Link:** PLAN-011J-001
-- **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con Set-Content/Out-File -Encoding UTF8. A la vez, la cola viva actual (acklog.md) ya esta limpia; los 3 control chars que siguen bloqueando  12a viven solo en _archive/backlog_done.md y _archive/backlog_pre_012a.md. Por tanto  11j no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en 
-epo_motor y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de  12a.
-- **Premise Re-check (read-only):** confirmar que python scripts/check_encoding_guard.py .agent/collaboration/backlog.md sale verde y que el mismo guard sobre _archive/backlog_done.md y _archive/backlog_pre_012a.md falla por los 3 control chars historicos; releer .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md; inspeccionar scripts/launch_agent_terminals.ps1 para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de WT-2026-248a; localizar barreras existentes en 	ests/test_opencode_config_stability.py y 	ests/test_launch_agent_terminals_script.py; ejecutar python .agent/agent_controller.py --validate --json --project-root <repo_destino> antes del arranque y dejar constancia del estado.
-- **Context Baseline Evidence:** 011c_report=completed; active_backlog_encoding=clean; archive_backlog_encoding=3_control_chars; launcher_bom_primitives=Set-Content -Encoding UTF8,Out-File -Encoding UTF8; generated_at=2026-06-19.
+- **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con `Set-Content`/`Out-File -Encoding UTF8`. A la vez, la cola viva actual (`backlog.md`) ya esta limpia; los 3 control chars que siguen bloqueando `012a` viven solo en `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md`. Por tanto `011j` no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en `repo_motor` y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de `012a`.
+- **Premise Re-check (read-only):** confirmar que `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` sale verde y que el mismo guard sobre `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` falla por los 3 control chars historicos; releer `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; inspeccionar `scripts/launch_agent_terminals.ps1` para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de `WT-2026-248a`; localizar barreras existentes en `tests/test_opencode_config_stability.py` y `tests/test_launch_agent_terminals_script.py`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** 011c_report=completed; active_backlog_encoding=clean; archive_backlog_encoding=3_control_chars; launcher_bom_primitives=`Set-Content -Encoding UTF8`,`Out-File -Encoding UTF8`; generated_at=2026-06-19.
 - **Files Likely Touched:**
-  - Builder repo_motor: scripts/launch_agent_terminals.ps1
-  - Builder repo_motor: 	ests/test_opencode_config_stability.py
-  - Builder repo_motor: 	ests/test_launch_agent_terminals_script.py
-  - Builder repo_destino: .agent/collaboration/execution_log.md
-- **Read/inspect only:** .agent/runtime/audit/bom_source_audit_WOT-2026-011c.md; .agent/collaboration/backlog.md; .agent/collaboration/_archive/backlog_done.md; .agent/collaboration/_archive/backlog_pre_012a.md; .agent/collaboration/CG-WOT-2026-012a.md; .agent/agent_controller.py; scripts/check_encoding_guard.py; 	ests/test_launcher_ps1_syntax.py.
-- **Forbidden Surfaces:** editar manualmente _archive/backlog_done.md o _archive/backlog_pre_012a.md; broad-strip de BOM/control chars en el repo; tocar scripts/check_encoding_guard.py; reintentar WOT-2026-012a dentro de  11j; tocar TURN.md / STATE.md / bus manualmente; introducir un fix que dependa de relajar el guard.
+  - Builder repo_motor: `scripts/launch_agent_terminals.ps1`
+  - Builder repo_motor: `tests/test_opencode_config_stability.py`
+  - Builder repo_motor: `tests/test_launch_agent_terminals_script.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; `.agent/collaboration/backlog.md`; `.agent/collaboration/_archive/backlog_done.md`; `.agent/collaboration/_archive/backlog_pre_012a.md`; `.agent/collaboration/CG-WOT-2026-012a.md`; `.agent/agent_controller.py`; `scripts/check_encoding_guard.py`; `tests/test_launcher_ps1_syntax.py`.
+- **Forbidden Surfaces:** editar manualmente `_archive/backlog_done.md` o `_archive/backlog_pre_012a.md`; broad-strip de BOM/control chars en el repo; tocar `scripts/check_encoding_guard.py`; reintentar `WOT-2026-012a` dentro de `011j`; tocar `TURN.md` / `STATE.md` / bus manualmente; introducir un fix que dependa de relajar el guard.
 - **DoD:**
-  - [ ] El diff elimina las escrituras PowerShell BOM-prone que  11j declare in-scope y las sustituye por un patron BOM-safe verificable.
-  - [ ] Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por  11j.
-  - [ ] 	ests/test_opencode_config_stability.py sigue verde y demuestra que el patron BOM-safe existente no regresa.
-  - [ ]  11j NO edita manualmente _archive/backlog_done.md ni _archive/backlog_pre_012a.md; deja explicito en execution_log.md que esos artefactos se regeneraran al relanzar  12a.
-  - [ ] python scripts/check_encoding_guard.py sobre las superficies propias del ticket queda verde.
-  - [ ] uv run ruff check sobre los Python tocados, python -m pytest focal aplicable, python scripts/run_pytest_safe.py --project-root <repo_destino> y python .agent/agent_controller.py --validate --json --project-root <repo_destino> quedan verdes.
-- **Integracion cross-ticket:** desbloquea el relanzamiento de WOT-2026-012a, pero no lo cierra ni regenera sus archives dentro del mismo ticket.  12a se relanza despues para reconstruir _archive/backlog_done.md y _archive/backlog_pre_012a.md desde la fuente viva ya limpia.
-- **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en 
-epo_motor, o si el unico camino a verde exige editar manualmente los archives de  12a, o si el fix real cae en gent_controller.py / guard de encoding fuera de la superficie declarada, emitir CG-WOT-2026-011j.md, bloquear y devolver a Contract Formation.
+  - [ ] El diff elimina las escrituras PowerShell BOM-prone que `011j` declare in-scope y las sustituye por un patron BOM-safe verificable.
+  - [ ] Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para la primitiva o ruta tocada por `011j`.
+  - [ ] `tests/test_opencode_config_stability.py` sigue verde y demuestra que el patron BOM-safe existente no regresa.
+  - [ ] `011j` NO edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`; deja explicito en `execution_log.md` que esos artefactos se regeneraran al relanzar `012a`.
+  - [ ] `python scripts/check_encoding_guard.py` sobre las superficies propias del ticket queda verde.
+  - [ ] `uv run ruff check` sobre los Python tocados, `python -m pytest` focal aplicable, `python scripts/run_pytest_safe.py --project-root <repo_destino>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** desbloquea el relanzamiento de `WOT-2026-012a`, pero no lo cierra ni regenera sus archives dentro del mismo ticket. `012a` se relanza despues para reconstruir `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` desde la fuente viva ya limpia.
+- **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en `repo_motor`, si el unico camino a verde exige editar manualmente los archives de `012a`, o si el fix real cae en `.agent/agent_controller.py` / guard de encoding fuera de la superficie declarada, emitir `CG-WOT-2026-011j.md` y bloquear.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si el fix exige broadening a una caza general de writers PowerShell fuera de la superficie declarada; parar si el ticket deriva en reconstruccion manual de historico; parar si el rojo restante pertenece solo a  12a y requiere relanzar ese ticket en lugar de seguir ampliando  11j.
+- **STOP conditions:** parar si el fix exige broadening a una caza general de writers PowerShell fuera de la superficie declarada; parar si el ticket deriva en reconstruccion manual de historico; parar si el rojo restante pertenece solo a `012a` y requiere relanzar ese ticket en lugar de seguir ampliando `011j`.
 - **Depende de:** WOT-2026-011c (COMPLETED); WOT-2026-010v (COMPLETED).
+## T-010M-001 -- Piloto CI xdist acotado sobre quality-gates
 
+- **ticket_id:** WOT-2026-010m
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-010M-001
+- **Plan-Link:** PLAN-010M-001
+- **Premise:** `011e` ya incorporo `pytest-xdist` al runner local con flag opt-in y mantuvo intacto el cierre canonico (`--level all`). `.github/workflows/quality-gates.yml` sigue ejecutando solo la ruta serial de `scripts/run_pytest_safe.py`. La frontera `011e <-> 010m <-> 011i` ya esta resuelta: `010m` solo puede pilotar CI, no mover el default del runner.
+- **Premise Re-check (read-only):** releer `.github/workflows/quality-gates.yml`, `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `scripts/pre_handoff_guard.py`, `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`, `docs/test_performance/test_performance_followup_WOT-2026-010k.md` y `.agent/collaboration/_archive/backlog_done.md`; confirmar que `011e` quedo COMPLETED, que el workflow aun no usa `--xdist-workers` y que el cierre canonico sigue requiriendo `python scripts/run_pytest_safe.py --level all`.
+- **Context Baseline Evidence:** quality_gates_serial_only=true; xdist_opt_in_available=true; canonical_close_all=true; boundary_011e_local_010m_ci_011i_default=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `.github/workflows/quality-gates.yml`
+  - Builder repo_motor: `tests/unit/test_quality_gates_workflow.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `.agent/runtime/pytest-safe/last-run.json`; `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`; `docs/test_performance/test_performance_followup_WOT-2026-010k.md`; `.agent/collaboration/backlog.md`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `tests/unit/test_run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; `scripts/run_gates_dispatch.py`; cambio implicito del default del runner o del camino canonico `--level all`; otros workflows; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD:**
+  - [ ] `.github/workflows/quality-gates.yml` incorpora un piloto CI xdist aditivo y explicitamente acotado, sin eliminar ni alterar la corrida serial canonica existente.
+  - [ ] El piloto usa `scripts/run_pytest_safe.py` con `--xdist-workers <N>` solo sobre la superficie permitida del ticket; el camino canonico en CI sigue sin xdist.
+  - [ ] `tests/unit/test_quality_gates_workflow.py` aporta una barrera FAIL-sin/PASS-con que falla si desaparece el piloto o si la corrida canonica adopta xdist por accidente.
+  - [ ] `execution_log.md` deja evidencia auditable de la separacion entre piloto CI y cierre canonico, con resultado o medicion del piloto.
+  - [ ] `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** consume la capacidad xdist creada por `011e`, pero no la reabre; no convierte el piloto en default (`011i`) ni toca la barrera canonica de handoff. Si los tests no parallel-safe exigen aislar subset adicional fuera del workflow/test declarados, el ticket debe parar.
+- **CONTRACT_GAP behavior:** si el piloto CI no puede definirse sin tocar `scripts/run_pytest_safe.py`, si la unica via verde convierte xdist en default o lo mete en el camino canonico `--level all`, o si el subset seguro exige expansion a nuevas superficies del runner/selector, emitir `CG-WOT-2026-010m.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la unica implementacion viable toca el runner, el guard de handoff o el dispatcher; parar si el piloto solo puede validarse convirtiendo xdist en default o metiendolo en la corrida canonica `--level all`; parar si los tests no parallel-safe obligan a redisenar el selector/runner en vez de dejar un piloto CI acotado.
+- **Depende de:** WOT-2026-010j (COMPLETED); WOT-2026-010k (COMPLETED); WOT-2026-011e (COMPLETED).
 ## T-011E-001 -- pytest-xdist opt-in local medido para subset unitario
 
 - **ticket_id:** WOT-2026-011e
