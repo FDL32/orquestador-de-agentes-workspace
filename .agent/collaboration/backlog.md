@@ -43,9 +43,9 @@
 - **Problema (HIPOTESIS A VERIFICAR):** la suite ya supera los 3000 tests y probablemente mezcla regresiones core, barreras estructurales, tests legacy y candidatos redundantes. Hoy no existe un inventario auditable que distinga "proteccion imprescindible" de "ruido historico" antes de proponer podas.
 - **Objetivo:** producir un inventario razonado de la suite por familias y riesgo, clasificando cada bloque como `core regression`, `structural gate`, `legacy candidate`, `redundant candidate` o `unknown`, con evidencia suficiente para abrir tickets pequenos de poda sin borrar a ciegas.
 - **Files Likely Touched:**
-  - repo_motor: `tests/`
-  - repo_motor: `scripts/run_pytest_safe.py`
-  - repo_motor: `docs/test_performance/`
+  - repo_motor: `docs/test_performance/test_suite_audit_WOT-2026-013e.md`
   - repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:**
+  - repo_motor: `tests/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_followup.md`, `docs/test_performance/test_selection.md`, `tests/README.md`, `tests/ARCHITECTURE.md`
 - **Criterios binarios:** existe inventario por familias con conteo y clasificacion; se listan tests lentos, saltados, barreras estructurales y candidatos redundantes con evidencia; no se borra ni relaja ningun test en este ticket; el resultado deja follow-ups pequenos y verificables, no una propuesta masiva de poda.
 - **STOP:** si la auditoria exige borrar o reescribir tests en el mismo ticket; si no puede distinguir evidencia de uso/valor real frente a intuicion; o si la poda segura requiere mezclar runner, CI y producto en una sola pasada, parar y re-encuadrar.

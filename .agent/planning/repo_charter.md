@@ -31,6 +31,7 @@ referencias publicadas.
 - No renombrar triggers ni contratos publicos.
 - No hacer refactor de contenido de prompts o skills.
 - No modificar scripts de discovery, manifests, tests o documentacion del motor.
+- Los tickets de auditoria de suite no borran ni relajan tests en la misma ronda; solo producen inventario y follow-ups verificables.
 - No decidir por basename: cada clasificacion requiere uso y contrato funcional.
 
 ## Quality Bar
@@ -86,6 +87,15 @@ referencias publicadas.
   - `resume` reabre un ticket con eventos posteriores sin detectarlo;
   - `STATE.md` y `TURN.md` aparentan un ticket distinto al que el bus considera activo.
 - related_plans: [PLAN-010D-001]
+
+### OBJ-013E-001 -- Inventario auditable de valor de la suite
+- description: producir un inventario reproducible de la suite del motor que distinga proteccion core, barreras estructurales, candidatos legacy/redundantes y zonas `unknown`, sin mezclar analisis con poda o cambios de runner.
+- success_criteria: existe un reporte durable con clasificacion por familias, evidencia de coste/uso/gates y follow-ups pequenos verificables para futuras podas seguras.
+- failure_modes:
+  - la auditoria propone borrar o relajar tests sin evidencia verificable;
+  - mezcla runner, CI, producto y poda en una sola recomendacion masiva;
+  - depende de intuicion no corroborada para decidir que tests ya no aportan valor.
+- related_plans: [PLAN-013E-001]
 
 ## Negative Audit Checklist
 

@@ -1484,3 +1484,40 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el fix exige cambiar la politica del runner o CI; parar si la unica salida verde mueve el sandbox fuera del arbol o rompe la invariante cubierta por `tests/unit/test_windows_safe_temp_runtime.py`; parar si el rojo dominante se desplaza a otra familia no declarada y deja de ser reproducible con el triple xdist acordado.
 - **Depende de:** WOT-2026-013c (BLOCKED-FINAL).
+
+## T-013E-001 -- Inventario auditable de valor, uso y poda segura de la suite
+
+- **ticket_id:** WOT-2026-013e
+- **status:** frozen
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013E-001
+- **Plan-Link:** PLAN-013E-001
+- **Premise:** despues de `010j`, `010k`, `011e`, `010m` y `013d`, el motor ya tiene evidencia verificada sobre hotspots, frontera xdist y algunos tests de alto coste o alto acoplamiento, pero sigue sin existir un inventario durable que distinga regresiones core, barreras estructurales, candidatos legacy, candidatos redundantes y zonas `unknown`. Sin ese inventario, cualquier poda futura corre el riesgo de mezclar protecciones reales con ruido historico o de reabrir familias ya cerradas por intuicion.
+- **Premise Re-check (read-only):**
+  - releer `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_followup.md` y `docs/test_performance/test_selection.md`;
+  - releer `tests/README.md`, `tests/ARCHITECTURE.md`, `scripts/run_pytest_safe.py`, `pytest.ini` y `.agent/runtime/pytest-safe/last-run.json` para fijar el contrato actual de suite/runner;
+  - verificar en `backlog.md`, `ticket_contracts.md` y `plan_graph.md` que `011e`, `010m`, `011i`, `013c` y `013d` ya cerraron la frontera runner/xdist/producto que `013e` NO debe reabrir;
+  - inventariar read-only las familias top-level bajo `tests/` y los marcadores estructurales existentes (`slow`, `integration`, `skipif`, `xfail` o equivalentes);
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** motor_head=162e506; destino_head=0bd5171; validate_result=0 errors / 0 warnings; active_ticket=WOT-2026-013d COMPLETED; backlog_state=WOT-2026-013e pending; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder: `docs/test_performance/test_suite_audit_WOT-2026-013e.md`
+  - Builder: `.agent/collaboration/execution_log.md`
+  - Read/inspect only: `tests/`, `tests/README.md`, `tests/ARCHITECTURE.md`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_followup.md`, `docs/test_performance/test_selection.md`, `.agent/runtime/pytest-safe/last-run.json`, `.agent/collaboration/backlog.md`
+- **Forbidden Surfaces:** `tests/`; `scripts/run_pytest_safe.py`; `pytest.ini`; `pyproject.toml`; `uv.lock`; CI/workflows; `scripts/run_gates_dispatch.py`; `scripts/pre_handoff_guard.py`; `privada/`; `.env`; eventos del bus escritos manualmente; reabrir `011e`, `010m`, `011i` o `013d`; borrar, `xfail`, `skip` o relajar tests en este ticket.
+- **DoD:**
+  - [ ] Existe un reporte durable en `repo_motor/docs/test_performance/test_suite_audit_WOT-2026-013e.md`.
+  - [ ] El reporte inventaria la suite por familias o subsistemas con conteo auditable y clasificacion `core regression`, `structural gate`, `legacy candidate`, `redundant candidate` o `unknown`.
+  - [ ] Cada clasificacion explicita si esta soportada por evidencia verificada (docs previas, markers, runner/gates, historial de tickets, coste/uso observable) o si queda como inferencia limitada.
+  - [ ] El reporte lista tests o familias lentas, marks/skip estructurales, barreras canonicas del runner/handoff y cualquier debt legacy detectable sin tocar codigo productivo.
+  - [ ] El reporte identifica follow-ups pequenos y verificables para poda o refactor, cada uno con superficie acotada y sin mezclar runner, CI, producto y borrado masivo en una sola propuesta.
+  - [ ] El reporte deja explicito que `013e` no borra ni relaja tests y que las fronteras cerradas por `011e`, `010m`, `011i` y `013d` quedan fuera de scope salvo evidencia nueva que obligue a `CONTRACT_GAP`.
+  - [ ] `execution_log.md` registra una linea final: `Reporte docs/test_performance/test_suite_audit_WOT-2026-013e.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
+  - [ ] `git diff --name-only` del `repo_motor` se limita al artefacto documental del ticket.
+  - [ ] `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** `013e` consume evidencia de `010j`, `010k`, `011e`, `010m` y `013d`, pero no reabre sus decisiones. Ningun follow-up de poda o racionalizacion de tests debe arrancar sin leer primero el reporte final de `013e`.
+- **CONTRACT_GAP behavior:** si el inventario no puede separar barreras core/estructurales de candidatos a poda sin tocar `tests/`, runner, CI o producto; si la evidencia actual no permite ni siquiera proponer follow-ups pequenos con criterio verificable; o si la auditoria exige reabrir una frontera ya cerrada de `011e`, `010m`, `011i` o `013d`, emitir `CG-WOT-2026-013e.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0. El Builder audita y reporta; no poda, no relaja tests y no reinterpreta por intuicion la politica del runner.
+- **STOP conditions:** parar si la unica forma de justificar una clasificacion exige editar tests o tooling; parar si el resultado depende de output viejo no reconciliado con el HEAD actual; parar si la recomendacion util solo puede expresarse como poda masiva o como reabrir la familia xdist/producto en vez de abrir follow-ups pequenos.
+- **Depende de:** WOT-2026-010j (COMPLETED); WOT-2026-010k (COMPLETED); WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED); WOT-2026-013d (COMPLETED).
