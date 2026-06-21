@@ -23,29 +23,64 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | pending | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |
-| Baja | WOT-2026-010m | Piloto xdist en CI para subset unitario aislado | motor/ci-performance | pending | WOT-2026-010j, WOT-2026-010k, WOT-2026-011e | session-2026-06-17-suite-performance | - |
-| Baja | WOT-2026-011i | Si 011e sale estable: evaluar default unit en run_pytest_safe.py | motor/test-suite-perf | pending | WOT-2026-011e | session-2026-06-19-improvement-backlog | - |
+| Alta | WOT-2026-013b | Aislar los 3 tests no parallel-safe antes de promover xdist por defecto | motor/test-suite-hygiene | pending | WOT-2026-011e, WOT-2026-010m | session-2026-06-21-pipeline-prep | - |
+| Media | WOT-2026-011i | Tras 013b: activar xdist por defecto para `--level unit` | motor/test-suite-perf | pending | WOT-2026-011e, WOT-2026-010m, WOT-2026-013b | session-2026-06-19-improvement-backlog | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-### WOT-2026-010m - Piloto xdist en CI para subset unitario aislado
-- **Prioridad:** Baja
-- **Scope:** motor/ci-performance
+### WOT-2026-011h - Barrera de archivado tambien en mark-ready
+- **Prioridad:** Alta
+- **Scope:** motor/collab-hygiene
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-010j, WOT-2026-010k, WOT-2026-011e
+- **Depende de:** WOT-2026-011a, WOT-2026-011d
 - **Reactivation:** -
-- **Origen:** session-2026-06-17-suite-performance.
-- **Problema (VERIFICADO):** `011e` ya introdujo `pytest-xdist` como opt-in local en `scripts/run_pytest_safe.py`, pero `.github/workflows/quality-gates.yml` sigue ejecutando solo la ruta serial canonica. La frontera `011e <-> 010m <-> 011i` ya esta decidida: `010m` solo puede pilotar CI sobre una superficie aislada, sin cambiar el default del runner ni contaminar el cierre canonico `--level all`.
-- **Objetivo:** anadir un piloto CI xdist estrictamente aditivo y acotado a la superficie permitida del ticket, demostrando que consume la capacidad ya creada por `011e` sin tocar el runner, sin volver xdist implicito y sin relajar el fail-closed del workflow.
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** `011a` ya cerro fail-closed la ruta de `--session-close` ante `archive_rename_uncommitted`, pero `--mark-ready` sigue auto-archivando `PLAN_/AUDIT_` cerrados desde `.agent/agent_controller.py` y puede dejar el mismo limbo `D old + ?? new` para que el Manager lo reconcilie a mano despues del handoff. La razon estable y la remediacion ya existen; falta cerrar el mismo hueco en el camino de handoff.
+- **Objetivo:** hacer que `--mark-ready` falle cerrado cuando su auto-archivado deje `archive_rename_uncommitted`, reutilizando el mismo diagnostico estable y sin introducir auto-commit del archivador.
 - **Files Likely Touched:**
-  - repo_motor: `.github/workflows/quality-gates.yml`
-  - repo_motor: `tests/unit/test_quality_gates_workflow.py`
-- **Criterios binarios:** el workflow incorpora un piloto CI xdist estable y acotado, sin eliminar ni alterar la corrida serial canonica existente; el piloto usa `scripts/run_pytest_safe.py` con `--xdist-workers <N>` solo sobre la superficie permitida del ticket y el camino canonico en CI sigue sin xdist; existe una barrera FAIL-sin/PASS-con que falla si desaparece el piloto o si la corrida canonica adopta xdist por accidente; `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff check tests/unit/test_quality_gates_workflow.py`, `uv run ruff format --check tests/unit/test_quality_gates_workflow.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** si el piloto CI no puede definirse sin tocar `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py` o el dispatcher; si la unica via verde convierte xdist en default o lo mete en la corrida canonica `--level all`; o si los tests no parallel-safe obligan a redisenar el selector/runner en vez de dejar un piloto acotado, parar y emitir `CG-WOT-2026-010m.md`.
+  - repo_motor: `.agent/agent_controller.py`
+  - repo_motor: `tests/test_agent_controller.py`
+  - repo_motor: `tests/test_pre_handoff_guard.py`
+  - repo_motor: `tests/unit/test_scope_gate.py`
+- **Criterios binarios:** `--mark-ready` bloquea con razon estable `archive_rename_uncommitted` si su auto-archivado deja limbo; el diagnostico conserva origen, destino y remediacion exacta; el caso limpio sigue dejando `READY_FOR_REVIEW` sin falso positivo; existe al menos una barrera FAIL-sin/PASS-con sobre la ruta real de `--mark-ready`; `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la unica forma de cerrar el hueco es auto-commitear el archivador; si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; o si reproducir la mutacion real exige tocar `--session-close` otra vez en vez de la ruta de handoff, parar y emitir `CG-WOT-2026-011h.md`.
 
-> Solo tickets vivos con ficha congelada. El resto de tickets vivos (`011h`, `011i`, `002c`, `256a`) mantienen contrato resumido en la tabla hasta su congelado formal.
+### WOT-2026-013b - Aislar los 3 tests no parallel-safe antes de promover xdist por defecto
+- **Prioridad:** Alta
+- **Scope:** motor/test-suite-hygiene
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m
+- **Reactivation:** -
+- **Origen:** session-2026-06-21-pipeline-prep.
+- **Problema (VERIFICADO):** `011e` dejo `pytest-xdist` como opt-in local y `010m` lo consumio en CI como piloto non-blocking, pero el default del runner sigue bloqueado por 3 tests no parallel-safe bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`. El numero y la existencia del problema estan documentados; los nombres exactos deben rederivarse con un rerun xdist actual antes de fijar el diff productivo.
+- **Objetivo:** reproducir el rojo xdist del subset unitario, fijar por evidencia los tests exactos y aislarlos del estado compartido del workspace/runtime para que `--level unit --xdist-workers auto` quede verde sin tocar runner, CI ni codigo productivo.
+- **Files Likely Touched:**
+  - repo_motor: `tests/unit/`
+- **Criterios binarios:** la Fase 0 deja en `execution_log.md` los nombres exactos y la firma del rojo reproducido; el diff productivo queda acotado a `tests/unit/`; `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` pasa en el mismo host; existe al menos una demostracion FAIL-sin/PASS-con sobre el set reproducido; `python -m pytest tests/unit -q`, `ruff check tests/unit`, `uv run ruff format --check tests/unit`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si el rerun ya no reproduce un set estable y obliga a abrir una investigacion mas amplia; si algun rojo queda fuera de `tests/unit/`; o si la unica via verde toca `scripts/run_pytest_safe.py`, workflows, `pre_handoff_guard.py` o codigo productivo, parar y emitir `CG-WOT-2026-013b.md`.
+
+### WOT-2026-011i - Tras 013b: activar xdist por defecto para `--level unit`
+- **Prioridad:** Media
+- **Scope:** motor/test-suite-perf
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011e, WOT-2026-010m, WOT-2026-013b
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** `011e` resolvio el opt-in local y `010m` cerro el piloto CI sin contaminar el cierre canonico, pero el camino por defecto de `python scripts/run_pytest_safe.py --level unit` sigue serial. Si `013b` aisla los 3 flakes, queda abierta solo la promocion ergonomica del default unitario, manteniendo intactos `--level all`, CI y el handoff canonico.
+- **Objetivo:** convertir `python scripts/run_pytest_safe.py --level unit` en un camino xdist por defecto y auditable, preservando `--level all` serial, respetando los args explicitos y manteniendo un escape estable a serial mediante el contrato ya existente del CLI.
+- **Files Likely Touched:**
+  - repo_motor: `scripts/run_pytest_safe.py`
+  - repo_motor: `tests/unit/test_run_pytest_safe.py`
+- **Criterios binarios:** `python scripts/run_pytest_safe.py --level unit` habilita xdist por defecto con metadata estable en `last-run.json`; `python scripts/run_pytest_safe.py --level unit --xdist-workers 1` conserva un camino serial auditable; `python scripts/run_pytest_safe.py --level all` sigue serial; la barrera `tests/unit/test_run_pytest_safe.py` protege el nuevo default y el escape a serial; `python -m pytest tests/unit/test_run_pytest_safe.py -q`, `ruff check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `uv run ruff format --check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si activar el default unitario exige tocar CI, `pre_handoff_guard.py`, el dispatcher o cambiar la semantica de `--level all`; si no existe un escape serial estable con el CLI actual; o si `013b` no deja verde el subset unitario bajo xdist, parar y emitir `CG-WOT-2026-011i.md`.
+
+> Todos los tickets vivos restantes ya tienen ficha congelable y orden de ejecucion claro para pipeline: `011h -> 013b -> 011i`. `002c` y `256a` quedan fuera por naturaleza (`completed-partial` y `blocked` externo).

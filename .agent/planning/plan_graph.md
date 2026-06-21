@@ -203,6 +203,61 @@
   - `scripts/run_pytest_safe.py` y `tests/unit/test_run_pytest_safe.py` (read-only; contrato xdist ya fijado por 011e)
   - `scripts/pre_handoff_guard.py` (read-only; el handoff sigue exigiendo `--level all`)
   - frontera `011e <-> 010m <-> 011i` (local opt-in vs piloto CI vs default futuro)
+
+## PLAN-011H-001 -- Barrera de archivado tambien en mark-ready
+
+- objetivo: cerrar fail-closed el auto-archivado de `--mark-ready` cuando deja `archive_rename_uncommitted`, reutilizando la razon estable de `011a` sin introducir auto-commit del archivador.
+- tickets: [WOT-2026-011h]
+- depends_on: [WOT-2026-011a, WOT-2026-011d]
+- superficies_archivo:
+  - repo_motor/.agent/agent_controller.py
+  - repo_motor/tests/test_agent_controller.py
+  - repo_motor/tests/test_pre_handoff_guard.py
+  - repo_motor/tests/unit/test_scope_gate.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python .agent/agent_controller.py --mark-ready --project-root <repo_destino>`
+  - helper `_auto_archive_closed_artifacts()`
+  - razon estable `archive_rename_uncommitted`
+- shared_dependencies:
+  - `scripts/pre_handoff_guard.py` y `scripts/delivery_hygiene_check.py` (read-only; diagnostico existente)
+  - closeout endurecido por `011a` (read-only; fuente del contrato de razon/remediacion)
+  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+
+## PLAN-013B-001 -- Aislamiento de flakes xdist antes del default unitario
+
+- objetivo: identificar por rerun el set exacto de 3 tests no parallel-safe bajo xdist y aislarlo dentro de `tests/unit/`, dejando verde `--level unit --xdist-workers auto` sin tocar runner ni codigo productivo.
+- tickets: [WOT-2026-013b]
+- depends_on: [WOT-2026-011e, WOT-2026-010m]
+- superficies_archivo:
+  - repo_motor/tests/unit/
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`
+  - suite `python -m pytest tests/unit -q`
+  - artefacto runtime `.agent/runtime/pytest-safe/last-run.json`
+- shared_dependencies:
+  - `scripts/run_pytest_safe.py` (read-only; contrato xdist ya fijado)
+  - frontera `011e <-> 010m <-> 011i`
+  - evidencias `011e`/`010m` sobre 3 tests no parallel-safe (read-only)
+
+## PLAN-011I-001 -- Default xdist para `--level unit`
+
+- objetivo: promover xdist a default solo para `python scripts/run_pytest_safe.py --level unit`, manteniendo `--level all` serial y un escape serial explicito con el CLI actual.
+- tickets: [WOT-2026-011i]
+- depends_on: [WOT-2026-011e, WOT-2026-010m, WOT-2026-013b]
+- superficies_archivo:
+  - repo_motor/scripts/run_pytest_safe.py
+  - repo_motor/tests/unit/test_run_pytest_safe.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/run_pytest_safe.py --level unit`
+  - CLI `python scripts/run_pytest_safe.py --level unit --xdist-workers 1`
+  - cierre canonico `python scripts/run_pytest_safe.py --level all`
+- shared_dependencies:
+  - `quality-gates.yml` (read-only; 010m consumidor CI del contrato del runner)
+  - `scripts/pre_handoff_guard.py` (read-only; `--level all` sigue canonico)
+  - `last-run.json` como evidencia de default/fallback
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -218,6 +273,9 @@
 | PLAN-011E-001 | opt-in xdist local en runner + lockfile/tests del motor; medicion en repo_destino | `run_pytest_safe.py`, `last-run.json`, contrato canonico de handoff, `pyproject.toml`/`uv.lock` | conflicto si otro ticket toca el runner, el lockfile o la politica de cierre/performance mientras 011e ajusta el camino local | serializar con tickets que toquen `run_pytest_safe.py`, `pyproject.toml`/`uv.lock` o criterios de handoff; revalidar `--level all` + `validate` al cerrar | no |
 | PLAN-011F-001 | `.gitattributes`, launcher PS1, encoding guard y tests del motor; bitacora en repo_destino | contrato multiplataforma de `*.ps1`, evidencia 011c/011j y barreras de encoding | conflicto si otro ticket toca `launch_agent_terminals.ps1`, `.gitattributes` o el scope repo-wide del guard mientras 011f normaliza la fuente | serializar con tickets que toquen launcher, line endings o `encoding_guard.py`; revalidar `check_encoding_guard.py`, tests focales y `validate --json` al cerrar | no |
 | PLAN-010M-001 | workflow `quality-gates.yml` + barrera dedicada del workflow; bitacora en repo_destino | runner xdist ya fijado por `011e`, handoff canonico `--level all`, frontera con `011i` | conflicto si otro ticket toca `quality-gates.yml`, la politica xdist o el default del runner mientras 010m introduce el piloto CI | serializar con tickets que toquen `quality-gates.yml`, `scripts/run_pytest_safe.py` o la politica xdist/default; revalidar tests focales + `--level all` + `validate` al cerrar | no |
+| PLAN-011H-001 | `mark-ready` en `.agent/agent_controller.py` + barreras de handoff/guard; bitacora en repo_destino | razon estable `archive_rename_uncommitted`, auto-archivado de plan/audit, cierre canonico `--level all` | conflicto si otro ticket toca `--mark-ready`, `pre_handoff_guard`, auto-archivado o contrato de cierres mientras 011h endurece el handoff | serializar con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py`; revalidar tests focales + `--level all` + `validate` al cerrar | no |
+| PLAN-013B-001 | tests unitarios del subset xdist; bitacora en repo_destino | runner xdist read-only, evidencia 011e/010m, `last-run.json` | conflicto si otro ticket toca `tests/unit/` o reabre politica del runner mientras 013b aisla los flakes | serializar con tickets que toquen `tests/unit/` o `scripts/run_pytest_safe.py`; revalidar xdist unit + `--level all` + `validate` al cerrar | no |
+| PLAN-011I-001 | runner local + barrera `test_run_pytest_safe.py`; bitacora en repo_destino | `quality-gates.yml` read-only, `pre_handoff_guard.py` read-only, frontera 011e/010m/013b | conflicto si otro ticket toca `run_pytest_safe.py`, `test_run_pytest_safe.py`, la politica xdist/default o CI mientras 011i promueve el default unitario | serializar con tickets que toquen runner local, workflow `quality-gates.yml` o contratos de cierre; revalidar tests focales + `--level all` + `validate` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -249,3 +307,6 @@ Para 011b, cualquier merge con tickets que toquen `bus/builder_relaunch.py`, `bu
 Para 013a, cualquier merge con tickets que toquen `tests/test_controller_integration.py` o la resolucion de `project_root` del controller obliga a revalidar el test aislado, el archivo completo y `python scripts/run_pytest_safe.py --level all`.
 Para 011g, cualquier merge con tickets que toquen `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` o `QUICKSTART.md` obliga a revalidar la coherencia textual de `loop rapido` vs `cierre canonico`, `check_encoding_guard.py` sobre los docs tocados y `validate --json --project-root <repo_destino>`.
 Para 010x, cualquier merge con tickets que toquen `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py` o la politica/config de gitleaks obliga a revalidar la union con `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 011h, cualquier merge con tickets que toquen `.agent/agent_controller.py`, `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py` o `tests/test_pre_handoff_guard.py` obliga a revalidar la union con tests focales de handoff/archivado, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 013b, cualquier merge con tickets que toquen `tests/unit/` o `scripts/run_pytest_safe.py` obliga a revalidar la union con `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`, `python -m pytest tests/unit -q`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 011i, cualquier merge con tickets que toquen `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `quality-gates.yml` o la politica xdist/default obliga a revalidar la union con tests focales del runner, `python scripts/run_pytest_safe.py --level unit`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.

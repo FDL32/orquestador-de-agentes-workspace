@@ -1324,6 +1324,95 @@
 - **STOP conditions:** parar si la unica forma de resolver contradicciones documentales es tocar tooling productivo; parar si el ticket deja de ser puramente documental; parar si aparece conflicto con un ticket activo que toque los mismos prompts/docs y requiera serializacion.
 - **Depende de:** WOT-2026-010c (COMPLETED); WOT-2026-010q (COMPLETED).
 
+## T-011H-001 -- Barrera de archivado tambien en mark-ready
+
+- **ticket_id:** WOT-2026-011h
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011H-001
+- **Plan-Link:** PLAN-011H-001
+- **Premise:** `011a` ya cerro fail-closed `--session-close` cuando el archivado deja `archive_rename_uncommitted`, pero `--mark-ready` sigue auto-archivando `PLAN_/AUDIT_` cerrados desde `.agent/agent_controller.py` y puede dejar el mismo limbo `D old + ?? new` despues del handoff. La razon estable, la remediacion exacta y la deteccion en higiene ya existen; falta hacer fail-closed el camino de handoff, no reabrir closeout.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-011a` y `WOT-2026-011d` COMPLETED; releer `.agent/agent_controller.py` (`_auto_archive_closed_artifacts()`, `_handle_mark_ready()`), `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py`, `tests/test_pre_handoff_guard.py`, `tests/unit/test_scope_gate.py`; verificar que el auto-archivado de mark-ready ocurre despues del guard y que hoy no promueve `archive_rename_uncommitted` a bloqueo propio; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** stable_reason=`archive_rename_uncommitted`; mark_ready_auto_archive=true; closeout_barrier_exists=true; pre_handoff_guard_knows_reason=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `.agent/agent_controller.py`
+  - Builder repo_motor: `tests/test_agent_controller.py`
+  - Builder repo_motor: `tests/test_pre_handoff_guard.py`
+  - Builder repo_motor: `tests/unit/test_scope_gate.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/closeout_steps/archival.py`; `scripts/session_closeout.py`; `scripts/delivery_hygiene_check.py`; `scripts/archive_collaboration_artifacts.py`; `.agent/runtime/events/events.jsonl`; `.agent/collaboration/backlog.md`.
+- **Forbidden Surfaces:** reabrir `--session-close`; auto-commit dentro del archivador; borrado destructivo de artefactos archivados; tocar workflows/CI, `scripts/run_pytest_safe.py`, `scripts/pre_handoff_guard.py` fuera de la barrera estrictamente necesaria, `privada/`, `.env` o eventos del bus manualmente.
+- **DoD:**
+  - [ ] `--mark-ready` falla cerrado con razon estable `archive_rename_uncommitted` si su auto-archivado deja limbo `D old + ?? new`.
+  - [ ] El diagnostico conserva origen, destino y comando de reconcile exacto, alineado con `011a`.
+  - [ ] El caso limpio de `--mark-ready` sigue alcanzando `READY_FOR_REVIEW` sin falso positivo.
+  - [ ] Existe al menos una barrera FAIL-sin/PASS-con sobre la ruta real de mark-ready, no solo sobre helper aislado.
+  - [ ] El ticket no introduce auto-commit del archivador ni relaja el handoff canonico.
+  - [ ] `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** reutiliza la razon estable cerrada por `011a`; no reabre el closeout de `011a`, ni la retirada de legacy de `011d`, ni introduce renames automaticos de cierre.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commit del archivador, cambiar el contrato del archivado fuera de mark-ready o tocar politicas de bus/controller fuera del flujo declarado, emitir `CG-WOT-2026-011h.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la deteccion solo puede expresarse como `dirty tree` generico; parar si reproducir el limbo real exige tocar `--session-close` en vez de la ruta de handoff; parar si el fix solo puede vivir fuera de las superficies declaradas.
+- **Depende de:** WOT-2026-011a (COMPLETED); WOT-2026-011d (COMPLETED).
+
+## T-013B-001 -- Aislar los 3 tests no parallel-safe del subset unitario xdist
+
+- **ticket_id:** WOT-2026-013b
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013B-001
+- **Plan-Link:** PLAN-013B-001
+- **Premise:** `011e` ya entrego `pytest-xdist` como opt-in local y `010m` ya lo consumio en CI como piloto non-blocking, pero el default del runner sigue bloqueado porque el subset unitario aun contiene 3 tests no parallel-safe bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`. La cantidad y el efecto estan documentados; los nombres exactos deben rederivarse en Fase 0 desde una reproduccion actual antes de fijar el diff productivo.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-011e` y `WOT-2026-010m` COMPLETED; releer `.agent/collaboration/_archive/backlog_done.md`, `.agent/collaboration/execution_log.md` y `tests/unit/`; confirmar que el cierre de `011e` sigue declarando 3 tests no parallel-safe y que `010m` mantuvo el piloto como non-blocking por esa razon; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** xdist_opt_in_completed=true; xdist_ci_pilot_completed=true; documented_non_parallel_safe_count=3; exact_test_names_materialized=false; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `tests/unit/`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/run_pytest_safe.py`; `.agent/runtime/pytest-safe/last-run.json`; `.agent/collaboration/_archive/backlog_done.md`; `.agent/collaboration/execution_log.md`; docs de performance `WOT-2026-010j`/`010k`.
+- **Forbidden Surfaces:** `scripts/run_pytest_safe.py`; `scripts/pre_handoff_guard.py`; workflows/CI; `.agent/agent_controller.py`; codigo productivo fuera de tests; `privada/`; `.env`; eventos del bus manualmente.
+- **DoD:**
+  - [ ] La Fase 0 deja en `execution_log.md` los nombres exactos y la firma del rojo reproducido bajo `python scripts/run_pytest_safe.py --level unit --xdist-workers auto`.
+  - [ ] El diff productivo queda acotado a `tests/unit/`; no toca runner ni codigo productivo.
+  - [ ] `python scripts/run_pytest_safe.py --level unit --xdist-workers auto` queda verde en el mismo host.
+  - [ ] Existe al menos una demostracion FAIL-sin/PASS-con sobre el set reproducido, no sobre un proxy cosmético.
+  - [ ] `python -m pytest tests/unit -q`, `ruff check tests/unit`, `uv run ruff format --check tests/unit`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** desbloquea `011i` sin reabrir `011e` ni `010m`; si el rojo apunta al runner o a producto, ese follow-up pertenece a otra familia y `013b` debe bloquear.
+- **CONTRACT_GAP behavior:** si el rerun no reproduce un set estable y exige investigacion mas amplia, si algun rojo queda fuera de `tests/unit/`, o si la unica via verde toca runner, handoff, workflows o codigo productivo, emitir `CG-WOT-2026-013b.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si los tests rojos actuales no son exactamente una familia de aislamiento de suite; parar si el fix exige tocar `scripts/run_pytest_safe.py` o cambiar la semantica de `--level unit`; parar si el rerun ya no reproduce y no hay evidencia suficiente para un diff responsable.
+- **Depende de:** WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED).
+
+## T-011I-001 -- Default xdist para `--level unit` tras aislar flakes
+
+- **ticket_id:** WOT-2026-011i
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-011I-001
+- **Plan-Link:** PLAN-011I-001
+- **Premise:** `011e` dejo xdist como opt-in local, `010m` cerro el piloto CI sin contaminar el cierre canonico, y `013b` debe dejar verde el subset unitario bajo xdist. Si esas tres premisas se cumplen, la deuda restante es ergonomica: promover xdist a default solo para `python scripts/run_pytest_safe.py --level unit`, preservando `--level all` serial y un escape estable a serial con el contrato CLI existente.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-011e`, `WOT-2026-010m` y `WOT-2026-013b` COMPLETED; releer `scripts/run_pytest_safe.py`, `tests/unit/test_run_pytest_safe.py`, `.agent/runtime/pytest-safe/last-run.json` y `.agent/collaboration/_archive/backlog_done.md`; verificar que `--level all` sigue siendo el cierre canonico serial y que `--level unit --xdist-workers 1` sigue siendo un fallback serial explicito y auditable; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Context Baseline Evidence:** xdist_opt_in_completed=true; xdist_ci_pilot_completed=true; unit_subset_parallel_safe_pending_013b=true; serial_escape_via_workers_1_exists=true; canonical_close_all_serial=true; generated_at=2026-06-21.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/run_pytest_safe.py`
+  - Builder repo_motor: `tests/unit/test_run_pytest_safe.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `.agent/runtime/pytest-safe/last-run.json`; `.github/workflows/quality-gates.yml`; `scripts/pre_handoff_guard.py`; `.agent/collaboration/_archive/backlog_done.md`.
+- **Forbidden Surfaces:** workflows/CI; `scripts/pre_handoff_guard.py`; `scripts/run_gates_dispatch.py`; cambio de semantica de `--level all`; tocar tests fuera de la barrera de `tests/unit/test_run_pytest_safe.py`; `privada/`; `.env`; eventos del bus manualmente.
+- **DoD:**
+  - [ ] `python scripts/run_pytest_safe.py --level unit` habilita xdist por defecto con metadata estable en `last-run.json`.
+  - [ ] `python scripts/run_pytest_safe.py --level unit --xdist-workers 1` conserva un camino serial explicito y auditable.
+  - [ ] `python scripts/run_pytest_safe.py --level all` sigue serial y canonico.
+  - [ ] `tests/unit/test_run_pytest_safe.py` gana barreras FAIL-sin/PASS-con para el nuevo default y para el escape serial.
+  - [ ] `python -m pytest tests/unit/test_run_pytest_safe.py -q`, `ruff check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `uv run ruff format --check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** consume `011e` y `013b`, pero no reabre `010m`; CI sigue siendo un consumidor de la politica del runner, no su fuente de verdad.
+- **CONTRACT_GAP behavior:** si activar el default unitario exige tocar CI, handoff, dispatcher o introducir una interfaz nueva de opt-out fuera del CLI actual, emitir `CG-WOT-2026-011i.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si `013b` no deja verde el subset unitario bajo xdist; parar si el escape serial no puede mantenerse con el contrato CLI actual; parar si el cambio contamina `--level all` o el camino canonico de cierre.
+- **Depende de:** WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED); WOT-2026-013b (PENDING).
+
 ## T-010X-001 -- Sustituir gitleaks-action licenciado por CLI OSS
 
 - **ticket_id:** WOT-2026-010x
