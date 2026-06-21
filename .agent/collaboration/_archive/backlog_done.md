@@ -2476,3 +2476,26 @@ Fila retirada de la cola viva:
 - **STOP:** si activar el default unitario exige tocar CI, `pre_handoff_guard.py`, el dispatcher o cambiar la semantica de `--level all`; si no existe un escape serial estable con el CLI actual; o si `--dist loadscope` NO estabiliza el subset unit (sigue habiendo rojo no determinista), parar y emitir `CG-WOT-2026-011i.md`.
 
 - **Cierre:** not-pursued. La Fase 0 refuto la premisa loadscope (3 corridas: 3->1->3 failed, set variable). Los 3 flakes (test_upgrade_path_suggestion, test_scan_current_project, test_no_inline_ticket_regex) pasan serial y dependen de estado global del proceso (cwd/git/escaneo), no aislable por politica de reparto xdist. Solucion suficiente: opt-in local (011e) + piloto CI (010m). Follow-up opcional: robustecer esos 3 tests (no contratado).
+
+| Alta | WOT-2026-011h | Barrera de archivado tambien en mark-ready | motor/collab-hygiene | completed | WOT-2026-011a, WOT-2026-011d | session-2026-06-19-improvement-backlog | - |  <!-- completed: motor 79d6a1c (fail-closed en mark-ready ante archive_rename_uncommitted); manager APPROVE 8aa7ca4 -->
+
+### WOT-2026-011h - Barrera de archivado tambien en mark-ready
+- **Prioridad:** Alta
+- **Scope:** motor/collab-hygiene
+- **Estado:** completed (motor 79d6a1c; manager APPROVE)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-011a, WOT-2026-011d
+- **Reactivation:** -
+- **Origen:** session-2026-06-19-improvement-backlog.
+- **Problema (VERIFICADO):** `011a` ya cerro fail-closed la ruta de `--session-close` ante `archive_rename_uncommitted`, pero `--mark-ready` sigue auto-archivando `PLAN_/AUDIT_` cerrados desde `.agent/agent_controller.py` y puede dejar el mismo limbo `D old + ?? new` para que el Manager lo reconcilie a mano despues del handoff. La razon estable y la remediacion ya existen; falta cerrar el mismo hueco en el camino de handoff.
+- **Objetivo:** hacer que `--mark-ready` falle cerrado cuando su auto-archivado deje `archive_rename_uncommitted`, reutilizando el mismo diagnostico estable y sin introducir auto-commit del archivador.
+- **Files Likely Touched:**
+  - repo_motor: `.agent/agent_controller.py`
+  - repo_motor: `tests/test_agent_controller.py`
+  - repo_motor: `tests/test_pre_handoff_guard.py`
+  - repo_motor: `tests/unit/test_scope_gate.py`
+- **Criterios binarios:** `--mark-ready` bloquea con razon estable `archive_rename_uncommitted` si su auto-archivado deja limbo; el diagnostico conserva origen, destino y remediacion exacta; el caso limpio sigue dejando `READY_FOR_REVIEW` sin falso positivo; existe al menos una barrera FAIL-sin/PASS-con sobre la ruta real de `--mark-ready`; `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la unica forma de cerrar el hueco es auto-commitear el archivador; si la deteccion solo puede expresarse como `dirty tree` generico y no como `archive_rename_uncommitted`; o si reproducir la mutacion real exige tocar `--session-close` otra vez en vez de la ruta de handoff, parar y emitir `CG-WOT-2026-011h.md`.
+
+- **Cierre:** completed. `--mark-ready` ahora falla cerrado ante el limbo `D old + ?? new` del auto-archivado, reutilizando el detector estable `archive_rename_uncommitted` sin auto-commit. Barrera FAIL-sin/PASS-con (test directo del helper + 3 e2e). Suite --level all 3086 passed; validate 0/0; bus CLOSE_CONFIRMED->COMPLETED.
