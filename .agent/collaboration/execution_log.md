@@ -41,3 +41,32 @@
 
 
 Manager approved canonical closeout for WOT-2026-010m
+## BUILDER - WOT-2026-011h - Barrera de archivado tambien en mark-ready
+
+### Fase 0 - Premise re-check (read-only)
+- 011a COMPLETED (commits 4532d1a fail-closed closeout uncommitted rename, 28bc7f4 non-zero/timeout) y 011d COMPLETED (28bbe85) verificados via git log.
+- Relectura: `_auto_archive_closed_artifacts()` (controller L1013) mueve PLAN_/AUDIT_/STRATEGY_ con shutil.move SIN commit; `_handle_mark_ready()` (L2767) lo invoca en L3144 DESPUES del pre_handoff_guard y ANTES de _sync_mark_ready_targets (READY_FOR_REVIEW). El detector estable `check_archive_rename_complete` (reason `archive_rename_uncommitted`) ya existe en scripts/delivery_hygiene_check.py y lo reusa pre_handoff_guard L935. CONFIRMADO el hueco: el guard pre-handoff corre ANTES del archivado de mark-ready, no atrapa el limbo que mark-ready crea.
+- validate --json: errors=0 warnings=0.
+
+### Fase 1 - Fix (fail-closed, sin auto-commit)
+- Nuevo helper `_check_mark_ready_archive_rename()` en controller: carga el detector canonico desde _MOTOR_ROOT/scripts/delivery_hygiene_check.py y corre `check_archive_rename_complete(PROJECT_ROOT)`. Devuelve None si limpio o no hay .git; dict con reason estable `archive_rename_uncommitted` (origen+destino+comando reconcile) si limbo; reason `archive_rename_guard_error` fail-closed si el detector no carga/ejecuta (paridad con pre_handoff_guard).
+- Insertado en `_handle_mark_ready` entre el archivado (L3144) y _sync_mark_ready_targets: si bloquea, imprime diagnostico y `return 1` ANTES de emitir READY_FOR_REVIEW. NO auto-commit: solo expone el comando reconcile.
+
+### Fase 2 - Barreras (ruta real de mark-ready, no helper aislado)
+- 3 tests nuevos en TestExternalMotorCheckpointTopology, todos via `_handle_mark_ready` real con topologia motor+workspace real (git tmp):
+  - test_mark_ready_blocks_when_archive_leaves_uncommitted_rename: parchea _auto_archive para crear el limbo real (D old + ?? new); exige code==1, reason `archive_rename_uncommitted`, origen+destino+comando reconcile, y que el rename siga SIN commitear (invariante no-auto-commit).
+  - test_mark_ready_clean_archive_reaches_ready_for_review: archivado no-op -> code==0, sin falso positivo.
+  - test_mark_ready_archive_guard_fails_closed_on_detector_error: fuerza fallo de carga del detector -> code==1 reason `archive_rename_guard_error`.
+- Helper `_seed_archival_detector(motor_repo)` copia el detector real al motor temp (mark-ready lo resuelve desde _MOTOR_ROOT). Aplicado tambien a los 3 tests existentes de mark-ready que parchean _MOTOR_ROOT, que de otro modo bloquearian (correctamente) por fail-closed.
+- Verificacion FAIL-sin/PASS-con: revertido controller a HEAD -> test_..._blocks FALLA (mark-ready alcanza READY pese al limbo); restaurado -> 3 passed.
+
+### Gates
+- `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q` -> 177 passed.
+- `ruff check` (4 archivos) -> All checks passed! | `ruff format --check` (4 archivos) -> 4 files already formatted | encoding -> exit 0.
+
+### Fase 2b - Reparacion adicional (suite --level all destapo regresion fuera del FLT)
+- La suite canonica --level all contra bd16e9d arrojo 3 failed (no solo passed; lectura literal del .log): tests/test_mark_ready_motor_scope.py (test_motor_commit_inside_flt_passes, _json_output, test_flt_not_resolved_against_destination).
+- Causa identica a los 3 de test_agent_controller.py: parchean _MOTOR_ROOT a un motor temp sin scripts/delivery_hygiene_check.py, asi que el nuevo guard fail-closed (correctamente) bloquea con reason archive_rename_guard_error.
+- Decision (no ablandar el guard): mantener fail-closed (alineado con "guard helper must fail-closed"; ablandarlo abriria un agujero si el detector desaparece del motor). En su lugar, sembrar el detector real en el helper centralizado `_monkeypatch_mark_ready` (cubre los 7 tests que lo usan). Los setattr directos (test_pre_handoff_still_commits_motor, test_dirty_tree_remains_blocked) no llegan al archivado y no requieren cambio.
+- FLT-gap declarado: tests/test_mark_ready_motor_scope.py NO estaba en Files Likely Touched del contrato, pero es la misma ruta real de mark-ready que el cambio toca; repararlo es obligado para 0 failed. Se incluye en el commit.
+- Verificacion: tests/test_mark_ready_motor_scope.py 14 passed; combinado motor_scope+agent_controller 124 passed; idempotency+manager_approve 32 passed (salen temprano por idempotencia, no llegan al guard). ruff/format/encoding del archivo: limpios.
