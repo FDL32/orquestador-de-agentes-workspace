@@ -21,6 +21,7 @@
 | WOT-2026-013e | completed | cerrado canonico 2026-06-22; inventario auditable de la suite (3111 tests). Follow-ups vivos: WOT-2026-013f (poda tests/deprecated/), WOT-2026-013g (coste unknown). |
 | WOT-2026-013f | completed | cerrado canonico 2026-06-22; poda segura de `tests/deprecated/` entregada. Siguiente ticket vivo: WOT-2026-013g. |
 | WOT-2026-013g | completed | cerrado canonico 2026-06-22; el coste del outlier quedo atribuido al purge de sandbox en setup, sin optimizacion segura en este ticket. Follow-ups vivos: WOT-2026-013h y WOT-2026-013i. |
+| WOT-2026-013h | completed | cerrado canonico 2026-06-22; el archivador pasa a dejar renames staged (sin auto-commit) y se cierra la herencia recurrente de `archive_rename_uncommitted`. Siguiente ticket vivo: WOT-2026-013i. |
 
 # Backlog
 

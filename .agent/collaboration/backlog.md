@@ -22,7 +22,6 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013h | Eliminar renames sin commitear del archivado canonico | motor/collab-hygiene | pending | WOT-2026-011h, WOT-2026-013g | session-2026-06-22-post-013g-review | - |
 | Media | WOT-2026-013i | Higiene de purge de sandbox para latencia operacional | motor/test-runtime-hygiene | pending | WOT-2026-013d, WOT-2026-013g | session-2026-06-22-post-013g-review | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
@@ -31,28 +30,6 @@
 
 > `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. `013f` podo `tests/deprecated/` sin regresiones y `013g` explico el unico coste `unknown`: el tiempo dominante lo absorbe el `setup` por purge de sandboxes huerfanos, no el cuerpo del test ni producto. De ese cierre nacen exactamente dos follow-ups accionables: `013h` para eliminar el limbo recurrente `archive_rename_uncommitted` del archivado canonico y `013i` para atacar la latencia operacional del purge sin debilitar la barrera de `013d`. FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
-
-### WOT-2026-013h - Eliminar renames sin commitear del archivado canonico
-- **Prioridad:** Alta
-- **Scope:** motor/collab-hygiene
-- **Estado:** pending
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-011h, WOT-2026-013g
-- **Reactivation:** -
-- **Origen:** session-2026-06-22-post-013g-review.
-- **Problema:** el patron `archive_rename_uncommitted` reaparecio en serie al cerrar `013e`, `013f` y `013g`: el archivado canonico deja renames sin commitear que no rompen el ticket actual, pero bloquean el arranque o handoff del siguiente hasta que alguien reconcilia a mano el limbo `D old + ?? new`.
-- **Objetivo:** eliminar ese limbo recurrente desde la ruta canonica de archivado/cierre sin relajar la barrera fail-closed de `011h`; el siguiente ticket no debe heredar renames pendientes como deuda oculta.
-- **Files Likely Touched:**
-  - repo_motor: `scripts/archive_collaboration_artifacts.py`
-  - repo_motor: `scripts/closeout_steps/archival.py`
-  - repo_motor: `scripts/session_closeout.py`
-  - repo_motor: `tests/test_archive_collaboration_artifacts.py`
-  - repo_motor: `tests/test_session_closeout.py`
-  - repo_motor: `tests/test_agent_controller.py`
-  - repo_motor: `tests/test_pre_handoff_guard.py`
-- **Criterios binarios:** una corrida canonica de archivado/cierre no deja `archive_rename_uncommitted` pendiente para el ticket siguiente; si el archivado no puede quedar limpio, falla cerrado en el mismo ticket con diagnostico y remediacion exactos; existe barrera FAIL-sin/PASS-con sobre el patron repetido; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** si la unica solucion segura exige auto-commitear artefactos historicos sin control del Manager, si la remediacion rompe trazabilidad de `STRATEGY_`/`AUDIT_`, o si la reproduccion real deja de concentrarse en la ruta de archivado, parar y emitir `CG-WOT-2026-013h.md`.
 
 ### WOT-2026-013i - Higiene de purge de sandbox para latencia operacional
 - **Prioridad:** Media
