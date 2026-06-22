@@ -22,29 +22,50 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Baja | WOT-2026-013g | Diagnosticar coste no explicado de test_upgrade_path_suggestion (~60-70s) | motor/test-performance | pending | WOT-2026-013e | session-2026-06-22-test-suite-audit-followup | - |
+| Alta | WOT-2026-013h | Eliminar renames sin commitear del archivado canonico | motor/collab-hygiene | pending | WOT-2026-011h, WOT-2026-013g | session-2026-06-22-post-013g-review | - |
+| Media | WOT-2026-013i | Higiene de purge de sandbox para latencia operacional | motor/test-runtime-hygiene | pending | WOT-2026-013d, WOT-2026-013g | session-2026-06-22-post-013g-review | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. De sus 4 follow-ups, solo se promueven los dos accionables de bajo riesgo: `013f` (poda limpia de `tests/deprecated/`) y `013g` (diagnostico del unico coste `unknown`). FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. `013f` podo `tests/deprecated/` sin regresiones y `013g` explico el unico coste `unknown`: el tiempo dominante lo absorbe el `setup` por purge de sandboxes huerfanos, no el cuerpo del test ni producto. De ese cierre nacen exactamente dos follow-ups accionables: `013h` para eliminar el limbo recurrente `archive_rename_uncommitted` del archivado canonico y `013i` para atacar la latencia operacional del purge sin debilitar la barrera de `013d`. FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013g - Diagnosticar coste no explicado de test_upgrade_path_suggestion
-- **Prioridad:** Baja
-- **Scope:** motor/test-performance
+### WOT-2026-013h - Eliminar renames sin commitear del archivado canonico
+- **Prioridad:** Alta
+- **Scope:** motor/collab-hygiene
 - **Estado:** pending
-- **deliverable_type:** analysis
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013e
+- **Depende de:** WOT-2026-011h, WOT-2026-013g
 - **Reactivation:** -
-- **Origen:** session-2026-06-22-test-suite-audit-followup (FU-013E-3).
-- **Problema:** `test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion` aparece como outlier #2-#3 (~59-70s en baselines 010j/010p) con cuerpo trivial (3 asserts). El coste no es atribuible a logica propia visible; 010j lo dejo como observacion abierta. Es el unico `unknown` de coste del inventario 013e.
-- **Objetivo:** explicar la causa real del coste (p.ej. setup de clase/modulo caro atribuido por pytest al primer test, fixture compartida, escaneo) con `--durations` aislado por test, sin tocar el test, y proponer (o descartar con evidencia) una optimizacion local tipo 010k.
+- **Origen:** session-2026-06-22-post-013g-review.
+- **Problema:** el patron `archive_rename_uncommitted` reaparecio en serie al cerrar `013e`, `013f` y `013g`: el archivado canonico deja renames sin commitear que no rompen el ticket actual, pero bloquean el arranque o handoff del siguiente hasta que alguien reconcilia a mano el limbo `D old + ?? new`.
+- **Objetivo:** eliminar ese limbo recurrente desde la ruta canonica de archivado/cierre sin relajar la barrera fail-closed de `011h`; el siguiente ticket no debe heredar renames pendientes como deuda oculta.
 - **Files Likely Touched:**
-  - repo_motor: `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`
-  - repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** repo_motor `tests/unit/test_detect_version.py`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md`, `docs/test_performance/test_suite_audit_WOT-2026-013e.md`, `.agent/runtime/pytest-safe/last-run.json`
-- **Criterios binarios:** reporte durable que explique el coste con medicion reproducible; separa [V] verificado de [I] inferencia; recomienda optimizacion local o cierra "sin optimizacion segura" con evidencia; no toca el test ni producto en este ticket; `validate` 0/0.
-- **STOP:** si explicar el coste exige reescribir el test o tocar producto -> re-encuadrar como ticket code aparte; si la medicion no es reproducible entre corridas, documentar la varianza y parar.
+  - repo_motor: `scripts/archive_collaboration_artifacts.py`
+  - repo_motor: `.agent/agent_controller.py`
+  - repo_motor: `tests/test_agent_controller.py`
+  - repo_motor: `tests/test_pre_handoff_guard.py`
+- **Criterios binarios:** una corrida canonica de archivado/cierre no deja `archive_rename_uncommitted` pendiente para el ticket siguiente; si el archivado no puede quedar limpio, falla cerrado en el mismo ticket con diagnostico y remediacion exactos; existe barrera FAIL-sin/PASS-con sobre el patron repetido; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si la unica solucion segura exige auto-commitear artefactos historicos sin control del Manager, si la remediacion rompe trazabilidad de `STRATEGY_`/`AUDIT_`, o si la reproduccion real deja de concentrarse en la ruta de archivado, parar y emitir `CG-WOT-2026-013h.md`.
+
+### WOT-2026-013i - Higiene de purge de sandbox para latencia operacional
+- **Prioridad:** Media
+- **Scope:** motor/test-runtime-hygiene
+- **Estado:** pending
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-013d, WOT-2026-013g
+- **Reactivation:** -
+- **Origen:** session-2026-06-22-post-013g-review.
+- **Problema:** `013g` verifico que el coste dominante del outlier no vive en `test_upgrade_path_suggestion`, sino en el `setup` que purga cientos de sandboxes huerfanos desde `tests/conftest.py`. La barrera protege salud del arbol tras `013d`, pero hoy introduce latencia operacional visible cuando se acumula basura historica.
+- **Objetivo:** reducir el coste del purge de sandbox o acotarlo mejor, sin reabrir la familia xdist ni debilitar la limpieza defensiva introducida por `013d`.
+- **Files Likely Touched:**
+  - repo_motor: `tests/conftest.py`
+  - repo_motor: `tests/unit/test_detect_version.py`
+  - repo_motor: `tests/unit/test_project_scanner.py`
+  - repo_motor: `docs/test_performance/test_performance_variance.md`
+- **Criterios binarios:** existe medicion before/after del purge sobre el mismo host; la latencia del setup baja o queda acotada con evidencia sin reintroducir residuos en `tests/sandbox/test_runtime`; las barreras historicas de `013d` siguen verdes; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+- **STOP:** si cualquier mejora segura exige tocar producto, runner, CI o reabrir la decision cerrada de xdist; si el purge rapido reintroduce flakes por residuos, parar y documentar por que la latencia actual es el coste aceptado.
