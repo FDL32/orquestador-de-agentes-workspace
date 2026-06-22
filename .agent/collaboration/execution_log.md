@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013j
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## MANAGER - WOT-2026-013j - Bootstrap operativo
 
@@ -78,3 +78,38 @@ Desviaciones CEM: una, justificada arriba (edicion de backlog.md del destino par
 
 
 Scope override: observations.jsonl pertenece al commit 848cb8a (memoria de deuda obs-backlog-contract-flt-drift registrada al cerrar 013i, que origino este ticket 013j); no es entrega productiva de 013j. La entrega de 013j vive en commit c6e7eba: check_backlog_contract.py + test + orchestrator_pipeline.md, todos en FLT.. Affected files: .agent/runtime/memory/observations.jsonl
+
+Manager approved canonical closeout for WOT-2026-013j
+
+## ORQUESTADOR - Cierre de sesion 2026-06-22 + auditoria de superficies
+
+013j COMPLETED verificado en bus (seq 1358 STATE_CHANGED->COMPLETED, 1359 SUPERVISOR_CLOSED). Arco completo de la sesion: familia 013e-013j cerrada (audit de suite -> poda -> coste -> limbo archivado -> purge -> drift FLT). Salud audit versionada en .agent/audits/system_health/general_audit_20260622_1013/.
+
+### Auditoria de superficies que crecen (peticion del usuario), VERIFICADA POR BYTES + GIT
+
+Pregunta: que crece sin techo y debe limpiarse por ticket vs historico intencional.
+
+Temporales de PRUEBA de tickets (efimeros) -- SANOS, sin crecimiento sin techo:
+- tests/sandbox/ vacio; .agent/runtime/tmp/ acotado; .agent/runtime/pytest-safe/ = last-run.{json,log}. (013i dejo el purge funcionando.)
+
+Superficies que SI crecen, separadas por impacto real (gitignored vs versionado):
+- VERSIONADO (contamina repo + clones): collaboration/archive/notifications_*.md (~9.5MB, 12 trackeados, anadidos por agent_controller al rotar). => DEUDA REAL. Ticket WOT-2026-013k.
+- GITIGNORED (solo disco local, NO contamina repo): runtime/reviews (~5.1MB), runtime/review_packets (~2MB), runtime/memory/observations.jsonl.bak.* (12). VERIFICADO: git check-ignore confirma gitignored; git ls-files .bak => 0 trackeados. => retencion menor. Ticket WOT-2026-013l.
+- HISTORICO UTIL versionado (NO podar): events/archive, audits/system_health, _archive/plan_audit. Crecimiento lento e intencional.
+
+### Hallazgo del cierre canonico: bug en session_closeout (WOT-2026-013m)
+
+--session-close --dry-run revelo Overall: FAIL por paso 16 versioned_filenames (test_suite_audit_WOT-2026-013e.md, test_upgrade_cost_WOT-2026-013g.md): docs durables con ticket-id en el nombre, contra la convencion de 7f777ce.
+- VERIFICADO EN CODIGO: ese paso esta marcado `blocking=False` (closeout_steps/support.py:327), pero `session_closeout.py::overall_status` (l.148-152) retorna FAIL ante CUALQUIER FAIL sin consultar `s.blocking`, contradiciendo su docstring. Efecto: un paso no-bloqueante tumba --session-close con exit 1.
+- Decision (con el usuario): el defecto es del GATE, no de los nombres. NO se renombran los entregables de 013e/013g (tickets cerrados/aprobados); se abre WOT-2026-013m para que overall_status respete blocking=False.
+
+### Follow-ups registrados (3 tickets en backlog + 3 memorias portable-motor)
+- WOT-2026-013m (Alta): overall_status del closeout debe respetar blocking=False.
+- WOT-2026-013k (Media): retencion de notifications_*.md versionado.
+- WOT-2026-013l (Baja): retencion de runtime gitignored (reviews/packets/.bak).
+- Memorias: obs-closeout-overall-status-ignores-blocking, obs-notifications-archive-grows-versioned, obs-runtime-gitignored-no-retention (validadas por bus/memory_loader).
+
+### Estado del cierre de sesion
+- 013j cerrado canonicamente (Manager-approved, bus COMPLETED).
+- --session-close completo (pipeline de archivado) queda BLOQUEADO por WOT-2026-013m hasta que overall_status respete blocking=False: el versioned_filenames FAIL no-bloqueante fuerza exit 1. Reproducido en dry-run.
+- Cierre de sesion por via commit-limpio: artefactos del cierre + auditoria + backlog + memorias commiteados; ambos repos limpios; validate 0/0. El archivado canonico de fin de sesion se completara tras cerrar 013m.
