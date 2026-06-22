@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013j
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## MANAGER - WOT-2026-013j - Bootstrap operativo
 
@@ -75,3 +75,6 @@ Gates (comandos exactos + resultados):
 Commit del entregable (repo_motor): HEAD `c6e7eba`. Diff = 3 files (check_backlog_contract.py + su test + orchestrator_pipeline.md), todos en FLT. 81 insertions, 4 deletions. Pre-commit hooks verdes.
 
 Desviaciones CEM: una, justificada arriba (edicion de backlog.md del destino para reconciliar la ficha 013j al estandar que el ticket impone). No procede CG: el fix vive en gate/pipeline, no toca scope_gate/pre_handoff_guard/controller. Listo para --pre-handoff + --mark-ready.
+
+
+Scope override: observations.jsonl pertenece al commit 848cb8a (memoria de deuda obs-backlog-contract-flt-drift registrada al cerrar 013i, que origino este ticket 013j); no es entrega productiva de 013j. La entrega de 013j vive en commit c6e7eba: check_backlog_contract.py + test + orchestrator_pipeline.md, todos en FLT.. Affected files: .agent/runtime/memory/observations.jsonl
