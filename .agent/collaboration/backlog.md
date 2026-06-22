@@ -45,6 +45,6 @@
 - **Files Likely Touched:**
   - repo_motor: `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`
   - repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** repo_motor `tests/unit/test_detect_version.py`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md`
+- **Read/inspect only:** repo_motor `tests/unit/test_detect_version.py`, `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md`, `docs/test_performance/test_suite_audit_WOT-2026-013e.md`, `.agent/runtime/pytest-safe/last-run.json`
 - **Criterios binarios:** reporte durable que explique el coste con medicion reproducible; separa [V] verificado de [I] inferencia; recomienda optimizacion local o cierra "sin optimizacion segura" con evidencia; no toca el test ni producto en este ticket; `validate` 0/0.
 - **STOP:** si explicar el coste exige reescribir el test o tocar producto -> re-encuadrar como ticket code aparte; si la medicion no es reproducible entre corridas, documentar la varianza y parar.
