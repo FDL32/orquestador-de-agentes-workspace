@@ -1,8 +1,8 @@
-﻿# work_plan.md -- WOT-2026-013i
+# work_plan.md -- WOT-2026-013j
 ## Metadata
-- **ID:** WOT-2026-013i
-- **Contract ID:** T-013I-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-013j
+- **Contract ID:** T-013J-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
 - **deliverable_type:** code
 - **Builder clarification budget:** 0
@@ -10,62 +10,55 @@
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Reducir o acotar la latencia operacional del purge de sandboxes huerfanos en `tests/conftest.py`, manteniendo la limpieza defensiva introducida por `013d` y sin reabrir producto, runner, CI ni la politica xdist/default.
+Eliminar la deriva entre el `Files Likely Touched` de las fichas detalladas de `backlog.md` y el contrato frozen, reforzando la validacion del backlog y explicitando la autoridad del contrato/work_plan sin tocar scope gate ni handoff.
 ## Non-goals
-- No tocar `scripts/project_scanner.py` ni `agent_system/scripts/project_paths.py`.
-- No tocar `tests/unit/test_detect_version.py` ni `tests/unit/test_no_inline_ticket_regex.py`; esas barreras se revalidan, no se editan.
-- No tocar `scripts/run_pytest_safe.py`, `pytest.ini`, CI/workflows ni la politica `011e` / `010m` / `011i`.
-- No convertir la higiene en una limpieza manual o externa al harness de tests.
+- No tocar `.agent/scope_gate.py`, `scripts/pre_handoff_guard.py`, `.agent/agent_controller.py` ni `scripts/check_deliverables_exist.py`.
+- No convertir `backlog.md` en una segunda autoridad del FLT.
+- No reabrir `010n`, `011h` ni cambiar la semantica del handoff canonico.
+- No hacer un rediseno mayor del lifecycle de packet.
 ## Premisas verificadas antes de Builder
-- `013g` verifico que >99% del coste observado viene del purge de `tests/conftest.py`, no del cuerpo del test ni del producto.
-- `013d` necesita mantener la higiene del sandbox para evitar residuos que amplifican latencia y superficie de race.
-- La frontera correcta de este ticket es harness/tests: `tests/conftest.py` y sus barreras de no-regresion.
-- Si la unica mejora segura exige tocar producto, runner o xdist, el ticket debe bloquear por `CG-WOT-2026-013i.md`.
+- El FLT canonico vive en `ticket_contracts.md` y luego en `work_plan.md`, no en la ficha detallada del backlog.
+- `scripts/check_backlog_contract.py` valida hoy la tabla viva y el header de las fichas, pero no el cuerpo de una ficha con FLT duplicado/divergente.
+- El patron fue recurrente en `013h` y `013i`; no es una desviacion aislada del usuario.
+- Si la unica salida exige tocar scope gate, handoff o controller, el ticket debe bloquear por `CG-WOT-2026-013j.md`.
 ## Decision Arquitectonica
-`013i` es un ticket `code` de higiene de runtime de tests. El cambio permitido vive en `tests/conftest.py` y en barreras asociadas del propio harness. La cura de producto de `013d` y la politica del runner permanecen congeladas; este ticket solo puede reducir o acotar el coste del purge sin relajar la limpieza defensiva.
+`013j` es un ticket `code` de contrato/proceso del motor. La correccion permitida vive en el gate del backlog y en la regla de pipeline que fija la autoridad del FLT. El contrato frozen y `work_plan.md` siguen siendo la unica fuente de verdad operativa; el backlog solo puede resumir o referenciar, no re-declarar un FLT divergente.
 ## Files Likely Touched
 ### repo_motor
-- tests/conftest.py
-- tests/unit/test_project_scanner.py
-- tests/unit/test_windows_safe_temp_runtime.py
+- scripts/check_backlog_contract.py
+- tests/unit/test_check_backlog_contract.py
+- prompts/orchestrator_pipeline.md
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- docs/test_performance/test_upgrade_cost_WOT-2026-013g.md
-- docs/test_performance/test_suite_audit_WOT-2026-013e.md
-- docs/test_performance/test_performance_variance.md
-- tests/unit/test_detect_version.py
-- tests/unit/test_no_inline_ticket_regex.py
-- scripts/project_scanner.py
-- agent_system/scripts/project_paths.py
-- scripts/run_pytest_safe.py
+- .agent/collaboration/backlog.md
+- .agent/planning/ticket_contracts.md
+- .agent/collaboration/work_plan.md
+- scripts/pre_handoff_guard.py
+- .agent/scope_gate.py
+- skills/manager-create-work-plan/SKILL.md
+- prompts/audit_cf_ticket_contract.md
 ## Forbidden Surfaces
-- scripts/project_scanner.py
-- agent_system/scripts/project_paths.py
-- tests/unit/test_detect_version.py
-- tests/unit/test_no_inline_ticket_regex.py
-- scripts/run_pytest_safe.py
-- pytest.ini
-- pyproject.toml
-- uv.lock
+- .agent/scope_gate.py
+- scripts/pre_handoff_guard.py
+- .agent/agent_controller.py
+- scripts/check_deliverables_exist.py
 - CI/workflows
-- politica xdist/default (`011e`, `010m`, `011i`)
+- backlog.md como autoridad paralela del FLT
 - privada/
 - .env
 - eventos del bus escritos manualmente
 ## Criterios binarios
-- `execution_log.md` registra una medicion before/after comparable en el mismo host con comandos exactos que aislen el coste de setup/purge o lo acoten con evidencia.
-- El cambio reduce o acota la latencia del setup ligada al purge de sandboxes huerfanos sin reintroducir residuos bajo `tests/sandbox/test_runtime/`.
-- Existe al menos una barrera de regresion sobre `tests/conftest.py` que protege explicitamente la nueva semantica de purge/higiene.
-- `python -m pytest tests/unit/test_project_scanner.py tests/unit/test_windows_safe_temp_runtime.py -q -p no:cacheprovider` termina verde.
-- `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` termina verde en 3 corridas consecutivas.
+- Existe una sola fuente de verdad operativa para el FLT: la ficha detallada del backlog deja de poder re-declararlo de forma divergente, o el gate correspondiente falla cerrado con diagnostico explicito antes del handoff.
+- Existe al menos una barrera de regresion en `tests/unit/test_check_backlog_contract.py` que falla sin el fix sobre una ficha con `Files Likely Touched` duplicado/divergente y pasa con el fix.
+- `prompts/orchestrator_pipeline.md` deja explicita la autoridad del contrato frozen / `work_plan.md` sobre el FLT si el flujo seguira leyendo la ficha detallada del backlog.
+- `python -m pytest tests/unit/test_check_backlog_contract.py -q -p no:cacheprovider` termina verde.
 - `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
 - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
-- No se toca producto, runner, CI ni la politica xdist/default.
+- No se debilitan `scope_gate`, `pre_handoff_guard` ni la autoridad del contrato frozen.
 ## STOP conditions
-- Parar si la mejora segura solo existe tocando producto, runner, CI o politica xdist/default.
-- Parar si la medicion no puede aislar razonablemente el coste del purge en el mismo host.
-- Parar si la unica via verde debilita la limpieza defensiva o deja residuos operativos peores.
+- Parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada.
+- Parar si la unica salida verde consiste en aceptar dos fuentes de verdad sincronizadas manualmente.
+- Parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-013i.md` si la unica salida segura exige reabrir `013d` como ticket de producto, tocar el runner/politica xdist o aceptar residuos/flake potencial en el sandbox.
-
+Emitir `CG-WOT-2026-013j.md` si la unica salida segura exige tocar `scope_gate`, `pre_handoff_guard`, `agent_controller.py` o convertir `backlog.md` en autoridad paralela del FLT.

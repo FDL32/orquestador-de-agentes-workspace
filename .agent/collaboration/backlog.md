@@ -42,8 +42,6 @@
 - **Origen:** session-2026-06-22-post-013i-review (patron repetido al ajustar packets de 013f/013h).
 - **Problema:** las fichas detalladas de `backlog.md` re-declaran el `Files Likely Touched` que ya vive en el contrato frozen (`ticket_contracts.md` / `work_plan.md`). Las dos copias divergen y obligan a reconciliacion manual del packet antes de lanzar Builder (visto en 013h, y el propio usuario tuvo que ajustar el FLT del packet de 013h para que coincidiera). Patron estructural, ya recurrente.
 - **Objetivo:** definir una sola fuente de verdad para el FLT y eliminar o reconciliar la duplicidad, de modo que el backlog no re-declare FLT que pertenece al contrato frozen. El cambio debe vivir en la generacion/validacion del packet del motor, sin debilitar el scope gate ni el contrato frozen.
-- **Files Likely Touched (a confirmar en Fase 0):**
-  - repo_motor: generador/validador de packet que materializa backlog -> contrato (a identificar por codigo antes de tocar)
-  - repo_motor: tests del generador/validador afectado
+- **Superficie (resumen, no FLT autoritativo):** el FLT canonico lo declara el contrato frozen (`ticket_contracts.md`) y luego `work_plan.md`; esta ficha no lo re-declara. A grandes rasgos toca el gate/validador del backlog y su test en el motor.
 - **Criterios binarios:** una sola fuente de verdad para el FLT; el backlog deja de divergir del contrato frozen, o existe una barrera que detecta la divergencia antes del handoff; el scope gate y el contrato frozen siguen intactos; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` verdes.
 - **STOP:** si la unica via exige debilitar el scope gate o el contrato frozen; si reconciliar la duplicidad obliga a un rediseno mayor del lifecycle de packet en vez de un cambio acotado -> re-encuadrar antes de implementar.

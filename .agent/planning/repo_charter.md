@@ -152,3 +152,12 @@ referencias publicadas.
   - el purge "rapido" deja residuos o vuelve a exponer flakes/races por basura acumulada;
   - la decision se toma con mediciones no comparables o sin distinguir coste de setup frente a coste del test.
 - related_plans: [PLAN-013I-001]
+
+### OBJ-013J-001 -- Una sola fuente de verdad para FLT
+- description: eliminar la deriva estructural entre el `Files Likely Touched` de las fichas detalladas de `backlog.md` y el contrato frozen (`ticket_contracts.md` / `work_plan.md`), manteniendo intactos el scope gate y el contrato de handoff.
+- success_criteria: el motor deja de permitir que una ficha detallada del backlog re-declare un FLT divergente, ya sea prohibiendo esa duplicidad o detectandola fail-closed antes del handoff.
+- failure_modes:
+  - la correccion debilita `scope_gate`, `pre_handoff_guard` o la autoridad del contrato frozen;
+  - el sistema sigue permitiendo backlog y contrato divergentes sin diagnostico claro;
+  - la solucion exige reescribir el lifecycle completo de packet en vez de un cambio acotado en generacion/validacion.
+- related_plans: [PLAN-013J-001]

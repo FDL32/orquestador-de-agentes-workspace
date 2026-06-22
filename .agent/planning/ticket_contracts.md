@@ -1668,3 +1668,40 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la mejora solo existe reabriendo `013d` como ticket de producto; parar si la medicion no puede aislar razonablemente el coste del purge en el mismo host; parar si la unica salida verde debilita la limpieza defensiva del sandbox o desplaza la latencia a una deuda operativa peor.
 - **Depende de:** WOT-2026-013d (COMPLETED); WOT-2026-013g (COMPLETED).
+
+## T-013J-001 -- Reconciliar duplicidad de FLT entre backlog y contrato frozen
+
+- **ticket_id:** WOT-2026-013j
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013J-001
+- **Plan-Link:** PLAN-013J-001
+- **Premise:** el drift observado en `013h` y `013i` no nace del scope gate ni del contrato frozen, sino de una duplicidad estructural: las fichas detalladas de `repo_destino/.agent/collaboration/backlog.md` re-declaran `Files Likely Touched`, mientras el FLT canonico ya vive en `ticket_contracts.md` y luego en `work_plan.md`. Hoy `scripts/check_backlog_contract.py` valida la tabla viva y el header de cada ficha, pero NO detecta esa re-declaracion ni su divergencia; el resultado es reconciliacion manual recurrente antes de lanzar Builder.
+- **Premise Re-check (read-only):**
+  - releer `repo_destino/.agent/collaboration/backlog.md` y confirmar que `WOT-2026-013j` documenta el patron de drift backlog<->contrato;
+  - releer `repo_destino/.agent/planning/ticket_contracts.md` y `work_plan.md` historicos recientes (`013h`, `013i`) para verificar que el FLT canonico vive en contrato/work_plan;
+  - releer `scripts/check_backlog_contract.py` y `tests/unit/test_check_backlog_contract.py` para confirmar que hoy solo se valida la tabla `Vista rapida` y el header de las fichas, no su cuerpo ni un FLT duplicado;
+  - releer `prompts/orchestrator_pipeline.md` y/o la skill de Manager que instruye leer la ficha detallada del backlog, para fijar donde debe quedar explicita la regla de autoridad del FLT;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** source_tickets=`WOT-2026-013h, WOT-2026-013i`; motor_head=848cb8a; destino_head=fae62ca; backlog_gate_current_scope=`Vista rapida + ficha header only`; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/check_backlog_contract.py`
+  - Builder repo_motor: `tests/unit/test_check_backlog_contract.py`
+  - Builder repo_motor: `prompts/orchestrator_pipeline.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `repo_destino/.agent/collaboration/backlog.md`; `repo_destino/.agent/planning/ticket_contracts.md`; `repo_destino/.agent/collaboration/work_plan.md`; `scripts/pre_handoff_guard.py`; `.agent/scope_gate.py`; `skills/manager-create-work-plan/SKILL.md`; `prompts/audit_cf_ticket_contract.md`.
+- **Forbidden Surfaces:** `.agent/scope_gate.py`; `scripts/pre_handoff_guard.py`; `.agent/agent_controller.py`; `scripts/check_deliverables_exist.py`; `repo_destino/.agent/planning/ticket_contracts.md` salvo packet del Manager; `repo_destino/.agent/collaboration/backlog.md` salvo packet/documentacion del Manager; CI/workflows; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe una sola fuente de verdad operativa para el FLT: la ficha detallada del backlog deja de poder re-declararlo de forma divergente, o el gate correspondiente falla cerrado con diagnostico explicito antes del handoff.
+  - [ ] Existe al menos una barrera de regresion en `tests/unit/test_check_backlog_contract.py` que falla sin el fix sobre una ficha con `Files Likely Touched` duplicado/divergente y pasa con el fix.
+  - [ ] `prompts/orchestrator_pipeline.md` deja explicita la autoridad del contrato frozen / `work_plan.md` sobre el FLT si el flujo seguira leyendo la ficha detallada del backlog.
+  - [ ] `python -m pytest tests/unit/test_check_backlog_contract.py -q -p no:cacheprovider` termina verde.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] No se debilitan `scope_gate`, `pre_handoff_guard` ni la autoridad del contrato frozen.
+- **Integracion cross-ticket:** `013j` sucede a `013i` como fix de proceso/contrato. Puede tocar el gate del backlog y la instruccion de pipeline, pero no debe reabrir tickets de scope gate/handoff (`010n`, `011h`) ni reinterpretar el FLT fuera del contrato frozen.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el lifecycle completo de packet, tocar `scope_gate` / `pre_handoff_guard` / `agent_controller.py`, o convertir `backlog.md` en una segunda autoridad del FLT, emitir `CG-WOT-2026-013j.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad “sincronizadas manualmente”; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
+- **Depende de:** -.

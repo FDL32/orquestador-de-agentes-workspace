@@ -360,6 +360,7 @@
 | PLAN-013G-001 | reporte durable en repo_motor + bitacora en repo_destino | historial 010j/010p/013e, test focal read-only, validate canonico | conflicto si otro ticket toca `tests/unit/test_detect_version.py`, docs de performance o reabre la discusion como fix de codigo mientras 013g sigue siendo analisis | serializar con tickets que toquen ese test o docs de performance; revalidar mediciones y `validate --json --project-root <repo_destino>` al cerrar | no |
 | PLAN-013H-001 | archivador/cierre canonico + barreras de git real; bitacora en repo_destino | detector `archive_rename_uncommitted`, historico 011a/011h, `session_closeout.py` y reconcile solo de lectura | conflicto si otro ticket toca `archive_collaboration_artifacts.py`, `session_closeout.py`, `tests/test_archive_collaboration_artifacts.py` o `tests/test_session_closeout.py` mientras 013h cambia la semantica del archivado | serializar con tickets que toquen closeout/archivado; revalidar pruebas focales con repo git real + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 | PLAN-013I-001 | higiene de sandbox en `tests/conftest.py` + barreras de scanner/runtime; bitacora en repo_destino | atribucion 013g, cura de producto 013d read-only, triple xdist heredado, `run_pytest_safe` read-only | conflicto si otro ticket toca `tests/conftest.py`, barreras de sandbox o reabre `project_scanner`/`project_paths`/politica xdist mientras 013i acota el purge | serializar con tickets que toquen la higiene de sandbox o las barreras heredadas; revalidar focales + triple xdist x3 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
+| PLAN-013J-001 | gate del backlog + tests + regla de pipeline sobre autoridad del FLT; bitacora en repo_destino | backlog vivo del destino, contrato frozen, scope gate/handoff read-only | conflicto si otro ticket toca `check_backlog_contract.py`, `prompts/orchestrator_pipeline.md`, el schema de backlog o la semantica de FLT/contract authority mientras 013j cierra la duplicidad | serializar con tickets que toquen backlog contract o la regla de autoridad del FLT; revalidar tests del gate + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -454,3 +455,27 @@ Para 013h, cualquier merge con tickets que toquen `scripts/archive_collaboration
 - PLAN-013I-001: no tocar `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/unit/test_detect_version.py`, `tests/unit/test_no_inline_ticket_regex.py`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `uv.lock`, CI/workflows ni la politica xdist/default cerrada por `011e`, `010m`, `011i`.
 
 Para 013i, cualquier merge con tickets que toquen `tests/conftest.py`, `tests/unit/test_project_scanner.py`, `tests/unit/test_windows_safe_temp_runtime.py`, `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py` o la politica xdist/default obliga a revalidar la union con los focales de sandbox, el triple xdist en 3 corridas consecutivas, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+
+## PLAN-013J-001 -- Una sola fuente de verdad para FLT en backlog vs contrato
+
+- objetivo: eliminar la deriva entre el FLT de las fichas detalladas de `backlog.md` y el contrato frozen, reforzando la validacion del backlog y explicitando la autoridad del contrato/work_plan sin tocar scope gate ni handoff.
+- tickets: [WOT-2026-013j]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/scripts/check_backlog_contract.py
+  - repo_motor/tests/unit/test_check_backlog_contract.py
+  - repo_motor/prompts/orchestrator_pipeline.md
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `scripts/check_backlog_contract.py --project-root <repo_destino>`
+  - `repo_destino/.agent/collaboration/backlog.md` (fichas detalladas)
+  - contrato frozen `repo_destino/.agent/planning/ticket_contracts.md`
+  - `work_plan.md` como proyeccion activa del contrato
+- shared_dependencies:
+  - `.agent/scope_gate.py` y `scripts/pre_handoff_guard.py` (read-only; autoridad del FLT y cierre fail-closed)
+  - `skills/manager-create-work-plan/SKILL.md` y `prompts/audit_cf_ticket_contract.md` (read-only; contexto de generacion/contrato)
+  - `backlog.md` del destino como cola viva, no como segunda fuente de verdad del packet
+
+- PLAN-013J-001: no tocar `.agent/scope_gate.py`, `scripts/pre_handoff_guard.py`, `.agent/agent_controller.py`, `scripts/check_deliverables_exist.py`, CI/workflows, `privada/` ni convertir `backlog.md` en autoridad paralela del FLT.
+
+Para 013j, cualquier merge con tickets que toquen `scripts/check_backlog_contract.py`, `tests/unit/test_check_backlog_contract.py`, `prompts/orchestrator_pipeline.md`, el schema de `backlog.md` o la semantica de FLT/contract authority obliga a revalidar la union con `python -m pytest tests/unit/test_check_backlog_contract.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
