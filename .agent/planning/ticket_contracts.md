@@ -1631,3 +1631,40 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la reproduccion real deja de concentrarse en `archive_collaboration_artifacts.py` / closeout y pasa a otra deuda ajena; parar si la unica via verde rompe la trazabilidad de los artefactos archivados; parar si la solucion exige editar el bus a mano o introducir un cierre pass-open.
 - **Depende de:** WOT-2026-011h (COMPLETED); WOT-2026-013g (COMPLETED).
+
+## T-013I-001 -- Higiene de purge de sandbox para latencia operacional
+
+- **ticket_id:** WOT-2026-013i
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013I-001
+- **Plan-Link:** PLAN-013I-001
+- **Premise:** `WOT-2026-013g` verifico que >99% del coste observado en el outlier `test_upgrade_path_suggestion` no vive en el test ni en producto, sino en el `sessionstart` de `tests/conftest.py`: `_purge_orphan_session_dirs()` purga sandboxes `session_*` huerfanos acumulados bajo `tests/sandbox/test_runtime/`. La barrera de `013d` es correcta y NO debe retirarse, pero la implementacion actual deja una latencia operacional visible cuando el volumen historico crece (568 dirs medidos en `013g`).
+- **Premise Re-check (read-only):**
+  - releer `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md` y confirmar que la atribucion principal del coste sigue anclada al purge de `tests/conftest.py`;
+  - releer `tests/conftest.py` y ubicar `_purge_orphan_session_dirs()` y `_project_temp_environment()` como la ruta real de higiene;
+  - releer `tests/unit/test_project_scanner.py`, `tests/unit/test_windows_safe_temp_runtime.py`, `tests/unit/test_detect_version.py` y `tests/unit/test_no_inline_ticket_regex.py` para fijar las barreras heredadas de `013d`;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** source_ticket=WOT-2026-013g; source_report_commit=cf5a4bc; current_motor_head=103849a; current_destino_head=06732f6; historical_orphan_dirs=568; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `tests/conftest.py`
+  - Builder repo_motor: `tests/unit/test_project_scanner.py`
+  - Builder repo_motor: `tests/unit/test_windows_safe_temp_runtime.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`; `docs/test_performance/test_suite_audit_WOT-2026-013e.md`; `docs/test_performance/test_performance_variance.md`; `tests/unit/test_detect_version.py`; `tests/unit/test_no_inline_ticket_regex.py`; `scripts/project_scanner.py`; `agent_system/scripts/project_paths.py`; `scripts/run_pytest_safe.py`.
+- **Forbidden Surfaces:** `scripts/project_scanner.py`; `agent_system/scripts/project_paths.py`; `tests/unit/test_detect_version.py`; `tests/unit/test_no_inline_ticket_regex.py`; `scripts/run_pytest_safe.py`; `pytest.ini`; `pyproject.toml`; `uv.lock`; CI/workflows; cualquier politica xdist/default ya cerrada por `011e`, `010m`, `011i`; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `execution_log.md` registra medicion before/after comparable en el mismo host con comandos exactos que aislen el coste de setup/purge o lo acoten de forma reproducible.
+  - [ ] El cambio reduce o acota con evidencia la latencia del setup ligada al purge de sandboxes huerfanos, sin reintroducir residuos bajo `tests/sandbox/test_runtime/`.
+  - [ ] Existe al menos una barrera de regresion sobre `tests/conftest.py` que falla sin el fix o protege explicitamente la nueva semantica de purge/higiene.
+  - [ ] `python -m pytest tests/unit/test_project_scanner.py tests/unit/test_windows_safe_temp_runtime.py -q -p no:cacheprovider` termina verde.
+  - [ ] `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` termina verde en 3 corridas consecutivas.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] No se toca producto, runner, CI ni la politica xdist/default; la higiene sigue viviendo en harness/tests.
+- **Integracion cross-ticket:** `013i` sucede a `013d` y `013g`: consume la atribucion de coste ya cerrada por `013g` y solo puede modificar la higiene del sandbox en `tests/conftest.py` y sus barreras. No reabre la familia xdist (`011e`/`010m`/`011i`) ni la cura de producto de `013d`.
+- **CONTRACT_GAP behavior:** si la unica reduccion segura exige tocar producto, runner, CI, politica xdist/default, o si cualquier variante mas rapida reintroduce residuos/flake potencial en `tests/sandbox/test_runtime/`, emitir `CG-WOT-2026-013i.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la mejora solo existe reabriendo `013d` como ticket de producto; parar si la medicion no puede aislar razonablemente el coste del purge en el mismo host; parar si la unica salida verde debilita la limpieza defensiva del sandbox o desplaza la latencia a una deuda operativa peor.
+- **Depende de:** WOT-2026-013d (COMPLETED); WOT-2026-013g (COMPLETED).

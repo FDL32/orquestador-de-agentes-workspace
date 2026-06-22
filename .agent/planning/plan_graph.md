@@ -359,6 +359,7 @@
 | PLAN-013F-001 | retiro de `tests/deprecated/` + actualizacion de `tests/integration/RETIRED_TESTS.md`; bitacora en repo_destino | contrato `pytest.ini` read-only, follow-up `013e`, evidencia canonica `run_pytest_safe` | conflicto si otro ticket toca `pytest.ini`, `tests/integration/RETIRED_TESTS.md` o revive Goose/otros candidatos legacy mientras 013f poda el directorio excluido | serializar con tickets que toquen el runner, el ledger de tests retirados o el historico Goose; revalidar collect-only 3111 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 | PLAN-013G-001 | reporte durable en repo_motor + bitacora en repo_destino | historial 010j/010p/013e, test focal read-only, validate canonico | conflicto si otro ticket toca `tests/unit/test_detect_version.py`, docs de performance o reabre la discusion como fix de codigo mientras 013g sigue siendo analisis | serializar con tickets que toquen ese test o docs de performance; revalidar mediciones y `validate --json --project-root <repo_destino>` al cerrar | no |
 | PLAN-013H-001 | archivador/cierre canonico + barreras de git real; bitacora en repo_destino | detector `archive_rename_uncommitted`, historico 011a/011h, `session_closeout.py` y reconcile solo de lectura | conflicto si otro ticket toca `archive_collaboration_artifacts.py`, `session_closeout.py`, `tests/test_archive_collaboration_artifacts.py` o `tests/test_session_closeout.py` mientras 013h cambia la semantica del archivado | serializar con tickets que toquen closeout/archivado; revalidar pruebas focales con repo git real + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
+| PLAN-013I-001 | higiene de sandbox en `tests/conftest.py` + barreras de scanner/runtime; bitacora en repo_destino | atribucion 013g, cura de producto 013d read-only, triple xdist heredado, `run_pytest_safe` read-only | conflicto si otro ticket toca `tests/conftest.py`, barreras de sandbox o reabre `project_scanner`/`project_paths`/politica xdist mientras 013i acota el purge | serializar con tickets que toquen la higiene de sandbox o las barreras heredadas; revalidar focales + triple xdist x3 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -429,3 +430,27 @@ Para 013h, cualquier merge con tickets que toquen `scripts/archive_collaboration
   - `scripts/delivery_hygiene_check.py` (read-only; detector canonico del limbo)
   - `.agent/agent_controller.py` y `--mark-ready` (read-only salvo evidencia contraria; `011h` ya cubrio ese frente)
   - `scripts/reconcile_ticket.py` (read-only; herramienta de recuperacion, no cierre normal)
+
+## PLAN-013I-001 -- Higiene de purge de sandbox para latencia operacional
+
+- objetivo: reducir o acotar la latencia operacional del purge de sandboxes huerfanos en `tests/conftest.py`, manteniendo la higiene defensiva de `013d` y sin tocar producto, runner, CI ni la politica xdist/default.
+- tickets: [WOT-2026-013i]
+- depends_on: [WOT-2026-013d, WOT-2026-013g]
+- superficies_archivo:
+  - repo_motor/tests/conftest.py
+  - repo_motor/tests/unit/test_project_scanner.py
+  - repo_motor/tests/unit/test_windows_safe_temp_runtime.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `tests.conftest::_purge_orphan_session_dirs()`
+  - fixture `tests.conftest::_project_temp_environment()`
+  - `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load`
+- shared_dependencies:
+  - `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md` (read-only; atribucion verificada del coste)
+  - `scripts/project_scanner.py` y `agent_system/scripts/project_paths.py` (read-only; cura de producto ya cerrada por `013d`)
+  - `tests/unit/test_detect_version.py` y `tests/unit/test_no_inline_ticket_regex.py` (read-only; barreras de no-regresion heredadas)
+  - `scripts/run_pytest_safe.py` y politica `011e <-> 010m <-> 011i` (read-only; frontera cerrada)
+
+- PLAN-013I-001: no tocar `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/unit/test_detect_version.py`, `tests/unit/test_no_inline_ticket_regex.py`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `uv.lock`, CI/workflows ni la politica xdist/default cerrada por `011e`, `010m`, `011i`.
+
+Para 013i, cualquier merge con tickets que toquen `tests/conftest.py`, `tests/unit/test_project_scanner.py`, `tests/unit/test_windows_safe_temp_runtime.py`, `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py` o la politica xdist/default obliga a revalidar la union con los focales de sandbox, el triple xdist en 3 corridas consecutivas, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.

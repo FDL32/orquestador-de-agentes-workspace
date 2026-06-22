@@ -143,3 +143,12 @@ referencias publicadas.
 - DEC-008-002: prompts legacy como shims documentales o resolver central.
 - DEC-008-003: skills anidadas fisicamente o mantener layout plano con indice.
 - DEC-008-004: adoptar registro canonico explicito estilo plugin manifest frente a discovery por glob + INDEX propio.
+
+### OBJ-013I-001 -- Higiene de purge de sandbox para latencia operacional
+- description: reducir o acotar el coste operacional del purge de sandboxes huerfanos en `tests/conftest.py`, manteniendo intacta la barrera de higiene introducida por `013d` y sin reabrir decisiones de runner, CI, producto o xdist.
+- success_criteria: existe una mejora medible o un acotamiento verificable del coste de setup en el mismo host, sin reintroducir residuos en `tests/sandbox/test_runtime/` ni romper las barreras heredadas de `013d`.
+- failure_modes:
+  - la unica mejora segura exige tocar `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `scripts/run_pytest_safe.py`, `pytest.ini`, CI o la politica xdist;
+  - el purge "rapido" deja residuos o vuelve a exponer flakes/races por basura acumulada;
+  - la decision se toma con mediciones no comparables o sin distinguir coste de setup frente a coste del test.
+- related_plans: [PLAN-013I-001]

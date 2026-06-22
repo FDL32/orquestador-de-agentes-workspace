@@ -1,79 +1,80 @@
-# Execution Log -- WOT-2026-013h
+# Execution Log -- WOT-2026-013i
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
-## MANAGER - WOT-2026-013h - Bootstrap operativo
+## MANAGER - WOT-2026-013i - Bootstrap operativo
 
-Ticket activado para eliminar la herencia recurrente de `archive_rename_uncommitted` en el archivado canonico, sin auto-commit y sin reabrir familias cerradas.
+Ticket activado para atacar la latencia operacional del purge de sandboxes huerfanos detectada por `013g`, manteniendo intacta la barrera de higiene introducida por `013d`.
 
 Packet activo en repo_destino:
-- backlog alineado: `013h` pasa a ser el primer ticket accionable; `013i` queda pendiente posterior
-- `OBJ-013H-001` en `repo_charter.md`
-- `PLAN-013H-001` en `plan_graph.md`
-- `T-013H-001` congelado en `ticket_contracts.md`
-- `work_plan.md`, `STRATEGY_WOT-2026-013h.md` y `AUDIT_WOT-2026-013h.md` activos para Builder
+- `OBJ-013I-001` en `repo_charter.md`
+- `PLAN-013I-001` en `plan_graph.md`
+- `T-013I-001` congelado en `ticket_contracts.md`
+- `work_plan.md`, `STRATEGY_WOT-2026-013i.md` y `AUDIT_WOT-2026-013i.md` activos para Builder
 
 Premisa operativa del Builder:
-- releer `scripts/archive_collaboration_artifacts.py`, `scripts/closeout_steps/archival.py`, `scripts/session_closeout.py` y las barreras actuales
-- reproducir el patron real con repo git en `tmp_path`, no con mocks blandos
-- mantener el fix acotado a archivado/cierre o bloquear por `CG-WOT-2026-013h.md`
-- preservar una sola razon estable: `archive_rename_uncommitted`
+- releer `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md` y `tests/conftest.py`
+- medir en el mismo host antes de optimizar; separar setup/purge del cuerpo del test
+- mantener el fix acotado a harness/tests o bloquear por `CG-WOT-2026-013i.md`
+- preservar la higiene del sandbox y revalidar la barrera xdist heredada de `013d`
 
 Baseline verificado antes del bootstrap:
-- repo_motor HEAD = `cf5a4bc`
-- repo_destino HEAD = `cd8e33b`
-- `013g` cerro canonicamente y el follow-up correcto es de closeout/archivado, no de runner
+- repo_motor HEAD = `103849a`
+- repo_destino HEAD = `06732f6`
+- `validate --json --project-root <repo_destino>` = `0 errors / 0 warnings`
+- evidencia disparadora: `013g` atribuyo el coste a `_purge_orphan_session_dirs()` con `historical_orphan_dirs=568`
 
-## BUILDER - WOT-2026-013h - Fase 0 (diagnostico read-only)
+## BUILDER - WOT-2026-013i - Fase 0 (diagnostico) + medicion BEFORE
 
-Preflight verificado: validate 0/0; STATE=013h/IN_PROGRESS; TURN BUILDER/013h/IMPLEMENT; bus seq 1328 STATE_CHANGED->IN_PROGRESS para 013h (013g COMPLETED seq 1326). No anclado a 013g.
+Preflight: validate 0/0; STATE/TURN/work_plan=013i; bus seq 1337 IN_PROGRESS para 013i (013h COMPLETED seq 1335). Ambos repos sync con origin. No anclado a 013h.
 
-Causa raiz [V] (rastreada por codigo):
-- El archivador `scripts/archive_collaboration_artifacts.py::archive_collaboration_artifacts()` (l.144-156) mueve STRATEGY_/AUDIT_ cerrados con `shutil.move` y NO hace `git add` ni commit.
-- El detector canonico `scripts/delivery_hygiene_check.py::check_archive_rename_complete` (l.373-391) define el limbo como un par `D <origen>` + `?? _archive/plan_audit/<basename>` (delete sin stage + untracked). Un `git add` de ambos lados colapsa el par a rename staged `R` y el detector PASA.
-- Quien dispara el archivado en cierre canonico: `.agent/agent_controller.py::_auto_archive_closed_artifacts()` (l.1013-1040) en `_handle_mark_ready` (l.3198), seguido de `_check_mark_ready_archive_rename()` (l.3207) que BLOQUEA fail-closed si hay limbo.
-- `_handle_manager_approve` (l.4334+) NO archiva: solo `_sync_markdowns_to_completed`. => los STRATEGY/AUDIT del ticket N-1 quedan VIVOS en collaboration/ tras su cierre, y el `_auto_archive` del mark-ready del ticket N los mueve, generando el limbo HEREDADO que vivieron 013e->013f->013g.
-- 011a (closeout) y 011h (mark-ready) ya FALLAN-CERRADO ante el limbo, pero ninguno lo PREVIENE en origen: el archivador deja el limbo y la barrera solo lo detecta despues. El reconcile manual era la unica salida.
+Seam confirmado [V]: `tests/conftest.py::_purge_orphan_session_dirs` (l.57-78) corre en el fixture session-autouse `_project_temp_environment` (l.81-85) en sessionstart. Hace `shutil.rmtree(entry, ignore_errors=True)` secuencial de cada `session_*` huerfano.
 
-Seam elegido (dentro de FLT): el fix correcto y minimo es que `archive_collaboration_artifacts()` haga `git add` de cada rename (origen+destino) tras el `shutil.move`, cuando opera dentro de un repo git. Esto:
-- elimina el limbo en ORIGEN (rename queda staged, no `D`+`??`),
-- NO commitea (preserva "no auto-commit opaco"; el rename staged entra en el commit de cierre natural),
-- mantiene `archive_rename_uncommitted` como unica fuente de verdad (no crea segundo guard ni segunda razon),
-- es best-effort: si no hay repo git o git falla, el archivado no rompe y la barrera fail-closed sigue como red de seguridad.
+Medicion BEFORE [V] (mismo host, perf_counter, sandbox real actual):
+- Estado del sandbox: `ls -d tests/sandbox/test_runtime/session_* | wc -l` => 575 dirs huerfanos; `find tests/sandbox/test_runtime -mindepth 1 | wc -l` => 533168 entradas.
+- `_purge_orphan_session_dirs(keep_pid=-1)` (purga todos): purged=0, n_after=575, en **38.99s**.
 
-Confirmacion de que NO requiere tocar agent_controller.py: el staging en el archivador resuelve el limbo aguas arriba de `_check_mark_ready_archive_rename`, que entonces pasa sin cambios. Fix acotado a `scripts/archive_collaboration_artifacts.py` + tests. No se toca agent_controller.py (fuera de FLT), ni se relaja el detector.
+HALLAZGO CRITICO [V]: el purge tarda ~39s pero NO borra nada (purged=0, 575 dirs siguen). La higiene de 013d esta ROTA en silencio:
+- Causa real (rmtree sin ignore_errors sobre un huerfano): `PermissionError [WinError 5] Acceso denegado` en `.../dest/.git/objects/f5/...`. Los huerfanos contienen repos git de fixtures; git marca los objects como read-only, y en Windows `shutil.rmtree` no puede borrar archivos read-only.
+- Con `ignore_errors=True`, el helper traga el error, gasta 39s recorriendo 533k entradas y deja los 575 dirs intactos. Se acumulan indefinidamente, amplificando coste cada sesion (568 en 013g -> 575 ahora).
 
-Patron real confirmado vigente: `D old + ?? new` / `archive_rename_uncommitted` (visto en 013e/013f/013g, reconciliado a mano cada vez).
+Decision tecnica: el fix correcto FORTALECE 013d (hoy roto) y acota la latencia futura en origen:
+- Anadir un `onerror`/`onexc` handler a `shutil.rmtree` que limpie el bit read-only (`os.chmod(path, stat.S_IWRITE)`) y reintente el unlink -- patron estandar Windows para borrar arboles `.git`.
+- Resultado: el purge BORRA de verdad => la acumulacion perpetua desaparece => las sesiones futuras arrancan con ~0-1 huerfanos en vez de 575, acotando la latencia de raiz.
+- Esto NO debilita la barrera de 013d: la hace funcionar. No toca producto/runner/xdist. Frontera = `tests/conftest.py` + barreras.
 
-Desviaciones de scope: ninguna. No procede CG. Procedo a Fase 1 (fix en archivador) + Fase 2 (tests con repo git real en tmp_path).
+Procedo a Fase 1 (handler read-only en el purge) + Fase 2 (barrera de regresion) + medicion AFTER.
 
-## BUILDER - WOT-2026-013h - Fase 1 (fix) + Fase 2 (tests) + gates + entrega
+## BUILDER - WOT-2026-013i - Fase 1 (fix) + Fase 2 (barreras) + medicion AFTER + gates
 
-Fix (Fase 1, scripts/archive_collaboration_artifacts.py):
-- Anadido helper `_find_git_root()` (walk up buscando .git) y `_stage_archival_rename(src, dest)` que corre `git add -- <src> <dest>` desde la raiz del work-tree tras el shutil.move. Stage, NO commit. Best-effort/fail-open: sin git o si git falla, no levanta; la barrera fail-closed sigue de red.
-- Llamado tras cada shutil.move exitoso en `archive_collaboration_artifacts()`.
-- import subprocess anadido. noqa S603/S607 en la llamada git (args fijos, sin input de usuario).
-- NO se toco agent_controller.py: el staging en origen resuelve el limbo aguas arriba de _check_mark_ready_archive_rename, que pasa sin cambios. NO se relajo el detector. NO se creo segundo guard.
+Fix (Fase 1, tests/conftest.py):
+- `_force_remove_readonly(func, path, _exc)`: handler que hace `os.chmod(path, S_IWRITE)` + retry de func; OSError final swallowed (fail-open).
+- `_rmtree_robust(target)`: rmtree con `onexc=` (Py>=3.12) / `onerror=` (Py<3.12) enrutado al handler; devuelve True si el path quedo borrado.
+- `_purge_orphan_session_dirs` ahora usa `_rmtree_robust` y cuenta solo borrados reales. Tambien el finalizer de `_project_temp_environment` y `pytest_sessionfinish` usan `_rmtree_robust` para que la sesion actual no genere nuevos huerfanos read-only.
+- import `stat` anadido. NO se toco producto, runner, pytest.ini ni xdist.
 
-Tests (Fase 2, repo git real en tmp_path, sin mocks de subprocess para la barrera):
-- tests/test_archive_collaboration_artifacts.py: + `test_archiver_stages_rename_so_no_limbo_inherited` (regresion FAIL-sin/PASS-con), `test_archiver_stages_but_does_not_commit` (HEAD intacto + rename staged), `test_archiver_no_git_tree_still_moves` (fail-open). Reemplaza el viejo helper `_seed_closed_pair`.
-- tests/test_session_closeout.py: reescrito `test_uncommitted_rename_blocks_in_real_closeout` -> `test_real_archiver_stages_rename_and_step_passes` (el step real ahora PASA, staged, HEAD intacto). Las barreras `test_partial_move_then_*_fails_closed` (limbo sin staging) siguen verificando fail-closed: la barrera 011a queda intacta.
+Medicion AFTER [V] (mismo host, perf_counter):
+- Purge real de los 575 huerfanos acumulados: purged=575, n_after=0, en 141.81s (one-shot: hace el trabajo que el viejo se saltaba).
+- Purge en ESTADO ESTABLE (sandbox limpio, lo que veran las sesiones futuras): purged=0 en 0.0001s.
+- Comparativa: before recurrente ~38.99s/sesion sin borrar nada (creciente sin techo) => after estado estable ~0.0001s. El coste recurrente se elimina de raiz porque el purge ahora borra y no se acumula. La latencia queda acotada a un evento unico de limpieza del backlog historico.
+- Suite canonica completa post-fix: 3096 passed, 20 skipped en 134.49s (vs ~350s en 013h, ~709s en 013f con sandbox sucio): evidencia en vivo de la latencia acotada.
+- Residuos tras suite canonica: `ls -d tests/sandbox/test_runtime/session_* | wc -l` => 0. Sin residuos peores; higiene de 013d reforzada.
 
-Evidencia FAIL-sin/PASS-con (registrada):
-- FAIL-sin-fix: neutralizando `_stage_archival_rename` a no-op, el archivador deja el limbo y `check_archive_rename_complete().passed == False`. Verificado via script one-off en tmp repo git real.
-- PASS-con-fix: con el staging, `guard.passed == True` sin reconcile manual; los 3 tests focales del archivador y el del closeout pasan.
+Barreras (Fase 2, tests/unit/test_windows_safe_temp_runtime.py, sandbox real sin mocks):
+- test_rmtree_robust_deletes_readonly_tree
+- test_purge_orphan_session_dirs_removes_readonly_orphan (purged==1; keep_pid preservado)
+- test_force_remove_readonly_does_not_raise_on_locked (fail-open)
+FAIL-sin/PASS-con [V]: el purge viejo (ignore_errors) deja el orphan read-only (purged=0, sigue existiendo); el nuevo lo borra (purged=1). Confirmado via one-off en tmp repo real.
 
 Gates (comandos exactos + resultados literales):
-- Focales: `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q -p no:cacheprovider` => `224 passed`.
-- Ruff check: `uv run ruff check <7 archivos del contrato>` => `All checks passed!`.
-- Ruff format: `uv run ruff format --check <7 archivos>` => `7 files already formatted`.
-- Suite canonica: `python scripts/run_pytest_safe.py --level all` => `3093 passed, 20 skipped in 349.56s`, exit_code 0. last-run.json: status=finished, level=all, args_mode=default_discovery, tested_commit_sha=103849a == HEAD.
-- State-leak: silencioso (runner barrier exit 0; solo execution_log.md modificado en destino).
+- Focal: `python -m pytest tests/unit/test_project_scanner.py tests/unit/test_windows_safe_temp_runtime.py -q -p no:cacheprovider` => `46 passed`.
+- Triple xdist x3 (via `uv run` porque pytest-xdist se resuelve por dependency group, no en el python del sistema): `uv run python -m pytest <triple> -q -n 8 --dist load -p no:cacheprovider` => `3 passed` en corridas 1, 2 y 3 (verde consecutivo). Nota: el `python -m pytest` directo no reconoce `-n` (xdist no instalado en el interprete base); es coherente con el default no-xdist del runner (011e opt-in). No se toco la politica xdist.
+- Ruff check: `uv run ruff check tests/conftest.py tests/unit/test_project_scanner.py tests/unit/test_windows_safe_temp_runtime.py` => `All checks passed!`.
+- Ruff format: `uv run ruff format --check <mismos>` => `3 files already formatted`.
+- Suite canonica: `python scripts/run_pytest_safe.py --level all` => `3096 passed, 20 skipped in 134.49s`, exit 0. last-run.json: status=finished, level=all, args_mode=default_discovery, tested_commit_sha=07f9c69 == HEAD.
+- State-leak: silencioso (runner barrier exit 0; cambios en collaboration/ son proyecciones del bootstrap del packet 013i, no mutacion de la suite; STATE sigue 013i/IN_PROGRESS).
 - Validate: `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` => 0 errors, 0 warnings.
 
-Commit del entregable (repo_motor): HEAD `103849a` "WOT-2026-013h stage archival rename to end inherited limbo". Diff = 3 files (scripts/archive_collaboration_artifacts.py + 2 test files), todos en FLT. 163 insertions, 26 deletions. Pre-commit hooks (ast/ruff/encoding/history) verdes. Arbol motor limpio.
+Commit del entregable (repo_motor): HEAD `07f9c69` "WOT-2026-013i fix silent no-op sandbox purge (read-only .git on Windows)". Diff = 2 files (tests/conftest.py + tests/unit/test_windows_safe_temp_runtime.py), ambos en FLT. 150 insertions, 13 deletions. Pre-commit hooks (ast/ruff/encoding/history) verdes.
 
-Desviaciones y justificaciones CEM: ninguna. Procedo a pre-handoff + mark-ready.
-
-
-Manager approved canonical closeout for WOT-2026-013h
+Desviaciones y justificaciones CEM: ninguna. No procede CG (el fix vive en harness/tests; no toco producto/runner/CI/xdist). Listo para --pre-handoff + --mark-ready.
