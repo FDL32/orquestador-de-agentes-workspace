@@ -1,78 +1,71 @@
-# work_plan.md -- WOT-2026-013n
+# work_plan.md -- WOT-2026-013o
 ## Metadata
-- **ID:** WOT-2026-013n
-- **Contract ID:** T-013N-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-013o
+- **Contract ID:** T-013O-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** code
+- **deliverable_type:** mixed
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_motor
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Modelar `SUPERSEDED` y `BLOCKED_FINAL` como estados terminales honestos del runtime para que validadores, vistas, closeout y publication checks no exijan falsear `COMPLETED` en tickets como `WT-2026-239a` y `WOT-2026-013c`.
+Dejar `repo_destino/.agent/runtime/memory/observations.jsonl` en `--strict` verde separando la reparacion determinista de datos corruptos (`applies_to <- domain`) de la decision explicita de contrato sobre dominios (`collaboration`, `test-performance`), antes de volver a promover memoria portable nueva.
 ## Non-goals
-- No reescribir el lifecycle exitoso `READY_TO_CLOSE -> COMPLETED -> SUPERVISOR_CLOSED`.
-- No tocar `.agent/agent_controller.py`, CI/workflows ni editar `events.jsonl` a mano.
-- No introducir `ABANDONED` salvo que Fase 0 demuestre con evidencia que el contrato quedaria roto sin un tercer estado.
-- No reconciliar tickets reales a `COMPLETED` solo para silenciar vistas.
+- No insertar observaciones nuevas en `repo_destino/.agent/runtime/memory/observations.jsonl` durante este ticket.
+- No tocar `repo_motor/.agent/runtime/memory/observations.jsonl`, `repo_destino/.agent/runtime/memory/MEMORY.md`, `memory_profile.md` ni `memory_rules.md`.
+- No tocar `repo_motor/bus/memory_loader.py` salvo `CONTRACT_GAP`.
+- No tocar `repo_motor/scripts/session_close_observations.py`, CI/workflows, `privada/` ni `.env`.
+- No reinterpretar semanticamente lineas dudosas sin evidencia verificable.
 ## Premisas verificadas antes de Builder
-- `bus/state_machine.py` sigue tratando `COMPLETED` como unica terminalidad irreversible explicita; el string legacy `CLOSED` existe solo como literal suelto fuera del enum y no debe promocionarse a nuevo estado canonico.
-- `scripts/archive_event_bus.py`, `scripts/reconcile_ticket.py`, `scripts/preflight_reconcile.py`, `scripts/session_closeout.py`, `scripts/check_destino_publish_ready.py` y `scripts/get_launcher_state.py` contienen hoy heuristicas locales de terminalidad o publicabilidad que no reconocen `SUPERSEDED`/`BLOCKED_FINAL`.
-- `WT-2026-239a` conserva evidencia honesta de rechazo y supersession; no es trabajo incompleto a rescatar.
-- `WOT-2026-013c` esta declarado `BLOCKED-FINAL` en planning; el follow-up correcto es producto nuevo, no reabrir el ticket tests-only.
+- `repo_destino/.agent/runtime/memory/observations.jsonl` falla `python scripts/validate_observations.py --strict --file <obs>` con 17 errores verificados.
+- El diagnostico correcto tiene dos clases distintas: 14 entradas tienen corrupcion de datos (`applies_to` contiene etiquetas que son claramente `domain`, como `review-quality`, `planning`, `supervisor`, `preflight`) y 3 entradas usan valores de `domain` fuera del enum canonico (`collaboration`, `test-performance`).
+- Ya existe un seam de migracion reutilizable en `scripts/migrate_observations.py` junto con barreras en `tests/test_migration_bootstrap.py`; el trabajo no es inventar una migracion desde cero.
+- `bus/memory_loader.py` y `scripts/memory_consolidate.py` son consumidores reales de la base y quedan read-only salvo `CONTRACT_GAP`.
+- La observacion diferida de `013n` queda fuera de scope hasta partir de una base `--strict` verde.
 ## Decision Arquitectonica
-`013n` es un ticket `code` del motor sobre la semantica de terminalidad. La autoridad debe vivir en una representacion compartida del runtime (enum/helper), y los consumidores deben consultarla en vez de duplicar listas locales. El ticket solo cubre los dos estados ya evidenciados (`SUPERSEDED`, `BLOCKED_FINAL`) y debe mantener intacto el cierre exitoso existente.
+`013o` es un ticket `mixed` con autoridad de entrega en `repo_motor`: la reparacion del contrato vive en migrador/validador/schema/tests del motor, mientras la base corrupta a reparar vive en `repo_destino/.agent/runtime/memory/observations.jsonl`. El Builder debe corregir primero la base y el contrato estricto, dejando explicito que no promueve nueva memoria portable en esta ronda.
 ## Files Likely Touched
 ### repo_motor
-- bus/state_machine.py
-- bus/supervisor.py
-- bus/builder_locks.py
-- scripts/get_launcher_state.py
-- scripts/archive_event_bus.py
-- scripts/reconcile_ticket.py
-- scripts/preflight_reconcile.py
-- scripts/session_closeout.py
-- scripts/closeout_steps/archival.py
-- scripts/check_destino_publish_ready.py
-- tests/unit/test_terminal_states.py
-- tests/test_launcher_state_from_bus.py
-- tests/evals/test_eval_requeue.py
+- scripts/migrate_observations.py
+- scripts/validate_observations.py
+- skills/_shared/ap-schema.md
+- tests/test_migration_bootstrap.py
+- tests/unit/test_validate_observations.py
 ### repo_destino
+- .agent/runtime/memory/observations.jsonl
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- .agent/runtime/events/events.jsonl
-- .agent/collaboration/_archive/backlog_done.md
-- .agent/collaboration/MANAGER_REVIEW_WT-2026-239a.md
-- .agent/planning/plan_graph.md
-- .agent/planning/contract_gaps/CG-WOT-2026-013c.md
-- scripts/collect_system_health.py
-- prompts/audit_post_change_system_health.md
-- bus/event_bus.py
-- scripts/manager_review_bridge.py
+- bus/memory_loader.py
+- scripts/memory_consolidate.py
+- prompts/memory_upload.md
+- .agent/runtime/memory/MEMORY.md
+- .agent/runtime/memory/memory_profile.md
+- .agent/audits/system_health/general_audit_20260622_1449/07_adversarial_review.md
 ## Forbidden Surfaces
-- .agent/agent_controller.py
+- .agent/runtime/memory/observations.jsonl inserciones semanticas nuevas antes del verde estricto
+- .agent/runtime/memory/MEMORY.md
+- .agent/runtime/memory/memory_profile.md
+- .agent/runtime/memory/memory_rules.md
+- repo_motor/.agent/runtime/memory/observations.jsonl
+- repo_motor/bus/memory_loader.py salvo `CONTRACT_GAP`
+- repo_motor/scripts/session_close_observations.py
 - CI/workflows
-- .agent/runtime/events/events.jsonl editado manualmente
-- introducir `ABANDONED` sin evidencia nueva de Fase 0
-- forzar `WT-2026-239a` o `WOT-2026-013c` a `COMPLETED`
 - privada/
 - .env
+- editar eventos del bus a mano
 ## Criterios binarios
-- Existe una autoridad compartida de terminalidad irreversible que reconoce `SUPERSEDED` y `BLOCKED_FINAL` sin mapearlos a `COMPLETED`.
-- El string legacy `CLOSED` deja de actuar como pseudo-estado canonico y no se promociona a nuevo miembro de `TicketState`.
-- `bus/supervisor.py` deja de mantener una lista local divergente de no-terminalidad y consume la autoridad compartida del runtime.
-- `scripts/archive_event_bus.py`, `scripts/reconcile_ticket.py`/`scripts/preflight_reconcile.py`, `scripts/session_closeout.py`/`closeout_steps/archival.py`, `scripts/get_launcher_state.py` y `scripts/check_destino_publish_ready.py` usan esa autoridad o quedan alineados con ella.
-- Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para `SUPERSEDED`, y otra para `BLOCKED_FINAL`, sin romper el camino `COMPLETED` actual.
-- `tests/unit/test_terminal_states.py` se crea como deliverable nuevo; `tests/test_launcher_state_from_bus.py` y `tests/evals/test_eval_requeue.py` se extienden sin crear suites duplicadas.
-- `python -m pytest tests/unit/test_terminal_states.py tests/test_launcher_state_from_bus.py tests/evals/test_eval_requeue.py -q -p no:cacheprovider` termina verde.
+- `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl` termina verde.
+- Las 14 entradas con `applies_to` corrupto quedan reparadas de forma determinista, con evidencia pre/post en `execution_log.md` o reporte adjunto.
+- Los 3 errores de `domain` quedan resueltos por decision explicita de contrato: o se mapean a dominios canonicos existentes con justificacion verificable, o se amplia el enum canonico en schema+validador+tests. No se permite fallback silencioso.
+- `scripts/migrate_observations.py` mantiene backup/rollback e idempotencia; existe al menos una barrera que falla sin el fix y pasa con el fix sobre el patron `applies_to <- domain`.
+- `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider` termina verde.
 - `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
 - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
-- El fix no reabre `239a` ni `013c` como trabajo activo ni degrada el contrato de cierre exitoso.
+- El cierre deja explicito que `013o` no inserta nueva memoria portable durante este ticket; cualquier promocion posterior, incluida la observacion diferida de `013n`, queda fuera de scope hasta partir de una base `--strict` verde.
 ## STOP conditions
-- Parar si `239a` o `013c` no sostienen la premisa tras releer bus/contrato reales.
-- Parar si la unica salida segura exige redisenar de forma amplia el event schema o el lifecycle completo.
-- Parar si el fix necesita tocar `.agent/agent_controller.py`, handoff o CI.
+- Parar si aparecen mas entradas invalidas de las 17 reportadas y cambian materialmente la premisa.
+- Parar si el arreglo de datos deja de ser determinista linea-a-linea.
+- Parar si la decision de dominio no puede cerrarse sin redisenar la memoria portable completa.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-013n.md` si la unica salida segura exige un tercer estado no evidenciado (`ABANDONED`), una migracion amplia de consumidores no declarados, o cambios en controller/handoff/CI.
-
+Emitir `CG-WOT-2026-013o.md` si alguna de las 17 lineas requiere reinterpretacion semantica no verificable, si `collaboration`/`test-performance` fuerzan una reforma amplia de dominios/consumidores fuera de scope, o si la unica salida segura exige tocar `repo_motor/.agent/runtime/memory/observations.jsonl` o `repo_motor/bus/memory_loader.py`.
