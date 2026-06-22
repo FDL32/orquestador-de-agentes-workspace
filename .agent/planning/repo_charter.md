@@ -161,3 +161,13 @@ referencias publicadas.
   - el sistema sigue permitiendo backlog y contrato divergentes sin diagnostico claro;
   - la solucion exige reescribir el lifecycle completo de packet en vez de un cambio acotado en generacion/validacion.
 - related_plans: [PLAN-013J-001]
+
+
+### OBJ-013N-001 -- Estados terminales honestos no-exito
+- description: modelar `SUPERSEDED` y `BLOCKED_FINAL` como estados terminales honestos del runtime para que validadores, vistas y checks de salud no obliguen a falsear `COMPLETED` cuando el cierre correcto no es de exito.
+- success_criteria: el motor reconoce ambos estados como terminales irreversibles en las superficies operativas relevantes, sin mapearlos a `COMPLETED` ni romper el cierre canonico exitoso existente.
+- failure_modes:
+  - el fix sigue exigiendo marcar `WT-2026-239a` o `WOT-2026-013c` como `COMPLETED` para limpiar el sistema;
+  - cada consumidor conserva su propia lista local de terminalidad y reaparece drift entre bus, vistas y closeout;
+  - la solucion deriva en un redise?o amplio del lifecycle en vez de una autoridad compartida y cambios localizados.
+- related_plans: [PLAN-013N-001]

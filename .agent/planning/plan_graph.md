@@ -361,6 +361,7 @@
 | PLAN-013H-001 | archivador/cierre canonico + barreras de git real; bitacora en repo_destino | detector `archive_rename_uncommitted`, historico 011a/011h, `session_closeout.py` y reconcile solo de lectura | conflicto si otro ticket toca `archive_collaboration_artifacts.py`, `session_closeout.py`, `tests/test_archive_collaboration_artifacts.py` o `tests/test_session_closeout.py` mientras 013h cambia la semantica del archivado | serializar con tickets que toquen closeout/archivado; revalidar pruebas focales con repo git real + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 | PLAN-013I-001 | higiene de sandbox en `tests/conftest.py` + barreras de scanner/runtime; bitacora en repo_destino | atribucion 013g, cura de producto 013d read-only, triple xdist heredado, `run_pytest_safe` read-only | conflicto si otro ticket toca `tests/conftest.py`, barreras de sandbox o reabre `project_scanner`/`project_paths`/politica xdist mientras 013i acota el purge | serializar con tickets que toquen la higiene de sandbox o las barreras heredadas; revalidar focales + triple xdist x3 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 | PLAN-013J-001 | gate del backlog + tests + regla de pipeline sobre autoridad del FLT; bitacora en repo_destino | backlog vivo del destino, contrato frozen, scope gate/handoff read-only | conflicto si otro ticket toca `check_backlog_contract.py`, `prompts/orchestrator_pipeline.md`, el schema de backlog o la semantica de FLT/contract authority mientras 013j cierra la duplicidad | serializar con tickets que toquen backlog contract o la regla de autoridad del FLT; revalidar tests del gate + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
+| PLAN-013N-001 | autoridad compartida de terminalidad + consumidores de cierre/launcher/publicacion; bitacora en repo_destino | bus/runtime con deuda real en `239a` superseded y `013c` blocked-final, closeout y views read-only hoy | conflicto si otro ticket toca `state_machine`, `supervisor`, `reconcile_ticket`, `session_closeout`, launcher state o gates de publicacion mientras 013n limpia la semantica terminal no-exito | serializar con tickets que toquen lifecycle de cierre, launcher, publication gates o estado del bus; revalidar tests focales + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -477,5 +478,38 @@ Para 013i, cualquier merge con tickets que toquen `tests/conftest.py`, `tests/un
   - `backlog.md` del destino como cola viva, no como segunda fuente de verdad del packet
 
 - PLAN-013J-001: no tocar `.agent/scope_gate.py`, `scripts/pre_handoff_guard.py`, `.agent/agent_controller.py`, `scripts/check_deliverables_exist.py`, CI/workflows, `privada/` ni convertir `backlog.md` en autoridad paralela del FLT.
+- PLAN-013N-001: no tocar `.agent/agent_controller.py`, CI/workflows, `repo_destino/.agent/runtime/events/events.jsonl` a mano, ni falsear `COMPLETED` para tickets superseded/blocked-final.
 
 Para 013j, cualquier merge con tickets que toquen `scripts/check_backlog_contract.py`, `tests/unit/test_check_backlog_contract.py`, `prompts/orchestrator_pipeline.md`, el schema de `backlog.md` o la semantica de FLT/contract authority obliga a revalidar la union con `python -m pytest tests/unit/test_check_backlog_contract.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 013n, cualquier merge con tickets que toquen `bus/state_machine.py`, `bus/supervisor.py`, `scripts/reconcile_ticket.py`, `scripts/session_closeout.py`, `scripts/get_launcher_state.py`, `scripts/check_destino_publish_ready.py` o los tests focales de terminalidad obliga a revalidar `python -m pytest tests/unit/test_terminal_states.py tests/test_launcher_state_from_bus.py tests/evals/test_eval_requeue.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+
+## PLAN-013N-001 -- Estados terminales honestos no-exito
+
+- objetivo: introducir una autoridad compartida para `SUPERSEDED` y `BLOCKED_FINAL` como terminales irreversibles del runtime, propagandola a cierre, vistas y publication checks sin falsear `COMPLETED`.
+- tickets: [WOT-2026-013n]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/bus/state_machine.py
+  - repo_motor/bus/supervisor.py
+  - repo_motor/bus/builder_locks.py
+  - repo_motor/scripts/get_launcher_state.py
+  - repo_motor/scripts/archive_event_bus.py
+  - repo_motor/scripts/reconcile_ticket.py
+  - repo_motor/scripts/preflight_reconcile.py
+  - repo_motor/scripts/session_closeout.py
+  - repo_motor/scripts/closeout_steps/archival.py
+  - repo_motor/scripts/check_destino_publish_ready.py
+  - repo_motor/tests/unit/test_terminal_states.py
+  - repo_motor/tests/test_launcher_state_from_bus.py
+  - repo_motor/tests/evals/test_eval_requeue.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - enum/helper canonico de terminalidad en `bus/state_machine.py`
+  - launcher view `scripts/get_launcher_state.py`
+  - mantenimiento `scripts/reconcile_ticket.py` y `scripts/preflight_reconcile.py`
+  - closeout/archivado `scripts/session_closeout.py`, `scripts/closeout_steps/archival.py`, `scripts/archive_event_bus.py`
+  - gate `scripts/check_destino_publish_ready.py`
+- shared_dependencies:
+  - evidencia viva `WT-2026-239a` (superseded honesto) y `WOT-2026-013c` (blocked-final honesto)
+  - `bus/event_bus.py` y `scripts/manager_review_bridge.py` (read-only salvo CONTRACT_GAP)
+  - cierre canonico `READY_TO_CLOSE -> COMPLETED -> SUPERVISOR_CLOSED` (debe seguir intacto)

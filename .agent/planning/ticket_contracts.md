@@ -1705,3 +1705,54 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad “sincronizadas manualmente”; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
 - **Depende de:** -.
+
+## T-013N-001 -- Estados terminales honestos no-exito
+
+- **ticket_id:** WOT-2026-013n
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013N-001
+- **Plan-Link:** PLAN-013N-001
+- **Premise:** el motor sigue modelando la terminalidad irreversible casi solo como `COMPLETED` en el runtime compartido. Existe ademas un residuo legacy no-canonico: el string suelto `"CLOSED"` en `scripts/reconcile_ticket.py`, pero `TicketState` NO define `CLOSED` como estado valido. Hay dos casos honestos ya verificados que no son de exito pero si terminales: `WT-2026-239a` quedo rechazado con bug critico y luego superseded por hijos; `WOT-2026-013c` quedo refutado como tests-only y hoy vive como `blocked-final` contractual. Varias superficies (`bus/state_machine.py`, `bus/supervisor.py`, `scripts/reconcile_ticket.py`, `scripts/preflight_reconcile.py`, `scripts/archive_event_bus.py`, `scripts/session_closeout.py`, `scripts/check_destino_publish_ready.py`, `scripts/get_launcher_state.py`) siguen usando listas locales que no reconocen esas salidas honestas, generando ruido cosm?tico recurrente o presion a falsear `COMPLETED`.
+- **Premise Re-check (read-only):**
+  - releer `repo_destino/.agent/runtime/events/events.jsonl` para confirmar que `WT-2026-239a` se quedo en `READY_FOR_REVIEW` con evidencia viva de rechazo/supersession, no por trabajo incompleto;
+  - releer `repo_destino/.agent/planning/plan_graph.md` y `CG-WOT-2026-013c.md` para confirmar que `013c` es `blocked-final` honesto, no ticket activo rescatable;
+  - verificar en codigo que `TicketState.is_approved_or_terminal()`, `NON_TERMINAL_STATES`, `TERMINAL_STATES` locales y mapeos de launcher/publication no reconocen hoy `SUPERSEDED` ni `BLOCKED_FINAL`, y que el string legacy `CLOSED` vive fuera del enum;
+  - verificar que `check_destino_publish_ready.py` y el closeout/archivado usan heuristicas de publicable/terminal distintas y pueden divergir si se anaden estados nuevos sin autoridad comun;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** source_tickets=`WT-2026-239a, WOT-2026-013c`; motor_head=222da77; destino_head=f063692; live_bus_239a=`READY_FOR_REVIEW + MANAGER_REVIEW evidence`; plan_graph_013c=`BLOCKED-FINAL`; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `bus/state_machine.py`
+  - Builder repo_motor: `bus/supervisor.py`
+  - Builder repo_motor: `bus/builder_locks.py`
+  - Builder repo_motor: `scripts/get_launcher_state.py`
+  - Builder repo_motor: `scripts/archive_event_bus.py`
+  - Builder repo_motor: `scripts/reconcile_ticket.py`
+  - Builder repo_motor: `scripts/preflight_reconcile.py`
+  - Builder repo_motor: `scripts/session_closeout.py`
+  - Builder repo_motor: `scripts/closeout_steps/archival.py`
+  - Builder repo_motor: `scripts/check_destino_publish_ready.py`
+  - Builder repo_motor: `tests/unit/test_terminal_states.py`
+  - Builder repo_motor: `tests/test_launcher_state_from_bus.py`
+  - Builder repo_motor: `tests/evals/test_eval_requeue.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `repo_destino/.agent/collaboration/_archive/backlog_done.md`; `repo_destino/.agent/runtime/events/events.jsonl`; `repo_destino/.agent/collaboration/MANAGER_REVIEW_WT-2026-239a.md`; `repo_destino/.agent/planning/plan_graph.md`; `repo_destino/.agent/planning/contract_gaps/CG-WOT-2026-013c.md`; `scripts/collect_system_health.py`; `prompts/audit_post_change_system_health.md`; `bus/event_bus.py`; `scripts/manager_review_bridge.py`.
+- **Forbidden Surfaces:** `.agent/agent_controller.py`; CI/workflows; `repo_destino/.agent/runtime/events/events.jsonl` editado manualmente; reconciliar tickets reales a `COMPLETED` solo para silenciar vistas; introducir `ABANDONED` sin evidencia nueva de Fase 0; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):
+  - [ ] Existe una autoridad compartida de terminalidad irreversible que reconoce `SUPERSEDED` y `BLOCKED_FINAL` sin mapearlos a `COMPLETED`.
+  - [ ] El string legacy `CLOSED` deja de actuar como pseudo-estado canonico: se elimina o se colapsa hacia la autoridad canonica sin introducir `TicketState.CLOSED` nuevo.
+  - [ ] `TicketState` y sus consumidores de terminalidad (o helper comun equivalente) dejan de depender de listas locales divergentes para estos dos estados.
+  - [ ] `bus/supervisor.py` deja de redeclarar localmente la nocion de no-terminalidad y consume la autoridad compartida del runtime en vez de mantener una lista paralela.
+  - [ ] `scripts/archive_event_bus.py`, `scripts/reconcile_ticket.py`/`scripts/preflight_reconcile.py`, `scripts/session_closeout.py`/`closeout_steps/archival.py`, `scripts/get_launcher_state.py` y `scripts/check_destino_publish_ready.py` tratan esos estados como terminales honestos cuando aplique.
+  - [ ] Existe al menos una barrera de regresion que falla sin el fix y pasa con el fix para `SUPERSEDED`, y otra para `BLOCKED_FINAL`, sin romper el camino `COMPLETED` existente.
+  - [ ] `tests/unit/test_terminal_states.py` se crea como deliverable nuevo; `tests/test_launcher_state_from_bus.py` y `tests/evals/test_eval_requeue.py` se extienden sin duplicar suites paralelas.
+  - [ ] `python -m pytest tests/unit/test_terminal_states.py tests/test_launcher_state_from_bus.py tests/evals/test_eval_requeue.py -q -p no:cacheprovider` termina verde.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] El fix no reabre `239a` ni `013c` como trabajo activo ni degrada el contrato de cierre exitoso (`READY_TO_CLOSE -> COMPLETED -> SUPERVISOR_CLOSED`).
+- **Integracion cross-ticket:** serializar con cualquier ticket que toque bus, supervisor, lifecycle de cierre, closeout, launcher state o gates de publicacion. El objetivo es limpiar la semantica de terminalidad, no reescribir review/handoff ni la politica de `completed`.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el event schema completo, introducir un tercer estado no evidenciado (`ABANDONED`) para no dejar incoherencias, o tocar `.agent/agent_controller.py` / handoff / CI, emitir `CG-WOT-2026-013n.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si `WT-2026-239a` o `WOT-2026-013c` no sostienen la premisa tras releer bus/contrato reales; parar si la terminalidad no puede centralizarse sin una migracion amplia de consumers no declarados; parar si la unica forma de demostrar verde exige mutar tickets historicos reales durante la implementacion.
+- **Depende de:** -.
