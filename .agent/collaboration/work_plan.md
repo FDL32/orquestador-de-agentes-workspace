@@ -53,6 +53,8 @@ Eliminar la herencia recurrente de `archive_rename_uncommitted` en la ruta canon
 - La ruta canonica de archivado/cierre deja de heredar `archive_rename_uncommitted` al ticket siguiente, o falla cerrado en el mismo ciclo antes de dejar el limbo persistente.
 - Existe al menos una barrera con repo git real que falla sin el fix y pasa con el fix sobre el patron repetido de delete+untracked del archivado.
 - `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q` termina verde.
+- `ruff check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py` termina verde.
+- `uv run ruff format --check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py` termina verde.
 - `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
 - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
 - No se introduce auto-commit opaco ni se degrada la trazabilidad del historico archivado.

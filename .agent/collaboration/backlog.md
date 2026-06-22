@@ -45,7 +45,10 @@
 - **Objetivo:** eliminar ese limbo recurrente desde la ruta canonica de archivado/cierre sin relajar la barrera fail-closed de `011h`; el siguiente ticket no debe heredar renames pendientes como deuda oculta.
 - **Files Likely Touched:**
   - repo_motor: `scripts/archive_collaboration_artifacts.py`
-  - repo_motor: `.agent/agent_controller.py`
+  - repo_motor: `scripts/closeout_steps/archival.py`
+  - repo_motor: `scripts/session_closeout.py`
+  - repo_motor: `tests/test_archive_collaboration_artifacts.py`
+  - repo_motor: `tests/test_session_closeout.py`
   - repo_motor: `tests/test_agent_controller.py`
   - repo_motor: `tests/test_pre_handoff_guard.py`
 - **Criterios binarios:** una corrida canonica de archivado/cierre no deja `archive_rename_uncommitted` pendiente para el ticket siguiente; si el archivado no puede quedar limpio, falla cerrado en el mismo ticket con diagnostico y remediacion exactos; existe barrera FAIL-sin/PASS-con sobre el patron repetido; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
