@@ -19,6 +19,7 @@
 | WOT-2026-010m | completed | cerrado canonico 2026-06-21; quality-gates.yml gano piloto xdist non-blocking sin tocar el cierre serial canonico. |
 | WOT-2026-011c | completed | cerrado canonico 2026-06-19; spike research completado. Follow-up registrado: `WOT-2026-011j`. |
 | WOT-2026-013e | completed | cerrado canonico 2026-06-22; inventario auditable de la suite (3111 tests). Follow-ups vivos: WOT-2026-013f (poda tests/deprecated/), WOT-2026-013g (coste unknown). |
+| WOT-2026-013f | completed | cerrado canonico 2026-06-22; poda segura de `tests/deprecated/` entregada. Siguiente ticket vivo: WOT-2026-013g. |
 
 # Backlog
 

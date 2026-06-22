@@ -22,7 +22,6 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Media | WOT-2026-013f | Podar tests/deprecated/ (Goose retirado, ya fuera del runner) | motor/test-suite-prune | pending | WOT-2026-013e | session-2026-06-22-test-suite-audit-followup | - |
 | Baja | WOT-2026-013g | Diagnosticar coste no explicado de test_upgrade_path_suggestion (~60-70s) | motor/test-performance | pending | WOT-2026-013e | session-2026-06-22-test-suite-audit-followup | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
@@ -31,25 +30,6 @@
 
 > `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. De sus 4 follow-ups, solo se promueven los dos accionables de bajo riesgo: `013f` (poda limpia de `tests/deprecated/`) y `013g` (diagnostico del unico coste `unknown`). FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
-
-### WOT-2026-013f - Podar tests/deprecated/ (Goose retirado, ya fuera del runner)
-- **Prioridad:** Media
-- **Scope:** motor/test-suite-prune
-- **Estado:** pending
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013e
-- **Reactivation:** -
-- **Origen:** session-2026-06-22-test-suite-audit-followup (FU-013E-2).
-- **Problema:** `tests/deprecated/test_goose_triggers.py` y `tests/deprecated/test_goose_realworld.py` cubren Goose, motor DEPRECATED por WT-2026-254a. Ya estan excluidos del runner via `norecursedirs` en `pytest.ini`, asi que su valor de regresion es nulo y solo aportan ruido en disco.
-- **Objetivo:** retirar `tests/deprecated/` con justificacion, dejando constancia (estilo `tests/integration/RETIRED_TESTS.md`) de que la cobertura retirada es de un subsistema deprecado, no de producto vivo.
-- **Files Likely Touched:**
-  - repo_motor: `tests/deprecated/`
-  - repo_motor: `tests/integration/RETIRED_TESTS.md`
-  - repo_destino: `.agent/collaboration/execution_log.md`
-- **Read/inspect only:** repo_motor `pytest.ini`, `docs/test_performance/test_suite_audit_WOT-2026-013e.md`, `scripts/cleanup_legacy.py`, `tests/unit/test_cleanup_legacy.py`, `tests/test_goose_native_skill.py`, `tests/unit/test_ejemplo.py`
-- **Criterios binarios:** `git rm` acotado a `tests/deprecated/`; `python -m pytest tests --collect-only -q -p no:cacheprovider` mantiene 3111; `tests/integration/RETIRED_TESTS.md` documenta el retiro; `run_pytest_safe.py --level all` verde; `validate` 0/0.
-- **STOP:** si algun consumidor vivo referencia `tests/deprecated/` como fuente; si borrarlos cambia el conteo recolectado; si la justificacion exige tocar runner/producto o mezclar `test_ejemplo` / `test_goose_native_skill` / `013g`.
 
 ### WOT-2026-013g - Diagnosticar coste no explicado de test_upgrade_path_suggestion
 - **Prioridad:** Baja

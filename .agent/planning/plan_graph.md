@@ -317,6 +317,24 @@
   - `scripts/cleanup_legacy.py` y `tests/unit/test_cleanup_legacy.py` (read-only; distinguir script legacy vs tests a podar)
   - `tests/test_goose_native_skill.py` y `tests/unit/test_ejemplo.py` (read-only; fuera de scope en esta ronda)
 
+
+## PLAN-013G-001 -- Diagnostico reproducible de `test_upgrade_path_suggestion`
+
+- objetivo: producir un reporte durable que explique el coste anomalo de `test_upgrade_path_suggestion` con medicion fresca y reproducible, sin tocar test, runner ni producto.
+- tickets: [WOT-2026-013g]
+- depends_on: [WOT-2026-013e]
+- superficies_archivo:
+  - repo_motor/docs/test_performance/test_upgrade_cost_WOT-2026-013g.md
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `python -m pytest tests/unit/test_detect_version.py -q --durations=10`
+  - `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion -q --durations=10`
+  - `validate --json --project-root <repo_destino>`
+- shared_dependencies:
+  - `docs/test_performance/test_performance_baseline.md` y `test_performance_variance.md` (read-only; evidencia historica)
+  - `docs/test_performance/test_suite_audit_WOT-2026-013e.md` (read-only; origen del follow-up)
+  - `tests/unit/test_detect_version.py` (read-only; superficie analizada sin modificar)
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -339,6 +357,7 @@
 | PLAN-013D-001 | product scanner/project_paths + tests focales/fixture de sandbox; bitacora en repo_destino | `tests/sandbox/test_runtime` volatil, runner xdist read-only, invariante sandbox-dentro | conflicto si otro ticket toca `project_scanner`, `project_paths`, `tests/conftest.py` o reabre la politica xdist/default mientras 013d endurece el escaneo | serializar con tickets que toquen escaneo de proyecto, fixture de sandbox o politica xdist; revalidar triple xdist x3 + tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013E-001 | reporte durable en repo_motor + bitacora en repo_destino | docs de performance previas, runner read-only, frontera xdist cerrada, suite `tests/` | conflicto si otro ticket toca `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o reabre xdist/default mientras 013e clasifica valor/poda | serializar con tickets que toquen runner/gates/docs de performance; repetir inventario contra el HEAD final y revalidar `validate --json --project-root <repo_destino>` | no |
 | PLAN-013F-001 | retiro de `tests/deprecated/` + actualizacion de `tests/integration/RETIRED_TESTS.md`; bitacora en repo_destino | contrato `pytest.ini` read-only, follow-up `013e`, evidencia canonica `run_pytest_safe` | conflicto si otro ticket toca `pytest.ini`, `tests/integration/RETIRED_TESTS.md` o revive Goose/otros candidatos legacy mientras 013f poda el directorio excluido | serializar con tickets que toquen el runner, el ledger de tests retirados o el historico Goose; revalidar collect-only 3111 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
+| PLAN-013G-001 | reporte durable en repo_motor + bitacora en repo_destino | historial 010j/010p/013e, test focal read-only, validate canonico | conflicto si otro ticket toca `tests/unit/test_detect_version.py`, docs de performance o reabre la discusion como fix de codigo mientras 013g sigue siendo analisis | serializar con tickets que toquen ese test o docs de performance; revalidar mediciones y `validate --json --project-root <repo_destino>` al cerrar | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -356,6 +375,7 @@ state projection, pre-handoff o lifecycle runtime.
 
 - PLAN-013E-001: no tocar `tests/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `uv.lock`, CI/workflows ni `scripts/run_gates_dispatch.py`; no borrar, `xfail`, `skip` ni relajar tests; no reabrir `011e`, `010m`, `011i` ni `013d`.
 - PLAN-013F-001: no tocar `pytest.ini`, `scripts/run_pytest_safe.py`, `scripts/cleanup_legacy.py`, `tests/test_goose_native_skill.py`, `tests/unit/test_ejemplo.py`, CI/workflows ni producto fuera de `tests/deprecated/` y `tests/integration/RETIRED_TESTS.md`.
+- PLAN-013G-001: no tocar `tests/unit/test_detect_version.py`, producto Python, `scripts/run_pytest_safe.py`, `pytest.ini`, CI/workflows ni superficies fuera del reporte y `execution_log.md`.
 
 ## Merge Regression Audit
 
@@ -380,4 +400,5 @@ Nota historica 013c (BLOCKED-FINAL, ver `CG-WOT-2026-013c.md`): el aislamiento t
 Para 013d, cualquier merge con tickets que toquen `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/conftest.py` o la politica de xdist/default obliga a revalidar la union con el triple xdist (`test_upgrade_path_suggestion`, `test_scan_current_project`, `test_no_inline_ticket_regex`) en 3 corridas consecutivas, los tests focales de scanner/project_paths, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013e, cualquier merge con tickets que toquen `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o la politica xdist/default obliga a revalidar la union con el inventario final contra el HEAD mergeado, `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `validate --json --project-root <repo_destino>`.
 Para 013f, cualquier merge con tickets que toquen `pytest.ini`, `tests/integration/RETIRED_TESTS.md`, `tests/test_goose_native_skill.py` o candidatos legacy vecinos obliga a revalidar la union con `python -m pytest tests --collect-only -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+Para 013g, cualquier merge con tickets que toquen `tests/unit/test_detect_version.py`, `docs/test_performance/` o la politica del runner obliga a revalidar la union con medicion fresca comparable y `validate --json --project-root <repo_destino>`.
 

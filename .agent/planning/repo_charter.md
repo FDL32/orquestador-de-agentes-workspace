@@ -107,6 +107,16 @@ referencias publicadas.
   - se mezcla este retiro con `test_ejemplo`, `test_goose_native_skill` o el diagnostico `013g`.
 - related_plans: [PLAN-013F-001]
 
+
+### OBJ-013G-001 -- Diagnostico reproducible de coste unknown
+- description: explicar con medicion reproducible por que `test_upgrade_path_suggestion` aparece como outlier de ~60-70s pese a tener cuerpo trivial, sin tocar el test ni producto en esta ronda.
+- success_criteria: existe un reporte durable que separa hechos verificados de inferencias y atribuye el coste a una causa reproducible, o cierra explicitamente que no hay optimizacion segura con la evidencia disponible.
+- failure_modes:
+  - el analisis deriva en cambios de codigo del test o del producto;
+  - la medicion no es reproducible y aun asi se presenta una causa como hecho;
+  - se reutiliza output historico no reconciliado como sustituto de medicion fresca.
+- related_plans: [PLAN-013G-001]
+
 ## Negative Audit Checklist
 
 - [ ] El analisis modifica alguna ruta del repo_motor.

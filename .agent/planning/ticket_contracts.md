@@ -1558,3 +1558,38 @@
 - **STOP conditions:** parar si `tests/deprecated/` resulta ser fuente viva para algun consumidor canonico; parar si el collect-only post-poda ya no da 3111; parar si la unica salida verde exige tocar `pytest.ini`, `scripts/run_pytest_safe.py` o codigo fuera de las superficies declaradas.
 - **Depende de:** WOT-2026-013e (COMPLETED).
 
+
+## T-013G-001 -- Diagnosticar coste no explicado de test_upgrade_path_suggestion
+
+- **ticket_id:** WOT-2026-013g
+- **status:** frozen
+- **deliverable_type:** analysis
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013G-001
+- **Plan-Link:** PLAN-013G-001
+- **Premise:** `WOT-2026-013e` y la evidencia previa (`010j`, `010p`) dejaron a `tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion` como el unico hotspot `unknown`: aparece como outlier #2-#3 (~59-70s) pese a tener cuerpo trivial (3 asserts). La deuda correcta es medir y explicar el coste real con evidencia fresca y reproducible, sin tocar el test ni producto en este ticket.
+- **Premise Re-check (read-only):**
+  - releer `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md` y `docs/test_performance/test_suite_audit_WOT-2026-013e.md`;
+  - releer `tests/unit/test_detect_version.py` y confirmar que `test_upgrade_path_suggestion` sigue teniendo cuerpo trivial y pertenece a `TestVersionDetection`;
+  - verificar que `python -m pytest` acepta `--durations` para medicion focal aislada del archivo/clase/test;
+  - verificar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado;
+  - confirmar que el ticket sigue siendo `analysis` y que ninguna superficie de codigo entra en `Files Likely Touched`.
+- **Context Baseline Evidence:** motor_head=bc658f8; destino_head=<post-closeout-013f>; baseline_010j='59.22s'; variance_010p='69.79s / 67.91s'; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `tests/unit/test_detect_version.py`; `docs/test_performance/test_performance_baseline.md`; `docs/test_performance/test_performance_variance.md`; `docs/test_performance/test_suite_audit_WOT-2026-013e.md`; `.agent/runtime/pytest-safe/last-run.json`.
+- **Forbidden Surfaces:** `tests/unit/test_detect_version.py`; cualquier otro test; producto Python; `scripts/run_pytest_safe.py`; `pytest.ini`; CI/workflows; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] Existe un reporte durable en `repo_motor/docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`.
+  - [ ] El reporte documenta mediciones reproducibles que expliquen la mayor parte del coste observado o cierra explicitamente `sin optimizacion segura` con evidencia.
+  - [ ] El reporte separa [V] verificado de [I] inferencia en cada conclusion sustantiva.
+  - [ ] El reporte recomienda una optimizacion local concreta o descarta intervenir en este ticket, sin tocar test ni producto.
+  - [ ] `execution_log.md` registra una linea final: `Reporte docs/test_performance/test_upgrade_cost_WOT-2026-013g.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+- **Integracion cross-ticket:** consume FU-013E-3 sin reabrir `013e`, `010k` ni la familia xdist. Si la explicacion real exige editar el test o producto, devolver por `CONTRACT_GAP` y abrir ticket `code` separado.
+- **CONTRACT_GAP behavior:** si la unica forma de explicar el coste exige editar `tests/unit/test_detect_version.py` o producto, si la medicion no es reproducible entre corridas comparables, o si el deliverable deja de ser puramente analitico, emitir `CG-WOT-2026-013g.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el analisis deriva en cambios de codigo; parar si la causa solo puede expresarse como intuicion no medida; parar si la medicion depende de output historico no reconciliado en vez de evidencia fresca.
+- **Depende de:** WOT-2026-013e (COMPLETED).
+
