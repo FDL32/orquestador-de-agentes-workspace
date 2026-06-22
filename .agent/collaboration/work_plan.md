@@ -1,59 +1,64 @@
-# work_plan.md -- WOT-2026-013g
+# work_plan.md -- WOT-2026-013h
 ## Metadata
-- **ID:** WOT-2026-013g
-- **Contract ID:** T-013G-001
-- **Estado:** COMPLETED
+- **ID:** WOT-2026-013h
+- **Contract ID:** T-013H-001
+- **Estado:** APPROVED
 - **ROL activo esperado:** BUILDER
-- **deliverable_type:** analysis
+- **deliverable_type:** code
 - **Builder clarification budget:** 0
 - **delivery_authority:** repo_motor
 - **repo_motor:** <repo_motor>
 - **repo_destino:** <repo_destino> (resuelto por --project-root / AGENT_PROJECT_ROOT)
 ## Objetivo
-Explicar con medicion reproducible el coste anomalo de `tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion`, produciendo un reporte durable en `repo_motor` sin tocar el test, runner ni producto en esta ronda.
+Eliminar la herencia recurrente de `archive_rename_uncommitted` en la ruta canonica de archivado/cierre, de forma que el siguiente ticket no arranque con renames pendientes del ticket anterior y sin introducir auto-commit opaco de artefactos historicos.
 ## Non-goals
-- No tocar `tests/unit/test_detect_version.py`.
-- No tocar producto Python, `scripts/run_pytest_safe.py` ni `pytest.ini`.
-- No mezclar el ticket con una optimizacion code de `010k` ni con follow-ups adyacentes.
-- No tocar CI/workflows ni otras familias de tests.
+- No auto-commitear `STRATEGY_` / `AUDIT_` archivados desde el archivador.
+- No relajar `archive_rename_uncommitted` ni convertir el closeout en pass-open.
+- No tocar `scripts/run_pytest_safe.py`, CI/workflows, xdist ni producto ajeno al closeout.
+- No reabrir `013g`; el hallazgo de coste ya esta cerrado y solo actua como evidencia disparadora.
 ## Premisas verificadas antes de Builder
-- `010j` y `010p` ya documentaron a `test_upgrade_path_suggestion` como outlier #2-#3 (~59-70s) sin causa explicada.
-- `013e` lo clasifico como el unico hotspot `unknown` y lo promovio a follow-up analitico (`FU-013E-3`).
-- El cuerpo visible del test sigue siendo trivial (3 asserts sobre `suggest_upgrade_path`), asi que el coste probable esta fuera de la logica local del cuerpo.
-- `validate --json --project-root <repo_destino>` estaba en 0 errors / 0 warnings antes del bootstrap de `013g`.
+- `011a` y `011h` ya endurecieron barreras fail-closed, pero la deuda estructural del archivado persiste.
+- `013e`, `013f` y `013g` dejaron evidencia de reconcile manual repetido por `archive_rename_uncommitted`.
+- El detector canonico del limbo vive en `scripts/delivery_hygiene_check.py`; no hace falta un segundo guard.
+- El problema correcto pertenece a `archive_collaboration_artifacts.py` y/o a su closeout caller, no a xdist ni al runner.
 ## Decision Arquitectonica
-`013g` es un ticket de `analysis`: el deliverable es un reporte durable en `docs/test_performance/` mas evidencia operacional en `execution_log.md`. Las mediciones pueden ejecutar pytest focal como instrumento de investigacion, pero NO convierten el ticket en cambio de codigo ni autorizan tocar el test o el producto.
+`013h` es un ticket `code` de higiene de closeout. El fix debe atacar la ruta real de archivado/cierre con repo git real y mantener una sola fuente de verdad para el limbo (`archive_rename_uncommitted`). `reconcile_ticket.py` sigue siendo recuperacion, no cierre normal.
 ## Files Likely Touched
 ### repo_motor
-- docs/test_performance/test_upgrade_cost_WOT-2026-013g.md
+- scripts/archive_collaboration_artifacts.py
+- scripts/closeout_steps/archival.py
+- scripts/session_closeout.py
+- tests/test_archive_collaboration_artifacts.py
+- tests/test_session_closeout.py
+- tests/test_agent_controller.py
+- tests/test_pre_handoff_guard.py
 ### repo_destino
 - .agent/collaboration/execution_log.md
 ## Read/inspect only
-- tests/unit/test_detect_version.py
-- docs/test_performance/test_performance_baseline.md
-- docs/test_performance/test_performance_variance.md
-- docs/test_performance/test_suite_audit_WOT-2026-013e.md
-- .agent/runtime/pytest-safe/last-run.json
+- scripts/delivery_hygiene_check.py
+- scripts/reconcile_ticket.py
+- tests/test_mark_ready_motor_scope.py
+- docs/test_performance/test_upgrade_cost_WOT-2026-013g.md
+- .agent/runtime/memory/UPSTREAM_LEARNINGS.md
 ## Forbidden Surfaces
-- tests/unit/test_detect_version.py
-- cualquier otro test
-- producto Python
+- auto-commit del archivador
+- relajacion o renombre del detector `archive_rename_uncommitted`
 - scripts/run_pytest_safe.py
-- pytest.ini
 - CI/workflows
+- tickets cerrados `011e`, `010m`, `011i`, `013d`, `013g`
 - privada/
 - .env
 - eventos del bus escritos manualmente
 ## Criterios binarios
-- Existe un reporte durable en `repo_motor/docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`.
-- El reporte documenta mediciones reproducibles que expliquen la mayor parte del coste observado o cierra explicitamente `sin optimizacion segura` con evidencia.
-- El reporte separa [V] verificado de [I] inferencia en cada conclusion sustantiva.
-- El reporte recomienda una optimizacion local concreta o descarta intervenir en este ticket, sin tocar test ni producto.
-- `execution_log.md` registra una linea final: `Reporte docs/test_performance/test_upgrade_cost_WOT-2026-013g.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
+- La ruta canonica de archivado/cierre deja de heredar `archive_rename_uncommitted` al ticket siguiente, o falla cerrado en el mismo ciclo antes de dejar el limbo persistente.
+- Existe al menos una barrera con repo git real que falla sin el fix y pasa con el fix sobre el patron repetido de delete+untracked del archivado.
+- `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q` termina verde.
+- `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
 - `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+- No se introduce auto-commit opaco ni se degrada la trazabilidad del historico archivado.
 ## STOP conditions
-- Parar si la explicacion real exige editar `tests/unit/test_detect_version.py` o producto.
-- Parar si la causa solo puede expresarse como intuicion no medida.
-- Parar si la medicion depende de output historico no reconciliado en vez de evidencia fresca comparable.
+- Parar si la unica solucion segura exige auto-commitear historicos.
+- Parar si la reproduccion real deja de concentrarse en archivado/cierre y pide ampliar scope a runner, CI o producto.
+- Parar si la unica via verde rompe la trazabilidad de `STRATEGY_` / `AUDIT_` archivados.
 ## CONTRACT_GAP
-Emitir `CG-WOT-2026-013g.md` si la unica forma de explicar el coste exige editar el test o producto, si la medicion no es reproducible entre corridas comparables, o si el deliverable deja de ser puramente analitico.
+Emitir `CG-WOT-2026-013h.md` si la unica salida segura exige auto-commit, rediseno mayor del lifecycle de cierre o superficies fuera del archivado/cierre declaradas.

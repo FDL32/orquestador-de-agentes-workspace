@@ -358,6 +358,7 @@
 | PLAN-013E-001 | reporte durable en repo_motor + bitacora en repo_destino | docs de performance previas, runner read-only, frontera xdist cerrada, suite `tests/` | conflicto si otro ticket toca `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o reabre xdist/default mientras 013e clasifica valor/poda | serializar con tickets que toquen runner/gates/docs de performance; repetir inventario contra el HEAD final y revalidar `validate --json --project-root <repo_destino>` | no |
 | PLAN-013F-001 | retiro de `tests/deprecated/` + actualizacion de `tests/integration/RETIRED_TESTS.md`; bitacora en repo_destino | contrato `pytest.ini` read-only, follow-up `013e`, evidencia canonica `run_pytest_safe` | conflicto si otro ticket toca `pytest.ini`, `tests/integration/RETIRED_TESTS.md` o revive Goose/otros candidatos legacy mientras 013f poda el directorio excluido | serializar con tickets que toquen el runner, el ledger de tests retirados o el historico Goose; revalidar collect-only 3111 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 | PLAN-013G-001 | reporte durable en repo_motor + bitacora en repo_destino | historial 010j/010p/013e, test focal read-only, validate canonico | conflicto si otro ticket toca `tests/unit/test_detect_version.py`, docs de performance o reabre la discusion como fix de codigo mientras 013g sigue siendo analisis | serializar con tickets que toquen ese test o docs de performance; revalidar mediciones y `validate --json --project-root <repo_destino>` al cerrar | no |
+| PLAN-013H-001 | archivador/cierre canonico + barreras de git real; bitacora en repo_destino | detector `archive_rename_uncommitted`, historico 011a/011h, `session_closeout.py` y reconcile solo de lectura | conflicto si otro ticket toca `archive_collaboration_artifacts.py`, `session_closeout.py`, `tests/test_archive_collaboration_artifacts.py` o `tests/test_session_closeout.py` mientras 013h cambia la semantica del archivado | serializar con tickets que toquen closeout/archivado; revalidar pruebas focales con repo git real + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -376,6 +377,7 @@ state projection, pre-handoff o lifecycle runtime.
 - PLAN-013E-001: no tocar `tests/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `uv.lock`, CI/workflows ni `scripts/run_gates_dispatch.py`; no borrar, `xfail`, `skip` ni relajar tests; no reabrir `011e`, `010m`, `011i` ni `013d`.
 - PLAN-013F-001: no tocar `pytest.ini`, `scripts/run_pytest_safe.py`, `scripts/cleanup_legacy.py`, `tests/test_goose_native_skill.py`, `tests/unit/test_ejemplo.py`, CI/workflows ni producto fuera de `tests/deprecated/` y `tests/integration/RETIRED_TESTS.md`.
 - PLAN-013G-001: no tocar `tests/unit/test_detect_version.py`, producto Python, `scripts/run_pytest_safe.py`, `pytest.ini`, CI/workflows ni superficies fuera del reporte y `execution_log.md`.
+- PLAN-013H-001: no auto-commitear artefactos historicos desde el archivador; no relajar `archive_rename_uncommitted`; no tocar `scripts/run_pytest_safe.py`, CI/workflows, `privada/` ni tickets cerrados fuera de la familia de closeout/archivado.
 
 ## Merge Regression Audit
 
@@ -401,4 +403,29 @@ Para 013d, cualquier merge con tickets que toquen `scripts/project_scanner.py`, 
 Para 013e, cualquier merge con tickets que toquen `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o la politica xdist/default obliga a revalidar la union con el inventario final contra el HEAD mergeado, `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `validate --json --project-root <repo_destino>`.
 Para 013f, cualquier merge con tickets que toquen `pytest.ini`, `tests/integration/RETIRED_TESTS.md`, `tests/test_goose_native_skill.py` o candidatos legacy vecinos obliga a revalidar la union con `python -m pytest tests --collect-only -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013g, cualquier merge con tickets que toquen `tests/unit/test_detect_version.py`, `docs/test_performance/` o la politica del runner obliga a revalidar la union con medicion fresca comparable y `validate --json --project-root <repo_destino>`.
+Para 013h, cualquier merge con tickets que toquen `scripts/archive_collaboration_artifacts.py`, `scripts/session_closeout.py`, `scripts/closeout_steps/archival.py`, `tests/test_archive_collaboration_artifacts.py` o `tests/test_session_closeout.py` obliga a revalidar la union con las pruebas focales de archivado/cierre sobre repo git real, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 
+
+## PLAN-013H-001 -- Cierre sin limbo del archivado canonico
+
+- objetivo: eliminar la herencia recurrente de `archive_rename_uncommitted` en la ruta real de archivado/cierre, sin auto-commitear historicos y sin relajar las barreras fail-closed existentes.
+- tickets: [WOT-2026-013h]
+- depends_on: [WOT-2026-011h, WOT-2026-013g]
+- superficies_archivo:
+  - repo_motor/scripts/archive_collaboration_artifacts.py
+  - repo_motor/scripts/closeout_steps/archival.py
+  - repo_motor/scripts/session_closeout.py
+  - repo_motor/tests/test_archive_collaboration_artifacts.py
+  - repo_motor/tests/test_session_closeout.py
+  - repo_motor/tests/test_agent_controller.py
+  - repo_motor/tests/test_pre_handoff_guard.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `archive_collaboration_artifacts.py`
+  - `session_closeout.py`
+  - `scripts.closeout_steps.archival.step_archive_collaboration()`
+  - razon estable `archive_rename_uncommitted`
+- shared_dependencies:
+  - `scripts/delivery_hygiene_check.py` (read-only; detector canonico del limbo)
+  - `.agent/agent_controller.py` y `--mark-ready` (read-only salvo evidencia contraria; `011h` ya cubrio ese frente)
+  - `scripts/reconcile_ticket.py` (read-only; herramienta de recuperacion, no cierre normal)

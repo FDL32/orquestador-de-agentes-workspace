@@ -117,6 +117,16 @@ referencias publicadas.
   - se reutiliza output historico no reconciliado como sustituto de medicion fresca.
 - related_plans: [PLAN-013G-001]
 
+
+### OBJ-013H-001 -- Cierre sin limbo de archivado
+- description: eliminar la herencia recurrente de renames sin commitear que deja el archivado canonico de tickets cerrados, sin auto-commitear historicos ni debilitar las barreras fail-closed existentes.
+- success_criteria: el closeout/archivado del ticket deja el arbol limpio o falla cerrado en el mismo ciclo con diagnostico exacto; el siguiente ticket no hereda `archive_rename_uncommitted`.
+- failure_modes:
+  - el fix solo mueve el problema de `mark-ready` a `session-close`;
+  - el archivador sigue produciendo `D old + ?? new` y exige reconcile manual en el ticket siguiente;
+  - la unica salida verde resulta ser auto-commitear historicos sin control del Manager.
+- related_plans: [PLAN-013H-001]
+
 ## Negative Audit Checklist
 
 - [ ] El analisis modifica alguna ruta del repo_motor.

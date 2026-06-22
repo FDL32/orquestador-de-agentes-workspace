@@ -1593,3 +1593,41 @@
 - **STOP conditions:** parar si el analisis deriva en cambios de codigo; parar si la causa solo puede expresarse como intuicion no medida; parar si la medicion depende de output historico no reconciliado en vez de evidencia fresca.
 - **Depende de:** WOT-2026-013e (COMPLETED).
 
+
+## T-013H-001 -- Eliminar renames sin commitear del archivado canonico
+
+- **ticket_id:** WOT-2026-013h
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013H-001
+- **Plan-Link:** PLAN-013H-001
+- **Premise:** `011a` y `011h` ya endurecieron las barreras fail-closed alrededor de `archive_rename_uncommitted`, pero la deuda estructural persiste en la ruta de archivado/cierre: tras `013e`, `013f` y `013g` el siguiente ciclo siguio heredando el limbo `D old + ?? new` y exigio reconcile manual en `repo_destino`. La solucion correcta pertenece al archivado canonico y su closeout, no a reabrir xdist, producto ni a relajar los guards.
+- **Premise Re-check (read-only):**
+  - releer `scripts/archive_collaboration_artifacts.py`, `scripts/closeout_steps/archival.py`, `scripts/session_closeout.py`, `.agent/agent_controller.py` y `scripts/delivery_hygiene_check.py`;
+  - releer `tests/test_archive_collaboration_artifacts.py`, `tests/test_session_closeout.py`, `tests/test_agent_controller.py` y `tests/test_pre_handoff_guard.py`;
+  - confirmar en el historico reciente del `repo_destino` que `013e`, `013f` y `013g` necesitaron reconcile manual del archivado (`archive_rename_uncommitted`);
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del handoff y dejar constancia del estado.
+- **Context Baseline Evidence:** source_commits=`4eb0fbb -> bc658f8 -> cf5a4bc`; repeated_manual_reconcile=`013e, 013f, 013g`; previous_barriers=`011a closeout fail-closed`, `011h mark-ready fail-closed`; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/archive_collaboration_artifacts.py`
+  - Builder repo_motor: `scripts/closeout_steps/archival.py`
+  - Builder repo_motor: `scripts/session_closeout.py`
+  - Builder repo_motor: `tests/test_archive_collaboration_artifacts.py`
+  - Builder repo_motor: `tests/test_session_closeout.py`
+  - Builder repo_motor: `tests/test_agent_controller.py`
+  - Builder repo_motor: `tests/test_pre_handoff_guard.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/delivery_hygiene_check.py`; `scripts/reconcile_ticket.py`; `tests/test_mark_ready_motor_scope.py`; `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md`; `.agent/runtime/memory/UPSTREAM_LEARNINGS.md`.
+- **Forbidden Surfaces:** auto-commitear artefactos historicos desde el archivador; relajar o borrar la razon estable `archive_rename_uncommitted`; `scripts/run_pytest_safe.py`; CI/workflows; tickets cerrados `011e`/`010m`/`011i`/`013d`/`013g`; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] La ruta canonica de archivado/cierre deja de heredar `archive_rename_uncommitted` al ticket siguiente, o falla cerrado en el mismo ciclo antes de dejar el limbo persistente.
+  - [ ] Existe al menos una barrera con repo git real que falla sin el fix y pasa con el fix sobre el patron repetido de delete+untracked del archivado.
+  - [ ] `tests/test_archive_collaboration_artifacts.py`, `tests/test_session_closeout.py`, `tests/test_agent_controller.py` y `tests/test_pre_handoff_guard.py` cubren la semantica final sin auto-commit oculto.
+  - [ ] La remediacion mantiene la trazabilidad de `STRATEGY_` / `AUDIT_` archivados y no convierte el cierre en pass-open.
+  - [ ] `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q`, `ruff` sobre Python tocado, `uv run ruff format --check` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Integracion cross-ticket:** `013h` sucede a `013g` y refina la deuda historica detectada ya en `010u`/`011a`/`011h`; no reabre `013g`, no toca la familia xdist y no sustituye el reconcile manual por auto-commit opaco.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commitear historicos, reescribir la semantica de cierre completa o tocar superficies fuera del archivado/cierre declaradas, emitir `CG-WOT-2026-013h.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si la reproduccion real deja de concentrarse en `archive_collaboration_artifacts.py` / closeout y pasa a otra deuda ajena; parar si la unica via verde rompe la trazabilidad de los artefactos archivados; parar si la solucion exige editar el bus a mano o introducir un cierre pass-open.
+- **Depende de:** WOT-2026-011h (COMPLETED); WOT-2026-013g (COMPLETED).
