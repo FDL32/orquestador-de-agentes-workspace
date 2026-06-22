@@ -1714,7 +1714,7 @@
 - **delivery_authority:** repo_motor
 - **Objective-Link:** OBJ-013N-001
 - **Plan-Link:** PLAN-013N-001
-- **Premise:** el motor sigue modelando la terminalidad irreversible casi solo como `COMPLETED` en el runtime compartido. Existe ademas un residuo legacy no-canonico: el string suelto `"CLOSED"` en `scripts/reconcile_ticket.py`, pero `TicketState` NO define `CLOSED` como estado valido. Hay dos casos honestos ya verificados que no son de exito pero si terminales: `WT-2026-239a` quedo rechazado con bug critico y luego superseded por hijos; `WOT-2026-013c` quedo refutado como tests-only y hoy vive como `blocked-final` contractual. Varias superficies (`bus/state_machine.py`, `bus/supervisor.py`, `scripts/reconcile_ticket.py`, `scripts/preflight_reconcile.py`, `scripts/archive_event_bus.py`, `scripts/session_closeout.py`, `scripts/check_destino_publish_ready.py`, `scripts/get_launcher_state.py`) siguen usando listas locales que no reconocen esas salidas honestas, generando ruido cosm?tico recurrente o presion a falsear `COMPLETED`.
+- **Premise:** el motor sigue modelando la terminalidad irreversible casi solo como `COMPLETED` en el runtime compartido. Existe ademas un residuo legacy no-canonico: el string suelto `"CLOSED"` en `scripts/reconcile_ticket.py`, pero `TicketState` NO define `CLOSED` como estado valido. Hay dos casos honestos ya verificados que no son de exito pero si terminales: `WT-2026-239a` quedo rechazado con bug critico y luego superseded por hijos; `WOT-2026-013c` quedo refutado como tests-only y hoy vive como `blocked-final` contractual. Varias superficies (`bus/state_machine.py`, `bus/supervisor.py`, `scripts/reconcile_ticket.py`, `scripts/preflight_reconcile.py`, `scripts/archive_event_bus.py`, `scripts/session_closeout.py`, `scripts/check_destino_publish_ready.py`, `scripts/get_launcher_state.py`) siguen usando listas locales que no reconocen esas salidas honestas, generando ruido cosmetico recurrente o presion a falsear `COMPLETED`.
 - **Premise Re-check (read-only):**
   - releer `repo_destino/.agent/runtime/events/events.jsonl` para confirmar que `WT-2026-239a` se quedo en `READY_FOR_REVIEW` con evidencia viva de rechazo/supersession, no por trabajo incompleto;
   - releer `repo_destino/.agent/planning/plan_graph.md` y `CG-WOT-2026-013c.md` para confirmar que `013c` es `blocked-final` honesto, no ticket activo rescatable;
@@ -1756,3 +1756,45 @@
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si `WT-2026-239a` o `WOT-2026-013c` no sostienen la premisa tras releer bus/contrato reales; parar si la terminalidad no puede centralizarse sin una migracion amplia de consumers no declarados; parar si la unica forma de demostrar verde exige mutar tickets historicos reales durante la implementacion.
 - **Depende de:** -.
+
+## T-013O-001 -- Saneamiento estricto de observations.jsonl portable
+
+- **ticket_id:** WOT-2026-013o
+- **status:** frozen
+- **deliverable_type:** mixed
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013O-001
+- **Plan-Link:** PLAN-013O-001
+- **Premise:** `repo_destino/.agent/runtime/memory/observations.jsonl` falla `python scripts/validate_observations.py --strict --file <obs>` con 17 errores verificados. El diagnostico correcto tiene dos clases distintas: 14 entradas tienen corrupcion de datos (`applies_to` contiene etiquetas que son claramente `domain`, como `review-quality`, `planning`, `supervisor`, `preflight`), y 3 entradas usan valores de `domain` fuera del enum canonico (`collaboration`, `test-performance`). Ya existe un seam de migracion (`scripts/migrate_observations.py` + `tests/test_migration_bootstrap.py`), asi que el trabajo NO es inventar migracion desde cero sino reconciliar datos vivos, validador estricto y decision de contrato sobre dominios antes de seguir promoviendo memoria portable.
+- **Premise Re-check (read-only):**
+  - ejecutar `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl` y conservar el conteo/lineas exactas de error;
+  - releer `scripts/migrate_observations.py`, `scripts/validate_observations.py`, `skills/_shared/ap-schema.md`, `bus/memory_loader.py` y `scripts/memory_consolidate.py`;
+  - releer `tests/test_migration_bootstrap.py` y `tests/unit/test_validate_observations.py` para fijar la barrera existente;
+  - separar con evidencia las 14 lineas de corrupcion de datos de las 3 lineas de posible decision de contrato (`collaboration`, `test-performance`);
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** motor_head=f48191f; destino_head=85b76cb; validate_result=0 errors / 0 warnings; strict_validate_errors=17; split=`14 applies_to-corrupt + 3 domain-contract`; existing_migrator=`scripts/migrate_observations.py`; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/migrate_observations.py`
+  - Builder repo_motor: `scripts/validate_observations.py`
+  - Builder repo_motor: `skills/_shared/ap-schema.md`
+  - Builder repo_motor: `tests/test_migration_bootstrap.py`
+  - Builder repo_motor: `tests/unit/test_validate_observations.py`
+  - Builder repo_destino: `.agent/runtime/memory/observations.jsonl`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `bus/memory_loader.py`; `scripts/memory_consolidate.py`; `prompts/memory_upload.md`; `.agent/runtime/memory/MEMORY.md`; `.agent/runtime/memory/memory_profile.md`; `.agent/audits/system_health/general_audit_20260622_1449/07_adversarial_review.md`.
+- **Forbidden Surfaces:** `repo_motor/.agent/runtime/memory/observations.jsonl`; `repo_destino/.agent/runtime/memory/MEMORY.md`; `repo_destino/.agent/runtime/memory/memory_profile.md`; `repo_destino/.agent/runtime/memory/memory_rules.md`; `bus/memory_loader.py` salvo `CONTRACT_GAP`; `scripts/session_close_observations.py`; CI/workflows; `privada/`; `.env`; editar a mano eventos del bus; insertar nueva observacion portable antes de dejar `observations.jsonl` en verde estricto.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl` termina verde.
+  - [ ] Las 14 entradas con `applies_to` corrupto quedan reparadas de forma determinista, con evidencia pre/post en `execution_log.md` o reporte adjunto.
+  - [ ] Los 3 errores de `domain` quedan resueltos por decision explicita de contrato: o se mapean a dominios canonicos existentes con justificacion verificable, o se amplia el enum canonico en schema+validador+tests. No se permite fallback silencioso.
+  - [ ] `scripts/migrate_observations.py` mantiene backup/rollback e idempotencia; existe al menos una barrera que falla sin el fix y pasa con el fix sobre el patron `applies_to <- domain`.
+  - [ ] `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider` termina verde.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] La observacion diferida de `013n` se deja explicitamente `inserted` o `deferred` solo DESPUES del verde estricto, con razon auditable.
+- **Integracion cross-ticket:** serializar con cualquier ticket que toque `validate_observations.py`, `migrate_observations.py`, `ap-schema.md`, `memory_consolidate.py` o memorias portables. El objetivo es reparar la base y el contrato, no abrir una reforma general de taxonomia o tocar memoria del motor.
+- **CONTRACT_GAP behavior:** si alguna de las 17 lineas requiere reinterpretacion semantica no verificable, si `collaboration`/`test-performance` fuerzan una reforma amplia de dominios/consumidores fuera de scope, o si la unica salida segura exige tocar `repo_motor/.agent/runtime/memory/observations.jsonl` o `bus/memory_loader.py`, emitir `CG-WOT-2026-013o.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si aparecen mas entradas invalidas de las 17 reportadas y cambian materialmente la premisa; parar si el arreglo de datos deja de ser determinista linea-a-linea; parar si la decision de dominio no puede cerrarse sin redisenar la memoria portable completa.
+- **Depende de:** WOT-2026-013n (COMPLETED).
+

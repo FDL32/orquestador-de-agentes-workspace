@@ -22,7 +22,7 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013n | Estados terminales honestos no-exito | motor/state-lifecycle | pending | - | session-2026-06-22-terminal-cleanup | - |
+| Alta | WOT-2026-013o | Saneamiento estricto de observations.jsonl portable | motor/memory-schema | pending | - | session-2026-06-22-memory-upload | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -30,23 +30,23 @@
 
 ## Fichas detalladas (tickets vivos)
 
-> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. Quedan vivos solo dos follow-ups, ambos DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace): `013k` (consolidacion de notifications_* versionado) y `013l` (retencion de runtime gitignored). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. Nuevo follow-up vivo: `013o`, que debe dejar `observations.jsonl` en `--strict` verde antes de promover nuevas memorias portables. Quedan vivos solo dos follow-ups diferidos de higiene local (`013k`, `013l`) mas el follow-up activo `013o`; `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013n - Estados terminales honestos no-exito
+### WOT-2026-013o - Saneamiento estricto de observations.jsonl portable
 - **Prioridad:** Alta
-- **Scope:** motor/state-lifecycle
+- **Scope:** motor/memory-schema
 - **Estado:** pending
-- **deliverable_type:** code
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** -
 - **Reactivation:** -
-- **Origen:** session-2026-06-22-terminal-cleanup.
-- **Problema:** el runtime del motor sigue tratando `COMPLETED`/`CLOSED` como unica terminalidad canonica en varias superficies. Resultado: `WT-2026-239a` (superseded honesto) y `WOT-2026-013c` (blocked-final honesto) quedan visualmente no-terminales o exigen reconcile a `COMPLETED`, que seria falso verde.
-- **Objetivo:** introducir autoridad compartida para estados terminales no-exito (`SUPERSEDED`, `BLOCKED_FINAL`) y propagarla a validadores, vistas y checks de cierre/publicacion sin reescribir el lifecycle de exito existente.
-- **Superficie (resumen, no FLT autoritativo):** estado compartido del bus + consumidores de terminalidad (`supervisor`, `reconcile`, `session-close`, `archive_event_bus`, launcher/publication views) y sus barreras focales.
-- **Criterios binarios:** existen estados terminales honestos no-exito reconocidos por el motor; no hace falta forzar `COMPLETED` para limpiar `239a`/`013c`; `validate` queda verde y el flujo `COMPLETED` actual no regresa.
-- **STOP:** si la unica salida segura exige introducir una tercera semantica no verificada (`ABANDONED`) o redise?ar de forma amplia el lifecycle/event schema; si los consumidores relevantes no pueden converger hacia una autoridad comun pequena.
+- **Origen:** session-2026-06-22-memory-upload.
+- **Problema:** `observations.jsonl` del `repo_destino` falla `python scripts/validate_observations.py --strict --file <obs>` con 17 errores verificados. No es un unico problema: 14 entradas tienen corrupcion de datos (`applies_to` contiene valores de `domain` como `planning`, `supervisor`, `preflight`), mientras 3 entradas usan dominios fuera del enum canonico (`collaboration`, `test-performance`). La observacion nueva de `013n` sobre seams duplicados esta bien redactada y seria valida por si sola, pero no conviene escribir memoria portable nueva sobre una base que hoy rompe el contrato estricto.
+- **Objetivo:** dejar `observations.jsonl` en `--strict` verde separando explicitamente (A) reparacion determinista de datos para los 14 `applies_to` cruzados y (B) decision de contrato para `collaboration` y `test-performance` (mapearlos a dominios canonicos o ampliar el enum con barreras y docs). Una vez verde, decidir de forma auditable si se inserta la observacion diferida de `013n`.
+- **Superficie (resumen, no FLT autoritativo):** migrador/validador/schema del motor (`migrate_observations.py`, `validate_observations.py`, `ap-schema.md` y tests) + `repo_destino/.agent/runtime/memory/observations.jsonl`; reutilizar el migrador existente en vez de bypass manual.
+- **Criterios binarios:** `observations.jsonl` queda verde en `--strict`; los 14 errores de datos se corrigen con evidencia linea-a-linea; los 3 errores de dominio quedan resueltos por decision explicita de contrato (no por fallback silencioso); si la observacion diferida de `013n` se inserta, entra solo despues del verde estricto y mantiene el archivo valido.
+- **STOP:** si alguna de las 17 lineas no puede repararse sin reinterpretacion semantica no verificable; si la decision de dominios obliga a redisenar la taxonomia completa de memoria; si el fix exige tocar memorias portables del motor (`repo_motor/.agent/runtime/memory/observations.jsonl`) en la misma ronda.
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media

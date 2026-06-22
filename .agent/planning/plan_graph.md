@@ -362,6 +362,8 @@
 | PLAN-013I-001 | higiene de sandbox en `tests/conftest.py` + barreras de scanner/runtime; bitacora en repo_destino | atribucion 013g, cura de producto 013d read-only, triple xdist heredado, `run_pytest_safe` read-only | conflicto si otro ticket toca `tests/conftest.py`, barreras de sandbox o reabre `project_scanner`/`project_paths`/politica xdist mientras 013i acota el purge | serializar con tickets que toquen la higiene de sandbox o las barreras heredadas; revalidar focales + triple xdist x3 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 | PLAN-013J-001 | gate del backlog + tests + regla de pipeline sobre autoridad del FLT; bitacora en repo_destino | backlog vivo del destino, contrato frozen, scope gate/handoff read-only | conflicto si otro ticket toca `check_backlog_contract.py`, `prompts/orchestrator_pipeline.md`, el schema de backlog o la semantica de FLT/contract authority mientras 013j cierra la duplicidad | serializar con tickets que toquen backlog contract o la regla de autoridad del FLT; revalidar tests del gate + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
 | PLAN-013N-001 | autoridad compartida de terminalidad + consumidores de cierre/launcher/publicacion; bitacora en repo_destino | bus/runtime con deuda real en `239a` superseded y `013c` blocked-final, closeout y views read-only hoy | conflicto si otro ticket toca `state_machine`, `supervisor`, `reconcile_ticket`, `session_closeout`, launcher state o gates de publicacion mientras 013n limpia la semantica terminal no-exito | serializar con tickets que toquen lifecycle de cierre, launcher, publication gates o estado del bus; revalidar tests focales + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` al cerrar | no |
+| PLAN-013O-001 | migrador/validador/schema de observaciones + observations portable del destino; bitacora en repo_destino | `validate_observations.py`, `migrate_observations.py`, `ap-schema.md`, `memory_consolidate.py` y el contrato de memoria portable | conflicto si otro ticket toca schema/validator/migrator o escribe observaciones nuevas mientras 013o sanea la base; riesgo de mezclar corrupcion de datos con decision de contrato de dominios | serializar con tickets de memoria portable; revalidar `validate_observations.py --strict`, tests focales, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>` al cerrar | no |
+
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -513,3 +515,30 @@ Para 013n, cualquier merge con tickets que toquen `bus/state_machine.py`, `bus/s
   - evidencia viva `WT-2026-239a` (superseded honesto) y `WOT-2026-013c` (blocked-final honesto)
   - `bus/event_bus.py` y `scripts/manager_review_bridge.py` (read-only salvo CONTRACT_GAP)
   - cierre canonico `READY_TO_CLOSE -> COMPLETED -> SUPERVISOR_CLOSED` (debe seguir intacto)
+
+## PLAN-013O-001 -- Verde estricto para observations portable antes de nuevas memorias
+
+- objetivo: dejar `repo_destino/.agent/runtime/memory/observations.jsonl` en `--strict` verde separando reparacion determinista de datos (`applies_to` cruzado) de la decision de contrato sobre dominios (`collaboration`, `test-performance`), reutilizando el migrador existente en vez de bypass manual.
+- tickets: [WOT-2026-013o]
+- depends_on: [WOT-2026-013n]
+- superficies_archivo:
+  - repo_motor/scripts/migrate_observations.py
+  - repo_motor/scripts/validate_observations.py
+  - repo_motor/skills/_shared/ap-schema.md
+  - repo_motor/tests/test_migration_bootstrap.py
+  - repo_motor/tests/unit/test_validate_observations.py
+  - repo_destino/.agent/runtime/memory/observations.jsonl
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl`
+  - `python scripts/migrate_observations.py --dry-run [--file <obs>]`
+  - `python scripts/migrate_observations.py --apply [--file <obs>]`
+- shared_dependencies:
+  - `bus/memory_loader.py` y `scripts/memory_consolidate.py` (read-only; consumidores reales de la base)
+  - `prompts/memory_upload.md` (read-only; contrato de no promover memoria portable sobre base inconsistente)
+  - la observacion diferida de `013n` como prueba final de que la via de promotion portable vuelve a estar sana
+
+
+- PLAN-013O-001: no tocar `repo_motor/.agent/runtime/memory/observations.jsonl`, `repo_destino/.agent/runtime/memory/MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `bus/memory_loader.py` (salvo CONTRACT_GAP), `scripts/session_close_observations.py`, CI/workflows ni insertar observaciones nuevas antes del verde estricto.
+
+Para 013o, cualquier merge con tickets que toquen `scripts/migrate_observations.py`, `scripts/validate_observations.py`, `skills/_shared/ap-schema.md`, `scripts/memory_consolidate.py` o `repo_destino/.agent/runtime/memory/observations.jsonl` obliga a revalidar la union con `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl`, `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
