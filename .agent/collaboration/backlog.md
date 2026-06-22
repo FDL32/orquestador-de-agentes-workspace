@@ -22,58 +22,27 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Media | WOT-2026-013j | Reconciliar duplicidad de FLT entre backlog.md y contrato frozen | motor/backlog-contract-drift | pending | - | session-2026-06-22-post-013i-review | - |
-| Alta | WOT-2026-013m | overall_status del closeout debe respetar blocking=False | motor/session-closeout | pending | - | session-2026-06-22-close-audit | - |
-| Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | pending | - | session-2026-06-22-close-audit | - |
-| Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | pending | - | session-2026-06-22-close-audit | - |
+| Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
+| Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> Familia 013e-013i CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` del archivado (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only (latencia recurrente ~39s -> ~0s en estado estable). FU-013E-1 y FU-013E-4 NO se promueven (FU-4 tocaria structural-gate por un solape no confirmado). De la revision de 013i nace `013j`: el drift estructural backlog<->contrato en FLT, ya patron repetido. De la auditoria de cierre de sesion (2026-06-22) nacen tres mas: `013m` (alta: el `overall_status` del closeout ignora `blocking=False` y un paso no-bloqueante tumba `--session-close`), `013k` (retencion de `notifications_*.md` VERSIONADO que crece el repo sin techo) y `013l` (baja: retencion de runtime gitignored -- reviews/packets/.bak -- que solo crece disco local). La auditoria confirmo que NO hay crecimiento sin techo en temporales de prueba (sandbox/tmp/pytest-safe sanos tras 013i); el historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. Quedan vivos solo dos follow-ups, ambos DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace): `013k` (consolidacion de notifications_* versionado) y `013l` (retencion de runtime gitignored). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
-
-### WOT-2026-013j - Reconciliar duplicidad de FLT entre backlog.md y contrato frozen
-- **Prioridad:** Media
-- **Scope:** motor/backlog-contract-drift
-- **Estado:** pending
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** -
-- **Reactivation:** -
-- **Origen:** session-2026-06-22-post-013i-review (patron repetido al ajustar packets de 013f/013h).
-- **Problema:** las fichas detalladas de `backlog.md` re-declaran el `Files Likely Touched` que ya vive en el contrato frozen (`ticket_contracts.md` / `work_plan.md`). Las dos copias divergen y obligan a reconciliacion manual del packet antes de lanzar Builder (visto en 013h, y el propio usuario tuvo que ajustar el FLT del packet de 013h para que coincidiera). Patron estructural, ya recurrente.
-- **Objetivo:** definir una sola fuente de verdad para el FLT y eliminar o reconciliar la duplicidad, de modo que el backlog no re-declare FLT que pertenece al contrato frozen. El cambio debe vivir en la generacion/validacion del packet del motor, sin debilitar el scope gate ni el contrato frozen.
-- **Superficie (resumen, no FLT autoritativo):** el FLT canonico lo declara el contrato frozen (`ticket_contracts.md`) y luego `work_plan.md`; esta ficha no lo re-declara. A grandes rasgos toca el gate/validador del backlog y su test en el motor.
-- **Criterios binarios:** una sola fuente de verdad para el FLT; el backlog deja de divergir del contrato frozen, o existe una barrera que detecta la divergencia antes del handoff; el scope gate y el contrato frozen siguen intactos; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` verdes.
-- **STOP:** si la unica via exige debilitar el scope gate o el contrato frozen; si reconciliar la duplicidad obliga a un rediseno mayor del lifecycle de packet en vez de un cambio acotado -> re-encuadrar antes de implementar.
-
-### WOT-2026-013m - overall_status del closeout debe respetar blocking=False
-- **Prioridad:** Alta
-- **Scope:** motor/session-closeout
-- **Estado:** pending
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** -
-- **Reactivation:** -
-- **Origen:** session-2026-06-22-close-audit (descubierto al intentar el cierre canonico).
-- **Problema:** `scripts/session_closeout.py::SessionReport.overall_status` retorna FAIL ante CUALQUIER step FAIL sin consultar `s.blocking`, contradiciendo su docstring ("FAIL if any blocking step failed"). Efecto verificado: `versioned_filenames` (marcado `blocking=False` en `closeout_steps/support.py`) tumba `--session-close` con exit 1 aunque sea no-bloqueante. Bloquea cierres de sesion sin que exista deuda realmente bloqueante.
-- **Objetivo:** que `overall_status` honre el flag `blocking`: un step `FAIL` no-bloqueante debe reflejarse (p.ej. como WARN o FAIL informativo) pero NO forzar exit 1 del pipeline. Preservar el bloqueo real de los steps `blocking=True` (prepush_check, archive_rename_uncommitted, etc.).
-- **Superficie (resumen, no FLT autoritativo):** `scripts/session_closeout.py` (overall_status + codigo de exit) y su test; el FLT canonico lo fija el contrato frozen.
-- **Criterios binarios:** un step `blocking=False` en FAIL no produce exit 1 del pipeline; los steps `blocking=True` siguen bloqueando; barrera de regresion que falla sin el fix; `run_pytest_safe --level all` y `validate` verdes.
-- **STOP:** si arreglar overall_status exige redisenar el modelo de StepResult o tocar la semantica de los gates bloqueantes; si algun consumidor depende del comportamiento actual (FAIL-ante-cualquier-FAIL), documentarlo antes de cambiar.
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media
 - **Scope:** motor/runtime-retention
-- **Estado:** pending
+- **Estado:** deferred
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** -
-- **Reactivation:** -
+- **Reactivation:** condition:higiene-dogfooding-local-no-portable
 - **Origen:** session-2026-06-22-close-audit (auditoria de superficies que crecen).
-- **Problema:** `repo_destino/.agent/collaboration/archive/` acumula snapshots `notifications_*.md` VERSIONADOS (12 trackeados, ~9.5MB) que `agent_controller` anade al rotar la proyeccion. A diferencia de `runtime/reviews|review_packets|events` (gitignored, solo disco), estos entran en el repo y en cada clone, creciendo sin techo. NO es basura por ticket; es falta de politica de retencion.
+- **Diferido (2026-06-22):** VERIFICADO POR BYTES que `collaboration/archive/` esta EXCLUIDO de `MANIFEST.distribute` (l.112) y `MANIFEST.workspace` (l.92) => `notifications_*.md` NO viaja a otros proyectos. Es higiene del repo de dogfooding LOCAL, no mejora de portabilidad/instalabilidad. Ademas la retencion correcta es consolidacion (mantener trazabilidad), no poda; mas delicado que 013l. Reactivar solo si el ruido operativo local molesta o en una pasada de mantenimiento del repo dogfooding.
+- **Problema:** `repo_destino/.agent/collaboration/archive/` acumula snapshots `notifications_*.md` VERSIONADOS (12 trackeados, ~9.5MB) que `agent_controller` anade al rotar la proyeccion. A diferencia de `runtime/reviews|review_packets|events` (gitignored, solo disco), estos entran en el repo y en cada clone, creciendo sin techo. NO es basura por ticket; es falta de politica de retencion. Nota: `check_no_history_truncation.py` solo exige compensacion de archivo al truncar `execution_log`, NO prohibe podar notifications archivados (verificado en 013j-followup).
 - **Objetivo:** introducir retencion para `notifications_*.md` (mantener los N ultimos o por edad), archivando o podando el resto fuera del arbol versionado, sin perder la rotacion viva que el controller necesita.
 - **Superficie (resumen, no FLT autoritativo):** el codigo del controller que rota notifications + posible script de retencion; no tocar la superficie viva `notifications.md`.
 - **Criterios binarios:** el conteo de `notifications_*.md` versionados queda acotado por politica; la rotacion viva sigue funcionando; ningun test de proyeccion/controller regresa; `validate` verde.
@@ -82,12 +51,13 @@
 ### WOT-2026-013l - Retencion local para runtime gitignored (reviews, packets, memory .bak)
 - **Prioridad:** Baja
 - **Scope:** motor/runtime-retention
-- **Estado:** pending
+- **Estado:** deferred
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** -
-- **Reactivation:** -
+- **Reactivation:** condition:higiene-dogfooding-local-no-portable
 - **Origen:** session-2026-06-22-close-audit.
+- **Diferido (2026-06-22):** estas superficies son gitignored => NO viajan a otros proyectos ni a la publicacion; es solo disco del operador. Diferido por no aportar a "motor limpio para otros proyectos". Es el mas simple de los dos diferidos; si se retoma uno, este antes que 013k.
 - **Problema:** `runtime/reviews` (~5.1MB, 106 files), `runtime/review_packets` (~2MB, 47), `observations.jsonl.bak.*` (12) crecen sin techo en DISCO local. Estan gitignored => NO contaminan repo ni publicacion, solo el disco del operador. Prioridad baja precisamente por eso.
 - **Objetivo:** politica de retencion por edad/conteo para esas superficies gitignored, idealmente integrada en el closeout o un script de mantenimiento opt-in. NO incluir `events/archive`, `audits/system_health` ni `_archive/plan_audit` (historico util versionado, fuera de scope).
 - **Superficie (resumen, no FLT autoritativo):** script de retencion / paso opt-in del closeout para rutas runtime gitignored.

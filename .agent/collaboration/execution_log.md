@@ -113,3 +113,20 @@ Superficies que SI crecen, separadas por impacto real (gitignored vs versionado)
 - 013j cerrado canonicamente (Manager-approved, bus COMPLETED).
 - --session-close completo (pipeline de archivado) queda BLOQUEADO por WOT-2026-013m hasta que overall_status respete blocking=False: el versioned_filenames FAIL no-bloqueante fuerza exit 1. Reproducido en dry-run.
 - Cierre de sesion por via commit-limpio: artefactos del cierre + auditoria + backlog + memorias commiteados; ambos repos limpios; validate 0/0. El archivado canonico de fin de sesion se completara tras cerrar 013m.
+
+## ORQUESTADOR - Cierre final 2026-06-22 (post-013m): motor limpio para otros proyectos
+
+Objetivo del usuario: dejar el motor limpio para usarlo en otros proyectos. Analisis verificado:
+- VERIFICADO EN CODIGO: install_agent_system.py:46 `LOCAL_DIRS = {collaboration, runtime, audits}` => ese estado NO se copia a destinos nuevos; cada proyecto arranca con su .agent/ limpio + el seed neutro del motor.
+- VERIFICADO POR BYTES: el seed del motor (collaboration/ que SI se distribuye) esta neutro (`# Work Plan - Seed`, READY_TO_START, sin contaminacion del dogfooding).
+- VERIFICADO POR BYTES: notifications_* (013k) y runtime gitignored (013l) estan EXCLUIDOS de MANIFEST.distribute (l.112) y MANIFEST.workspace (l.92) => NO viajan. Su limpieza NO afecta la instalabilidad del motor; es higiene del dogfooding local.
+- Conclusion: el motor portable YA esta limpio para otros proyectos (codigo git limpio, seed neutro, catalogo INDEX reconciliado, sin stubs legacy operativos).
+
+013m (overall_status respeta blocking=False) IMPLEMENTADO Y VERIFICADO:
+- commit motor 3bbfea2; 62 tests de session_closeout verdes; tests nuevos test_non_blocking_failure_gives_warn (regresion FAIL-sin/PASS-con) + test_blocking_fail_wins_over_non_blocking_fail.
+- Efecto verificado en vivo: --session-close --dry-run paso de Overall FAIL a Overall WARN (exit 0). El cierre canonico queda DESBLOQUEADO.
+- Cierre de 013m: registrado en _archive/backlog_done como `delivered-no-bus` (implementado+verificado fuera del lifecycle de bus; no se bootstrapeo como ticket activo; evidencia = commit+tests+efecto, no eventos de bus). Decision explicita del usuario para no fabricar eventos de bus sobre una implementacion ya cerrada.
+
+Higiene del backlog: 013j (cerrado canonico) y 013m (delivered-no-bus) movidos a _archive/backlog_done; sacados de la cola viva. 013k/013l => `deferred` con reactivation condition:higiene-dogfooding-local-no-portable. Cola viva final: 002c (completed-partial), 013k/013l (deferred), 256a (blocked). Ningun ticket accionable bloqueante pendiente.
+
+013k/013l diferidos (no implementados): decision del usuario, por ser higiene del repo dogfooding local que no viaja a otros proyectos (evidencia MANIFEST arriba). Documentados en backlog con esa justificacion.

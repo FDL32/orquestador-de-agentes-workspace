@@ -23,6 +23,8 @@
 | WOT-2026-013g | completed | cerrado canonico 2026-06-22; el coste del outlier quedo atribuido al purge de sandbox en setup, sin optimizacion segura en este ticket. Follow-ups vivos: WOT-2026-013h y WOT-2026-013i. |
 | WOT-2026-013h | completed | cerrado canonico 2026-06-22; el archivador pasa a dejar renames staged (sin auto-commit) y se cierra la herencia recurrente de `archive_rename_uncommitted`. Siguiente ticket vivo: WOT-2026-013i. |
 | WOT-2026-013i | completed | cerrado canonico 2026-06-22; purge de sandbox arreglado (PermissionError en .git read-only que ignore_errors tragaba, dejando el purge no-op). Latencia recurrente ~39s/sesion creciente -> ~0s en estado estable. Follow-up: WOT-2026-013j (drift FLT backlog<->contrato). |
+| WOT-2026-013j | completed | cerrado canonico 2026-06-22 (bus seq 1358 COMPLETED, Manager-approved); gate ejecutable que bloquea fichas de backlog que re-declaran Files Likely Touched (check_backlog_contract). Follow-ups: 013k/013l/013m. |
+| WOT-2026-013m | delivered-no-bus | ENTREGADO Y VERIFICADO fuera del lifecycle de bus (2026-06-22): commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de Overall FAIL a WARN. overall_status del closeout ahora respeta blocking=False (un step no-bloqueante ya no fuerza exit 1). NO tiene eventos de bus por no haberse bootstrappeado como ticket activo; cierre canonico por bus no realizado, evidencia = commit+tests+efecto. |
 
 # Backlog
 
