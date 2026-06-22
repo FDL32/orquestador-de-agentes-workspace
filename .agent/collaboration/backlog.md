@@ -22,7 +22,7 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013o | Saneamiento estricto de observations.jsonl portable | motor/memory-schema | pending | - | session-2026-06-22-memory-upload | - |
+| Alta | WOT-2026-013o | Saneamiento estricto de observations.jsonl portable | motor/memory-schema | pending | WOT-2026-013n | session-2026-06-22-memory-upload | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -39,7 +39,7 @@
 - **Estado:** pending
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
-- **Depende de:** -
+- **Depende de:** WOT-2026-013n
 - **Reactivation:** -
 - **Origen:** session-2026-06-22-memory-upload.
 - **Problema:** `observations.jsonl` del `repo_destino` falla `python scripts/validate_observations.py --strict --file <obs>` con 17 errores verificados. No es un unico problema: 14 entradas tienen corrupcion de datos (`applies_to` contiene valores de `domain` como `planning`, `supervisor`, `preflight`), mientras 3 entradas usan dominios fuera del enum canonico (`collaboration`, `test-performance`). La observacion nueva de `013n` sobre seams duplicados esta bien redactada y seria valida por si sola, pero no conviene escribir memoria portable nueva sobre una base que hoy rompe el contrato estricto.

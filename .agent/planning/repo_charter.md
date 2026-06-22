@@ -169,5 +169,14 @@ referencias publicadas.
 - failure_modes:
   - el fix sigue exigiendo marcar `WT-2026-239a` o `WOT-2026-013c` como `COMPLETED` para limpiar el sistema;
   - cada consumidor conserva su propia lista local de terminalidad y reaparece drift entre bus, vistas y closeout;
-  - la solucion deriva en un redise?o amplio del lifecycle en vez de una autoridad compartida y cambios localizados.
+  - la solucion deriva en un rediseno amplio del lifecycle en vez de una autoridad compartida y cambios localizados.
 - related_plans: [PLAN-013N-001]
+
+### OBJ-013O-001 -- Saneamiento estricto de observations portable
+- description: dejar `repo_destino/.agent/runtime/memory/observations.jsonl` en `--strict` verde separando reparacion determinista de datos (`applies_to` cruzado) de la decision de contrato sobre dominios (`collaboration`, `test-performance`), reutilizando el migrador existente en vez de bypass manual.
+- success_criteria: el archivo portable pasa `validate_observations.py --strict` sin errores; las 14 entradas de datos se reparan con evidencia pre/post; los 3 dominios cuestionados quedan resueltos por decision explicita de contrato.
+- failure_modes:
+  - la reparacion requiere reinterpretacion semantica no verificable sobre alguna de las 17 lineas;
+  - la decision de dominios obliga a redisenar la taxonomia completa de memoria portable o tocar `bus/memory_loader.py`;
+  - se inserta observacion portable nueva antes de dejar la base en verde estricto.
+- related_plans: [PLAN-013O-001]

@@ -1782,7 +1782,7 @@
   - Builder repo_destino: `.agent/runtime/memory/observations.jsonl`
   - Builder repo_destino: `.agent/collaboration/execution_log.md`
 - **Read/inspect only:** `bus/memory_loader.py`; `scripts/memory_consolidate.py`; `prompts/memory_upload.md`; `.agent/runtime/memory/MEMORY.md`; `.agent/runtime/memory/memory_profile.md`; `.agent/audits/system_health/general_audit_20260622_1449/07_adversarial_review.md`.
-- **Forbidden Surfaces:** `repo_motor/.agent/runtime/memory/observations.jsonl`; `repo_destino/.agent/runtime/memory/MEMORY.md`; `repo_destino/.agent/runtime/memory/memory_profile.md`; `repo_destino/.agent/runtime/memory/memory_rules.md`; `bus/memory_loader.py` salvo `CONTRACT_GAP`; `scripts/session_close_observations.py`; CI/workflows; `privada/`; `.env`; editar a mano eventos del bus; insertar nueva observacion portable antes de dejar `observations.jsonl` en verde estricto.
+- **Forbidden Surfaces:** `repo_motor/.agent/runtime/memory/observations.jsonl`; `repo_destino/.agent/runtime/memory/observations.jsonl` inserciones semanticas nuevas antes del verde estricto; `repo_destino/.agent/runtime/memory/MEMORY.md`; `repo_destino/.agent/runtime/memory/memory_profile.md`; `repo_destino/.agent/runtime/memory/memory_rules.md`; `repo_motor/bus/memory_loader.py` salvo `CONTRACT_GAP`; `repo_motor/scripts/session_close_observations.py`; CI/workflows; `privada/`; `.env`; editar a mano eventos del bus.
 - **DoD (criterios binarios de cierre):**
   - [ ] `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl` termina verde.
   - [ ] Las 14 entradas con `applies_to` corrupto quedan reparadas de forma determinista, con evidencia pre/post en `execution_log.md` o reporte adjunto.
@@ -1791,7 +1791,7 @@
   - [ ] `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider` termina verde.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
   - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
-  - [ ] La observacion diferida de `013n` se deja explicitamente `inserted` o `deferred` solo DESPUES del verde estricto, con razon auditable.
+  - [ ] El cierre deja explicito que `013o` NO inserta nueva memoria portable durante este ticket; cualquier promocion posterior (incluida la observacion diferida de `013n`) queda fuera de scope hasta partir de una base `--strict` verde.
 - **Integracion cross-ticket:** serializar con cualquier ticket que toque `validate_observations.py`, `migrate_observations.py`, `ap-schema.md`, `memory_consolidate.py` o memorias portables. El objetivo es reparar la base y el contrato, no abrir una reforma general de taxonomia o tocar memoria del motor.
 - **CONTRACT_GAP behavior:** si alguna de las 17 lineas requiere reinterpretacion semantica no verificable, si `collaboration`/`test-performance` fuerzan una reforma amplia de dominios/consumidores fuera de scope, o si la unica salida segura exige tocar `repo_motor/.agent/runtime/memory/observations.jsonl` o `bus/memory_loader.py`, emitir `CG-WOT-2026-013o.md` y bloquear.
 - **Builder clarification budget:** 0.

@@ -536,9 +536,9 @@ Para 013n, cualquier merge con tickets que toquen `bus/state_machine.py`, `bus/s
 - shared_dependencies:
   - `bus/memory_loader.py` y `scripts/memory_consolidate.py` (read-only; consumidores reales de la base)
   - `prompts/memory_upload.md` (read-only; contrato de no promover memoria portable sobre base inconsistente)
-  - la observacion diferida de `013n` como prueba final de que la via de promotion portable vuelve a estar sana
+  - la promotion de memoria portable queda explicitamente fuera de scope hasta que `observations.jsonl` quede `--strict` verde
 
 
-- PLAN-013O-001: no tocar `repo_motor/.agent/runtime/memory/observations.jsonl`, `repo_destino/.agent/runtime/memory/MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `bus/memory_loader.py` (salvo CONTRACT_GAP), `scripts/session_close_observations.py`, CI/workflows ni insertar observaciones nuevas antes del verde estricto.
+- PLAN-013O-001: no tocar `repo_motor/.agent/runtime/memory/observations.jsonl`, no insertar observaciones nuevas en `repo_destino/.agent/runtime/memory/observations.jsonl` antes del verde estricto, no tocar `repo_destino/.agent/runtime/memory/MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `bus/memory_loader.py` (salvo CONTRACT_GAP), `scripts/session_close_observations.py`, CI/workflows.
 
 Para 013o, cualquier merge con tickets que toquen `scripts/migrate_observations.py`, `scripts/validate_observations.py`, `skills/_shared/ap-schema.md`, `scripts/memory_consolidate.py` o `repo_destino/.agent/runtime/memory/observations.jsonl` obliga a revalidar la union con `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl`, `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
