@@ -1,13 +1,13 @@
 # Memory Profile (L3)
 
-Total observations: 85
+Total observations: 87
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
-- bus-architecture: 50 observations
-- delivery-hygiene: 18 observations
+- bus-architecture: 51 observations
+- delivery-hygiene: 19 observations
 - review-quality: 8 observations
 - builder-contract: 5 observations
 - collaboration: 2 observations
@@ -53,6 +53,7 @@ High-level profile of project memory for quick context loading. This is the firs
 - WOT-2026-013c
 - WOT-2026-013d
 - WOT-2026-013j
+- WOT-2026-013n
 - WOT-AUDIT-A2a
 - WOT-AUDIT-A2b
 - WOT-AUDIT-CI
@@ -76,6 +77,8 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
+- [ticket-completion] Ticket WOT-2026-013n completado: Unknown (deliverable_type=code) (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013n (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010j (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-008b (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-245b (session-close)
@@ -84,5 +87,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-238a (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-249b (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-200 (session-close)
-- [ticket-completion] Ticket WOT-2026-013j completado: Unknown (deliverable_type=code) (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013j (session-close)
