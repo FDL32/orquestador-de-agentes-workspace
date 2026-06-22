@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013o
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## MANAGER - WOT-2026-013o - Bootstrap operativo
 
@@ -69,3 +69,6 @@ Gates (comandos exactos, exit codes reales):
 Barrera FAIL-sin/PASS-con: test_corrupt_applies_to_is_not_kept_intact (FAIL pre-fix: la guarda intact ignoraba applies_to) + test_migration_repairs_corrupt_applies_to (PASS post-fix: --strict verde). Idempotencia y backup/rollback cubiertos.
 
 Fuera de scope (explicito): 013o NO inserta memoria portable nueva; la observacion diferida de 013n queda pendiente para promocion posterior sobre base --strict verde. No se tocaron consumidores reales (memory_loader, memory_consolidate) ni forbidden surfaces.
+
+
+Manager approved canonical closeout for WOT-2026-013o
