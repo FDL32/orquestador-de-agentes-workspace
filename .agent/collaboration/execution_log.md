@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013i
 
-**Estado:** READY_FOR_REVIEW
+**Estado:** COMPLETED
 
 ## MANAGER - WOT-2026-013i - Bootstrap operativo
 
@@ -78,3 +78,6 @@ Gates (comandos exactos + resultados literales):
 Commit del entregable (repo_motor): HEAD `07f9c69` "WOT-2026-013i fix silent no-op sandbox purge (read-only .git on Windows)". Diff = 2 files (tests/conftest.py + tests/unit/test_windows_safe_temp_runtime.py), ambos en FLT. 150 insertions, 13 deletions. Pre-commit hooks (ast/ruff/encoding/history) verdes.
 
 Desviaciones y justificaciones CEM: ninguna. No procede CG (el fix vive en harness/tests; no toco producto/runner/CI/xdist). Listo para --pre-handoff + --mark-ready.
+
+
+Manager approved canonical closeout for WOT-2026-013i

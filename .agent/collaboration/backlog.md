@@ -22,30 +22,28 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Media | WOT-2026-013i | Higiene de purge de sandbox para latencia operacional | motor/test-runtime-hygiene | pending | WOT-2026-013d, WOT-2026-013g | session-2026-06-22-post-013g-review | - |
+| Media | WOT-2026-013j | Reconciliar duplicidad de FLT entre backlog.md y contrato frozen | motor/backlog-contract-drift | pending | - | session-2026-06-22-post-013i-review | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> `013e` cerro canonicamente como `completed` (bus `STATE_CHANGED -> COMPLETED`, seq 1302): produjo el inventario auditable de la suite (`docs/test_performance/test_suite_audit_WOT-2026-013e.md`). Hallazgo central: la suite (3111 tests) es mayoritariamente `core regression` / `structural gate`; NO hay grasa significativa para poda masiva. `013f` podo `tests/deprecated/` sin regresiones y `013g` explico el unico coste `unknown`: el tiempo dominante lo absorbe el `setup` por purge de sandboxes huerfanos, no el cuerpo del test ni producto. De ese cierre nacen exactamente dos follow-ups accionables: `013h` para eliminar el limbo recurrente `archive_rename_uncommitted` del archivado canonico y `013i` para atacar la latencia operacional del purge sin debilitar la barrera de `013d`. FU-013E-1 (clasificar `test_ejemplo`/`test_goose_native_skill`) y FU-013E-4 (consolidar `scope_gate*`/`pre_handoff*`) NO se promueven: FU-4 tocaria barreras structural-gate por un solape no confirmado (riesgo de sobreingenieria que el propio reporte advierte). `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013i CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` del archivado (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only (latencia recurrente ~39s -> ~0s en estado estable). FU-013E-1 y FU-013E-4 NO se promueven (FU-4 tocaria structural-gate por un solape no confirmado). De la revision de 013i nace `013j`: el drift estructural backlog<->contrato en FLT, ya patron repetido. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013i - Higiene de purge de sandbox para latencia operacional
+### WOT-2026-013j - Reconciliar duplicidad de FLT entre backlog.md y contrato frozen
 - **Prioridad:** Media
-- **Scope:** motor/test-runtime-hygiene
+- **Scope:** motor/backlog-contract-drift
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013d, WOT-2026-013g
+- **Depende de:** -
 - **Reactivation:** -
-- **Origen:** session-2026-06-22-post-013g-review.
-- **Problema:** `013g` verifico que el coste dominante del outlier no vive en `test_upgrade_path_suggestion`, sino en el `setup` que purga cientos de sandboxes huerfanos desde `tests/conftest.py`. La barrera protege salud del arbol tras `013d`, pero hoy introduce latencia operacional visible cuando se acumula basura historica.
-- **Objetivo:** reducir el coste del purge de sandbox o acotarlo mejor, sin reabrir la familia xdist ni debilitar la limpieza defensiva introducida por `013d`.
-- **Files Likely Touched:**
-  - repo_motor: `tests/conftest.py`
-  - repo_motor: `tests/unit/test_detect_version.py`
-  - repo_motor: `tests/unit/test_project_scanner.py`
-  - repo_motor: `docs/test_performance/test_performance_variance.md`
-- **Criterios binarios:** existe medicion before/after del purge sobre el mismo host; la latencia del setup baja o queda acotada con evidencia sin reintroducir residuos en `tests/sandbox/test_runtime`; las barreras historicas de `013d` siguen verdes; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
-- **STOP:** si cualquier mejora segura exige tocar producto, runner, CI o reabrir la decision cerrada de xdist; si el purge rapido reintroduce flakes por residuos, parar y documentar por que la latencia actual es el coste aceptado.
+- **Origen:** session-2026-06-22-post-013i-review (patron repetido al ajustar packets de 013f/013h).
+- **Problema:** las fichas detalladas de `backlog.md` re-declaran el `Files Likely Touched` que ya vive en el contrato frozen (`ticket_contracts.md` / `work_plan.md`). Las dos copias divergen y obligan a reconciliacion manual del packet antes de lanzar Builder (visto en 013h, y el propio usuario tuvo que ajustar el FLT del packet de 013h para que coincidiera). Patron estructural, ya recurrente.
+- **Objetivo:** definir una sola fuente de verdad para el FLT y eliminar o reconciliar la duplicidad, de modo que el backlog no re-declare FLT que pertenece al contrato frozen. El cambio debe vivir en la generacion/validacion del packet del motor, sin debilitar el scope gate ni el contrato frozen.
+- **Files Likely Touched (a confirmar en Fase 0):**
+  - repo_motor: generador/validador de packet que materializa backlog -> contrato (a identificar por codigo antes de tocar)
+  - repo_motor: tests del generador/validador afectado
+- **Criterios binarios:** una sola fuente de verdad para el FLT; el backlog deja de divergir del contrato frozen, o existe una barrera que detecta la divergencia antes del handoff; el scope gate y el contrato frozen siguen intactos; `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` verdes.
+- **STOP:** si la unica via exige debilitar el scope gate o el contrato frozen; si reconciliar la duplicidad obliga a un rediseno mayor del lifecycle de packet en vez de un cambio acotado -> re-encuadrar antes de implementar.
