@@ -1,18 +1,16 @@
 # Memory Profile (L3)
 
-Total observations: 87
+Total observations: 88
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
-- bus-architecture: 51 observations
-- delivery-hygiene: 19 observations
+- bus-architecture: 53 observations
+- delivery-hygiene: 20 observations
 - review-quality: 8 observations
 - builder-contract: 5 observations
-- collaboration: 2 observations
-- testing: 1 observations
-- test-performance: 1 observations
+- testing: 2 observations
 
 ## Active Tickets Referenced
 
@@ -77,6 +75,7 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
+- [state-seam-requires-cross-surface-grep] When a ticket changes state semantics in one visible authority, grep the state/topic basename across sibling tables and launch surfaces before declari (session-2026-06-22-post-013o)
 - [ticket-completion] Ticket WOT-2026-013n completado: Unknown (deliverable_type=code) (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013n (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010j (session-close)
@@ -86,4 +85,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-245a (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-238a (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WT-2026-249b (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WT-2026-200 (session-close)

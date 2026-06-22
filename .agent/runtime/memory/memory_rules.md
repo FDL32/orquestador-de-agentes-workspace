@@ -14,72 +14,60 @@ For operational launch, resume, and recovery decisions, derive ticket state from
 
 *Source: WT-2026-216*
 
-#### R-007: Local runtime cleanup and bus reconciliation are different recovery classes. If
+#### R-007: In motor+destino topology, operational backlog.md lives in repo_destino/.agent/c
+
+In motor+destino topology, operational backlog.md lives in repo_destino/.agent/collaboration/, not in the repo_motor seed. Audits that inspect only repo_motor may falsely conclude backlog changes were not materialized.
+
+*Source: WOT-2026-010j*
+
+#### R-008: Local runtime cleanup and bus reconciliation are different recovery classes. If
 
 Local runtime cleanup and bus reconciliation are different recovery classes. If the previous ticket is already terminal in the bus, clean stale local runtime only; if it is non-terminal with confirmed drift, reconcile explicitly in the bus; if the bus is unreadable or contradictory, abort without closing anything. This is the preflight contract for WT-2026-214.
 
 *Source: WT-2026-214*
 
-#### R-008: Recovery paths must be idempotent against the primary mechanism. Before emitting
+#### R-009: Recovery paths must be idempotent against the primary mechanism. Before emitting
 
 Recovery paths must be idempotent against the primary mechanism. Before emitting a corrective event or relaunching an agent, check whether the target event already exists in the bus for the same ticket and decision.
 
 *Source: WT-2026-191*
 
-#### R-009: When a critical bus trigger outlives its main consumer, the durable fix is to en
+#### R-010: When a critical bus trigger outlives its main consumer, the durable fix is to en
 
 When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_bridge force a real supervisor tick after REVIEW_DECISION=CHANGES instead of relaunching Builder directly.
 
 *Source: WT-2026-212*
 
 
-### Domain: collaboration
-
-#### R-010: In motor+destino topology, operational backlog.md lives in repo_destino/.agent/c
-
-In motor+destino topology, operational backlog.md lives in repo_destino/.agent/collaboration/, not in the repo_motor seed. Audits that inspect only repo_motor may falsely conclude backlog changes were not materialized.
-
-*Source: WOT-2026-010j*
-
-
 ## Wing: meta
-
-### Domain: collaboration
-
-#### R-011: When a ticket is re-scoped or closed through follow-up reviews, the backlog tabl
-
-When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and detailed sections tell the same truth.
-
-*Source: WOT-2026-003d*
-
 
 ### Domain: delivery-hygiene
 
-#### R-016: This system starts every plan with a base `...a` ticket; `...b` and later letter
+#### R-015: This system starts every plan with a base `...a` ticket; `...b` and later letter
 
 This system starts every plan with a base `...a` ticket; `...b` and later letters are for plan splits or post-close fixes. When a shell-launched Builder leaves the bus short of canonical termination, analyze the root cause first, close the `...a` by chat, and move remediation to derived tickets instead of trying to fix the bus through the live bus path.
 
 *Source: WT-2026-243a*
 
-#### R-017: Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra
+#### R-016: Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra
 
 Ticket WOT-2026-003d completado: ** El residue-prune del instalador nunca borra rutas git-trackeadas del repo_destino (deliverable_type=code)
 
 *Source: WOT-2026-003d*
 
-#### R-018: Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
+#### R-017: Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
 
 Ticket WOT-2026-009d completado: Unknown (deliverable_type=code)
 
 *Source: WOT-2026-009d*
 
-#### R-019: Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
+#### R-018: Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
 
 Ticket WOT-2026-010c completado: Unknown (deliverable_type=code)
 
 *Source: WOT-2026-010c*
 
-#### R-020: Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
+#### R-019: Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a pref
 
 Ticket WT-2026-251a completado: ** Centralizar ticket-ID regex y extender a prefijos de 2-3 letras (deliverable_type=code)
 
@@ -174,35 +162,41 @@ When the implementation is already verified but the bus or session-close path dr
 
 ### Domain: delivery-hygiene
 
-#### R-012: After the canonical session-close pipeline runs on a tracked destination, it can
+#### R-011: After the canonical session-close pipeline runs on a tracked destination, it can
 
 After the canonical session-close pipeline runs on a tracked destination, it can legitimately leave versioned memory artifacts dirty (`MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `session_close_report.md`). The session is operationally closed, but git may still require one final closeout commit.
 
 *Source: WOT-2026-003d*
 
-#### R-013: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
+#### R-012: El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descr
 
 El cierre canonico no valida que el ultimo commit del ticket tenga mensaje descriptivo. Patron observado: WT-2026-186 commiteado como WP-2026-176, WT-2026-189 sin commit hasta cierre manual, WT-2026-187 con mensajes pre-handoff checkpoint. El Builder cierra el trabajo tecnico correctamente pero el packaging del commit falla sistematicamente.
 
 *Source: WT-2026-189*
 
-#### R-014: If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different roun
+#### R-013: If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different roun
 
 If two BUILDER_RELAUNCH_ATTEMPTED events for the same ticket have different rounds, requeue_ticket() ran twice for the same decision. And when outcome=success appears in older bus history, it only proves launcher exit 0, not Builder liveness; the new taxonomy must distinguish builder_started_verified from builder_launch_unverified.
 
 *Source: WT-2026-199*
 
-#### R-015: In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after cano
+#### R-014: In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after cano
 
 In this repo_destino, keeping a fresh `.agent/runtime/audit/AUDIT.md` after canonical closeout shortens safe restarts because the next session can trust one local snapshot first instead of reconstructing context from scattered collaboration files.
 
 *Source: WT-2026-242c*
 
-#### R-021: UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
+#### R-020: UTF-8 with BOM can make lightweight validators and Windows subprocess readers fa
 
 UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics, write UTF-8 without BOM and force UTF-8 decoding in subprocesses.
 
 *Source: WOT-2026-001c*
+
+#### R-021: When a ticket is re-scoped or closed through follow-up reviews, the backlog tabl
+
+When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and detailed sections tell the same truth.
+
+*Source: WOT-2026-003d*
 
 
 ### Domain: testing

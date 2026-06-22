@@ -1,8 +1,8 @@
 # MEMORY
 
-Regenerated: 2026-06-22T14:48:18.128676+00:00
+Regenerated: 2026-06-22T16:28:49.635492+00:00
 
-Total observations: 87
+Total observations: 88
 
 - Architecture (47 observations)
 - Atomic-Requeue-Claim (1 observations)
@@ -34,6 +34,7 @@ Total observations: 87
 - Scope-Gate-Path-Format (1 observations)
 - Session-Bootstrap-Audit-Snapshot (1 observations)
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
+- State-Seam-Requires-Cross-Surface-Grep (1 observations)
 - Suite-Performance (1 observations)
 - Ticket-Completion (7 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
@@ -73,7 +74,6 @@ Total observations: 87
 
 ## canonical-consumer-recovery
 - When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_
-
 
 ---
 
