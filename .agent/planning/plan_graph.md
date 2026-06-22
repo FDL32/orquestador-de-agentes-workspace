@@ -298,6 +298,25 @@
   - `tests/README.md` y `tests/ARCHITECTURE.md` (read-only; mapa de la suite)
   - frontera cerrada `011e <-> 010m <-> 011i` y cierre `013d` (read-only; no reabrir xdist ni runner)
 
+
+## PLAN-013F-001 -- Poda segura de `tests/deprecated/`
+
+- objetivo: retirar del motor los tests Goose ya deprecados y excluidos del runner, dejando evidencia durable del retiro sin tocar `pytest.ini`, el runner ni otras familias legacy.
+- tickets: [WOT-2026-013f]
+- depends_on: [WOT-2026-013e]
+- superficies_archivo:
+  - repo_motor/tests/deprecated/
+  - repo_motor/tests/integration/RETIRED_TESTS.md
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - `pytest.ini` (`norecursedirs`, read-only)
+  - `python -m pytest tests --collect-only -q -p no:cacheprovider`
+  - `python scripts/run_pytest_safe.py --level all`
+- shared_dependencies:
+  - `docs/test_performance/test_suite_audit_WOT-2026-013e.md` (read-only; origen del follow-up)
+  - `scripts/cleanup_legacy.py` y `tests/unit/test_cleanup_legacy.py` (read-only; distinguir script legacy vs tests a podar)
+  - `tests/test_goose_native_skill.py` y `tests/unit/test_ejemplo.py` (read-only; fuera de scope en esta ronda)
+
 ## Impact Simulation
 
 | Plan | Superficies | Shared deps | Conflicto esperado | Mitigacion | Paralelizable |
@@ -319,6 +338,7 @@
 | PLAN-013C-001 | [BLOCKED-FINAL] sin superficie operativa | n/a (cura en producto; ver `CG-WOT-2026-013c.md`) | n/a -- la cura toca rglob de producto o rompe invariante sandbox; tests-only no basta | ninguna; sucesor = ticket de producto (escaneo robusto a borrados concurrentes) | n/a |
 | PLAN-013D-001 | product scanner/project_paths + tests focales/fixture de sandbox; bitacora en repo_destino | `tests/sandbox/test_runtime` volatil, runner xdist read-only, invariante sandbox-dentro | conflicto si otro ticket toca `project_scanner`, `project_paths`, `tests/conftest.py` o reabre la politica xdist/default mientras 013d endurece el escaneo | serializar con tickets que toquen escaneo de proyecto, fixture de sandbox o politica xdist; revalidar triple xdist x3 + tests focales + `--level all` + `validate` al cerrar | no |
 | PLAN-013E-001 | reporte durable en repo_motor + bitacora en repo_destino | docs de performance previas, runner read-only, frontera xdist cerrada, suite `tests/` | conflicto si otro ticket toca `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o reabre xdist/default mientras 013e clasifica valor/poda | serializar con tickets que toquen runner/gates/docs de performance; repetir inventario contra el HEAD final y revalidar `validate --json --project-root <repo_destino>` | no |
+| PLAN-013F-001 | retiro de `tests/deprecated/` + actualizacion de `tests/integration/RETIRED_TESTS.md`; bitacora en repo_destino | contrato `pytest.ini` read-only, follow-up `013e`, evidencia canonica `run_pytest_safe` | conflicto si otro ticket toca `pytest.ini`, `tests/integration/RETIRED_TESTS.md` o revive Goose/otros candidatos legacy mientras 013f poda el directorio excluido | serializar con tickets que toquen el runner, el ledger de tests retirados o el historico Goose; revalidar collect-only 3111 + `python scripts/run_pytest_safe.py --level all` + `validate --json --project-root <repo_destino>` | no |
 parallelism_notes: 008a debe ejecutarse en exclusiva respecto de cualquier ticket
 que mueva o renombre prompts, skills, manifests o discovery. 010d debe ejecutarse
 en exclusiva respecto de cualquier ticket que toque bus, controller, supervisor,
@@ -335,6 +355,7 @@ state projection, pre-handoff o lifecycle runtime.
   el controller.
 
 - PLAN-013E-001: no tocar `tests/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml`, `uv.lock`, CI/workflows ni `scripts/run_gates_dispatch.py`; no borrar, `xfail`, `skip` ni relajar tests; no reabrir `011e`, `010m`, `011i` ni `013d`.
+- PLAN-013F-001: no tocar `pytest.ini`, `scripts/run_pytest_safe.py`, `scripts/cleanup_legacy.py`, `tests/test_goose_native_skill.py`, `tests/unit/test_ejemplo.py`, CI/workflows ni producto fuera de `tests/deprecated/` y `tests/integration/RETIRED_TESTS.md`.
 
 ## Merge Regression Audit
 
@@ -358,4 +379,5 @@ Para 011i, cualquier merge con tickets que toquen `scripts/run_pytest_safe.py`, 
 Nota historica 013c (BLOCKED-FINAL, ver `CG-WOT-2026-013c.md`): el aislamiento tests-only no era viable; la cura pertenece a un ticket de producto (rglob robusto a borrados concurrentes). No hay plan activo de 013c que serializar.
 Para 013d, cualquier merge con tickets que toquen `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/conftest.py` o la politica de xdist/default obliga a revalidar la union con el triple xdist (`test_upgrade_path_suggestion`, `test_scan_current_project`, `test_no_inline_ticket_regex`) en 3 corridas consecutivas, los tests focales de scanner/project_paths, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 Para 013e, cualquier merge con tickets que toquen `docs/test_performance/`, `scripts/run_pytest_safe.py`, `pytest.ini`, `pyproject.toml` o la politica xdist/default obliga a revalidar la union con el inventario final contra el HEAD mergeado, `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `validate --json --project-root <repo_destino>`.
+Para 013f, cualquier merge con tickets que toquen `pytest.ini`, `tests/integration/RETIRED_TESTS.md`, `tests/test_goose_native_skill.py` o candidatos legacy vecinos obliga a revalidar la union con `python -m pytest tests --collect-only -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
 

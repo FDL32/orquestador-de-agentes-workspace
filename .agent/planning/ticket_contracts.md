@@ -1521,3 +1521,40 @@
 - **Builder clarification budget:** 0. El Builder audita y reporta; no poda, no relaja tests y no reinterpreta por intuicion la politica del runner.
 - **STOP conditions:** parar si la unica forma de justificar una clasificacion exige editar tests o tooling; parar si el resultado depende de output viejo no reconciliado con el HEAD actual; parar si la recomendacion util solo puede expresarse como poda masiva o como reabrir la familia xdist/producto en vez de abrir follow-ups pequenos.
 - **Depende de:** WOT-2026-010j (COMPLETED); WOT-2026-010k (COMPLETED); WOT-2026-011e (COMPLETED); WOT-2026-010m (COMPLETED); WOT-2026-013d (COMPLETED).
+
+
+## T-013F-001 -- Podar tests/deprecated/ (Goose retirado, ya fuera del runner)
+
+- **ticket_id:** WOT-2026-013f
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013F-001
+- **Plan-Link:** PLAN-013F-001
+- **Premise:** `WOT-2026-013e` confirmo que `tests/deprecated/` contiene solo dos tests Goose (`test_goose_triggers.py`, `test_goose_realworld.py`) ya marcados `DEPRECATED (WT-2026-254a)` y excluidos del runner por `pytest.ini:norecursedirs`, con 0 tests recolectados. La poda correcta es retirar ese directorio y dejar trazabilidad del retiro en `tests/integration/RETIRED_TESTS.md`, sin tocar el runner ni mezclar otros candidatos legacy como `test_ejemplo` o `test_goose_native_skill`.
+- **Premise Re-check (read-only):**
+  - verificar que `pytest.ini` sigue excluyendo `tests/deprecated` via `norecursedirs`;
+  - verificar que `tests/deprecated/test_goose_triggers.py` y `tests/deprecated/test_goose_realworld.py` siguen marcados `DEPRECATED (WT-2026-254a)`;
+  - buscar referencias vivas a `tests/deprecated/` y distinguirlas de referencias historicas o de contexto generado; en particular, confirmar que `scripts/cleanup_legacy.py` apunta al antiguo `scripts/test_goose_realworld.py`, no a `tests/deprecated/test_goose_realworld.py`;
+  - verificar que `tests/integration/RETIRED_TESTS.md` existe como precedente canonico para documentar retiros seguros;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** motor_head=4eb0fbb; destino_head=b722c1b; repo_motor_status='main...origin/main clean'; repo_destino_status='main...origin/main clean'; collect_only_baseline=3111; generated_at=2026-06-22.
+- **Files Likely Touched:**
+  - Builder repo_motor: `tests/deprecated/`
+  - Builder repo_motor: `tests/integration/RETIRED_TESTS.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `pytest.ini`; `docs/test_performance/test_suite_audit_WOT-2026-013e.md`; `scripts/cleanup_legacy.py`; `tests/unit/test_cleanup_legacy.py`; `tests/test_goose_native_skill.py`; `tests/unit/test_ejemplo.py`.
+- **Forbidden Surfaces:** `pytest.ini`; `scripts/run_pytest_safe.py`; `docs/test_performance/test_suite_audit_WOT-2026-013e.md`; `scripts/cleanup_legacy.py`; `tests/test_goose_native_skill.py`; `tests/unit/test_ejemplo.py`; CI/workflows; cualquier codigo de producto fuera de `tests/deprecated/` y `tests/integration/RETIRED_TESTS.md`; `privada/`; `.env`; eventos del bus escritos manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] El diff productivo del motor se limita a borrar `tests/deprecated/` y documentar el retiro en `tests/integration/RETIRED_TESTS.md`.
+  - [ ] `python -m pytest tests --collect-only -q -p no:cacheprovider` mantiene 3111 tests tras la poda, y `execution_log.md` registra el conteo pre y post.
+  - [ ] `tests/integration/RETIRED_TESTS.md` deja explicito que los tests retirados cubrian Goose, subsistema deprecado por `WT-2026-254a`, ya excluido del runner.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde y el cierre lee la evidencia canonica sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] No se tocan `pytest.ini`, runner, CI, `test_goose_native_skill.py`, `test_ejemplo` ni producto vivo.
+- **Integracion cross-ticket:** consume el follow-up FU-013E-2 sin reabrir `013e` ni mezclar FU-013E-1 (`test_ejemplo` / `test_goose_native_skill`) ni `013g` (coste unknown). Cualquier hallazgo que obligue a tocar runner o producto se devuelve por `CONTRACT_GAP`.
+- **CONTRACT_GAP behavior:** si aparece un consumidor vivo de `tests/deprecated/`, si el borrado cambia el conteo recolectado, o si la justificacion del retiro exige tocar runner/producto o mezclar otros candidatos legacy, emitir `CG-WOT-2026-013f.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si `tests/deprecated/` resulta ser fuente viva para algun consumidor canonico; parar si el collect-only post-poda ya no da 3111; parar si la unica salida verde exige tocar `pytest.ini`, `scripts/run_pytest_safe.py` o codigo fuera de las superficies declaradas.
+- **Depende de:** WOT-2026-013e (COMPLETED).
+

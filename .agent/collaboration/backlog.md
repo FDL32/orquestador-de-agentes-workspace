@@ -45,9 +45,11 @@
 - **Objetivo:** retirar `tests/deprecated/` con justificacion, dejando constancia (estilo `tests/integration/RETIRED_TESTS.md`) de que la cobertura retirada es de un subsistema deprecado, no de producto vivo.
 - **Files Likely Touched:**
   - repo_motor: `tests/deprecated/`
+  - repo_motor: `tests/integration/RETIRED_TESTS.md`
   - repo_destino: `.agent/collaboration/execution_log.md`
-- **Criterios binarios:** `git rm` acotado a `tests/deprecated/`; `pytest tests --collect-only -q` sigue dando 3111 (los borrados ya no se recolectaban); `run_pytest_safe.py --level all` verde; ningun otro test/producto tocado; `validate` 0/0.
-- **STOP:** si algun consumidor vivo (discovery, resolver, docs) referencia esos archivos como fuente; si borrarlos cambia el conteo recolectado; si aparece valor historico no replicable -> conservar y documentar en vez de borrar.
+- **Read/inspect only:** repo_motor `pytest.ini`, `docs/test_performance/test_suite_audit_WOT-2026-013e.md`, `scripts/cleanup_legacy.py`, `tests/unit/test_cleanup_legacy.py`, `tests/test_goose_native_skill.py`, `tests/unit/test_ejemplo.py`
+- **Criterios binarios:** `git rm` acotado a `tests/deprecated/`; `python -m pytest tests --collect-only -q -p no:cacheprovider` mantiene 3111; `tests/integration/RETIRED_TESTS.md` documenta el retiro; `run_pytest_safe.py --level all` verde; `validate` 0/0.
+- **STOP:** si algun consumidor vivo referencia `tests/deprecated/` como fuente; si borrarlos cambia el conteo recolectado; si la justificacion exige tocar runner/producto o mezclar `test_ejemplo` / `test_goose_native_skill` / `013g`.
 
 ### WOT-2026-013g - Diagnosticar coste no explicado de test_upgrade_path_suggestion
 - **Prioridad:** Baja

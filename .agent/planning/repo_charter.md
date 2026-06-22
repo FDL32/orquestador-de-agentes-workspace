@@ -97,6 +97,16 @@ referencias publicadas.
   - depende de intuicion no corroborada para decidir que tests ya no aportan valor.
 - related_plans: [PLAN-013E-001]
 
+
+### OBJ-013F-001 -- Poda segura de suite deprecada
+- description: retirar del motor los tests Goose ya deprecados y excluidos del runner, dejando trazabilidad de su retiro sin tocar la politica del runner ni mezclar otras familias legacy.
+- success_criteria: `tests/deprecated/` desaparece del repo, la retirada queda documentada en `tests/integration/RETIRED_TESTS.md`, y la recoleccion canonica mantiene 3111 tests.
+- failure_modes:
+  - la poda obliga a tocar `pytest.ini`, `scripts/run_pytest_safe.py` o producto vivo;
+  - aparece un consumidor vivo de `tests/deprecated/` y se borra igualmente;
+  - se mezcla este retiro con `test_ejemplo`, `test_goose_native_skill` o el diagnostico `013g`.
+- related_plans: [PLAN-013F-001]
+
 ## Negative Audit Checklist
 
 - [ ] El analisis modifica alguna ruta del repo_motor.
