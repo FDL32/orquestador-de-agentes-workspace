@@ -1,12 +1,12 @@
 # Memory Profile (L3)
 
-Total observations: 77
+Total observations: 85
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
-- bus-architecture: 42 observations
+- bus-architecture: 50 observations
 - delivery-hygiene: 18 observations
 - review-quality: 8 observations
 - builder-contract: 5 observations
@@ -56,6 +56,7 @@ High-level profile of project memory for quick context loading. This is the firs
 - WOT-AUDIT-A2a
 - WOT-AUDIT-A2b
 - WOT-AUDIT-CI
+- WT-2026-182
 - WT-2026-189
 - WT-2026-191
 - WT-2026-193
@@ -65,19 +66,23 @@ High-level profile of project memory for quick context loading. This is the firs
 - WT-2026-212
 - WT-2026-214
 - WT-2026-216
+- WT-2026-238a
 - WT-2026-242c
 - WT-2026-243a
+- WT-2026-245a
+- WT-2026-245b
+- WT-2026-249b
 - WT-2026-251a
 
 ## Recent Signals
 
+- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010j (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-008b (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-245b (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-182 (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-245a (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-238a (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-249b (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WT-2026-200 (session-close)
 - [ticket-completion] Ticket WOT-2026-013j completado: Unknown (deliverable_type=code) (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013j (session-close)
-- [ticket-completion] Ticket WOT-2026-013d completado: Unknown (deliverable_type=code) (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013d (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-011h (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010m (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-010x (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-011g (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013a (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-011b (session-close)
