@@ -22,8 +22,9 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013o | Saneamiento estricto de observations.jsonl portable | motor/memory-schema | pending | WOT-2026-013n | session-2026-06-22-memory-upload | - |
-| Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013o | session-2026-06-25-motor-closeout | - |
+| Alta | WOT-2026-013o | Saneamiento observations.jsonl (CERRO contra target equivocado: repo_destino) | motor/memory-schema | completed-wrong-target | WOT-2026-013n | session-2026-06-22-memory-upload | - |
+| Alta | WOT-2026-013s | Saneamiento estricto de observations.jsonl del repo_motor (sucesor de 013o) | motor/memory-schema | pending | WOT-2026-013n | session-2026-06-25-motor-closeout | - |
+| Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013s | session-2026-06-25-motor-closeout | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -34,16 +35,26 @@
 > Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. Follow-ups vivos: `013o`, que debe dejar `observations.jsonl` en `--strict` verde antes de promover nuevas memorias portables, y `013r`, que corrige el mock-drift de `test_upgrade.py` y cierra la duplicacion `UpgradeManager` una vez despejado el bloqueo de schema. `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013o - Saneamiento estricto de observations.jsonl portable
+### WOT-2026-013o - Saneamiento observations.jsonl (CERRADO contra target equivocado)
+- **Estado:** completed-wrong-target (terminal en bus: REVIEW_DECISION -> READY_TO_CLOSE
+  -> CLOSE_CONFIRMED -> COMPLETED -> SUPERVISOR_CLOSED).
+- **Nota historica (VERIFICADO EN BUS / VERIFICADO 2026-06-25):** 013o cerro
+  COMPLETED apuntando al `observations.jsonl` del `repo_destino` (que estaba
+  limpio, 17 errores), dejando SIN sanear el del `repo_motor` (168 errores
+  --strict). El objetivo real NO se cumplio. NO se reabre (ID terminal). El
+  saneamiento del MOTOR se trata como ticket NUEVO -> WOT-2026-013s.
+
+### WOT-2026-013s - Saneamiento estricto de observations.jsonl del repo_motor
 - **Prioridad:** Alta
 - **Scope:** motor/memory-schema
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-013n
+- **Reemplaza/corrige a:** WOT-2026-013o (target equivocado: repo_destino en vez de repo_motor)
 - **Reactivation:** -
-- **Origen:** session-2026-06-22-memory-upload.
-- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013o.md`.
+- **Origen:** session-2026-06-25-motor-closeout.
+- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013s.md`.
   El cuerpo del ticket (objetivo, premise re-check reproducible, ejes A/B, DoD
   binario, STOP, CONTRACT_GAP) vive SOLO ahi para evitar dual-contract drift.
   Esta fila es indice; no reproducir conteos ni criterios aqui (la autoridad del
@@ -55,7 +66,7 @@
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013o
+- **Depende de:** WOT-2026-013s (sucesor de 013o; 013o cerro contra target equivocado)
 - **Reactivation:** -
 - **Origen:** session-2026-06-25-motor-closeout.
 - **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013r.md`.

@@ -1,16 +1,23 @@
-# Plan de Trabajo: WOT-2026-013o
+# Plan de Trabajo: WOT-2026-013s
 
 > Fuente canonica unica del ticket (packet oficial). El backlog del workspace
 > debe REFERENCIAR este archivo, no reproducir su cuerpo. Redactado contra
 > `prompts/audit_cf_ticket_contract.md` y `prompts/orchestrator_launch_builder.md`.
 
+> **Procedencia (importante):** este ticket nace porque `WOT-2026-013o` cerro
+> COMPLETED en el bus apuntando al `observations.jsonl` del **repo_destino**
+> (que estaba limpio), dejando SIN sanear el del **repo_motor** (168 errores
+> --strict, VERIFICADO 2026-06-25). 013o es terminal y NO se reabre; el
+> saneamiento real del MOTOR se trata como ticket NUEVO `WOT-2026-013s`.
+
 ## Metadata
-- **ID:** WOT-2026-013o
-- **Titulo:** Saneamiento estricto de observations.jsonl portable del motor
+- **ID:** WOT-2026-013s
+- **Titulo:** Saneamiento estricto de observations.jsonl del repo_motor (sucesor de 013o, target corregido)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Prioridad:** Alta
 - **Depende de:** WOT-2026-013n (cerrado)
+- **Reemplaza/corrige a:** WOT-2026-013o (COMPLETED contra target equivocado: repo_destino en vez de repo_motor)
 - **Objective-Link:** desbloquear la promocion de memoria portable del motor
   (FP-012 y futuros) dejando `observations.jsonl` en `--strict` verde.
 - **Plan-Link:** backlog del workspace (familia 013).
@@ -21,8 +28,8 @@ Dejar `repo_motor/.agent/runtime/memory/observations.jsonl` en
 determinista y auditable, sin reinterpretar contenido factual (`signal`).
 
 ## Orden de ejecucion
-`WOT-2026-013o` se ejecuta ANTES que `WOT-2026-013r`. El ticket
-`WOT-2026-013r` NO se arranca hasta que `013o` cierre verde, porque `013o`
+`WOT-2026-013s` se ejecuta ANTES que `WOT-2026-013r`. El ticket
+`WOT-2026-013r` NO se arranca hasta que `013s` cierre verde, porque `013s`
 desbloquea el schema de memoria portable que `013r` necesita para promover
 aprendizajes como FP-012 sin ampliar deuda.
 
@@ -104,7 +111,7 @@ git diff --stat .agent/runtime/memory/observations.jsonl   # diff revisable (arc
 ## CONTRACT_GAP behavior
 Si un dominio de `uncovered_by_MAP` no tiene mapeo canonico honesto NI justifica
 ampliar el enum sin redisenar la taxonomia -> emite
-`.agent/planning/contract_gaps/CG-WOT-2026-013o.md` + evento bus y PARA. No
+`.agent/planning/contract_gaps/CG-WOT-2026-013s.md` + evento bus y PARA. No
 fuerces un mapeo semanticamente falso para poner verde el gate.
 
 ## DoD (binario, comandos exactos)
@@ -125,6 +132,6 @@ fuerces un mapeo semanticamente falso para poner verde el gate.
 - Si el migrador no deja `--strict` verde tras poblar el MAP (investigar; no parchear el JSONL a mano).
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con `WOT-2026-013o`), suite canonica
+Commit productivo en repo_motor (mensaje con `WOT-2026-013s`), suite canonica
 fresca al HEAD (tested_commit_sha == HEAD, exit 0, level all), luego
 `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.

@@ -11,7 +11,7 @@
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Prioridad:** Alta
-- **Depende de:** WOT-2026-013o
+- **Depende de:** WOT-2026-013s (sucesor de 013o; 013o cerro contra target equivocado)
 - **Objective-Link:** cerrar el falso verde sobre operacion destructiva de
   upgrade (FP-012).
 
@@ -69,7 +69,7 @@ python scripts/run_pytest_safe.py --level all
 
 ## Non-goals
 - NO tocar memoria portable en esta ronda (promocion de FP-012 a
-  `observations.jsonl` se evalua DESPUES de 013o, con schema verde).
+  `observations.jsonl` se evalua DESPUES de 013s, con schema verde).
 - NO redisenar el flujo install/upgrade.
 - NO unificar los forks sin reaprobacion (paso 2).
 
@@ -77,7 +77,7 @@ python scripts/run_pytest_safe.py --level all
 - Si unificar forks obligaria a redisenar todo el flujo install/upgrade.
 - Si la correccion depende de reinterpretar no-verificablemente cual
   `UpgradeManager` es canonico.
-- Si se intenta mezclar este fix con la migracion de schema de 013o.
+- Si se intenta mezclar este fix con la migracion de schema de 013s.
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013r.md` + evento bus y PARA.
 
 ## DoD (binario, comandos exactos)
