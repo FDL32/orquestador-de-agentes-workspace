@@ -1,4 +1,4 @@
-﻿# repo_charter.md -- Plan WOT-2026-008
+# repo_charter.md -- Plan WOT-2026-008
 
 > Scope restringido: taxonomia portable de prompts y skills del repo_motor.
 > El motor es la herramienta canonica; el repo_destino conserva el contrato,

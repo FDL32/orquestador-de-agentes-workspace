@@ -1,4 +1,4 @@
-﻿# plan_graph.md -- Plan WOT-2026-008
+# plan_graph.md -- Plan WOT-2026-008
 
 ## PLAN-001 -- Inventario y contrato de migracion
 

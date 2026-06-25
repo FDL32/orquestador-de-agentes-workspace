@@ -1703,7 +1703,7 @@
 - **Integracion cross-ticket:** `013j` sucede a `013i` como fix de proceso/contrato. Puede tocar el gate del backlog y la instruccion de pipeline, pero no debe reabrir tickets de scope gate/handoff (`010n`, `011h`) ni reinterpretar el FLT fuera del contrato frozen.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el lifecycle completo de packet, tocar `scope_gate` / `pre_handoff_guard` / `agent_controller.py`, o convertir `backlog.md` en una segunda autoridad del FLT, emitir `CG-WOT-2026-013j.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad “sincronizadas manualmente”; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
+- **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad â€œsincronizadas manualmenteâ€; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
 - **Depende de:** -.
 
 ## T-013L-001 -- Retencion local opt-in para runtime gitignored
