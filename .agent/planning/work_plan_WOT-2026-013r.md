@@ -23,8 +23,8 @@ interceptan.
 ## Premise Re-check (cwd=repo_motor)
 ```
 git rev-parse --short HEAD
-grep -n "from scripts.upgrade_agent_system import\|patch(\"scripts.upgrade\.shutil" tests/unit/test_upgrade.py
-grep -n "shutil.copytree\|shutil.copy2" scripts/upgrade_agent_system.py
+rg -n "from scripts\\.upgrade_agent_system import|patch\\(\"scripts\\.upgrade\\.shutil" tests/unit/test_upgrade.py
+rg -n "shutil\\.copytree|shutil\\.copy2" scripts/upgrade_agent_system.py
 ```
 Condicion de arranque (VERIFICADO POR BYTES 2026-06-25): `test_upgrade.py:12`
 importa `UpgradeManager` de `scripts.upgrade_agent_system` pero parchea

@@ -20,6 +20,12 @@ Dejar `repo_motor/.agent/runtime/memory/observations.jsonl` en
 `validate_observations.py --strict` EXIT 0, reparando el schema drift de forma
 determinista y auditable, sin reinterpretar contenido factual (`signal`).
 
+## Orden de ejecucion
+`WOT-2026-013o` se ejecuta ANTES que `WOT-2026-013r`. El ticket
+`WOT-2026-013r` NO se arranca hasta que `013o` cierre verde, porque `013o`
+desbloquea el schema de memoria portable que `013r` necesita para promover
+aprendizajes como FP-012 sin ampliar deuda.
+
 ## Premise Re-check (autoridad reproducible; NO conteos fijos)
 **Regla contractual:** la autoridad del estado es la salida de
 `validate_observations.py --strict`, no un numero del plan. Captura el conteo
