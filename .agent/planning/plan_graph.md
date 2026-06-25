@@ -95,6 +95,29 @@
   - la barrera debe FALLAR si la seleccion incluye `events/archive`, `audits/system_health`, `collaboration/archive` o `_archive/plan_audit`, o si el script intenta ejecutarse sin `--dry-run/--apply` explicitos
 
 
+## PLAN-013V-001 -- Semantica explicita de recencia para reviews/
+
+- objetivo: hacer explicita y verificable la semantica actual de `reviews/` en `prune_runtime_retention.py` (`reciente = mtime del directorio`), evitando que el operador interprete "ultimo review" como "ultimo intento logico dentro del dir".
+- tickets: [WOT-2026-013v]
+- depends_on: [WOT-2026-013l]
+- superficies_archivo:
+  - repo_motor/scripts/prune_runtime_retention.py
+  - repo_motor/tests/unit/test_prune_runtime_retention.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - help/docstring de `python scripts/prune_runtime_retention.py --help`
+  - seleccion de `reviews/` via `mtime` del directorio por ticket
+  - CLI `python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run --keep-reviews <N>`
+- shared_dependencies:
+  - `repo_motor/.agent/agent_controller.py` y `repo_motor/scripts/run_pytest_safe.py` (read-only; cierre canonico)
+  - `repo_motor/bus/review_bridge.py` y `repo_motor/bus/review_report.py` (read-only; productores de `reviews/`)
+  - packets/baks siguen con semantica por archivo y quedan fuera del cambio
+- paralelizable: no
+- Merge Regression Audit:
+  - la regresion a bloquear es volver a dejar ambigua la palabra "recent" para `reviews/` o medir accidentalmente por archivo interno sin decidirlo explicitamente
+  - la barrera debe FALLAR si help/docstring/tests dejan de afirmar que `reviews/` se ordena por `mtime` del directorio, o si el ticket deriva a reordenar packets/baks o a cablear closeout
+
+
 ## PLAN-013U-001 -- Contrato CLI coherente para acciones con ticket
 
 - objetivo: alinear el parser comun de `--ticket`, la ayuda y las barreras de regresion del controller para que las acciones de closeout/review acepten `--ticket <id>` de forma consistente sin romper la compatibilidad posicional existente.

@@ -173,6 +173,16 @@ referencias publicadas.
 - related_plans: [PLAN-013L-001]
 
 
+### OBJ-013V-001 -- Semantica operativa explicita para `reviews/`
+- description: evitar que la utilidad de retencion local induzca una lectura incorrecta de "reviews mas recientes" dejando explicito que `reviews/` se ordena por `mtime` del directorio del ticket, no por el archivo interno mas reciente, sin cambiar el algoritmo ni ampliar blast radius.
+- success_criteria: help/docstring/salida y barreras de test describen la MISMA semantica para `reviews/`; el operador puede ver en `--dry-run` y en la ayuda que la recencia de `reviews/` depende del directorio, mientras `review_packets` y `observations.jsonl.bak.*` siguen siendo superficies por archivo.
+- failure_modes:
+  - el texto vuelve a prometer o sugerir "ultimo intento logico" cuando el codigo sigue usando `mtime` del directorio;
+  - el ticket deriva a redisenar el algoritmo de orden o a tocar `review_packets` / `observations.jsonl.bak.*` sin nueva aprobacion;
+  - la barrera se limita a prose sin demostrar via test que la semantica documentada sigue siendo la real.
+- related_plans: [PLAN-013V-001]
+
+
 ### OBJ-013U-001 -- Contrato CLI coherente para acciones de closeout/review
 - description: asegurar que el controller trate `--ticket <id>` como contrato comun real para las acciones de closeout/review que aceptan ticket, manteniendo compatibilidad con la forma posicional existente y sin degradar la semantica del bus.
 - success_criteria: el help, el parser y las barreras de test describen y verifican el mismo contrato CLI para `manager-approve`, `request-changes` y `reopen-terminal-ticket`.

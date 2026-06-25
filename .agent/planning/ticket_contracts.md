@@ -1739,6 +1739,39 @@
 - **STOP conditions:** parar si el FLT real exige tocar un modulo fuera de `scripts/prune_runtime_retention.py` o `tests/unit/test_prune_runtime_retention.py`; parar si la cobertura depende de una heuristica opaca no auditable; parar si el contrato de conteo no puede expresarse con `--keep-reviews <N>`, `--keep-packets <N>` y `--keep-observation-baks <N>` de forma estable.
 - **Depende de:** -
 
+## T-013V-001 -- Semantica explicita de recencia para reviews/
+
+- **ticket_id:** WOT-2026-013v
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013V-001
+- **Plan-Link:** PLAN-013V-001
+- **Premise:** `scripts/prune_runtime_retention.py` usa hoy el `mtime` del DIRECTORIO de cada ticket en `reviews/`, mientras `review_packets/` y `observations.jsonl.bak.*` son superficies por archivo. La review de `013l` demostro con evidencia local (23 de 38 dirs divergentes; hasta ~38883 s) que "review mas reciente" por `mtime` de directorio NO equivale a "ultimo intento logico" dentro del dir. Como `013l` ya esta aprobado/cerrado y la CLI es opt-in con `--dry-run` obligatorio antes de `--apply`, la via de menor riesgo para `013v` es documentar esa semantica real y blindarla con tests, NO cambiar el algoritmo en esta ronda.
+- **Premise Re-check (read-only):**
+  - inspeccionar `scripts/prune_runtime_retention.py` para verificar que `reviews/` se ordena por `p.stat().st_mtime` del directorio y que `review_packets/` / `observations.jsonl.bak.*` siguen siendo superficies por archivo;
+  - releer `tests/unit/test_prune_runtime_retention.py` y confirmar que hoy cubre seleccion segura, `dry-run`, `apply` y spillover, pero no hace explicita la semantica operacional de `reviews/`;
+  - ejecutar `python scripts/prune_runtime_retention.py --help` y verificar si el help/docstring deja claro (o no) que `reviews/` usa `mtime` del directorio;
+  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` antes del arranque y dejar constancia de `0 errors / 0 warnings`.
+- **Files Likely Touched:**
+  - Builder: `scripts/prune_runtime_retention.py`
+  - Builder: `tests/unit/test_prune_runtime_retention.py`
+  - Read/inspect only: `bus/review_bridge.py`, `bus/review_report.py`, `.agent/agent_controller.py`, `scripts/run_pytest_safe.py`
+- **Forbidden Surfaces:** `.agent/agent_controller.py`; `bus/**`; `runtime/**`; `scripts/run_pytest_safe.py`; `review_packets` / `observations.jsonl.bak.*` mas alla de texto compartido indispensable; wiring de closeout/mark-ready/session-close; `privada/`; `.env*`; eventos del bus editados manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_help_makes_directory_mtime_semantics_explicit -q` pasa y el help deja claro que `reviews/` se ordena por `mtime` del DIRECTORIO.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_reviews_semantics_do_not_claim_last_logical_attempt -q` pasa; si el texto vuelve a sugerir "ultimo intento logico" o una semantica por archivo interno, FALLA.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_review_directories_are_ranked_by_directory_mtime_not_nested_file_mtime -q` pasa; si se reinterpreta el orden de `reviews/` sin decision explicita, FALLA.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` sigue pasando para preservar que packets/baks mantienen su politica existente y el ticket no deriva a rediseno del algoritmo general.
+  - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+  - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+- **Integracion cross-ticket:** follow-up de bajo riesgo sobre `013l`; NO reabre `013l`, NO mueve `013k`, y deja `013t` fuera.
+- **CONTRACT_GAP behavior:** si hacer explicita la semantica exige cambiar el algoritmo de orden de `reviews/`, tocar packets/baks o cablear la utilidad al closeout, emitir `CG-WOT-2026-013v.md` y bloquear.
+- **Builder clarification budget:** 0. El ticket fija la decision de producto: documentar la semantica actual, no reordenarla.
+- **STOP conditions:** parar si el codigo real resulta no usar `mtime` de directorio, si la ayuda no puede expresarlo sin cambiar el algoritmo, o si aparece una dependencia no prevista con historico versionado / lifecycle.
+- **Depende de:** WOT-2026-013l (COMPLETED).
+
 ## T-013N-001 -- Estados terminales honestos no-exito
 
 - **ticket_id:** WOT-2026-013n
