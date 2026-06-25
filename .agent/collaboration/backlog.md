@@ -22,7 +22,6 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013s | Saneamiento estricto de observations.jsonl del repo_motor (sucesor de 013o) | motor/memory-schema | pending | WOT-2026-013n | session-2026-06-25-motor-closeout | - |
 | Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013s | session-2026-06-25-motor-closeout | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
@@ -31,26 +30,8 @@
 
 ## Fichas detalladas (tickets vivos)
 
-> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trata como ticket NUEVO `013s`. Follow-ups vivos: `013s`, que debe dejar el `observations.jsonl` del MOTOR en `--strict` verde antes de promover nuevas memorias portables, y `013r`, que corrige el mock-drift de `test_upgrade.py` y cierra la duplicacion `UpgradeManager` una vez despejado el bloqueo de schema (depende de `013s`). `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. Follow-up vivo actual: `013r`, que corrige el mock-drift de `test_upgrade.py` y cierra la duplicacion `UpgradeManager` ahora que el bloqueo de schema quedo despejado. `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
-
-### WOT-2026-013s - Saneamiento estricto de observations.jsonl del repo_motor
-- **Prioridad:** Alta
-- **Scope:** motor/memory-schema
-- **Estado:** pending en cola viva; el estado operativo real vive en
-  `.agent/collaboration/STATE.md` / `work_plan.md` y ya puede estar
-  `IN_PROGRESS` tras bootstrap.
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013n
-- **Reemplaza/corrige a:** WOT-2026-013o (target equivocado: repo_destino en vez de repo_motor)
-- **Reactivation:** -
-- **Origen:** session-2026-06-25-motor-closeout.
-- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013s.md`.
-  El cuerpo del ticket (objetivo, premise re-check reproducible, ejes A/B, DoD
-  binario, STOP, CONTRACT_GAP) vive SOLO ahi para evitar dual-contract drift.
-  Esta fila es indice; no reproducir conteos ni criterios aqui (la autoridad del
-  estado es `validate_observations.py --strict`, no un numero del backlog).
 
 ### WOT-2026-013r - Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
 - **Prioridad:** Alta
