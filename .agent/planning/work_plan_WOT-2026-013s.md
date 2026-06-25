@@ -61,6 +61,21 @@ Estado esperado al arrancar (referencia orientativa, usa el output real):
 - Si `validate --strict` falla Y `uncovered_by_MAP` no es vacio -> ticket
   completo (Eje A + Eje B), caso esperado.
 
+## Decision Arquitectonica
+La decision central es como tratar los dominios no-enum del MOTOR: **mapear a un
+dominio canonico existente** (preferido) vs **ampliar el enum canonico**.
+- Preferir MAPEAR (poblar `DOMAIN_MIGRATION_MAP`) cuando el dominio no-enum es un
+  sub-caso semantico de uno canonico (precedente 013o: `collaboration` ->
+  `delivery-hygiene`, `test-performance` -> `testing`). Mas barato, no toca el
+  contrato de schema ni `ap-schema.md`, no propaga a destinos via sync.
+- Ampliar el ENUM (en `validate_observations.py` + `ap-schema.md`) SOLO si un
+  dominio no tiene equivalente canonico honesto y representa una categoria
+  estable que merece existir en el contrato portable. Tiene blast radius mayor
+  (toca el schema que se propaga a cada destino instalado via sync) -> requiere
+  justificacion fuerte y barrera/doc.
+- Invariante: ninguna decision "a ojo"; cada mapeo o ampliacion lleva comentario
+  justificante. Si ningun camino es honesto sin redisenar la taxonomia -> CONTRACT_GAP.
+
 ## Plan de Implementacion (2 ejes separados)
 ### Eje A - reparacion determinista de datos (la cubre el migrador)
 `applies_to` (arrays/no-enum), `source` ausente, `timestamp`/`ts` -> reglas
