@@ -71,7 +71,7 @@
   - verificar que `.agent/state_validation.py` no acepta `PAUSED`;
   - verificar que `.agent/agent_controller.py` no expone `--pause-ticket`, `--resume-ticket` ni `--abort-paused-ticket`;
   - verificar que `scripts/pre_handoff_guard.py` no inspecciona `paused/` ni diagnosticos `paused_ticket_*`;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes de bootstrap para dejar constancia del estado pre-arranque.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes de bootstrap para dejar constancia del estado pre-arranque.
 - **Context Baseline Evidence:** motor_head=b0248b1; destino_head=3a5a25b; motor_status='main ahead 2, clean'; destino_status='main ahead 1, packet 010d pre-arranque'; validate_result='0 errors; warnings pre-bootstrap para 010d sin STATE_CHANGED'; generated_at=2026-06-16.
 - **Files Likely Touched:**
   - Builder: `.agent/agent_controller.py`
@@ -98,7 +98,7 @@
   - [ ] `--resume-ticket` falla cerrado ante conflicto y no deja tree parcialmente mutado.
   - [ ] Existe un test explicito para `--abort-paused-ticket` fail-closed o stub auditable sin dejar estado parcial.
   - [ ] `pre_handoff_guard` y `--mark-ready` bloquean pausa activa ajena o corrupta.
-  - [ ] `run_pytest_safe` termina con `0 failed` y `validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings al cierre.
+  - [ ] `run_pytest_safe` termina con `0 failed` y `validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings al cierre.
 - **Integracion cross-ticket:** serializar contra cualquier ticket que toque bus, controller, supervisor, locks de Builder, state projection, pre-handoff o lifecycle runtime. No paralelizable segun `PLAN-010D-001`.
 - **CONTRACT_GAP behavior:** si la premisa es falsa, aparece una superficie compartida no prevista, se requiere tocar docs generales en vez del runtime, o `resume` no puede garantizar fail-closed, emitir `CG-WOT-2026-010d.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. Si el Builder necesita decidir semantica de lifecycle o que autoridad manda entre bus y markdown, el contrato fallo.
@@ -119,7 +119,7 @@
   - verificar que `pytest-cache` sigue deshabilitado en `pytest.ini` / runner;
   - verificar que `pytest-xdist` no esta instalado en `pyproject.toml` o lockfile;
   - verificar que `integration`/`slow` son una fraccion pequena de la suite;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** motor_head=dirty-local; destino_state=WOT-2026-010f COMPLETED; validate_result=0 errors / 0 warnings; generated_at=2026-06-17.
 - **Files Likely Touched:**
   - Builder: `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`
@@ -135,7 +135,7 @@
   - [ ] El reporte recomienda el siguiente ticket ejecutable con evidencia, no por intuicion.
   - [ ] `git diff` del `repo_motor` se limita al artefacto documental del ticket.
   - [ ] `check_encoding_guard.py` pasa sobre el reporte y los artefactos de packet tocados.
-  - [ ] `validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
 - **Integracion cross-ticket:** 010j es gate de premisa para 010k, 010l y 010m. Ninguno de esos tickets debe arrancar sin leer el reporte final de 010j.
 - **CONTRACT_GAP behavior:** si la medicion no puede ejecutarse de forma reproducible, el reporte no puede quedar durable en `repo_motor`, o la suite no produce datos suficientes para decidir el siguiente ticket, emitir `CG-WOT-2026-010j.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder no decide politica de gates ni optimizaciones; solo mide y reporta.
@@ -170,7 +170,7 @@
   - [ ] Una ruta namespaced invalida, ambigua o fuera de root falla cerrado con diagnostico claro.
   - [ ] El gate ignora `Read/inspect only`, `Manager-only` y notas no parseables como entregables Builder.
   - [ ] `WOT-2026-010j` puede cerrar canonicamente sin duplicar el reporte en `repo_destino`.
-  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings tras la reparacion del gate y el cierre reintentado de `010j`.
+  - [ ] `validate --json --project-root <workspace_activo>` termina en 0 errors / 0 warnings tras la reparacion del gate y el cierre reintentado de `010j`.
 - **Integracion cross-ticket:** desbloquea el cierre de `WOT-2026-010j`; cualquier ticket documental/analysis con entrega en `repo_motor` depende de esta correccion si usa `check_deliverables_exist.py`.
 - **CONTRACT_GAP behavior:** si el bug no puede corregirse sin redisenar por completo el contrato FLT/delivery_authority, o aparecen consumidores incompatibles que exigen una migracion mayor, emitir `CG-WOT-2026-010n.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder no debe improvisar duplicacion de artefactos ni reinterpretar a mano el namespace correcto.
@@ -190,7 +190,7 @@
   - releer `docs/test_performance/test_performance_baseline_WOT-2026-010j.md`;
   - confirmar los tests o familias lentas priorizadas por tiempo wall-clock real;
   - verificar que los candidatos elegidos no son tests cuyo contrato observable exige precisamente scan completo o git/filesystem real;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** source_ticket=WOT-2026-010j; source_report_commit=c05dbfe; trigger_followup=WOT-2026-010k; generated_at=2026-06-17.
 - **Files Likely Touched:**
   - Builder: tests o fixtures del `repo_motor` directamente implicados en los hotspots reales seleccionados
@@ -205,7 +205,7 @@
   - [ ] Cada helper/fixture nueva que sustituya setup caro queda cubierta por al menos un smoke test sin el shortcut correspondiente.
   - [ ] Demuestra mejora con medicion antes/despues bajo condiciones comparables del mismo entorno.
   - [ ] No reduce cobertura semantica ni introduce falso-verde.
-  - [ ] `validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings al cierre.
+  - [ ] `validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings al cierre.
 - **Integracion cross-ticket:** usa `010j` como fuente de verdad; no debe contaminar `010l` ni `010m` con cambios de politica.
 - **CONTRACT_GAP behavior:** si los hotspots reales no admiten optimizacion local sin degradar el contrato observable, o si la mejora exige cambiar politica de gates/runner, emitir `CG-WOT-2026-010k.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder no debe reabrir la hipotesis vieja de `git/subprocess` sin evidencia nueva.
@@ -268,7 +268,7 @@
   - verificar como `scope_gate.get_changed_files()` y `pre_handoff_guard.get_changed_files()` resuelven el diff real;
   - releer `docs/test_performance/test_performance_baseline_WOT-2026-010j.md` y `docs/test_performance/test_performance_followup_WOT-2026-010k.md`;
   - confirmar que `010i` ya endurecio Forbidden Surfaces y commit-visible antes de introducir un atajo local;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** depends_on=WOT-2026-010j,WOT-2026-010i,WOT-2026-010q; source_report_010j=c05dbfe; hardening_010i=fdd55b6; handoff_gate_010q=849e7d5; generated_at=2026-06-17.
 - **Files Likely Touched:**
   - Builder: `scripts/run_pytest_safe.py`
@@ -285,7 +285,7 @@
   - [ ] No cambia el contrato de cierre de `010c` ni debilita `010q`: el handoff sigue exigiendo `level=all` y `args_mode=default_discovery`.
   - [ ] Incluye tests de barrera para diff fallido, archivo troncal, resolucion vacia y mapeo parcial/inseguro.
   - [ ] Documenta como invocar el selector y como detectar cuando replega a suite canonica.
-  - [ ] `ruff`, tests focales, encoding guard y `validate --json --project-root <repo_destino>` cierran en verde al handoff.
+  - [ ] `ruff`, tests focales, encoding guard y `validate --json --project-root <workspace_activo>` cierran en verde al handoff.
 - **Integracion cross-ticket:** usa `010j` como evidencia de coste, `010i` como barrera de packet/scope y `010q` como red de seguridad del handoff. No mover estas responsabilidades de sitio.
 - **CONTRACT_GAP behavior:** si el selector exige cambiar politica de closeout, ampliar el schema de `last-run.json` o relajar la suite canonica en handoff, emitir `CG-WOT-2026-010l.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0.
@@ -333,7 +333,7 @@
   - [ ] El reporte declara que `010r` no adopta ni porta nada; `CREDITS.md` queda como read-only y cualquier fila se difiere a `010s` o `010t` si adoptan ideas.
   - [ ] Si `gh` no esta autenticado, el reporte conserva el fallo literal y usa fetch web como fuente alternativa etiquetada.
   - [ ] Encoding guard pasa sobre el reporte y los artefactos del packet tocados.
-  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+  - [ ] `validate --json --project-root <workspace_activo>` termina en 0 errors / 0 warnings.
 - **Integracion cross-ticket:** `010r` es gate de decision para `010s` y `010t`, y debe informar la ejecucion de `008c/008d` sin bloquearlos por prosa.
 - **CONTRACT_GAP behavior:** si el release no puede verificarse, si la licencia no puede confirmarse, si el impacto exige tocar codigo de discovery, o si el reporte no puede separar adopcion conceptual de portado de archivos, emitir `CG-WOT-2026-010r.md` y bloquear.
 - **Builder clarification budget:** 0. El Builder no decide adopcion productiva; solo produce evidencia y recomendacion.
@@ -378,7 +378,7 @@
   - [ ] `CREDITS.md` incluye una fila para `WOT-2026-010t` con source pinneado y `Adapted`, no `Ported`.
   - [ ] El cambio no toca codigo ni modifica resolucion de skills.
   - [ ] Encoding guard pasa sobre todos los archivos tocados.
-  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+  - [ ] `validate --json --project-root <workspace_activo>` termina en 0 errors / 0 warnings.
 - **Integracion cross-ticket:** `010t` puede cerrar antes de `010s`; no cambia la taxonomia `user/model-invoked` ni el Plan 008. Su salida debe ayudar al Manager a revisar `010s/008c/008d` con mejor vocabulario.
 - **CONTRACT_GAP behavior:** si el vocabulario solo puede aplicarse creando abstracciones nuevas, si `v1.0.1` invalida la base externa, si la fila CREDITS no puede pinnear fuente/licencia, o si tocar `review-checklist.md` obliga a normalizar encoding masivo no revisable, emitir `CG-WOT-2026-010t.md` y bloquear.
 - **Builder clarification budget:** 0. El Builder adapta vocabulario a checklist y anti-patrones concretos; no decide cambios de arquitectura.
@@ -472,7 +472,7 @@
   - [ ] `docs/registry/README.md` documenta que el modelo vigente es discovery recursivo sin manifest central.
   - [ ] Se distingue layout fisico de alias logico; no se ejecuta ninguna migracion de naming/shims de `008d`.
   - [ ] Discovery/collision conservan paridad observable o documentan por que quedan read-only.
-  - [ ] Tests focales, ruff, encoding guard, suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
+  - [ ] Tests focales, ruff, encoding guard, suite canonica y `validate --json --project-root <workspace_activo>` terminan en verde.
 - **Integracion cross-ticket:** `008c` desbloquea `008d` y `008f`. Debe incorporar el aprendizaje de `010s` como metadata aditiva, sin reabrir la taxonomia externa.
 - **CONTRACT_GAP behavior:** si el INDEX no puede derivarse de discovery, si aparece consumidor vivo no clasificable, si el cambio exige crear `registry.json`, si exige migrar nombres/shims, o si el stale-check solo puede ser pass-open, emitir `CG-WOT-2026-008c.md` y bloquear.
 - **Builder clarification budget:** 0. Las decisiones abiertas se registran como notas o follow-ups; no se pide al humano durante Builder salvo CONTRACT_GAP real.
@@ -520,7 +520,7 @@
   - [ ] El INDEX generado expone `canonical_name`, `legacy_aliases` y `naming_status` o campos equivalentes; la fuente es frontmatter (`legacy_aliases:`) o derivacion por filename en `discover_skills.py`, sin sidecar JSON ni manifest central.
   - [ ] `rg` de nombres antiguos solo aparece en shims, docs historicas/deprecacion, changelog/backlog o tests de compatibilidad.
   - [ ] Existe `discover_skills.py --check-naming` antes del cierre, con test que bloquea fail-closed un nombre fuera de convencion; si se crea `check_naming_convention.py` o se extiende `check_skill_collisions.py`, la DEC lo justifica con evidencia de por que no encaja en discovery.
-  - [ ] `scripts/run_gates_dispatch.py` invoca `discover_skills.py --check-naming` (o equivalente decidido por la DEC) en los perfiles aplicables; tests focales, ruff/format si toca Python, encoding guard, handoff verde (incluida barrera 010u archival-rename), suite canonica y `validate --json --project-root <repo_destino>` terminan en verde.
+  - [ ] `scripts/run_gates_dispatch.py` invoca `discover_skills.py --check-naming` (o equivalente decidido por la DEC) en los perfiles aplicables; tests focales, ruff/format si toca Python, encoding guard, handoff verde (incluida barrera 010u archival-rename), suite canonica y `validate --json --project-root <workspace_activo>` terminan en verde.
 - **Integracion cross-ticket:** desbloquea `008e`; no debe mezclar lifecycle operativo de `008f` ni performance/CI. Debe preservar lo aprendido en `010s` y `010t`.
 - **STOP conditions:** parar si `role: auditor` rompe `_check_contract()` de `manager|builder` y no puede resolverse sin ampliar scope; parar si discovery usa `role` con semantica incompatible y requiere rediseno mayor; parar si aparecen skills adicionales ambiguas fuera de las cinco declaradas; parar si el cambio deriva a rename de directorios o prompts; parar si el WIP en disco no puede reconciliarse con el contrato sin tocar superficies fuera de FLT.
 - **Builder clarification budget:** 0. El Builder no decide la convencion por intuicion: primero DEC, despues piloto minimo.
@@ -576,7 +576,7 @@
 - **Objective-Link:** OBJ-008F-001
 - **Plan-Link:** PLAN-008F-001
 - **Premise:** el engranaje destino-motor y la preparacion operativa del destino ya estan cubiertos por piezas separadas (`destination_context.py`, `check_destino_publish_ready.py`, `classify_publication.py`, validaciones de autoridad/topologia), pero no existe una entrada unica que las orqueste de punta a punta sin duplicar logica. `validate_authority.main()` sigue siendo CLI-only para el motor; el ticket debe reutilizar sus helpers y no asumir que `main()` valida un `project_root` arbitrario.
-- **Premise Re-check:** confirmar `008e` COMPLETED y `008c` satisfecho como premisa tecnica; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <repo_destino> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
+- **Premise Re-check:** confirmar `008e` COMPLETED y `008c` satisfecho como premisa tecnica; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>`; ejecutar `python scripts/check_destino_publish_ready.py --project-root <workspace_activo> --motor-root <repo_motor>`; leer `scripts/destination_context.py`, `scripts/check_destino_publish_ready.py`, `scripts/classify_publication.py` y `scripts/validate_authority.py` para confirmar que el valor del ticket esta en la integracion, no en crear validadores paralelos.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/check_motor_destination_integration.py`
   - Builder repo_motor: `tests/test_check_motor_destination_integration.py`
@@ -594,7 +594,7 @@
 - **Read/inspect only:** `scripts/install_agent_system.py`, `.agent/agent_controller.py`, `.agent/config/motor_destination_link.json`, `MANIFEST.distribute`, `MANIFEST.workspace`, `prompts/orchestrator_pipeline.md`, `prompts/audit_complete_motor_destination.md`, `tests/test_motor_root_gates.py`, bus runtime/events.
 - **Forbidden Surfaces:** editar bus runtime/events manualmente; duplicar scanners de secretos o `validate`; mutar un destino real para probar guards/settings; tocar dependencias; redisenar `install_agent_system.py` o el launcher como parte de este ticket.
 - **DoD:**
-  - [ ] Existe `python scripts/check_motor_destination_integration.py --project-root <repo_destino> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
+  - [ ] Existe `python scripts/check_motor_destination_integration.py --project-root <workspace_activo> [--motor-root <repo_motor>]` con diagnostico self-service y exit codes documentados.
   - [ ] El wrapper reutiliza checks existentes cuando existen; no duplica la logica de `classify_publication.py`, `check_destino_publish_ready.py`, `destination_context.py` ni validaciones de autoridad/topologia ya presentes.
   - [ ] destination_context.py, check_destino_publish_ready.py, classify_publication.py y validate_authority.py solo pueden cambiarse para extraer helpers exportables sin alterar su contrato CLI; el wrapper delega via import, no via copia ni reescritura de su logica central.
   - [ ] El wrapper valida que `motor_destination_link.json` resuelve `motor_root` y `destination_root` coherentes con el contrato y falla cerrado ante link ausente o invalido, aunque `resolve_motor_link()` hoy solo garantice `motor_root`.
@@ -602,7 +602,7 @@
   - [ ] El wrapper demuestra que el contexto destino puede resolver el lifecycle/registry del motor sin depender de escribir sobre un destino real.
   - [ ] Las pruebas reproducen al menos: link roto, fallo propagado desde `check_destino_publish_ready`, modo auditoria opcional y fallo cerrado de autoridad/version/manifest sobre fixture o tmp.
   - [ ] Si se tocan prompts/destination_bootstrap.md o prompts/audit_git_publication.md, el cambio se limita a una referencia minima al wrapper nuevo y no reescribe su flujo operativo.
-  - [ ] `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
+  - [ ] `ruff`, tests focales reales, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` pasan en verde.
 - **CONTRACT_GAP behavior:** si el wrapper exige reimplementar scanners/validate, si la unica forma de probar guards requiere mutar un destino real, si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos, o si la separacion entre gate operativo y auditoria de primera publicacion no puede mantenerse, emitir `CG-WOT-2026-008f.md` y bloquear.
 - **STOP conditions:** parar si el wrapper reimplementa scanners de secretos o `validate`; parar si requiere escribir en `repo_destino` real para probar guards; parar si obliga a cambiar la logica central o el contrato CLI de scripts ya vivos en vez de delegar; parar si aparece dependencia nueva; parar si el cambio deriva en redisenar `install_agent_system.py` o el launcher.
 - **Depende de:** WOT-2026-008e (COMPLETED); WOT-2026-008c satisfecho como premisa tecnica.
@@ -617,7 +617,7 @@
 - **Premise:** el sistema usa "agente" para mezclar backends IA, roles y artefactos. `audit_*` es familia transversal de tarea, no propiedad del rol auditor. `supervisor` ya existe como actor runtime del bus. Sin una DEC nueva, los renames posteriores no tienen contrato verificable.
 - **Premise Re-check (read-only):**
   - confirmar WOT-2026-008f COMPLETED;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>`;
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>`;
   - inventariar `prompts/*.md` y confirmar 21 archivos fisicos;
   - leer `docs/decisions/DEC-008D-001-naming-convention.md` y documentar que 008g formaliza un mecanismo implicito en `_PIPELINE_ACTIONS` / `--check-naming`;
   - verificar `bus/supervisor.py` y ocurrencias `actor="SUPERVISOR"` para documentar supervisor como runtime.
@@ -636,7 +636,7 @@
   - [ ] AGENTS.md contiene la seccion "Backends y roles".
   - [ ] `python scripts/discover_skills.py --check-naming` pasa.
   - [ ] Encoding guard pasa sobre DEC y AGENTS.md.
-  - [ ] `validate --json --project-root <repo_destino>` termina en 0 errors / 0 warnings.
+  - [ ] `validate --json --project-root <workspace_activo>` termina en 0 errors / 0 warnings.
   - [ ] El diff del repo_motor se limita a DEC + AGENTS.md; no hay renames ni frontmatter.
 - **CONTRACT_GAP behavior:** si algun prompt no puede clasificarse con actor/family, si AGENTS.md exige reescritura amplia, si la DEC requiere codigo/runtime, o si la tabla contradice el inventario real, emitir `CG-WOT-2026-008g.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -694,7 +694,7 @@
   - [ ] `orchestrator_pipeline.md` permanece sin rename y sus referencias a prompts renombrados quedan actualizadas.
   - [ ] `MANIFEST.distribute`, `docs/registry/INDEX.md`, `llms.txt`, `llms-full.txt`, `README.md`, `QUICKSTART.md`, `AGENTS.md` y `CLAUDE.md` quedan alineados a los nombres canonicos donde aplique.
   - [ ] La prueba de migracion NO descansa solo en `--check-naming`; tambien se verifica por `rg` de consumidores vivos, stubs presentes y `source_prompt` actualizado.
-  - [ ] `python scripts/discover_skills.py --check-naming`, `python scripts/discover_skills.py --check-index`, encoding guard, tests focales reales, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` pasan en verde.
+  - [ ] `python scripts/discover_skills.py --check-naming`, `python scripts/discover_skills.py --check-index`, encoding guard, tests focales reales, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` pasan en verde.
 - **CONTRACT_GAP behavior:** si algun prompt viejo no puede mantenerse como stub, si aparece un consumidor vivo no declarado de alto riesgo, si el rename exige tocar runtime/bus o si la compatibilidad requiere un cambio de gate no previsto, emitir `CG-WOT-2026-008h.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si falta baseline; parar si el rename se extiende a `orchestrator_pipeline.md`; parar si el cambio deriva a migracion de skills `man-*`/`bui-*`; parar si la unica evidencia de migracion es `--check-naming`.
@@ -737,7 +737,7 @@
   - [ ] `python scripts/discover_skills.py --check-naming`, `--check-contract`, `--check-index` y `python scripts/check_skill_collisions.py` pasan en verde.
   - [ ] `python scripts/discover_skills.py --json` o evidencia equivalente demuestra que las cinco skills auditoras salen clasificadas coherentemente, con `role` visible y `bui-self-audit` fuera.
   - [ ] Tests focales reales cubren al menos: aceptacion de `role: auditor`, inclusion de `auditor` en `_check_contract()`, exclusion de `bui-self-audit`, required fields del catalogo con `role`, y no regresion del contrato `manager|builder` existente.
-  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **CONTRACT_GAP behavior:** si formalizar `auditor` exige renombrar prompts `audit_*`, ampliar este ticket a `man-*`/`bui-*`, reescribir el contrato de `source_prompt` fuera de las tres skills contract-validated, o cambiar la semantica de `owner` mas alla de anadir `role` como campo separado, emitir `CG-WOT-2026-008k.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si `role: auditor` rompe `_check_contract()` de `manager|builder` y no puede resolverse sin ampliar scope; parar si discovery usa `role` con semantica incompatible y requiere rediseno mayor; parar si aparecen skills adicionales ambiguas fuera de las cinco declaradas; parar si el cambio deriva a rename de directorios o prompts; parar si el WIP en disco no puede reconciliarse con el contrato sin tocar superficies fuera de FLT.
@@ -789,7 +789,7 @@
   - [ ] `python scripts/discover_skills.py --check-index` queda verde tras regenerar `docs/registry/INDEX.md`.
   - [ ] La paridad pre/post de discovery preserva los mismos triggers funcionales; cualquier diff del JSON queda limitado a rutas/nombres derivados por el rename declarado.
   - [ ] Existe al menos una barrera que detecta una referencia prose viva a `man-*` en superficies operativas del lote.
-  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** ejecuta el lote de roadmap de `DEC-008G-001` para manager skills; deja `008j` (builder skills) intacto y no debe mezclar retirada de aliases de prompts ya resuelta en `008e/008h`.
 - **CONTRACT_GAP behavior:** si aparece un consumidor runtime real del nombre de directorio `man-*`, si la compatibilidad exige un alias de skill no soportado limpiamente por discovery, si preservar `--check-contract` obliga a reabrir prompts fuera de FLT, o si el rename exige tocar `bui-*`, emitir `CG-WOT-2026-008i.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -866,7 +866,7 @@
   - [ ] Existe al menos una barrera que detecta una referencia prose viva a `bui-*` en superficies operativas del lote.
   - [ ] `AGENTS.md`, `skills/README.md` y `llms-full.txt`, si mencionan estas skills, quedan alineados con `builder-*`.
   - [ ] Referencias en `.agent/runtime/memory/` se toleran como historia viva; no se actualizan en este ticket ni cuentan como consumidores operativos del lote.
-  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`/`format` si toca Python, encoding guard, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** ejecuta el lote de roadmap de `DEC-008G-001` para builder skills; deja `manager-*` y `role: auditor` intactos; no debe reabrir `008h`, `008i` ni `008k`.
 - **CONTRACT_GAP behavior:** si aparece un consumidor runtime real del path legacy `skills/bui-*`, si preservar compatibilidad exige un alias de skill no soportado limpiamente por discovery, si el rename deriva a `manager-*`/`audit_*`, o si la unica forma de cerrar el lote exige tocar dispatch/triggers, emitir `CG-WOT-2026-008j.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -901,7 +901,7 @@
   - [ ] Existe al menos un test de regresion en `tests/test_encoding_integrity.py` para el CLI guard por ruta explicita y al menos un test en `tests/unit/test_encoding_post_write_hook.py` que demuestra fallo del hook ante control chars en archivo textual.
   - [ ] Los tests existentes de BOM/mojibake/question-mark siguen verdes; no se degrada cobertura previa.
   - [ ] `python -m pytest tests/test_encoding_integrity.py tests/unit/test_encoding_post_write_hook.py -v` pasa.
-  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **CONTRACT_GAP behavior:** si la correccion exige ampliar el ticket a interceptar Bash/heredoc, cambiar semantica de allowlist, escanear binarios o introducir una segunda fuente de verdad distinta de `scripts.encoding_guard`, emitir `CG-WOT-2026-010v.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la unica forma de detectar control chars rompe CRLF/tab/newline legitimos; parar si el hook post-write requiere un rediseno mayor fuera de FLT; parar si la barrera solo se demuestra en mocks sin pasar por `check_encoding_guard.py` o el hook real.
@@ -917,7 +917,7 @@
 - **Objective-Link:** OBJ-010W-001
 - **Plan-Link:** PLAN-010W-001
 - **Premise:** el intento de `--session-close` posterior a `010v` revelo un blocker real de infraestructura del motor en Windows: `scripts/closeout_steps/support.py:40` ejecuta `subprocess.run(..., capture_output=True, text=True)` sin `encoding`, y al capturar salida no-ASCII de scripts del closeout lanza `UnicodeDecodeError` bajo cp1252. El mismo patron reaparece en `scripts/closeout_steps/support.py:287` (`git ls-files`) y `scripts/closeout_steps/rotation.py:367` (`git status --short`) como riesgo latente sobre paths no-ASCII. El fix correcto es local a los call sites del closeout: `encoding="utf-8", errors="replace"`, con regresion test que pruebe que el closeout no revienta al capturar un em dash u otra salida UTF-8 alta.
-- **Premise Re-check (read-only):** confirmar `WOT-2026-010v` COMPLETED y publicado; reproducir el fallo con `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>`; releer `scripts/closeout_steps/support.py` y `scripts/closeout_steps/rotation.py`; verificar que los tres `subprocess.run(..., text=True)` carecen de `encoding`; localizar los tests de closeout existentes en `tests/test_session_closeout.py`; confirmar que NO hace falta tocar `scripts/session_closeout.py` ni el controller para corregir la ruta de decode.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-010v` COMPLETED y publicado; reproducir el fallo con `python .agent/agent_controller.py --session-close --dry-run --force --project-root <workspace_activo>`; releer `scripts/closeout_steps/support.py` y `scripts/closeout_steps/rotation.py`; verificar que los tres `subprocess.run(..., text=True)` carecen de `encoding`; localizar los tests de closeout existentes en `tests/test_session_closeout.py`; confirmar que NO hace falta tocar `scripts/session_closeout.py` ni el controller para corregir la ruta de decode.
 - **Context Baseline Evidence:** blocker=UnicodeDecodeError cp1252 on Windows; central_call_site=`scripts/closeout_steps/support.py:40`; latent_call_sites=`support.py:287`,`rotation.py:367`; session_state_before_fix=`WOT-2026-010v/COMPLETED`; generated_at=2026-06-19.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/closeout_steps/support.py`
@@ -932,9 +932,9 @@
   - [ ] `scripts/closeout_steps/rotation.py:step_git_clean` fija `encoding="utf-8", errors="replace"` en su `subprocess.run`.
   - [ ] Existe al menos un test de regresion en `tests/test_session_closeout.py` que ejecuta la ruta real de `run_script` contra un script temporal que imprime un em dash u otra salida UTF-8 alta y demuestra que la salida se captura sin `UnicodeDecodeError`.
   - [ ] Si se anade coverage para los otros dos call sites, se hace via tests focales del closeout o verificacion directa reproducible, no por relato.
-  - [ ] `python .agent/agent_controller.py --session-close --dry-run --force --project-root <repo_destino>` deja de fallar por `UnicodeDecodeError` en Windows.
+  - [ ] `python .agent/agent_controller.py --session-close --dry-run --force --project-root <workspace_activo>` deja de fallar por `UnicodeDecodeError` en Windows.
   - [ ] `python -m pytest tests/test_session_closeout.py -v` pasa.
-  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`/`format` sobre Python tocado, `run_pytest_safe --level all` y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **CONTRACT_GAP behavior:** si el fix exige mover la correccion al controller/reader-thread, tocar rutas de subprocess fuera de `closeout_steps` o reescribir la semantica funcional de los steps de cierre, emitir `CG-WOT-2026-010w.md` y bloquear.
 - **Builder clarification budget:** 0.
 - **STOP conditions:** parar si la reproduccion real no pasa por `closeout_steps`; parar si el dry-run sigue explotando en un cuarto call site fuera del FLT; parar si la unica forma de probar la regresion es con mocks que no ejercitan la decodificacion real.
@@ -950,7 +950,7 @@
 - **Objective-Link:** OBJ-011D-001
 - **Plan-Link:** PLAN-011D-001
 - **Premise:** los 7 stubs legacy de `prompts/` (`audit_plan.md`, `destination_bootstrap.md`, `launch_builder.md`, `refactor_bootstrap.md`, `review_manager.md`, `session_bootstrap.md`, `session_close_chat.md`) siguen existiendo por compatibilidad, pero todavia tienen consumidores operativos vivos y la proyeccion `docs/registry/INDEX.md` los publica como `active`. La retirada solo es segura si primero se corrige la fuente real del catalogo generado, se reapuntan consumidores vivos y cada delete queda precedido por evidencia `rg` de `0` consumidores no-historicos.
-- **Premise Re-check (read-only):** confirmar que `docs/registry/INDEX.md` lleva header `AUTOGENERATED ... do not edit by hand`; releer `scripts/discover_skills.py` para verificar que `build_catalog()` publica hoy `prompts/*.md` por layout y que el `status` derivado via `_derive_status()` solo aplica a `skills/`; inventariar consumidores vivos de cada stub con `rg`; confirmar que `VALID_STATUS == ("active", "deprecated", "draft")`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Premise Re-check (read-only):** confirmar que `docs/registry/INDEX.md` lleva header `AUTOGENERATED ... do not edit by hand`; releer `scripts/discover_skills.py` para verificar que `build_catalog()` publica hoy `prompts/*.md` por layout y que el `status` derivado via `_derive_status()` solo aplica a `skills/`; inventariar consumidores vivos de cada stub con `rg`; confirmar que `VALID_STATUS == ("active", "deprecated", "draft")`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** index_generated=true; prompt_status_not_derived=true; valid_status_vocab=`active|deprecated|draft`; active_stubs=7; generated_at=2026-06-19.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/discover_skills.py`
@@ -978,7 +978,7 @@
   - [ ] `MANIFEST.distribute`, `.claude/rules/00-startup.md`, `PROJECT.md`, `CLOSURE_MODEL.md`, `AGENTS.md` y `tests/test_migration_bootstrap.py` apuntan al canonico o justifican compatibilidad residual explicitamente.
   - [ ] Cada stub borrado en este ticket tiene evidencia `rg` pre/post delete con `0` consumidores no-historicos.
   - [ ] Cada stub que no llegue a `0` consumidores no-historicos permanece en disco marcado como `deprecated`, sin delete forzado.
-  - [ ] `python scripts/discover_skills.py --check-index`, `python -m pytest tests/test_registry_catalog.py -v`, `python -m pytest tests/test_migration_bootstrap.py -v`, `ruff check`, `python scripts/run_pytest_safe.py --project-root <repo_destino>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python scripts/discover_skills.py --check-index`, `python -m pytest tests/test_registry_catalog.py -v`, `python -m pytest tests/test_migration_bootstrap.py -v`, `ruff check`, `python scripts/run_pytest_safe.py --project-root <workspace_activo>` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** serializar contra cualquier ticket que toque prompts, catalogo derivado, `MANIFEST.distribute`, bootstrap docs o migraciones 008h/010a; no debe reabrir historia ni DEC como scope productivo.
 - **CONTRACT_GAP behavior:** si la reclasificacion exige ampliar `VALID_STATUS`, si `--generate-index` / `--check-index` fallan de forma estructural antes del repoint, o si un stub con consumidores vivos no puede ni repointarse ni mantenerse `deprecated`, emitir `CG-WOT-2026-011d.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0.
@@ -1012,7 +1012,7 @@
   - [ ] El ticket no introduce auto-commit del archivador ni borra artefactos archivados.
   - [ ] Existe al menos una prueba de regresion que falla sin el fix y pasa con el fix reproduciendo el limbo en la ruta real de closeout.
   - [ ] El caso limpio sigue cerrando en `PASS`.
-  - [ ] `uv run ruff check`, tests focales, `python scripts/run_pytest_safe.py --project-root <repo_destino>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `uv run ruff check`, tests focales, `python scripts/run_pytest_safe.py --project-root <workspace_activo>` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** reutiliza la barrera introducida por `010u`; no reabre la politica de auto-commit rechazada en `011a`; no debe romper el cierre Windows de `010w`.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commit del archivador, cambiar el contrato de `archive_collaboration_artifacts.py` mas alla de plan/audit, o tocar politica de bus/controller fuera del closeout declarado, emitir `CG-WOT-2026-011a.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1028,7 +1028,7 @@
 - **Objective-Link:** OBJ-012A-001
 - **Plan-Link:** PLAN-012A-001
 - **Premise:** `backlog.md` mezcla cola viva, fichas operativas e historico. `WT-2026-250c` queda absorbido por una familia nueva: `012a` fija formato parseable, separa vivo/historico por paso explicito del Manager y preserva el contrato operativo del Builder en `work_plan.md`, no en la propia seccion movible del backlog.
-- **Premise Re-check (read-only):** releer `backlog.md`, `CHANGELOG.md`, `STATE.md`, `TURN.md`, `ticket_contracts.md`; confirmar que `011e <-> 010m` ya esta resuelto como `keep-both-with-boundary`; confirmar evidencia de preflight de `delivery_authority: repo_destino` con `check_deliverables_exist.py` sobre FLT namespaced `### repo_destino` y ruta bare; verificar `validate --json --project-root <repo_destino>` antes del arranque.
+- **Premise Re-check (read-only):** releer `backlog.md`, `CHANGELOG.md`, `STATE.md`, `TURN.md`, `ticket_contracts.md`; confirmar que `011e <-> 010m` ya esta resuelto como `keep-both-with-boundary`; confirmar evidencia de preflight de `delivery_authority: repo_destino` con `check_deliverables_exist.py` sobre FLT namespaced `### repo_destino` y ruta bare; verificar `validate --json --project-root <workspace_activo>` antes del arranque.
 - **Context Baseline Evidence:** active_backlog_mixed_with_history=true; resolution_011e_010m=keep-both-with-boundary; repo_destino_deliverable_preflight=verified; generated_at=2026-06-19.
 - **Files Likely Touched:**
   - Builder repo_destino: `.agent/collaboration/backlog.md`
@@ -1045,7 +1045,7 @@
   - [ ] El corte del historico se hace por bloques logicos auditablemente reconocibles y conserva integra la seccion `### WOT-2026-012a` en el historico movido.
   - [ ] Existe evidencia mecanica antes/despues del movimiento (conteo de filas terminales y fichas `###` movidas) suficiente para auditar no-perdida de historico.
   - [ ] `backlog.md` muestra reduccion material verificable por diff; `<= 200` lineas de cola viva queda como objetivo operativo, no como gate binario.
-  - [ ] `python scripts/check_encoding_guard.py` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python scripts/check_encoding_guard.py` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** mantiene `011h` fuera de scope; no reabre `250c`; preserva `011e <-> 010m` con frontera runner-local-vs-CI.
 - **CONTRACT_GAP behavior:** si el corte exige tocar el archivador del closeout, si el snapshot no puede materializarse de forma portable, o si la seccion `### WOT-2026-012a` no puede conservarse integra en el historico, emitir `CG-WOT-2026-012a.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1076,7 +1076,7 @@
   - [ ] Parsea solo la tabla activa de `repo_destino` y valida estructura + contenido: columnas esperadas, encabezados `### WOT-...` exactos, vocabulario cerrado de `Status`, y valores permitidos de `Reactivation`.
   - [ ] La lista de estados de cola viva queda codificada en el propio gate: `pending|blocked|deferred|ready-for-review|awaiting-manager|completed-partial`.
   - [ ] Existe test que demuestra pass con `delivery_authority: repo_destino` / FLT namespaced correcto y fail-closed sin `--project-root` ni `AGENT_PROJECT_ROOT`.
-  - [ ] Ruff, tests focales, suite aplicable y `validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] Ruff, tests focales, suite aplicable y `validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** depende de `012a`; no reemplaza el archivador ni el closeout; no toca politica de rollout warning->error fuera de lo declarado.
 - **CONTRACT_GAP behavior:** si el parser necesita HTML comments/prose, si el backlog post-012a no expone schema suficiente, o si la resolucion topologica del destino no puede fallar cerrada, emitir `CG-WOT-2026-012b.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1106,7 +1106,7 @@
   - [ ] El reporte declara explicitamente si hay fix de fuente viable o si 010v (defensa en profundidad) es suficiente, como RECOMENDACION, no como cambio aplicado.
   - [ ] El reporte abre follow-up(s) concretos (ticket id sugerido) para el fix, si procede.
   - [ ] `python scripts/check_encoding_guard.py <reporte> <execution_log>` verde sobre las superficies propias del ticket (el reporte nace limpio).
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` -> 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` -> 0 errors / 0 warnings.
 - **Integracion cross-ticket:** desbloquea WOT-2026-012a (su CG recomienda secuenciar 011c antes). NO cierra 012a; solo entrega el hallazgo que permite decidir como regenerar el snapshot/historico limpios.
 - **CONTRACT_GAP behavior:** si identificar la fuente exigiera MODIFICAR un escritor (motor o destino) para probar la hipotesis, detener y emitir `CG-WOT-2026-011c.md`: el spike es read-only sobre escritores; probar-modificando ya es el fix, que es follow-up.
 - **Builder clarification budget:** 0.
@@ -1121,7 +1121,7 @@
 - **Objective-Link:** OBJ-011J-001
 - **Plan-Link:** PLAN-011J-001
 - **Premise:** WOT-2026-011c verifico que el BOM proviene de escrituras PowerShell 5.1 con `Set-Content`/`Out-File -Encoding UTF8`. A la vez, la cola viva actual (`backlog.md`) ya esta limpia; los 3 control chars que siguen bloqueando `012a` viven solo en `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md`. Por tanto `011j` no debe parchear esos archives a mano: debe endurecer el writer PowerShell in-scope en `repo_motor` y dejar la regeneracion limpia de los artefactos historicos para el relanzamiento de `012a`.
-- **Premise Re-check (read-only):** confirmar que `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` sale verde y que el mismo guard sobre `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` falla por los 3 control chars historicos; releer `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; inspeccionar `scripts/launch_agent_terminals.ps1` para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de `WT-2026-248a`; localizar barreras existentes en `tests/test_opencode_config_stability.py` y `tests/test_launch_agent_terminals_script.py`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+- **Premise Re-check (read-only):** confirmar que `python scripts/check_encoding_guard.py .agent/collaboration/backlog.md` sale verde y que el mismo guard sobre `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` falla por los 3 control chars historicos; releer `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; inspeccionar `scripts/launch_agent_terminals.ps1` para localizar escrituras PowerShell BOM-prone in-scope y el patron BOM-safe ya existente de `WT-2026-248a`; localizar barreras existentes en `tests/test_opencode_config_stability.py` y `tests/test_launch_agent_terminals_script.py`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** 011c_report=completed; active_backlog_encoding=clean; archive_backlog_encoding=3_control_chars; launcher_bom_primitives=`Set-Content -Encoding UTF8`,`Out-File -Encoding UTF8`; generated_at=2026-06-19.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/launch_agent_terminals.ps1`
@@ -1136,7 +1136,7 @@
   - [ ] `tests/test_opencode_config_stability.py` sigue verde y demuestra que el patron BOM-safe existente no regresa.
   - [ ] `011j` NO edita manualmente `_archive/backlog_done.md` ni `_archive/backlog_pre_012a.md`; deja explicito en `execution_log.md` que esos artefactos se regeneraran al relanzar `012a`.
   - [ ] `python scripts/check_encoding_guard.py` sobre las superficies propias del ticket queda verde.
-  - [ ] `uv run ruff check` sobre los Python tocados, `python -m pytest` focal aplicable, `python scripts/run_pytest_safe.py --project-root <repo_destino>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `uv run ruff check` sobre los Python tocados, `python -m pytest` focal aplicable, `python scripts/run_pytest_safe.py --project-root <workspace_activo>` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** desbloquea el relanzamiento de `WOT-2026-012a`, pero no lo cierra ni regenera sus archives dentro del mismo ticket. `012a` se relanza despues para reconstruir `_archive/backlog_done.md` y `_archive/backlog_pre_012a.md` desde la fuente viva ya limpia.
 - **CONTRACT_GAP behavior:** si el re-check demuestra que ya no existe ningun writer BOM-prone in-scope en `repo_motor`, si el unico camino a verde exige editar manualmente los archives de `012a`, o si el fix real cae en `.agent/agent_controller.py` / guard de encoding fuera de la superficie declarada, emitir `CG-WOT-2026-011j.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1164,7 +1164,7 @@
   - [ ] El piloto usa `scripts/run_pytest_safe.py` con `--xdist-workers <N>` solo sobre la superficie permitida del ticket; el camino canonico en CI sigue sin xdist.
   - [ ] `tests/unit/test_quality_gates_workflow.py` aporta una barrera FAIL-sin/PASS-con que falla si desaparece el piloto o si la corrida canonica adopta xdist por accidente.
   - [ ] `execution_log.md` deja evidencia auditable de la separacion entre piloto CI y cierre canonico, con resultado o medicion del piloto.
-  - [ ] `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff check tests/unit/test_quality_gates_workflow.py`, `uv run ruff format --check tests/unit/test_quality_gates_workflow.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/unit/test_quality_gates_workflow.py -q`, `ruff check tests/unit/test_quality_gates_workflow.py`, `uv run ruff format --check tests/unit/test_quality_gates_workflow.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** consume la capacidad xdist creada por `011e`, pero no la reabre; no convierte el piloto en default (`011i`) ni toca la barrera canonica de handoff. Si los tests no parallel-safe exigen aislar subset adicional fuera del workflow/test declarados, el ticket debe parar.
 - **CONTRACT_GAP behavior:** si el piloto CI no puede definirse sin tocar `scripts/run_pytest_safe.py`, si la unica via verde convierte xdist en default o lo mete en el camino canonico `--level all`, o si el subset seguro exige expansion a nuevas superficies del runner/selector, emitir `CG-WOT-2026-010m.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1196,7 +1196,7 @@
   - [ ] `last-run.json` registra `xdist_requested`, `xdist_enabled`, `xdist_workers` y `xdist_reason` (o equivalente semantico estable).
   - [ ] Existe al menos una barrera FAIL-sin/PASS-con para la ruta xdist y otra para el fallback seguro.
   - [ ] El Builder deja en `execution_log.md` una medicion serial-vs-xdist sobre el mismo subset unitario y el mismo host.
-  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** mantiene `010m` fuera de scope (CI) y `011i` fuera de scope (default futuro). No puede tocar la barrera canonica de handoff ni degradar el cierre a un run focal.
 - **CONTRACT_GAP behavior:** si el opt-in local exige cambiar `pre_handoff_guard.py`, si `pytest-xdist` no puede integrarse sin abrir el default del runner, o si el fallback seguro no puede distinguir subset unitario apto de suite canonica, emitir `CG-WOT-2026-011e.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1212,7 +1212,7 @@
 - **Objective-Link:** OBJ-011F-001
 - **Plan-Link:** PLAN-011F-001
 - **Premise:** `.gitattributes` aun no declara `*.ps1`; `scripts/launch_agent_terminals.ps1` conserva BOM UTF-8 en origen y secuencias mojibake (`???` verificado en lineas 91/100) aunque ya usa CRLF; `scripts/encoding_guard.py` conoce `.ps1` como texto pero su barrido repo-wide omite `scripts/**/*.ps1`, dejando fuera la principal superficie PowerShell del motor. `011j` ya cerro los writers BOM-safe in-scope; `011f` fija el contrato de fuente, no reabre la logica funcional del fix anterior.
-- **Premise Re-check (read-only):** releer `.gitattributes`, `scripts/launch_agent_terminals.ps1`, `scripts/encoding_guard.py`, `tests/test_encoding_integrity.py`, `tests/test_launch_agent_terminals_script.py`, `tests/test_opencode_config_stability.py` y el reporte `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; verificar por bytes que `launch_agent_terminals.ps1` sigue con BOM y CRLF; confirmar que `test_manager_smoke.ps1` ya esta limpio; ejecutar `validate --json --project-root <repo_destino>` antes del arranque.
+- **Premise Re-check (read-only):** releer `.gitattributes`, `scripts/launch_agent_terminals.ps1`, `scripts/encoding_guard.py`, `tests/test_encoding_integrity.py`, `tests/test_launch_agent_terminals_script.py`, `tests/test_opencode_config_stability.py` y el reporte `.agent/runtime/audit/bom_source_audit_WOT-2026-011c.md`; verificar por bytes que `launch_agent_terminals.ps1` sigue con BOM y CRLF; confirmar que `test_manager_smoke.ps1` ya esta limpio; ejecutar `validate --json --project-root <workspace_activo>` antes del arranque.
 - **Context Baseline Evidence:** gitattributes_ps1_rule=false; launcher_bom=true; launcher_crlf=true; launcher_mojibake_lines=91,100; encoding_guard_ps1_extension=true; encoding_guard_repo_wide_ps1_scope=false; generated_at=2026-06-20.
 - **Files Likely Touched:**
   - Builder repo_motor: `.gitattributes`
@@ -1229,7 +1229,7 @@
   - [ ] Las secuencias mojibake verificadas del launcher se reconstruyen desde contexto confiable; no se aceptan strips ciegos ni sustituciones ambiguas.
   - [ ] `scripts/encoding_guard.py` incluye `scripts/**/*.ps1` (o cobertura repo-wide equivalente) dentro del scope real del guard.
   - [ ] Existe al menos una barrera FAIL-sin/PASS-con que demuestra que el launcher entra en scope del guard y que el estado previo con BOM habria fallado.
-  - [ ] `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python scripts/check_encoding_guard.py scripts/launch_agent_terminals.ps1`, tests focales, `ruff` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** depende de `011c` (fuente del fenomeno) y `011j` (writers BOM-safe ya corregidos), pero no reabre `011i`, `010m` ni la semantica de xdist. Conserva `010w` como dependencia de cierre Windows ya resuelta.
 - **CONTRACT_GAP behavior:** si reconstruir el mojibake del launcher exige adivinar contenido sin contexto confiable, si ampliar el guard a `scripts/**/*.ps1` destapa deuda nueva fuera de las dos superficies PowerShell actuales, o si normalizar el archivo obliga a tocar logica funcional del launcher ajena al contrato de fuente, emitir `CG-WOT-2026-011f.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1245,7 +1245,7 @@
 - **Objective-Link:** OBJ-011B-001
 - **Plan-Link:** PLAN-011B-001
 - **Premise:** `bus/builder_relaunch.py` ya expone la costura `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` con default `20.0`, y la familia de relaunch en `tests/test_supervisor.py` ya distingue los outcomes `builder_started_verified`, `timeout` y `builder_launch_unverified`. La deuda abierta por `011b` no es funcional sino de determinismo: cualquier prueba que dependa de la verificacion temporizada debe fijar su timeout de forma explicita y auditable para no heredar esperas del host ni del default productivo.
-- **Premise Re-check (read-only):** releer `bus/builder_relaunch.py`, `bus/supervisor.py`, `tests/test_supervisor.py` (casos `test_relaunch_outcome_builder_started_verified`, `test_relaunch_emits_event_timeout`, `test_relaunch_outcome_builder_launch_unverified_when_no_signal`) y `tests/test_relaunch_evidence_capsule.py`; verificar que `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` sigue declarado en `bus/builder_relaunch.py` con default `20.0`; confirmar que la semantica canonica del relaunch no debe cambiarse en este ticket; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Premise Re-check (read-only):** releer `bus/builder_relaunch.py`, `bus/supervisor.py`, `tests/test_supervisor.py` (casos `test_relaunch_outcome_builder_started_verified`, `test_relaunch_emits_event_timeout`, `test_relaunch_outcome_builder_launch_unverified_when_no_signal`) y `tests/test_relaunch_evidence_capsule.py`; verificar que `_BUILDER_START_VERIFY_TIMEOUT_SECONDS` sigue declarado en `bus/builder_relaunch.py` con default `20.0`; confirmar que la semantica canonica del relaunch no debe cambiarse en este ticket; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque.
 - **Context Baseline Evidence:** verify_timeout_env_declared=true; verify_timeout_default=20.0; relaunch_outcomes_covered=builder_started_verified|timeout|builder_launch_unverified; generated_at=2026-06-20.
 - **Files Likely Touched:**
   - Builder repo_motor: `bus/builder_relaunch.py`
@@ -1258,7 +1258,7 @@
   - [ ] El contrato productivo conserva `_BUILDER_START_VERIFY_TIMEOUT_DEFAULT = 20.0` y el env var canonico, salvo refactor semantico neutro.
   - [ ] Existe al menos una barrera FAIL-sin/PASS-con que demuestra que la ruta temporizada deja de depender del timeout default del host.
   - [ ] Las rutas `builder_started_verified` y `builder_launch_unverified` siguen cubiertas sin cambiar su semantica observable.
-  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `ruff`, tests focales, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** no reabre `011e`, `011i` ni `010m`; no cambia politica de xdist, runner ni handoff. `011b` solo endurece el seam de timeout del relaunch y sus pruebas.
 - **CONTRACT_GAP behavior:** si volver deterministas los tests exige cambiar la semantica productiva del relaunch, si la costura real del timeout cae fuera de `bus/builder_relaunch.py` / `tests/test_supervisor.py`, o si la unica forma de probar la ruta temporizada depende de sleeps wall-clock no acotables, emitir `CG-WOT-2026-011b.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1285,7 +1285,7 @@
   - [ ] `python -m pytest tests/test_controller_integration.py -k approved_pending -q` pasa en aislamiento.
   - [ ] El fix permanece acotado al fixture/driver de `tests/test_controller_integration.py`; no toca codigo productivo del controller.
   - [ ] Existe barrera FAIL-sin/PASS-con para el mismo test aislado, demostrada con worktree o revert parcial seguro.
-  - [ ] `python -m pytest tests/test_controller_integration.py -q`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/test_controller_integration.py -q`, `ruff` sobre Python tocado, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
   - [ ] `execution_log.md` registra explicitamente que `013a` resolvio drift de topologia del test sin introducir feature nueva en produccion.
 - **Integracion cross-ticket:** no reabre `011g`, `011h`, `011i` ni la deuda arquitectonica opcional de `--validate-topology`; si esa feature se vuelve necesaria, debe salir como follow-up separado.
 - **CONTRACT_GAP behavior:** si el rojo aislado no puede resolverse sin tocar `.agent/agent_controller.py` o anadir una feature nueva de topologia, emitir `CG-WOT-2026-013a.md` y bloquear; `013a` esta congelado como fix test-only.
@@ -1317,7 +1317,7 @@
   - [ ] `prompts/orchestrator_launch_builder.md`, `prompts/manager_review.md`, `prompts/orchestrator_pipeline.md` y `QUICKSTART.md` quedan alineados entre si respecto a suite canonia, `validate`, handoff y cierre.
   - [ ] Ningun texto tocado sigue permitiendo presentar pytest focal, wall-clock en background o tests aislados verdes como sustituto de suite canonica / `READY_FOR_REVIEW` / cierre canonico.
   - [ ] El ticket permanece documental: no toca scripts, gates, controller, review bridge, tests ni CI.
-  - [ ] `python scripts/check_encoding_guard.py <docs_tocados>` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python scripts/check_encoding_guard.py <docs_tocados>` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** reutiliza y hace visible la politica ya fijada por `010c`/`010q` y por las lecciones de `011j`/`011e`/`013a`; no reabre `011h`, `011i`, `010m` ni cambia tooling.
 - **CONTRACT_GAP behavior:** si dejar la documentacion veraz exige cambiar semantica de `run_pytest_safe.py`, `pre_handoff_guard.py`, `.agent/agent_controller.py`, `run_gates_dispatch.py` o `review_bridge.py`, emitir `CG-WOT-2026-011g.md` y bloquear: `011g` es solo politica/documentacion.
 - **Builder clarification budget:** 0.
@@ -1333,7 +1333,7 @@
 - **Objective-Link:** OBJ-011H-001
 - **Plan-Link:** PLAN-011H-001
 - **Premise:** `011a` ya cerro fail-closed `--session-close` cuando el archivado deja `archive_rename_uncommitted`, pero `--mark-ready` sigue auto-archivando `PLAN_/AUDIT_` cerrados desde `.agent/agent_controller.py` y puede dejar el mismo limbo `D old + ?? new` despues del handoff. La razon estable, la remediacion exacta y la deteccion en higiene ya existen; falta hacer fail-closed el camino de handoff, no reabrir closeout.
-- **Premise Re-check (read-only):** confirmar `WOT-2026-011a` y `WOT-2026-011d` COMPLETED; releer `.agent/agent_controller.py` (`_auto_archive_closed_artifacts()`, `_handle_mark_ready()`), `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py`, `tests/test_pre_handoff_guard.py`, `tests/unit/test_scope_gate.py`; verificar que el auto-archivado de mark-ready ocurre despues del guard y que hoy no promueve `archive_rename_uncommitted` a bloqueo propio; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Premise Re-check (read-only):** confirmar `WOT-2026-011a` y `WOT-2026-011d` COMPLETED; releer `.agent/agent_controller.py` (`_auto_archive_closed_artifacts()`, `_handle_mark_ready()`), `scripts/pre_handoff_guard.py`, `tests/test_agent_controller.py`, `tests/test_pre_handoff_guard.py`, `tests/unit/test_scope_gate.py`; verificar que el auto-archivado de mark-ready ocurre despues del guard y que hoy no promueve `archive_rename_uncommitted` a bloqueo propio; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque.
 - **Context Baseline Evidence:** stable_reason=`archive_rename_uncommitted`; mark_ready_auto_archive=true; closeout_barrier_exists=true; pre_handoff_guard_knows_reason=true; generated_at=2026-06-21.
 - **Files Likely Touched:**
   - Builder repo_motor: `.agent/agent_controller.py`
@@ -1349,7 +1349,7 @@
   - [ ] El caso limpio de `--mark-ready` sigue alcanzando `READY_FOR_REVIEW` sin falso positivo.
   - [ ] Existe al menos una barrera FAIL-sin/PASS-con sobre la ruta real de mark-ready, no solo sobre helper aislado.
   - [ ] El ticket no introduce auto-commit del archivador ni relaja el handoff canonico.
-  - [ ] `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py -q`, `ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `uv run ruff format --check .agent/agent_controller.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py tests/unit/test_scope_gate.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** reutiliza la razon estable cerrada por `011a`; no reabre el closeout de `011a`, ni la retirada de legacy de `011d`, ni introduce renames automaticos de cierre.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commit del archivador, cambiar el contrato del archivado fuera de mark-ready o tocar politicas de bus/controller fuera del flujo declarado, emitir `CG-WOT-2026-011h.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1406,7 +1406,7 @@
 - **Objective-Link:** OBJ-010X-001
 - **Plan-Link:** PLAN-010X-001
 - **Premise:** `.github/workflows/security-audit.yml` aun invoca `gitleaks/gitleaks-action@v2`, mientras el motor ya dispone de semilla portable de configuracion (`agent_system/templates/gitleaks.config.toml`) y de una barrera de alineacion del workflow en `tests/unit/test_hook_ci_alignment.py`. La deuda abierta por `010x` es reemplazar la dependencia del action licenciado/runtime JS por una invocacion CLI OSS de gitleaks, no redisenar la politica de allowlists ni el resto del workflow de seguridad.
-- **Premise Re-check (read-only):** releer `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py`, `agent_system/templates/gitleaks.config.toml`, `.pre-commit-config.yaml` y las notas historicas de `WOT-2026-004a` / `WOT-2026-004b` en `_archive/backlog_done.md`; verificar que el workflow sigue usando `gitleaks/gitleaks-action@v2`; confirmar que la semilla portable existe y que `test_hook_ci_alignment.py` sigue siendo la barrera natural del workflow; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes de arrancar.
+- **Premise Re-check (read-only):** releer `.github/workflows/security-audit.yml`, `tests/unit/test_hook_ci_alignment.py`, `agent_system/templates/gitleaks.config.toml`, `.pre-commit-config.yaml` y las notas historicas de `WOT-2026-004a` / `WOT-2026-004b` en `_archive/backlog_done.md`; verificar que el workflow sigue usando `gitleaks/gitleaks-action@v2`; confirmar que la semilla portable existe y que `test_hook_ci_alignment.py` sigue siendo la barrera natural del workflow; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes de arrancar.
 - **Context Baseline Evidence:** workflow_uses_licensed_action=true; portable_seed_exists=true; ci_alignment_test_exists=true; generated_at=2026-06-21.
 - **Files Likely Touched:**
   - Builder repo_motor: `.github/workflows/security-audit.yml`
@@ -1419,7 +1419,7 @@
   - [ ] El workflow ejecuta gitleaks por CLI OSS directa y no requiere `GITLEAKS_LICENSE` ni `GITHUB_TOKEN` para el paso de gitleaks.
   - [ ] La invocacion preserva semantica fail-closed ante leaks y usa una fuente de configuracion ya existente en el repo, sin reabrir la politica de allowlists.
   - [ ] `tests/unit/test_hook_ci_alignment.py` gana al menos una barrera FAIL-sin/PASS-con que falle si reaparece el action licenciado y pase con la invocacion CLI.
-  - [ ] `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `ruff check tests/unit/test_hook_ci_alignment.py`, `uv run ruff format --check tests/unit/test_hook_ci_alignment.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/unit/test_hook_ci_alignment.py -v`, `ruff check tests/unit/test_hook_ci_alignment.py`, `uv run ruff format --check tests/unit/test_hook_ci_alignment.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** reutiliza el trabajo de politica/config ya fijado por `WOT-2026-004a` y `WOT-2026-004b`, pero no reabre esa politica ni mezcla `pip-audit`, `011g` o deudas de dependencias bloqueadas como `WT-2026-256a`.
 - **CONTRACT_GAP behavior:** si la sustitucion OSS solo puede hacerse introduciendo otro action de terceros/licenciado, si exige tocar la politica/config de gitleaks fuera de las superficies declaradas, o si el unico camino verde relaja el fail-closed del escaneo, emitir `CG-WOT-2026-010x.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1460,7 +1460,7 @@
 - **Objective-Link:** OBJ-013D-001
 - **Plan-Link:** PLAN-013D-001
 - **Premise:** `013c` cerro `BLOCKED-FINAL` con una causa raiz ya verificada en PRODUCTO, no en tests-only: `scripts/project_scanner.py` recorre el arbol vivo dos veces por `rglob` (`_collect_local_modules()` en la zona de la linea 344, `scan_project()` en la zona de la linea 615) y `agent_system/scripts/project_paths.py` lo hace una tercera vez por `rglob(".agent")` (linea 59 aprox.). Esos recorridos pueden bajar a `tests/sandbox/test_runtime/session_*` mientras otros workers borran subdirectorios, disparando `FileNotFoundError`/`Acceso denegado` antes del filtro de exclusion ya existente. La deuda correcta es endurecer el escaneo y su higiene de sandbox, no reabrir la politica xdist/default del runner.
-- **Premise Re-check (read-only):** confirmar `T-013C-001` en `blocked-final`; releer `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/unit/test_project_scanner.py`, `tests/test_project_paths.py`, `tests/unit/test_detect_version.py`, `tests/unit/test_no_inline_ticket_regex.py`, `tests/conftest.py` y `tests/unit/test_windows_safe_temp_runtime.py`; verificar que los tres recorridos `rglob` siguen existiendo y que `tests/sandbox/test_runtime` sigue siendo superficie volatil real; recapturar el baseline de `session_dirs` bajo `tests/sandbox/test_runtime`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque.
+- **Premise Re-check (read-only):** confirmar `T-013C-001` en `blocked-final`; releer `scripts/project_scanner.py`, `agent_system/scripts/project_paths.py`, `tests/unit/test_project_scanner.py`, `tests/test_project_paths.py`, `tests/unit/test_detect_version.py`, `tests/unit/test_no_inline_ticket_regex.py`, `tests/conftest.py` y `tests/unit/test_windows_safe_temp_runtime.py`; verificar que los tres recorridos `rglob` siguen existiendo y que `tests/sandbox/test_runtime` sigue siendo superficie volatil real; recapturar el baseline de `session_dirs` bajo `tests/sandbox/test_runtime`; ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque.
 - **Context Baseline Evidence:** `rglob_sites=3 (project_scanner:_collect_local_modules + scan_project; project_paths:resolve_paths)`; `session_dirs=566`; `triple_xdist_red_verified=true`; `generated_at=2026-06-21`.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/project_scanner.py`
@@ -1477,7 +1477,7 @@
   - [ ] Los 3 puntos de escaneo verificados quedan robustos frente a borrados concurrentes y el fix cubre tambien el recorrido de `scan_project()` (no solo `_collect_local_modules()`).
   - [ ] Existe limpieza determinista del ruido en `tests/sandbox/test_runtime`, gestionada via fixture/harness en `tests/conftest.py` (el sandbox es efecto colateral controlado, no superficie de edicion manual), y `execution_log.md` registra baseline + reconciliacion usada para la verificacion final.
   - [ ] `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` queda verde en al menos 3 corridas consecutivas sobre el mismo host.
-  - [ ] `python -m pytest tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py -q`, `ruff check scripts/project_scanner.py agent_system/scripts/project_paths.py tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `uv run ruff format --check scripts/project_scanner.py agent_system/scripts/project_paths.py tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py -q`, `ruff check scripts/project_scanner.py agent_system/scripts/project_paths.py tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `uv run ruff format --check scripts/project_scanner.py agent_system/scripts/project_paths.py tests/unit/test_project_scanner.py tests/test_project_paths.py tests/unit/test_detect_version.py tests/unit/test_no_inline_ticket_regex.py tests/conftest.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
   - [ ] El diff productivo queda acotado a escaneo de producto + tests/fixtures declarados; no toca runner, CI ni la politica xdist/default.
 - **Integracion cross-ticket:** absorbe literalmente el hallazgo de `013c` sin reabrir la familia de politica xdist (`011e`/`010m`/`011i`). El objetivo no es promover default xdist, sino quitar una causa raiz de producto que hoy contamina pruebas y latencia.
 - **CONTRACT_GAP behavior:** si la unica cura segura exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, la politica default/opt-in de xdist, o reconciliar la invariante sandbox-dentro-vs-fuera fuera de las superficies declaradas, emitir `CG-WOT-2026-013d.md` y bloquear.
@@ -1499,7 +1499,7 @@
   - releer `tests/README.md`, `tests/ARCHITECTURE.md`, `scripts/run_pytest_safe.py`, `pytest.ini` y `.agent/runtime/pytest-safe/last-run.json` para fijar el contrato actual de suite/runner;
   - verificar en `backlog.md`, `ticket_contracts.md` y `plan_graph.md` que `011e`, `010m`, `011i`, `013c` y `013d` ya cerraron la frontera runner/xdist/producto que `013e` NO debe reabrir;
   - inventariar read-only las familias top-level bajo `tests/` y los marcadores estructurales existentes (`slow`, `integration`, `skipif`, `xfail` o equivalentes);
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** motor_head=162e506; destino_head=0bd5171; validate_result=0 errors / 0 warnings; active_ticket=WOT-2026-013d COMPLETED; backlog_state=WOT-2026-013e pending; generated_at=2026-06-21.
 - **Files Likely Touched:**
   - Builder: `docs/test_performance/test_suite_audit_WOT-2026-013e.md`
@@ -1515,7 +1515,7 @@
   - [ ] El reporte deja explicito que `013e` no borra ni relaja tests y que las fronteras cerradas por `011e`, `010m`, `011i` y `013d` quedan fuera de scope salvo evidencia nueva que obligue a `CONTRACT_GAP`.
   - [ ] `execution_log.md` registra una linea final: `Reporte docs/test_performance/test_suite_audit_WOT-2026-013e.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
   - [ ] `git diff --name-only` del `repo_motor` se limita al artefacto documental del ticket.
-  - [ ] `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python scripts/check_encoding_guard.py docs/test_performance/test_suite_audit_WOT-2026-013e.md` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** `013e` consume evidencia de `010j`, `010k`, `011e`, `010m` y `013d`, pero no reabre sus decisiones. Ningun follow-up de poda o racionalizacion de tests debe arrancar sin leer primero el reporte final de `013e`.
 - **CONTRACT_GAP behavior:** si el inventario no puede separar barreras core/estructurales de candidatos a poda sin tocar `tests/`, runner, CI o producto; si la evidencia actual no permite ni siquiera proponer follow-ups pequenos con criterio verificable; o si la auditoria exige reabrir una frontera ya cerrada de `011e`, `010m`, `011i` o `013d`, emitir `CG-WOT-2026-013e.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder audita y reporta; no poda, no relaja tests y no reinterpreta por intuicion la politica del runner.
@@ -1537,7 +1537,7 @@
   - verificar que `tests/deprecated/test_goose_triggers.py` y `tests/deprecated/test_goose_realworld.py` siguen marcados `DEPRECATED (WT-2026-254a)`;
   - buscar referencias vivas a `tests/deprecated/` y distinguirlas de referencias historicas o de contexto generado; en particular, confirmar que `scripts/cleanup_legacy.py` apunta al antiguo `scripts/test_goose_realworld.py`, no a `tests/deprecated/test_goose_realworld.py`;
   - verificar que `tests/integration/RETIRED_TESTS.md` existe como precedente canonico para documentar retiros seguros;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** motor_head=4eb0fbb; destino_head=b722c1b; repo_motor_status='main...origin/main clean'; repo_destino_status='main...origin/main clean'; collect_only_baseline=3111; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `tests/deprecated/`
@@ -1550,7 +1550,7 @@
   - [ ] `python -m pytest tests --collect-only -q -p no:cacheprovider` mantiene 3111 tests tras la poda, y `execution_log.md` registra el conteo pre y post.
   - [ ] `tests/integration/RETIRED_TESTS.md` deja explicito que los tests retirados cubrian Goose, subsistema deprecado por `WT-2026-254a`, ya excluido del runner.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde y el cierre lee la evidencia canonica sobre el commit entregado.
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
   - [ ] No se tocan `pytest.ini`, runner, CI, `test_goose_native_skill.py`, `test_ejemplo` ni producto vivo.
 - **Integracion cross-ticket:** consume el follow-up FU-013E-2 sin reabrir `013e` ni mezclar FU-013E-1 (`test_ejemplo` / `test_goose_native_skill`) ni `013g` (coste unknown). Cualquier hallazgo que obligue a tocar runner o producto se devuelve por `CONTRACT_GAP`.
 - **CONTRACT_GAP behavior:** si aparece un consumidor vivo de `tests/deprecated/`, si el borrado cambia el conteo recolectado, o si la justificacion del retiro exige tocar runner/producto o mezclar otros candidatos legacy, emitir `CG-WOT-2026-013f.md` y bloquear.
@@ -1572,7 +1572,7 @@
   - releer `docs/test_performance/test_performance_baseline.md`, `docs/test_performance/test_performance_variance.md` y `docs/test_performance/test_suite_audit_WOT-2026-013e.md`;
   - releer `tests/unit/test_detect_version.py` y confirmar que `test_upgrade_path_suggestion` sigue teniendo cuerpo trivial y pertenece a `TestVersionDetection`;
   - verificar que `python -m pytest` acepta `--durations` para medicion focal aislada del archivo/clase/test;
-  - verificar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado;
+  - verificar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado;
   - confirmar que el ticket sigue siendo `analysis` y que ninguna superficie de codigo entra en `Files Likely Touched`.
 - **Context Baseline Evidence:** motor_head=bc658f8; destino_head=<post-closeout-013f>; baseline_010j='59.22s'; variance_010p='69.79s / 67.91s'; generated_at=2026-06-22.
 - **Files Likely Touched:**
@@ -1586,7 +1586,7 @@
   - [ ] El reporte separa [V] verificado de [I] inferencia en cada conclusion sustantiva.
   - [ ] El reporte recomienda una optimizacion local concreta o descarta intervenir en este ticket, sin tocar test ni producto.
   - [ ] `execution_log.md` registra una linea final: `Reporte docs/test_performance/test_upgrade_cost_WOT-2026-013g.md creado. Validate: exit code 0, 0 errors, 0 warnings.`
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
 - **Integracion cross-ticket:** consume FU-013E-3 sin reabrir `013e`, `010k` ni la familia xdist. Si la explicacion real exige editar el test o producto, devolver por `CONTRACT_GAP` y abrir ticket `code` separado.
 - **CONTRACT_GAP behavior:** si la unica forma de explicar el coste exige editar `tests/unit/test_detect_version.py` o producto, si la medicion no es reproducible entre corridas comparables, o si el deliverable deja de ser puramente analitico, emitir `CG-WOT-2026-013g.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1607,7 +1607,7 @@
   - releer `scripts/archive_collaboration_artifacts.py`, `scripts/closeout_steps/archival.py`, `scripts/session_closeout.py`, `.agent/agent_controller.py` y `scripts/delivery_hygiene_check.py`;
   - releer `tests/test_archive_collaboration_artifacts.py`, `tests/test_session_closeout.py`, `tests/test_agent_controller.py` y `tests/test_pre_handoff_guard.py`;
   - confirmar en el historico reciente del `repo_destino` que `013e`, `013f` y `013g` necesitaron reconcile manual del archivado (`archive_rename_uncommitted`);
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del handoff y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del handoff y dejar constancia del estado.
 - **Context Baseline Evidence:** source_commits=`4eb0fbb -> bc658f8 -> cf5a4bc`; repeated_manual_reconcile=`013e, 013f, 013g`; previous_barriers=`011a closeout fail-closed`, `011h mark-ready fail-closed`; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/archive_collaboration_artifacts.py`
@@ -1625,7 +1625,7 @@
   - [ ] Existe al menos una barrera con repo git real que falla sin el fix y pasa con el fix sobre el patron repetido de delete+untracked del archivado.
   - [ ] `tests/test_archive_collaboration_artifacts.py`, `tests/test_session_closeout.py`, `tests/test_agent_controller.py` y `tests/test_pre_handoff_guard.py` cubren la semantica final sin auto-commit oculto.
   - [ ] La remediacion mantiene la trazabilidad de `STRATEGY_` / `AUDIT_` archivados y no convierte el cierre en pass-open.
-  - [ ] `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q`, `ruff check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py`, `uv run ruff format --check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+  - [ ] `python -m pytest tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py -q`, `ruff check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py`, `uv run ruff format --check scripts/archive_collaboration_artifacts.py scripts/closeout_steps/archival.py scripts/session_closeout.py tests/test_archive_collaboration_artifacts.py tests/test_session_closeout.py tests/test_agent_controller.py tests/test_pre_handoff_guard.py`, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` quedan verdes.
 - **Integracion cross-ticket:** `013h` sucede a `013g` y refina la deuda historica detectada ya en `010u`/`011a`/`011h`; no reabre `013g`, no toca la familia xdist y no sustituye el reconcile manual por auto-commit opaco.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige auto-commitear historicos, reescribir la semantica de cierre completa o tocar superficies fuera del archivado/cierre declaradas, emitir `CG-WOT-2026-013h.md` y bloquear.
 - **Builder clarification budget:** 0.
@@ -1645,7 +1645,7 @@
   - releer `docs/test_performance/test_upgrade_cost_WOT-2026-013g.md` y confirmar que la atribucion principal del coste sigue anclada al purge de `tests/conftest.py`;
   - releer `tests/conftest.py` y ubicar `_purge_orphan_session_dirs()` y `_project_temp_environment()` como la ruta real de higiene;
   - releer `tests/unit/test_project_scanner.py`, `tests/unit/test_windows_safe_temp_runtime.py`, `tests/unit/test_detect_version.py` y `tests/unit/test_no_inline_ticket_regex.py` para fijar las barreras heredadas de `013d`;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** source_ticket=WOT-2026-013g; source_report_commit=cf5a4bc; current_motor_head=103849a; current_destino_head=06732f6; historical_orphan_dirs=568; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `tests/conftest.py`
@@ -1661,7 +1661,7 @@
   - [ ] `python -m pytest tests/unit/test_project_scanner.py tests/unit/test_windows_safe_temp_runtime.py -q -p no:cacheprovider` termina verde.
   - [ ] `python -m pytest tests/unit/test_detect_version.py::TestVersionDetection::test_upgrade_path_suggestion tests/unit/test_project_scanner.py::TestScanProjectRealProject::test_scan_current_project tests/unit/test_no_inline_ticket_regex.py::test_no_inline_ticket_regex -q -n 8 --dist load` termina verde en 3 corridas consecutivas.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
   - [ ] No se toca producto, runner, CI ni la politica xdist/default; la higiene sigue viviendo en harness/tests.
 - **Integracion cross-ticket:** `013i` sucede a `013d` y `013g`: consume la atribucion de coste ya cerrada por `013g` y solo puede modificar la higiene del sandbox en `tests/conftest.py` y sus barreras. No reabre la familia xdist (`011e`/`010m`/`011i`) ni la cura de producto de `013d`.
 - **CONTRACT_GAP behavior:** si la unica reduccion segura exige tocar producto, runner, CI, politica xdist/default, o si cualquier variante mas rapida reintroduce residuos/flake potencial en `tests/sandbox/test_runtime/`, emitir `CG-WOT-2026-013i.md`, bloquear y devolver a Contract Formation.
@@ -1683,7 +1683,7 @@
   - releer `repo_destino/.agent/planning/ticket_contracts.md` y `work_plan.md` historicos recientes (`013h`, `013i`) para verificar que el FLT canonico vive en contrato/work_plan;
   - releer `scripts/check_backlog_contract.py` y `tests/unit/test_check_backlog_contract.py` para confirmar que hoy solo se valida la tabla `Vista rapida` y el header de las fichas, no su cuerpo ni un FLT duplicado;
   - releer `prompts/orchestrator_pipeline.md` y/o la skill de Manager que instruye leer la ficha detallada del backlog, para fijar donde debe quedar explicita la regla de autoridad del FLT;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** source_tickets=`WOT-2026-013h, WOT-2026-013i`; motor_head=848cb8a; destino_head=fae62ca; backlog_gate_current_scope=`Vista rapida + ficha header only`; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/check_backlog_contract.py`
@@ -1698,7 +1698,7 @@
   - [ ] `prompts/orchestrator_pipeline.md` deja explicita la autoridad del contrato frozen / `work_plan.md` sobre el FLT si el flujo seguira leyendo la ficha detallada del backlog.
   - [ ] `python -m pytest tests/unit/test_check_backlog_contract.py -q -p no:cacheprovider` termina verde.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
   - [ ] No se debilitan `scope_gate`, `pre_handoff_guard` ni la autoridad del contrato frozen.
 - **Integracion cross-ticket:** `013j` sucede a `013i` como fix de proceso/contrato. Puede tocar el gate del backlog y la instruccion de pipeline, pero no debe reabrir tickets de scope gate/handoff (`010n`, `011h`) ni reinterpretar el FLT fuera del contrato frozen.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el lifecycle completo de packet, tocar `scope_gate` / `pre_handoff_guard` / `agent_controller.py`, o convertir `backlog.md` en una segunda autoridad del FLT, emitir `CG-WOT-2026-013j.md`, bloquear y devolver a Contract Formation.
@@ -1718,7 +1718,7 @@
 - **Premise Re-check (read-only):**
   - verificar en `.gitignore`, `MANIFEST.distribute` y `MANIFEST.workspace` que las tres superficies objetivo son local-only / gitignored;
   - inspeccionar `bus/review_bridge.py`, `bus/review_report.py`, `scripts/memory_consolidate.py` y `scripts/migrate_observations.py` para confirmar que producen artefactos en esas rutas, sin politica dedicada de retencion;
-  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` y dejar constancia del estado verde pre-arranque.
+  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` y dejar constancia del estado verde pre-arranque.
 - **Files Likely Touched:**
   - Builder: `scripts/prune_runtime_retention.py`
   - Builder: `tests/unit/test_prune_runtime_retention.py`
@@ -1732,7 +1732,7 @@
   - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_versioned_history_surfaces_are_never_selected -q` pasa; si se intenta incluir `events/archive`, `collaboration/archive`, `_archive/plan_audit` o `audits/system_health`, FALLA.
   - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
   - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 - **Integracion cross-ticket:** no mezclar con `013k` ni con cambios al lifecycle de closeout; `013l` se limita al camino de menor riesgo (CLI standalone opt-in). Cualquier propuesta de integrar la poda en `session-close`, `mark-ready` o productores de runtime sale de scope y requiere CONTRACT_GAP.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige tocar `session-close`, `mark-ready`, `review_bridge`, `memory_consolidate` o cualquier productor de runtime; si la retencion necesita inspeccionar o borrar superficies versionadas/historico util; o si el selector no puede distinguir de forma determinista entre artefactos locales podables y artefactos utiles que deban preservarse, emitir `CG-WOT-2026-013l.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0. El Builder no decide si integrar la retencion en el closeout ni reabre la frontera entre superficies gitignored y historico versionado.
@@ -1752,7 +1752,7 @@
   - inspeccionar `scripts/prune_runtime_retention.py` para verificar que `reviews/` se ordena por `p.stat().st_mtime` del directorio y que `review_packets/` / `observations.jsonl.bak.*` siguen siendo superficies por archivo;
   - releer `tests/unit/test_prune_runtime_retention.py` y confirmar que hoy cubre seleccion segura, `dry-run`, `apply` y spillover, pero no hace explicita la semantica operacional de `reviews/`;
   - ejecutar `python scripts/prune_runtime_retention.py --help` y verificar si el help/docstring deja claro (o no) que `reviews/` usa `mtime` del directorio;
-  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` antes del arranque y dejar constancia de `0 errors / 0 warnings`.
+  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` antes del arranque y dejar constancia de `0 errors / 0 warnings`.
 - **Files Likely Touched:**
   - Builder: `scripts/prune_runtime_retention.py`
   - Builder: `tests/unit/test_prune_runtime_retention.py`
@@ -1765,7 +1765,7 @@
   - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` sigue pasando para preservar que packets/baks mantienen su politica existente y el ticket no deriva a rediseno del algoritmo general.
   - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
   - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 - **Integracion cross-ticket:** follow-up de bajo riesgo sobre `013l`; NO reabre `013l`, NO mueve `013k`, y deja `013t` fuera.
 - **CONTRACT_GAP behavior:** si hacer explicita la semantica exige cambiar el algoritmo de orden de `reviews/`, tocar packets/baks o cablear la utilidad al closeout, emitir `CG-WOT-2026-013v.md` y bloquear.
 - **Builder clarification budget:** 0. El ticket fija la decision de producto: documentar la semantica actual, no reordenarla.
@@ -1786,7 +1786,7 @@
   - releer `repo_destino/.agent/planning/plan_graph.md` y `CG-WOT-2026-013c.md` para confirmar que `013c` es `blocked-final` honesto, no ticket activo rescatable;
   - verificar en codigo que `TicketState.is_approved_or_terminal()`, `NON_TERMINAL_STATES`, `TERMINAL_STATES` locales y mapeos de launcher/publication no reconocen hoy `SUPERSEDED` ni `BLOCKED_FINAL`, y que el string legacy `CLOSED` vive fuera del enum;
   - verificar que `check_destino_publish_ready.py` y el closeout/archivado usan heuristicas de publicable/terminal distintas y pueden divergir si se anaden estados nuevos sin autoridad comun;
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** source_tickets=`WT-2026-239a, WOT-2026-013c`; motor_head=222da77; destino_head=f063692; live_bus_239a=`READY_FOR_REVIEW + MANAGER_REVIEW evidence`; plan_graph_013c=`BLOCKED-FINAL`; validate_result=0 errors / 0 warnings; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `bus/state_machine.py`
@@ -1815,7 +1815,7 @@
   - [ ] `tests/unit/test_terminal_states.py` se crea como deliverable nuevo; `tests/test_launcher_state_from_bus.py` y `tests/evals/test_eval_requeue.py` se extienden sin duplicar suites paralelas.
   - [ ] `python -m pytest tests/unit/test_terminal_states.py tests/test_launcher_state_from_bus.py tests/evals/test_eval_requeue.py -q -p no:cacheprovider` termina verde.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
   - [ ] El fix no reabre `239a` ni `013c` como trabajo activo ni degrada el contrato de cierre exitoso (`READY_TO_CLOSE -> COMPLETED -> SUPERVISOR_CLOSED`).
 - **Integracion cross-ticket:** serializar con cualquier ticket que toque bus, supervisor, lifecycle de cierre, closeout, launcher state o gates de publicacion. El objetivo es limpiar la semantica de terminalidad, no reescribir review/handoff ni la politica de `completed`.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el event schema completo, introducir un tercer estado no evidenciado (`ABANDONED`) para no dejar incoherencias, o tocar `.agent/agent_controller.py` / handoff / CI, emitir `CG-WOT-2026-013n.md`, bloquear y devolver a Contract Formation.
@@ -1837,7 +1837,7 @@
   - releer `scripts/migrate_observations.py`, `scripts/validate_observations.py`, `skills/_shared/ap-schema.md`, `bus/memory_loader.py` y `scripts/memory_consolidate.py`;
   - releer `tests/test_migration_bootstrap.py` y `tests/unit/test_validate_observations.py` para fijar la barrera existente;
   - separar con evidencia las 14 lineas de corrupcion de datos de las 3 lineas de posible decision de contrato (`collaboration`, `test-performance`);
-  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` antes del arranque y dejar constancia del estado.
+  - ejecutar `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
 - **Context Baseline Evidence:** motor_head=f48191f; destino_head=85b76cb; validate_result=0 errors / 0 warnings; strict_validate_errors=17; split=`14 applies_to-corrupt + 3 domain-contract`; existing_migrator=`scripts/migrate_observations.py`; generated_at=2026-06-22.
 - **Files Likely Touched:**
   - Builder repo_motor: `scripts/migrate_observations.py`
@@ -1856,7 +1856,7 @@
   - [ ] `scripts/migrate_observations.py` mantiene backup/rollback e idempotencia; existe al menos una barrera que falla sin el fix y pasa con el fix sobre el patron `applies_to <- domain`.
   - [ ] `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider` termina verde.
   - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
-  - [ ] `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` termina con 0 errors / 0 warnings.
+  - [ ] `python .agent/agent_controller.py --validate --json --project-root <workspace_activo>` termina con 0 errors / 0 warnings.
   - [ ] El cierre deja explicito que `013o` NO inserta nueva memoria portable durante este ticket; cualquier promocion posterior (incluida la observacion diferida de `013n`) queda fuera de scope hasta partir de una base `--strict` verde.
 - **Integracion cross-ticket:** serializar con cualquier ticket que toque `validate_observations.py`, `migrate_observations.py`, `ap-schema.md`, `memory_consolidate.py` o memorias portables. El objetivo es reparar la base y el contrato, no abrir una reforma general de taxonomia o tocar memoria del motor.
 - **CONTRACT_GAP behavior:** si alguna de las 17 lineas requiere reinterpretacion semantica no verificable, si `collaboration`/`test-performance` fuerzan una reforma amplia de dominios/consumidores fuera de scope, o si la unica salida segura exige tocar `repo_motor/.agent/runtime/memory/observations.jsonl` o `bus/memory_loader.py`, emitir `CG-WOT-2026-013o.md` y bloquear.

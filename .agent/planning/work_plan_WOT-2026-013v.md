@@ -26,7 +26,7 @@ La review de `013l` detecto una ambiguedad real en una utilidad ya aprobada: par
 python scripts/prune_runtime_retention.py --help
 rg -n "st_mtime|Keep the newest N review dirs|reviews/|review_packets|observations\.jsonl\.bak|dry-run" scripts/prune_runtime_retention.py
 rg -n "TestRuntimeRetentionSelection|TestRuntimeRetentionCLI|TestRuntimeRetentionSafety|review_directories_are_ranked|help_makes_directory_mtime_semantics_explicit" tests/unit/test_prune_runtime_retention.py
-python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>
+python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>
 ```
 Condicion de arranque (read-only, VERIFICABLE POR BYTES):
 - `reviews/` se ordena hoy por `p.stat().st_mtime` del directorio por ticket;
@@ -73,7 +73,7 @@ Aclaraciones (no parte de las rutas):
 ```
 python -m pytest tests/unit/test_prune_runtime_retention.py -q
 python scripts/prune_runtime_retention.py --help
-python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run --keep-reviews 20 --keep-packets 20 --keep-observation-baks 10
+python scripts/prune_runtime_retention.py --project-root <workspace_activo> --dry-run --keep-reviews 20 --keep-packets 20 --keep-observation-baks 10
 # Cierre canonico:
 python scripts/run_pytest_safe.py --level all
 ```
@@ -97,7 +97,7 @@ python scripts/run_pytest_safe.py --level all
 - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` sigue pasando para confirmar que packets/baks conservan su politica existente y el ticket no deriva el algoritmo general.
 - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
 - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013v`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.

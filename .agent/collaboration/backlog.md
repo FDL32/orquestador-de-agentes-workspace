@@ -23,7 +23,7 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Baja | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | deferred | - | CG-WOT-2026-013r (deuda estructural opcional) | condition:deuda-opcional-no-bloquea-013r |
-| Baja | WOT-2026-013v | Documentar semantica de reviews/: reciente = mtime del directorio (no ultimo intento logico) | motor/runtime-retention | pending | - | manager-review WOT-2026-013l (sugerencia no bloqueante) | - |
+| Baja | WOT-2026-013v | Documentar semantica de reviews/: reciente = mtime del directorio (no ultimo intento logico) | motor/runtime-retention | pending | WOT-2026-013l | manager-review WOT-2026-013l (sugerencia no bloqueante) | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
@@ -58,7 +58,7 @@
 - **Estado:** pending (packet frozen-ready preparado; siguiente ticket recomendado por bajo riesgo)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** - (independiente; 013l entrego la CLI base)
+- **Depende de:** WOT-2026-013l (COMPLETED; entrega la CLI base sobre la que 013v solo aclara semantica)
 - **Origen:** sugerencia no bloqueante del Manager en la review de WOT-2026-013l.
 - **Packet canonico:** `.agent/planning/work_plan_WOT-2026-013v.md`
 - **Problema (VERIFICADO POR BYTES 2026-06-25):** `prune_runtime_retention.py`
