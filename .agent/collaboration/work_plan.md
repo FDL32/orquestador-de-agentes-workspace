@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013l
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Retencion local opt-in para runtime gitignored (reviews, review_packets, observations.bak)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
