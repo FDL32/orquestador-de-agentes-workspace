@@ -125,3 +125,25 @@ Entrega del Paso 1 (verificada, queda como base si se aprueba 013t o se enmienda
 el DoD): 8 patches repuntados al modulo importado (wrong=0), barrera de binding
 mutation-verified, 21 passed focal, ruff OK, validate 0/0, suite canonica al HEAD
 8e84a25 exit 0, commit motor 8e84a25.
+
+## Enmienda de DoD aprobada -- WOT-2026-013r (Opcion 2, reaprobacion humana 2026-06-25)
+
+Decision humana sobre el CONTRACT_GAP: Opcion 2 -- enmendar el DoD de 013r a la
+barrera de binding y cerrar en Paso 1, con `013t` como deuda OPCIONAL (no
+requisito de cierre). NO se acomete el Paso 2 (dedup de forks).
+
+Cambios de contrato aplicados:
+- `work_plan.md` (activo) y `.agent/planning/work_plan_WOT-2026-013r.md` (packet):
+  DoD linea 102 enmendada. El criterio "revertir patches -> pytest FALLA"
+  (imposible en Paso 1 por shutil compartido) se reemplaza por
+  "barrera de BINDING mutation-verified": mutar `UpgradeManager.__module__` al
+  fork viejo -> `pytest ...::test_patch_target_is_the_module_the_sut_imports`
+  FALLA; correcto -> pasa. Nota de procedencia (CG-WOT-2026-013r + reaprobacion)
+  embebida en ambos contratos. Los 6 items del DoD quedan marcados [x] con
+  evidencia.
+- `backlog.md`: `013t` degradado de Alta/pending a Baja/deferred, deuda
+  estructural OPCIONAL, ya NO depende-de/bloquea 013r.
+
+Estado de cierre tras enmienda: todos los DoD (enmendados) cumplidos con
+evidencia ya registrada. Re-validate y re-handoff para re-review del Manager
+contra el contrato corregido.

@@ -23,7 +23,7 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013s | session-2026-06-25-motor-closeout | - |
-| Alta | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | pending | WOT-2026-013r | CG-WOT-2026-013r (Paso 2 escalado) | condition:reaprobacion-humana-paso2 |
+| Baja | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | deferred | - | CG-WOT-2026-013r (deuda estructural opcional) | condition:deuda-opcional-no-bloquea-013r |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -52,10 +52,10 @@
 ### WOT-2026-013t - Deduplicar UpgradeManager / binding shutil independiente (Paso 2 de 013r)
 - **Prioridad:** Alta
 - **Scope:** motor/upgrade-integrity
-- **Estado:** pending (requiere REAPROBACION humana explicita; Paso 2 escalado desde 013r)
+- **Estado:** deferred (DEUDA ESTRUCTURAL OPCIONAL; NO bloquea el cierre de 013r). El DoD de 013r se enmendo (2026-06-25, reaprobacion humana) a la barrera de binding; 013t queda como mejora futura para deduplicar los forks si se decide sanear la duplicacion.
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013r
+- **Depende de:** - (independiente; 013r ya cerro su aprendizaje con DoD enmendado)
 - **Origen:** CG-WOT-2026-013r (`.agent/planning/contract_gaps/CG-WOT-2026-013r.md`).
 - **Problema:** `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` (objeto
   modulo compartido), por lo que repuntar el target del patch en `test_upgrade.py` es

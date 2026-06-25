@@ -95,12 +95,26 @@ python scripts/run_pytest_safe.py --level all
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013r.md` + evento bus y PARA.
 
 ## DoD (binario, comandos exactos)
-- [ ] **Barrera demostrada:** revertir el fix de los patches -> `python -m pytest tests/unit/test_upgrade.py -q` **FALLA**; con el fix -> pasa.
-- [ ] Los 8 patches apuntan a `scripts.upgrade_agent_system.shutil.*` (el modulo importado).
-- [ ] `python -m ruff check tests/unit/test_upgrade.py` -> `All checks passed`.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0, level all, tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force` -> `0 errors / 0 warnings`.
-- [ ] Si el paso 2 se acometio: duplicacion eliminada/justificada y `README` alineado; si no, follow-up registrado en la superficie fija (backlog del workspace).
+
+> **Enmienda (2026-06-25, reaprobacion humana; ver CG-WOT-2026-013r):** el DoD
+> original exigia "revertir el fix de los patches -> pytest FALLA". Verificado 3x
+> que `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` (objeto
+> modulo compartido) -> repunte del target FISICAMENTE INDISTINGUIBLE; criterio
+> NO satisfacible en Paso 1 sin codigo productivo (Paso 2). Se enmienda al
+> aprendizaje real y verificable: **binding correcto** (el patch apunta al modulo
+> que el SUT importa), mutation-verified. Dedup de forks = deuda OPCIONAL
+> (WOT-2026-013t), no requisito de cierre.
+
+- [x] **Barrera de binding demostrada (mutation-verified):** mutar el assert de
+      `UpgradeManager.__module__` al fork viejo (`scripts.upgrade`) ->
+      `pytest ...::test_patch_target_is_the_module_the_sut_imports -q` **FALLA**;
+      con el valor correcto (`scripts.upgrade_agent_system`) -> pasa. La barrera
+      real-copy (`copytree`->raise en el shutil del SUT) propaga el error.
+- [x] Los 8 patches apuntan a `scripts.upgrade_agent_system.shutil.*` (el modulo importado).
+- [x] `python -m ruff check tests/unit/test_upgrade.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0, level all, tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force` -> `0 errors / 0 warnings`.
+- [x] Follow-up de deduplicacion en la superficie fija (backlog): `WOT-2026-013t`, deuda OPCIONAL (no bloquea cierre de 013r).
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013r`), suite canonica
