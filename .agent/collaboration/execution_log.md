@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013v
 
-**Estado:** IN_PROGRESS
+**Estado:** COMPLETED
 
 ## Bootstrap operativo -- WOT-2026-013v
 
@@ -94,3 +94,18 @@ Gates (comandos exactos + exit):
 Scope: sin creep. Solo los 2 archivos del FLT, solo texto+tests. Algoritmo de
 orden INTACTO (sigue mtime de dir). Forbidden surfaces no tocadas. CONTRACT_GAP
 NO aplica (la premisa reprodujo; el codigo usa mtime de dir).
+
+## Manager review - trazabilidad adicional (2026-06-25)
+
+Decision de review: APROBADO.
+
+Nota de trazabilidad:
+- El Manager reverifico diff, scope, `ruff`, los 4 node-ids del DoD, `validate 0/0`,
+  la suite canonica via `last-run.json` y el bus canonico `BUILDER_EXIT + STATE_CHANGED -> READY_FOR_REVIEW`.
+- El claim de mutacion adversarial del Builder NO se reejecuto de forma independiente
+  en esta pasada del Manager; queda aceptado como evidencia reportada por Builder,
+  no como reproduccion adversarial propia del Manager.
+
+
+
+Manager approved canonical closeout for WOT-2026-013v

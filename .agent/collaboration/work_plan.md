@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013v
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Documentar semantica de recencia en reviews/ para prune_runtime_retention
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor

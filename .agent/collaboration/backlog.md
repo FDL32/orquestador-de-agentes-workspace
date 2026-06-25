@@ -23,14 +23,13 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Baja | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | deferred | - | CG-WOT-2026-013r (deuda estructural opcional) | condition:deuda-opcional-no-bloquea-013r |
-| Baja | WOT-2026-013v | Documentar semantica de reviews/: reciente = mtime del directorio (no ultimo intento logico) | motor/runtime-retention | pending | WOT-2026-013l | manager-review WOT-2026-013l (sugerencia no bloqueante) | - |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
 
-> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. `013r` ya cerro canonico 2026-06-25: corrigio el mock-drift de `test_upgrade.py` con DoD enmendado a barrera de binding y dejo `013t` como deuda estructural opcional. Follow-up vivo actual: `013v`, ya preparado como packet frozen-ready de bajo riesgo tras la review de `013l`. `013l` ya cerro canonico y se mueve a historico; `013k` sigue DIFERIDO porque toca historico versionado (`notifications_*.md`) y exige una politica mas delicada que la poda local gitignored. `013v` NO reabre `013l`: fija la via conservadora de documentar que `reviews/` usa `mtime` de directorio (no ultimo intento logico) y blinda esa semantica con ayuda/docstring/tests. El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. `013r` ya cerro canonico 2026-06-25: corrigio el mock-drift de `test_upgrade.py` con DoD enmendado a barrera de binding y dejo `013t` como deuda estructural opcional. ``013v`` ya cerro canonico 2026-06-25: hizo explicita la semantica de `reviews/` por `mtime` de directorio sin tocar el algoritmo de orden, y la blindo con help/docstring/tests. `013l` y `013v` quedan resueltos como pareja de bajo riesgo en runtime-retention gitignored. Follow-ups vivos restantes de la familia 013: `013k` (politica para `notifications_*.md` versionado, mas delicada por historico util) y `013t` (deuda estructural opcional de dedup/binding independiente en upgrade). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
 ### WOT-2026-013t - Deduplicar UpgradeManager / binding shutil independiente (Paso 2 de 013r)
@@ -51,29 +50,6 @@
   y alinear `README`), de modo que parchear el modulo equivocado deje de interceptar y
   "revertir el fix -> FALLA" sea verificable. Referencia: FP-012.
 - **Non-goal:** no redisenar el flujo completo de install/upgrade (clausula STOP de 013r).
-
-### WOT-2026-013v - Documentar semantica de recencia en reviews/
-- **Prioridad:** Baja
-- **Scope:** motor/runtime-retention
-- **Estado:** pending (packet frozen-ready preparado; siguiente ticket recomendado por bajo riesgo)
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013l (COMPLETED; entrega la CLI base sobre la que 013v solo aclara semantica)
-- **Origen:** sugerencia no bloqueante del Manager en la review de WOT-2026-013l.
-- **Packet canonico:** `.agent/planning/work_plan_WOT-2026-013v.md`
-- **Problema (VERIFICADO POR BYTES 2026-06-25):** `prune_runtime_retention.py`
-  ordena `reviews/` por el mtime del DIRECTORIO por ticket. En el workspace de
-  dogfooding, 23 de 38 dirs de `reviews/` tienen el mtime del directorio
-  DIVERGENTE del archivo mas reciente que contienen (deltas de hasta ~38883 s
-  ~= 11 h), porque el FS actualiza el mtime del dir al anadir/quitar entradas
-  directas, no al modificar archivos anidados. Por tanto "los N reviews mas
-  recientes" por mtime-de-dir NO equivale a "los N ultimos intentos logicos".
-- **Decision ya tomada:** este follow-up va por la via de MENOR RIESGO: documentar
-  explicitamente la semantica actual de `reviews/` (`reciente = mtime del
-  directorio`) en docstring/help/salida y blindarla con tests. NO cambia el
-  algoritmo de orden en esta ronda.
-- **Non-goal:** no reordenar `reviews/` por archivo interno; no cablear la poda al
-  closeout; no cambiar packets/baks.
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media
