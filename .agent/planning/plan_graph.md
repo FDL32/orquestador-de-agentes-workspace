@@ -116,6 +116,33 @@
   - la barrera debe FALLAR si la seleccion incluye `events/archive`, `audits/system_health`, `collaboration/archive` o `_archive/plan_audit`, o si el script intenta ejecutarse sin `--dry-run/--apply` explicitos
 
 
+
+## PLAN-013T-001 -- Deduplicacion estructural del upgrade y seam de copias verificable
+
+- objetivo: consolidar `scripts/upgrade.py` y `scripts/upgrade_agent_system.py` en una sola implementacion efectiva de `UpgradeManager`, manteniendo el entrypoint publico documentado y dejando un seam de `copytree`/`copy2` que permita barreras fail-sin-fix honestas.
+- tickets: [WOT-2026-013t]
+- depends_on: [WOT-2026-013r]
+- superficies_archivo:
+  - repo_motor/scripts/upgrade.py
+  - repo_motor/scripts/upgrade_agent_system.py
+  - repo_motor/tests/unit/test_upgrade.py
+  - repo_motor/tests/integration/test_lifecycle_integration.py
+  - repo_motor/README.md
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/upgrade.py <project> --dry-run|--confirm|--verify`
+  - CLI legacy-compat `python scripts/upgrade_agent_system.py <project> --dry-run|--confirm|--verify`
+  - import surface `from scripts.upgrade import UpgradeManager`
+  - import surface `from scripts.upgrade_agent_system import UpgradeManager`
+- shared_dependencies:
+  - `repo_motor/scripts/rollback.py` y `repo_motor/scripts/detect_version.py` (read-only salvo necesidad demostrada por diff)
+  - `repo_motor/agent_system/scripts/project_paths.py` y `repo_motor/scripts/doctor_agent_system.py` (read-only por defecto; ya consumidos por el fork moderno)
+  - `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md` (read-only; solo contexto del hallazgo FP-012)
+- paralelizable: no
+- Merge Regression Audit:
+  - la regresion a bloquear es volver a tener dos `UpgradeManager` editables o un seam de copia ambiguo que haga indistinguible parchear el modulo correcto del equivocado
+  - la barrera debe FALLAR si `scripts.upgrade.UpgradeManager` y `scripts.upgrade_agent_system.UpgradeManager` dejan de resolver al mismo owner efectivo, o si romper `copytree`/`copy2` en el owner real no hace fallar las pruebas focales
+
 ## PLAN-013V-001 -- Semantica explicita de recencia para reviews/
 
 - objetivo: hacer explicita y verificable la semantica actual de `reviews/` en `prune_runtime_retention.py` (`reciente = mtime del directorio`), evitando que el operador interprete "ultimo review" como "ultimo intento logico dentro del dir".

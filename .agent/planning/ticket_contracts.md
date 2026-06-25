@@ -1807,6 +1807,42 @@
 - **Builder clarification budget:** 0. El ticket ya decide la via de producto: extender la utilidad local existente, no el seam del controller.
 - **STOP conditions:** parar si `notifications_*.md` resulta no estar gitignored; parar si la utilidad no puede distinguirlos de otros artefactos de `collaboration/archive/`; parar si la nueva superficie solo puede cubrirse con wiring automatico en closeout/controller.
 - **Depende de:** WOT-2026-013l (COMPLETED).
+
+## T-013T-001 -- Deduplicacion estructural del upgrade y seam de copias verificable
+
+- **ticket_id:** WOT-2026-013t
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013T-001
+- **Plan-Link:** PLAN-013T-001
+- **Premise:** `013r` cerro el falso verde inmediato de `test_upgrade.py`, pero el repo sigue con dos owners efectivos del seam de upgrade: `README.md` declara canonico `scripts/upgrade.py`, `tests/integration/test_lifecycle_integration.py` importa `scripts.upgrade.UpgradeManager`, y `tests/unit/test_upgrade.py` sigue ejercitando `scripts.upgrade_agent_system.UpgradeManager`. Mientras coexistan dos clases editables o un seam de copia ambiguo, el contrato puede volver a divergir.
+- **Premise Re-check (read-only):** releer `README.md`, `DISTRIBUTION_GUIDE.md`, `UPGRADE_GUIDE.md`, `scripts/upgrade.py`, `scripts/upgrade_agent_system.py`, `tests/unit/test_upgrade.py`, `tests/integration/test_lifecycle_integration.py`; confirmar imports, owner real y puntos de patch de `copytree`/`copy2`; ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` antes del arranque.
+- **Context Baseline Evidence:** motor_head=f409b66; destino_head=1f8dd39; dual_UpgradeManager_confirmed=true; README_canonical=upgrade.py; test_upgrade_imports=upgrade_agent_system; test_lifecycle_imports=upgrade; generated_at=2026-06-25.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/upgrade.py`
+  - Builder repo_motor: `scripts/upgrade_agent_system.py`
+  - Builder repo_motor: `tests/unit/test_upgrade.py`
+  - Builder repo_motor: `tests/integration/test_lifecycle_integration.py`
+  - Builder repo_motor: `README.md`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `scripts/rollback.py`; `scripts/detect_version.py`; `scripts/doctor_agent_system.py`; `agent_system/scripts/project_paths.py`; `docs/KNOWN_FAILURE_PATTERNS.md`; `CG-WOT-2026-013r.resolved.md`.
+- **Forbidden Surfaces:** `.agent/**`; `bus/**`; `runtime/**`; nuevas dependencias; migraciones documentales amplias fuera de `README.md`; cambios en `rollback.py`, `detect_version.py`, `doctor_agent_system.py` o `ProjectPathsResolver` salvo CONTRACT_GAP; `privada/`; `.env*`.
+- **DoD:**
+  - [ ] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_patch_target_is_the_module_the_sut_imports -q` pasa y verifica owner unico coherente con el modulo ejercitado.
+  - [ ] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_propagates_real_copytree_failure tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_invokes_real_copies_count -q` pasa; romper `copytree` en el owner real hace FALLAR la prueba focal sin el fix.
+  - [ ] `python -m pytest tests/integration/test_lifecycle_integration.py -q` pasa y mantiene operativa la superficie publica `from scripts.upgrade import UpgradeManager`.
+  - [ ] `python -m pytest tests/unit/test_upgrade.py -q` pasa y falla si reaparece una segunda clase editable divergente.
+  - [ ] `python -m ruff check scripts/upgrade.py scripts/upgrade_agent_system.py tests/unit/test_upgrade.py tests/integration/test_lifecycle_integration.py` -> `All checks passed`.
+  - [ ] `python scripts/check_encoding_guard.py README.md` -> exit 0.
+  - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
+- **Integracion cross-ticket:** materializa el Paso 2 postergado por `013r`; no reabre el cierre historico de `013r` ni mezcla runtime-retention, closeout o memoria.
+- **CONTRACT_GAP behavior:** si fijar owner unico obliga a tocar `rollback.py`, `detect_version.py`, `doctor_agent_system.py` o `ProjectPathsResolver` de forma sustantiva, o si la compatibilidad publica de `scripts/upgrade.py` no puede preservarse dentro de las superficies declaradas, emitir `CG-WOT-2026-013t.md` y bloquear.
+- **Builder clarification budget:** 0.
+- **STOP conditions:** parar si el unico fix viable deriva a redisenar todo el flujo de install/upgrade/rollback; parar si el seam fail-sin-fix solo puede demostrarse reescribiendo de forma amplia la estrategia de tests; parar si aparece drift concurrente de HEAD en repo_motor.
+- **Depende de:** WOT-2026-013r (COMPLETED).
+
 ## T-013N-001 -- Estados terminales honestos no-exito
 
 - **ticket_id:** WOT-2026-013n

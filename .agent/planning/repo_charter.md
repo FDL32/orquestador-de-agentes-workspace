@@ -181,6 +181,16 @@ referencias publicadas.
 - related_plans: [PLAN-013L-001]
 
 
+
+### OBJ-013T-001 -- Unica implementacion verificable para upgrade + seam de copias honesto
+- description: eliminar la duplicacion estructural entre `scripts/upgrade.py` y `scripts/upgrade_agent_system.py`, fijando una sola implementacion canonica de `UpgradeManager` y un seam de copia (`copytree`/`copy2`) que permita barreras fail-sin-fix reales sin drift entre docs, imports y tests.
+- success_criteria: existe un solo owner de la logica de `UpgradeManager`; `upgrade.py` y `upgrade_agent_system.py` ya no mantienen cuerpos divergentes; el entrypoint publico documentado sigue funcionando; y las barreras distinguen de forma verificable el target correcto de copia.
+- failure_modes:
+  - `README` y los tests siguen apuntando a forks distintos del upgrade;
+  - la solucion conserva dos clases `UpgradeManager` editables o wrappers ambiguos que permitan reintroducir mock-drift sin diagnostico;
+  - el fix solo cambia tests, pero deja la duplicacion estructural del producto intacta.
+- related_plans: [PLAN-013T-001]
+
 ### OBJ-013V-001 -- Semantica operativa explicita para `reviews/`
 - description: evitar que la utilidad de retencion local induzca una lectura incorrecta de "reviews mas recientes" dejando explicito que `reviews/` se ordena por `mtime` del directorio del ticket, no por el archivo interno mas reciente, sin cambiar el algoritmo ni ampliar blast radius.
 - success_criteria: help/docstring/salida y barreras de test describen la MISMA semantica para `reviews/`; el operador puede ver en `--dry-run` y en la ayuda que la recencia de `reviews/` depende del directorio, mientras `review_packets` y `observations.jsonl.bak.*` siguen siendo superficies por archivo.
