@@ -23,6 +23,7 @@
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013s | session-2026-06-25-motor-closeout | - |
+| Alta | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | pending | WOT-2026-013r | CG-WOT-2026-013r (Paso 2 escalado) | condition:reaprobacion-humana-paso2 |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
@@ -47,6 +48,25 @@
   `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md`. El cuerpo del ticket (premise
   re-check, secuencia minima fija paso 1/paso 2, DoD, STOP) vive SOLO en el
   packet. Esta fila es indice; no duplicar el detalle aqui.
+
+### WOT-2026-013t - Deduplicar UpgradeManager / binding shutil independiente (Paso 2 de 013r)
+- **Prioridad:** Alta
+- **Scope:** motor/upgrade-integrity
+- **Estado:** pending (requiere REAPROBACION humana explicita; Paso 2 escalado desde 013r)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** WOT-2026-013r
+- **Origen:** CG-WOT-2026-013r (`.agent/planning/contract_gaps/CG-WOT-2026-013r.md`).
+- **Problema:** `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` (objeto
+  modulo compartido), por lo que repuntar el target del patch en `test_upgrade.py` es
+  indistinguible en runtime y el DoD binario de 013r ("revertir patches -> pytest FALLA")
+  es inalcanzable sin tocar codigo productivo. Los dos forks definen clases
+  `UpgradeManager` distintas (`upgrade.py` vs `upgrade_agent_system.py`); `README:104`
+  declara canonico `upgrade.py` pero el test ejercita el otro fork.
+- **Objetivo:** dar a cada fork binding de shutil independiente (o deduplicar los forks
+  y alinear `README`), de modo que parchear el modulo equivocado deje de interceptar y
+  "revertir el fix -> FALLA" sea verificable. Referencia: FP-012.
+- **Non-goal:** no redisenar el flujo completo de install/upgrade (clausula STOP de 013r).
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media

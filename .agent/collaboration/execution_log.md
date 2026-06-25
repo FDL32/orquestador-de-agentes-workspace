@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013r
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## Bootstrap operativo -- WOT-2026-013r
 
@@ -98,3 +98,30 @@ Gates (comandos exactos + exit):
 Scope: sin creep. `scripts/upgrade.py` y `scripts/upgrade_agent_system.py` NO
 tocados. `README.md` NO tocado (Paso 2 no acometido). Paso 2 no requerido: el
 Paso 1 demuestra la barrera honesta sin necesidad de deduplicar forks.
+
+## CONTRACT_GAP -- WOT-2026-013r (tras CHANGES del Manager, 2026-06-25)
+
+El Manager devolvio CHANGES con un unico bloqueo CENTRAL y CORRECTO: el DoD
+binario linea 102 exige "revertir el fix de los patches -> 
+`pytest tests/unit/test_upgrade.py -q` FALLA", y en un worktree pre-fix (38e65c9)
+la suite sigue verde (18 passed). Eso es falso-verde segun el criterio escrito.
+
+Diagnostico (verificado por experimento 3x, no relato):
+- `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` -> True (objeto
+  modulo compartido). Parchear cualquiera de los dos modulos parchea el MISMO
+  atributo -> el repunte del target es FISICAMENTE INDISTINGUIBLE en runtime.
+- Por tanto el DoD literal NO es satisfacible en el Paso 1 (sin tocar codigo
+  productivo). La unica via es dar binding shutil independiente a cada fork /
+  deduplicar -> Paso 2, que el packet marca como "requiere reaprobacion humana".
+
+Decision (con aprobacion humana): emitir CONTRACT_GAP y PARAR, sin reescribir el
+DoD ni acometer el Paso 2 sin reaprobacion. Artefactos:
+- `.agent/planning/contract_gaps/CG-WOT-2026-013r.md` (gap + evidencia + 3 vias).
+- Follow-up `WOT-2026-013t` registrado en `backlog.md` (fila + ficha; superficie
+  fija que exige el work_plan lineas 59-65) para el Paso 2 (dedup de forks).
+- Escalacion canonica a HUMAN_GATE via `--escalate-human-gate`.
+
+Entrega del Paso 1 (verificada, queda como base si se aprueba 013t o se enmienda
+el DoD): 8 patches repuntados al modulo importado (wrong=0), barrera de binding
+mutation-verified, 21 passed focal, ruff OK, validate 0/0, suite canonica al HEAD
+8e84a25 exit 0, commit motor 8e84a25.
