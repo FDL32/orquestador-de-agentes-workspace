@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013k
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Extender retention local opt-in a notifications_*.md gitignored en collaboration/archive
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
