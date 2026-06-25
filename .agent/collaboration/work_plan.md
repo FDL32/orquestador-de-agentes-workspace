@@ -12,7 +12,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013s
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Saneamiento estricto de observations.jsonl del repo_motor (sucesor de 013o, target corregido)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
