@@ -109,12 +109,24 @@ python scripts/validate_observations.py --strict --file .agent/runtime/memory/ob
 git diff --stat .agent/runtime/memory/observations.jsonl   # diff revisable (archivo TRACKED)
 ```
 
-## Files Likely Touched (relativos a repo_motor)
-- `scripts/migrate_observations.py`            (poblar DOMAIN_MIGRATION_MAP, Eje B)
-- `scripts/validate_observations.py`           (SOLO si se amplia el enum)
-- `skills/_shared/ap-schema.md`                (SOLO si se amplia el enum)
-- `.agent/runtime/memory/observations.jsonl`   (datos migrados; TRACKED -> diff revisable en handoff)
-- `tests/unit/test_migrate_observations.py`    (NUEVO. VERIFICADO EN CODIGO: no existe hoy)
+## Files Likely Touched
+
+Rutas relativas a `repo_motor` (delivery_authority=repo_motor). Una ruta
+parseable por bullet, sin comentarios inline; las aclaraciones van debajo.
+
+### repo_motor
+- `scripts/migrate_observations.py`
+- `scripts/validate_observations.py`
+- `skills/_shared/ap-schema.md`
+- `.agent/runtime/memory/observations.jsonl`
+- `tests/unit/test_migrate_observations.py`
+
+Aclaraciones (no parte de las rutas):
+- `scripts/migrate_observations.py`: poblar DOMAIN_MIGRATION_MAP / TOPIC_OVERRIDE (Eje B) + endurecer guard keep-intact (Eje A residual).
+- `scripts/validate_observations.py`: SOLO si se amplia el enum (no se amplio).
+- `skills/_shared/ap-schema.md`: SOLO si se amplia el enum (no se amplio).
+- `.agent/runtime/memory/observations.jsonl`: datos migrados; TRACKED -> diff revisable en handoff.
+- `tests/unit/test_migrate_observations.py`: NUEVO; barreras de guard, mapeo Eje B, impact, LF y rollback.
 
 ## Non-goals
 - NO tocar `repo_destino` (su observations.jsonl esta limpio; 0 entradas drift).
