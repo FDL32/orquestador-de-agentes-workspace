@@ -1,10 +1,10 @@
 # MEMORY
 
-Regenerated: 2026-06-22T16:28:49.635492+00:00
+Regenerated: 2026-06-25T21:34:50.101390+00:00
 
-Total observations: 88
+Total observations: 98
 
-- Architecture (47 observations)
+- Architecture (56 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
 - Backlog-Summary-Detail-Reconcile-After-Rescope (1 observations)
@@ -36,20 +36,20 @@ Total observations: 88
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
 - State-Seam-Requires-Cross-Surface-Grep (1 observations)
 - Suite-Performance (1 observations)
-- Ticket-Completion (7 observations)
+- Ticket-Completion (8 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
 ## architecture
+- Decisiones arquitectonicas documentadas en WOT-2026-013t
+- Decisiones arquitectonicas documentadas en WOT-2026-013k
+- Decisiones arquitectonicas documentadas en WOT-2026-013v
+- Decisiones arquitectonicas documentadas en WOT-2026-013l
+- Decisiones arquitectonicas documentadas en WOT-2026-013u
+- Decisiones arquitectonicas documentadas en WOT-2026-013r
+- Decisiones arquitectonicas documentadas en WOT-2026-013s
+- Decisiones arquitectonicas documentadas en WOT-2026-013o
 - Decisiones arquitectonicas documentadas en WOT-2026-013n
-- Decisiones arquitectonicas documentadas en WOT-2026-010j
-- Decisiones arquitectonicas documentadas en WOT-2026-008b
-- Decisiones arquitectonicas documentadas en WT-2026-245b
-- Decisiones arquitectonicas documentadas en WT-2026-182
-- Decisiones arquitectonicas documentadas en WT-2026-245a
-- Decisiones arquitectonicas documentadas en WT-2026-238a
-- Decisiones arquitectonicas documentadas en WT-2026-249b
-- Decisiones arquitectonicas documentadas en WT-2026-200
-- Decisiones arquitectonicas documentadas en WOT-2026-013j
+- Decisiones arquitectonicas documentadas en WOT-2026-013n
 
 ## atomic-requeue-claim
 - Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super
