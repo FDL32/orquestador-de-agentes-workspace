@@ -25,7 +25,7 @@ La deuda de `013l` es estrictamente LOCAL y de disco del operador: las tres supe
 ```
 rg -n "\.agent/runtime/reviews/|\.agent/runtime/review_packets/|observations\.jsonl\.bak\.\*" .gitignore MANIFEST.distribute MANIFEST.workspace
 rg -n "review_packets|runtime/reviews|observations\.jsonl\.bak" bus scripts tests
-python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
+python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>
 ```
 Condicion de arranque (read-only, VERIFICABLE POR BYTES):
 - las tres superficies objetivo aparecen como gitignored/local-only;
@@ -43,6 +43,7 @@ La solucion debe ser una utilidad opt-in, separada del closeout y de los product
 
 ### Paso 2 - dry-run y apply explicitos
 - Exponer un `--dry-run` legible y un `--apply` explicito; el script no debe borrar nada si el modo no queda declarado con claridad.
+- Declarar explicitamente los flags de retencion `--keep-reviews <N>`, `--keep-packets <N>` y `--keep-observation-baks <N>` para que el contrato de conteo quede autocontenido en este work plan.
 - La salida debe permitir verificar que solo se tocarian/tocaron archivos de `reviews`, `review_packets` y `observations.jsonl.bak.*`.
 
 ### Paso 3 - barreras de regresion
@@ -67,7 +68,7 @@ Aclaraciones (no parte de las rutas):
 ## Bateria focal (primer loop; NO la suite canonica completa hasta el cierre)
 ```
 python -m pytest tests/unit/test_prune_runtime_retention.py -q
-python scripts/prune_runtime_retention.py --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace --dry-run
+python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run --keep-reviews <N> --keep-packets <N> --keep-observation-baks <N>
 # Cierre canonico:
 python scripts/run_pytest_safe.py --level all
 ```
@@ -95,4 +96,4 @@ python scripts/run_pytest_safe.py --level all
 - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con `WOT-2026-013l`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
+Commit productivo en repo_motor (mensaje con `WOT-2026-013l`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano. Ejemplo focal portable: `python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run --keep-reviews 20 --keep-packets 20 --keep-observation-baks 10`.

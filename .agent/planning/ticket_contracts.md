@@ -1706,6 +1706,39 @@
 - **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad “sincronizadas manualmente”; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
 - **Depende de:** -.
 
+## T-013L-001 -- Retencion local opt-in para runtime gitignored
+
+- **ticket_id:** WOT-2026-013l
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013L-001
+- **Plan-Link:** PLAN-013L-001
+- **Premise:** la deuda de `013l` es estrictamente local y de disco del operador: `repo_destino/.agent/runtime/reviews/`, `repo_destino/.agent/runtime/review_packets/` y `repo_destino/.agent/runtime/memory/observations.jsonl.bak.*` estan gitignored y excluidos de `MANIFEST.distribute` / `MANIFEST.workspace`. Hoy existen productores legitimos para esas rutas, pero no una via auditable y de bajo riesgo para acotar su retencion sin tocar historico versionado ni cablear poda automatica en el lifecycle de cierre.
+- **Premise Re-check (read-only):**
+  - verificar en `.gitignore`, `MANIFEST.distribute` y `MANIFEST.workspace` que las tres superficies objetivo son local-only / gitignored;
+  - inspeccionar `bus/review_bridge.py`, `bus/review_report.py`, `scripts/memory_consolidate.py` y `scripts/migrate_observations.py` para confirmar que producen artefactos en esas rutas, sin politica dedicada de retencion;
+  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` y dejar constancia del estado verde pre-arranque.
+- **Files Likely Touched:**
+  - Builder: `scripts/prune_runtime_retention.py`
+  - Builder: `tests/unit/test_prune_runtime_retention.py`
+  - Read/inspect only: `.gitignore`, `MANIFEST.distribute`, `MANIFEST.workspace`, `bus/review_bridge.py`, `bus/review_report.py`, `scripts/memory_consolidate.py`, `scripts/migrate_observations.py`, `.agent/agent_controller.py`, `scripts/run_pytest_safe.py`
+- **Forbidden Surfaces:** `.agent/agent_controller.py`; `bus/**`; `runtime/**`; `scripts/memory_consolidate.py`; `scripts/migrate_observations.py`; `bus/review_bridge.py`; `bus/review_report.py`; `.gitignore`; `MANIFEST.distribute`; `MANIFEST.workspace`; `repo_destino/.agent/runtime/events/archive/**`; `repo_destino/.agent/audits/system_health/**`; `repo_destino/.agent/collaboration/archive/**`; `repo_destino/.agent/collaboration/_archive/**`; `privada/`; `.env*`; bus editado manualmente.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_collects_only_gitignored_runtime_targets -q` pasa y demuestra que el selector solo considera `reviews`, `review_packets` y `observations.jsonl.bak.*`.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` pasa; si se reintroduce spillover hacia otra ruta o se rompe el orden determinista, FALLA.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_observation_backups_follow_the_same_retention_policy -q` pasa y cubre `observations.jsonl.bak.*` sin politica separada opaca.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` pasa; `dry-run` no borra nada y `apply` elimina solo los candidatos seleccionados.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_versioned_history_surfaces_are_never_selected -q` pasa; si se intenta incluir `events/archive`, `collaboration/archive`, `_archive/plan_audit` o `audits/system_health`, FALLA.
+  - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+  - [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+- **Integracion cross-ticket:** no mezclar con `013k` ni con cambios al lifecycle de closeout; `013l` se limita al camino de menor riesgo (CLI standalone opt-in). Cualquier propuesta de integrar la poda en `session-close`, `mark-ready` o productores de runtime sale de scope y requiere CONTRACT_GAP.
+- **CONTRACT_GAP behavior:** si la unica solucion segura exige tocar `session-close`, `mark-ready`, `review_bridge`, `memory_consolidate` o cualquier productor de runtime; si la retencion necesita inspeccionar o borrar superficies versionadas/historico util; o si el selector no puede distinguir de forma determinista entre artefactos locales podables y artefactos utiles que deban preservarse, emitir `CG-WOT-2026-013l.md`, bloquear y devolver a Contract Formation.
+- **Builder clarification budget:** 0. El Builder no decide si integrar la retencion en el closeout ni reabre la frontera entre superficies gitignored y historico versionado.
+- **STOP conditions:** parar si el FLT real exige tocar un modulo fuera de `scripts/prune_runtime_retention.py` o `tests/unit/test_prune_runtime_retention.py`; parar si la cobertura depende de una heuristica opaca no auditable; parar si el contrato de conteo no puede expresarse con `--keep-reviews <N>`, `--keep-packets <N>` y `--keep-observation-baks <N>` de forma estable.
+- **Depende de:** -
+
 ## T-013N-001 -- Estados terminales honestos no-exito
 
 - **ticket_id:** WOT-2026-013n
