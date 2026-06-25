@@ -7,7 +7,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013r
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
