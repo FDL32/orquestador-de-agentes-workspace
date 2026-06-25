@@ -163,6 +163,16 @@ referencias publicadas.
 - related_plans: [PLAN-013J-001]
 
 
+### OBJ-013L-001 -- Retencion local segura para runtime gitignored
+- description: acotar el crecimiento de artefactos locales gitignored de runtime con una politica opt-in, auditable y reversible, sin degradar historico versionado ni mezclar la solucion con el lifecycle de cierre canonico.
+- success_criteria: existe una CLI pequena y verificable que lista/poda solo `reviews`, `review_packets` y `observations.jsonl.bak.*` bajo `--project-root`, con `dry-run` explicito y barreras que prueban que no toca superficies versionadas.
+- failure_modes:
+  - la retencion acaba tocando `events/archive`, `collaboration/archive`, `_archive/plan_audit` o `audits/system_health`;
+  - la solucion obliga a cablear la poda dentro de `session-close`, `mark-ready` o productores de runtime en vez de una via opt-in separada;
+  - la CLI no deja evidencia suficiente para distinguir una poda real de un falso verde sobre rutas vacias.
+- related_plans: [PLAN-013L-001]
+
+
 ### OBJ-013U-001 -- Contrato CLI coherente para acciones de closeout/review
 - description: asegurar que el controller trate `--ticket <id>` como contrato comun real para las acciones de closeout/review que aceptan ticket, manteniendo compatibilidad con la forma posicional existente y sin degradar la semantica del bus.
 - success_criteria: el help, el parser y las barreras de test describen y verifican el mismo contrato CLI para `manager-approve`, `request-changes` y `reopen-terminal-ticket`.

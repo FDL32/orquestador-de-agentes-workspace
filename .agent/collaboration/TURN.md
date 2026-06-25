@@ -1,6 +1,6 @@
 # TURNO ACTUAL
 
-**Ultima actualizacion:** 2026-06-25 15:34:24
+**Ultima actualizacion:** 2026-06-25 15:52:04
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Campo | Valor |
 |-------|-------|
-| **ROL** | **MANAGER** |
-| **Plan ID** | N/A |
+| **ROL** | **BUILDER** |
+| **Plan ID** | PLAN-013L-001 |
 | **Tipo** | IMPLEMENTATION |
-| **Accion** | CREATE_PLAN |
+| **Accion** | IMPLEMENT |
 
 ---
 
 ## Instruccion
 
-> Ticket WOT-2026-013u closed. Create new work_plan.md for next cycle.
+> Implementa `WOT-2026-013l` segun `work_plan.md`: crea la utilidad opt-in de retencion local gitignored y sus barreras, sin tocar closeout ni historico versionado.
 
 ---
 
@@ -25,8 +25,8 @@
 
 | Archivo | Estado |
 |---------|--------|
-| work_plan.md | COMPLETED |
-| execution_log.md | COMPLETED |
+| work_plan.md | IN_PROGRESS |
+| execution_log.md | IN_PROGRESS |
 
 ---
 

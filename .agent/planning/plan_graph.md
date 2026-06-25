@@ -72,6 +72,29 @@
 
 
 
+## PLAN-013L-001 -- Retencion local opt-in para runtime gitignored
+
+- objetivo: introducir una via auditable y de bajo riesgo para podar por conteo/edad las superficies locales gitignored de runtime (`reviews`, `review_packets`, `observations.jsonl.bak.*`) sin cablearla al closeout ni tocar historico versionado.
+- tickets: [WOT-2026-013l]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/scripts/prune_runtime_retention.py
+  - repo_motor/tests/unit/test_prune_runtime_retention.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run`
+  - CLI `python scripts/prune_runtime_retention.py --project-root <repo_destino> --apply --keep-reviews <N> --keep-packets <N> --keep-observation-baks <N>`
+  - rutas gitignored `.agent/runtime/reviews/`, `.agent/runtime/review_packets/`, `.agent/runtime/memory/observations.jsonl.bak.*`
+- shared_dependencies:
+  - `.gitignore`, `MANIFEST.distribute` y `MANIFEST.workspace` (read-only; la premisa de local-only ya esta fijada ahi)
+  - `repo_motor/bus/review_bridge.py`, `repo_motor/bus/review_report.py`, `repo_motor/scripts/memory_consolidate.py`, `repo_motor/scripts/migrate_observations.py` (read-only; productores actuales)
+  - `repo_motor/.agent/agent_controller.py` y `repo_motor/scripts/run_pytest_safe.py` (read-only; este ticket no se integra en closeout)
+- paralelizable: no
+- Merge Regression Audit:
+  - la regresion a bloquear es el spillover desde la retencion local gitignored hacia historico versionado o wiring automatico del closeout
+  - la barrera debe FALLAR si la seleccion incluye `events/archive`, `audits/system_health`, `collaboration/archive` o `_archive/plan_audit`, o si el script intenta ejecutarse sin `--dry-run/--apply` explicitos
+
+
 ## PLAN-013U-001 -- Contrato CLI coherente para acciones con ticket
 
 - objetivo: alinear el parser comun de `--ticket`, la ayuda y las barreras de regresion del controller para que las acciones de closeout/review acepten `--ticket <id>` de forma consistente sin romper la compatibilidad posicional existente.
