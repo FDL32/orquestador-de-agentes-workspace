@@ -13,7 +13,7 @@
 ## Metadata
 - **ID:** WOT-2026-013s
 - **Titulo:** Saneamiento estricto de observations.jsonl del repo_motor (sucesor de 013o, target corregido)
-- **deliverable_type:** code
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Prioridad:** Alta
 - **Depende de:** WOT-2026-013n (cerrado)
@@ -124,6 +124,7 @@ git diff --stat .agent/runtime/memory/observations.jsonl   # diff revisable (arc
 - `skills/_shared/ap-schema.md`                (SOLO si se amplia el enum)
 - `.agent/runtime/memory/observations.jsonl`   (datos migrados; TRACKED -> diff revisable en handoff)
 - `tests/unit/test_migrate_observations.py`    (NUEVO. VERIFICADO EN CODIGO: no existe hoy)
+- `tests/test_migration_bootstrap.py`          (EXISTE. Actualizar casos de test del migrador para nuevos mapeos del Eje B)
 
 ## Non-goals
 - NO tocar `repo_destino` (su observations.jsonl esta limpio; 0 entradas drift).
