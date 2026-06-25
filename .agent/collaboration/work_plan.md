@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013u
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Arreglar parser CLI de closeout/review para que respete --ticket y alinee el help
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
