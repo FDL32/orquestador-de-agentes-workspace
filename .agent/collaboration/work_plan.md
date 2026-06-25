@@ -1,126 +1,107 @@
-# Plan de Trabajo: WOT-2026-013r
+﻿# Plan de Trabajo: WOT-2026-013u
 
 > Fuente canonica unica del ticket (packet oficial). El backlog del workspace
-> debe REFERENCIAR este archivo, no reproducir su cuerpo. Fuente de verdad del
-> problema: FP-012 en `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md` (este packet
-> referencia FP-012, no reproduce toda la explicacion).
+> debe REFERENCIAR este archivo, no reproducir su cuerpo.
 
 ## Metadata
-- **ID:** WOT-2026-013r
-- **Estado:** COMPLETED
-- **Titulo:** Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
+- **ID:** WOT-2026-013u
+- **Estado:** APPROVED
+- **Titulo:** Arreglar parser CLI de closeout/review para que respete --ticket y alinee el help
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Prioridad:** Alta
-- **Depende de:** WOT-2026-013s (cerrado canonico 2026-06-25)
-- **Objective-Link:** cerrar el falso verde sobre operacion destructiva de
-  upgrade (FP-012).
+- **Depende de:** -
+- **Objective-Link:** OBJ-013U-001
+- **Plan-Link:** PLAN-013U-001
+- **Builder clarification budget:** 0 (el ticket fija parser, help, superficies, test files y politica de backward-compat; no deja decisiones abiertas de producto)
 
 ## Objetivo
-Eliminar el falso verde de `test_upgrade.py` de forma verificable, con barrera
-fail-sin-fix que demuestre que las copias reales del codigo bajo test se
-interceptan.
+Corregir el parser de `agent_controller.py` para que las acciones que aceptan ticket (`--manager-approve`, `--request-changes`, `--reopen-terminal-ticket`) respeten `--ticket <id>` de forma consistente, sin romper la compatibilidad posicional ya usada en cierres previos, y con ayuda/mensajes alineados al comportamiento real.
 
-## Premise Re-check (cwd=repo_motor)
+## Premise
+Existe un drift verificable entre el contrato CLI documentado y el parser real del controller: el help y `Control flags` anuncian `--ticket <ticket>` como forma soportada para acciones de closeout/review, pero la rama de parseo comun en `.agent/agent_controller.py` contiene una condicion invertida y por ello no asigna `ticket_id` cuando `--ticket` se usa correctamente. Como efecto, `--manager-approve --ticket <id>` falla con `No ticket_id provided`, mientras la forma posicional `--manager-approve <id>` si entra al flujo. Ademas, `--reopen-terminal-ticket` aparece en el help como flag sin `<ticket>` aunque su parser intenta consumir uno.
+
+## Premise Re-check (cwd=repo_motor, solo lectura)
 ```
-git rev-parse --short HEAD
-rg -n "from scripts\\.upgrade_agent_system import|patch\\(\"scripts\\.upgrade\\.shutil" tests/unit/test_upgrade.py
-rg -n "shutil\\.copytree|shutil\\.copy2" scripts/upgrade_agent_system.py
+python .agent/agent_controller.py -h
+rg -n -e "--manager-approve <ticket>|--request-changes <ticket>|--reopen-terminal-ticket|--ticket <ticket>|Parse --ticket|idx \\+ 1 >= len\\(sys\\.argv\\)|elif \\\"--manager-approve\\\"|elif \\\"--request-changes\\\"|elif \\\"--reopen-terminal-ticket\\\"" .agent/agent_controller.py
+rg -n "test_agent_controller_help_lists_critical_flags|_handle_manager_approve|_handle_request_changes|_handle_reopen_terminal_ticket" tests/test_agent_controller.py tests/unit/test_manager_approve.py tests/unit/test_request_changes_requeue.py
 ```
-Condicion de arranque (VERIFICADO POR BYTES 2026-06-25): `test_upgrade.py:12`
-importa `UpgradeManager` de `scripts.upgrade_agent_system` pero parchea
-`scripts.upgrade.shutil.*` (8 ocurrencias: 46,47,83,84,112,113,204,205) -> NO
-intercepta `shutil.copytree`/`copy2` reales (`upgrade_agent_system.py:148,151,
-199,202`). Detalle completo y causa raiz: FP-012. Si no reproduce, PARA.
+Condicion de arranque (read-only, VERIFICABLE POR BYTES):
+- el help expone `--manager-approve <ticket>` y `--request-changes <ticket>`, mientras `--reopen-terminal-ticket` aparece sin `<ticket>`;
+- la rama `if "--ticket" in sys.argv:` usa una condicion invertida (`idx + 1 >= len(sys.argv)`) y por eso no asigna `ticket_id` cuando `--ticket` tiene valor valido;
+- existen superficies de test ya versionadas para cubrir `manager-approve`, `request-changes` y `reopen-terminal-ticket` sin crear una familia paralela de tests.
+Si esta premisa read-only no reproduce, PARA y documenta el drift antes de tocar codigo.
 
 ## Decision Arquitectonica
-El enfoque correcto en `013r` es corregir primero la barrera de test sobre el
-modulo realmente importado (`scripts.upgrade_agent_system`) y demostrar el rojo
-sin fix en `tests/unit/test_upgrade.py`, sin tocar aun el codigo productivo de
-upgrade. Esta via minimiza blast radius: ataca el falso verde documentado en
-FP-012, preserva intacto el flujo de install/upgrade mientras no haya evidencia
-de un bug de producto y deja la deduplicacion `upgrade.py` vs
-`upgrade_agent_system.py` como escalado explicito solo si el paso 1 no alcanza.
+La solucion debe ser de parser/contrato CLI, no un workaround ad hoc para `manager-approve`. El controller ya expone `--ticket` como control flag comun; el fix correcto es hacer que esa ruta funcione de verdad para todas las acciones que la aceptan, conservar la via posicional existente por backward-compat y alinear el `-h`/mensajes/tests al contrato unificado.
 
-## Plan - secuencia minima FIJA (no es eleccion libre)
-### Paso 1 (OBLIGATORIO PRIMERO) - repuntar patches + barrera
-- Cambiar los 8 `patch("scripts.upgrade.shutil.*")` ->
-  `patch("scripts.upgrade_agent_system.shutil.*")` (el modulo realmente
-  importado) en `tests/unit/test_upgrade.py`.
-- Anadir en ese mismo archivo (EXISTE; VERIFICADO EN CODIGO) una barrera
-  fail-sin-fix: un test que monkeypatchee `copytree`/`copy2` reales a `raise` y
-  confirme que el flujo de upgrade los invoca (la suite debe FALLAR sin el fix
-  del patch y pasar con el).
+## Plan - secuencia minima FIJA
+### Paso 1 - parser comun de ticket
+- Corregir el parseo de `--ticket` en `.agent/agent_controller.py` para que capture el valor cuando existe y falle con diagnostico claro cuando falte.
+- Mantener compatibilidad con las formas posicionales actuales de `--manager-approve <ticket>`, `--request-changes <ticket>` y `--reopen-terminal-ticket <ticket>`; este ticket NO depreca la via posicional.
 
-### Paso 2 (SOLO SI el paso 1 no basta) - deduplicacion, requiere reaprobacion
-- Solo si tras el paso 1 la duplicacion `upgrade.py` vs `upgrade_agent_system.py`
-  impide una solucion honesta (ambiguedad real de cual es canonico), NO unifiques
-  los forks en este ticket: registra un follow-up explicito y ESCALA.
-- **Superficie donde se registra el follow-up (fija):**
-  `orquestador_de_agentes_workspace/.agent/collaboration/backlog.md` como ticket
-  derivado nuevo con el siguiente ID libre de la familia 013 (p.ej.
-  `WOT-2026-013t`; NO `013s`, que ya existe y es la dependencia de este ticket),
-  con referencia a FP-012; opcionalmente una nota en
-  `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md` (FP-012, seccion "Tickets
-  relacionados"). No vale "lo registre" sin una de estas superficies.
+### Paso 2 - ayuda y mensajes coherentes
+- Alinear `-h` y los mensajes `No ticket_id provided` al contrato real del parser.
+- `--reopen-terminal-ticket` no puede seguir anunciandose como flag sin ticket si exige uno para actuar.
+- El help final debe reflejar ambas formas soportadas: posicional y `--ticket`.
+
+### Paso 3 - barreras de regresion
+- Anadir/ajustar tests que cubran ambas formas validas (posicional y `--ticket`) y el caso negativo sin ticket.
+- La barrera debe probar el parser/distribucion real del controller, no solo invocar handlers internos con strings hardcodeados.
+- La barrera de `reopen-terminal-ticket` se fija en `tests/test_agent_controller.py`; no queda a eleccion del Builder moverla a otro archivo.
 
 ## Files Likely Touched (relativos a repo_motor)
-- `tests/unit/test_upgrade.py`
-- `README.md`
+- `.agent/agent_controller.py`
+- `tests/test_agent_controller.py`
+- `tests/unit/test_manager_approve.py`
+- `tests/unit/test_request_changes_requeue.py`
 
 Aclaraciones (no parte de las rutas):
-- `tests/unit/test_upgrade.py`: EXISTE -> repuntar 8 patches + barrera fail-sin-fix.
-- `README.md`: SOLO si el paso 2 se acomete con reaprobacion; si no, NO tocar.
+- `.agent/agent_controller.py`: parser de `--ticket`, help y mensajes de error de acciones con ticket.
+- `tests/test_agent_controller.py`: pruebas de ayuda, dispatch CLI real y barrera de `reopen-terminal-ticket`.
+- `tests/unit/test_manager_approve.py`: cobertura de `--manager-approve` via parser real o helper compartido.
+- `tests/unit/test_request_changes_requeue.py`: paridad para `--request-changes`.
 
-Non-goal de superficie: `scripts/upgrade.py` y `scripts/upgrade_agent_system.py`
-NO se tocan en el paso 1; solo en el paso 2 con reaprobacion humana explicita.
+## Forbidden Surfaces
+- `repo_motor/bus/**` y `repo_motor/runtime/**`: fuera de scope; no cambiar semantica del bus, estados ni cascadas de closeout.
+- `repo_motor/scripts/run_pytest_safe.py`: gate canonico read-only; este ticket no toca politica de cierre.
+- migracion completa a `argparse` o rediseno amplio del `main()` del controller: prohibido en esta ronda.
+- `repo_motor/prompts/**` y `repo_motor/skills/**`, salvo una referencia puntual del help del controller si quedara rotundamente incoherente; por defecto no tocar.
+- `repo_destino/.agent/runtime/events/events.jsonl` y demas superficies vivas del bus: nunca editar a mano.
+- `privada/`, `.env*`, credenciales, tokens y configuraciones sensibles: fuera de scope absoluto.
 
 ## Bateria focal (primer loop; NO la suite canonica completa hasta el cierre)
 ```
-# Loop rapido (diagnostico, primer ciclo):
-python -m pytest tests/unit/test_upgrade.py -q
-# Cierre canonico (antes de handoff):
+python -m pytest tests/test_agent_controller.py -q
+python -m pytest tests/unit/test_manager_approve.py -q
+python -m pytest tests/unit/test_request_changes_requeue.py -q
+# Cierre canonico:
 python scripts/run_pytest_safe.py --level all
 ```
 
 ## Non-goals
-- NO tocar memoria portable en esta ronda (promocion de FP-012 a
-  `observations.jsonl` se evalua DESPUES de 013s, con schema verde).
-- NO redisenar el flujo install/upgrade.
-- NO unificar los forks sin reaprobacion (paso 2).
+- NO cambiar la semantica de closeout del bus ni las cascadas de eventos.
+- NO redisenar `manager-approve`, `request-changes` o `reopen-terminal-ticket` mas alla del contrato de parseo/ayuda.
+- NO mezclar este ticket con `013t` ni con mejoras de `upgrade`.
+- NO tocar prompts ajenos salvo que el propio help del controller exija alinear una referencia directa.
 
 ## CONTRACT_GAP / STOP
-- Si unificar forks obligaria a redisenar el flujo completo de install/upgrade
-  del motor (instalacion, sync y upgrade), en vez de corregir el falso verde
-  aislado de `test_upgrade.py`.
-- Si la correccion depende de reinterpretar no-verificablemente cual
-  `UpgradeManager` es canonico.
-- Si se intenta mezclar este fix con la migracion de schema de 013s.
--> emite `.agent/planning/contract_gaps/CG-WOT-2026-013r.md` + evento bus y PARA.
+- Si alguna accion consume deliberadamente un contrato CLI distinto y documentado que haga imposible unificar `--ticket` sin romper backward-compat.
+- Si corregir el parser obliga a reestructurar de forma amplia el `main()` del controller o a migrar toda la CLI a argparse en esta ronda.
+- Si aparecen mas consumidores de `--ticket` con contratos incompatibles fuera de `manager-approve` / `request-changes` / `reopen-terminal-ticket`.
+-> emite `.agent/planning/contract_gaps/CG-WOT-2026-013u.md` y PARA.
 
 ## DoD (binario, comandos exactos)
-
-> **Enmienda (2026-06-25, reaprobacion humana; ver CG-WOT-2026-013r):** el DoD
-> original exigia "revertir el fix de los patches -> pytest FALLA". Se verifico
-> (3x) que `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil`
-> (objeto modulo compartido), por lo que el repunte del target es FISICAMENTE
-> INDISTINGUIBLE en runtime y ese criterio NO es satisfacible en el Paso 1 sin
-> tocar codigo productivo (Paso 2). El criterio de barrera se enmienda al
-> aprendizaje REAL y verificable del ticket: **binding correcto** (el patch
-> apunta al modulo que el SUT importa), mutation-verified. La deduplicacion de
-> forks queda como deuda OPCIONAL (WOT-2026-013t), NO requisito de cierre de 013r.
-
-- [x] **Barrera de binding demostrada (mutation-verified):** mutar el assert de
-      `UpgradeManager.__module__` al fork viejo (`scripts.upgrade`) ->
-      `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_patch_target_is_the_module_the_sut_imports -q` **FALLA**;
-      con el valor correcto (`scripts.upgrade_agent_system`) -> pasa. Ademas la
-      barrera real-copy (`copytree`->raise en el shutil del SUT) propaga el error.
-- [x] Los 8 patches apuntan a `scripts.upgrade_agent_system.shutil.*` (el modulo importado). (wrong=0, right=11)
-- [x] `python -m ruff check tests/unit/test_upgrade.py` -> `All checks passed`.
-- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0, level all, tested_commit_sha == HEAD`. (3171 passed; tested_sha == 8e84a25 == HEAD)
-- [x] `python .agent/agent_controller.py --validate --json --force` -> `0 errors / 0 warnings`.
-- [x] Follow-up de deduplicacion registrado en la superficie fija (backlog del workspace): `WOT-2026-013t`, deuda OPCIONAL (no bloquea el cierre de 013r).
+- [x] `python -m pytest tests/test_agent_controller.py::test_agent_controller_help_lists_critical_flags -q` pasa y el help resultante refleja la forma posicional y la forma `--ticket` para las acciones con ticket, incluyendo `--reopen-terminal-ticket`.
+- [x] `python -m pytest tests/unit/test_manager_approve.py::TestManagerApprove::test_complete_cascade_emitted tests/unit/test_manager_approve.py::TestManagerApproveCLIContract::test_manager_approve_accepts_ticket_flag -q` pasa; con la condicion invertida del parser reintroducida, `tests/unit/test_manager_approve.py::TestManagerApproveCLIContract::test_manager_approve_accepts_ticket_flag` FALLA.
+- [x] `python -m pytest tests/unit/test_request_changes_requeue.py::test_request_changes_accepts_ticket_flag tests/unit/test_request_changes_requeue.py::test_request_changes_positional_ticket_still_supported -q` pasa con cobertura explicita de `--request-changes --ticket` y de la forma posicional.
+- [x] `python -m pytest tests/test_agent_controller.py::test_reopen_terminal_ticket_accepts_ticket_flag tests/test_agent_controller.py::test_ticket_parser_reads_control_flag_before_positional_fallback -q` pasa; con la condicion invertida del parser reintroducida, `tests/test_agent_controller.py::test_ticket_parser_reads_control_flag_before_positional_fallback` FALLA.
+- [x] La forma posicional existente (`--manager-approve WOT-TEST-001`, `--request-changes WOT-TEST-001`, `--reopen-terminal-ticket WOT-TEST-001`) sigue funcionando; no se rompe ni se depreca en silencio.
+- [x] `python -m ruff check .agent/agent_controller.py tests/test_agent_controller.py tests/unit/test_manager_approve.py tests/unit/test_request_changes_requeue.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con `WOT-2026-013r`), suite canonica
-fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
+Commit productivo en repo_motor (mensaje con `WOT-2026-013u`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
+

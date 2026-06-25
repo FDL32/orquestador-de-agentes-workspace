@@ -1,152 +1,97 @@
-# Execution Log -- WOT-2026-013r
+﻿# Execution Log -- WOT-2026-013u
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
-## Bootstrap operativo -- WOT-2026-013r
+## Bootstrap operativo -- WOT-2026-013u
 
-Ticket NUEVO activado para cerrar el falso verde de `tests/unit/test_upgrade.py`
-descrito en FP-012, sin tocar todavia el flujo de upgrade ni la memoria portable.
+Ticket NUEVO activado para corregir el drift entre el contrato CLI documentado y el parser real de `agent_controller.py` en acciones de closeout/review con `--ticket`.
 
 Procedencia (VERIFICADO 2026-06-25):
-- `WOT-2026-013s` ya cerro canonico en `COMPLETED` y desbloqueo este sucesor.
-- El packet canonico de `013r` vive en
-  `.agent/planning/work_plan_WOT-2026-013r.md`.
-- La cola viva conserva `013r` como siguiente ticket de alta prioridad en la
-  familia 013.
+- `WOT-2026-013r` ya cerro canonico en `COMPLETED` y expuso este follow-up operativo durante el cierre real.
+- El packet canonico de `013u` vive en `.agent/planning/work_plan_WOT-2026-013u.md`.
+- La cola viva conserva `013u` como follow-up actual de alta prioridad en la familia 013.
 
-Bus: pendiente de re-bootstrap para `WOT-2026-013r` via `--bootstrap-ticket`.
-Estado pre-bootstrap preservado por git en el cierre de `013s`; las superficies
-vivas del workspace se regeneran con el controller, no a mano.
+Bus: bootstrap pendiente via `--bootstrap-ticket` tras alinear las proyecciones vivas.
 
 Nota para el Builder:
-- El paso 1 del packet es FIJO: repuntar los 8 patches de
-  `scripts.upgrade.shutil.*` a `scripts.upgrade_agent_system.shutil.*` y anadir
-  barrera fail-sin-fix en `tests/unit/test_upgrade.py`.
-- `scripts/upgrade.py` y `scripts/upgrade_agent_system.py` quedan fuera de
-  scope en esta primera pasada; solo se escalan si el paso 1 no basta.
+- El ticket NO depreca la via posicional; exige conservar compatibilidad mientras arregla `--ticket`.
+- La barrera de `reopen-terminal-ticket` queda FIJADA en `tests/test_agent_controller.py`.
+- `bus/**`, `runtime/**` y `scripts/run_pytest_safe.py` quedan fuera de scope.
 
-## Fase 0 - Diagnostico (Builder, 2026-06-25, cwd=repo_motor, HEAD=38e65c9)
+## Fase 0 - Diagnostico (Builder, 2026-06-25, cwd=repo_motor, HEAD=8e84a25)
 
-Seams confirmados (FP-012, VERIFICADO EN CODIGO):
-- `tests/unit/test_upgrade.py:12` importa `UpgradeManager` de `scripts.upgrade_agent_system`.
-- 8 patches a `scripts.upgrade.shutil.*` en lineas 46,47,83,84,112,113,204,205.
-- `scripts/upgrade_agent_system.py` usa `shutil.copytree/copy2` en 148,151,199,202
-  (con `import shutil` module-level en la linea 16).
-- El fork `scripts/upgrade.py` tiene su propio `shutil.copytree/copy2` (124,127,179,182).
-- Suite focal HOY: `python -m pytest tests/unit/test_upgrade.py -q` -> 18 passed (falso verde).
+Seams confirmados (VERIFICADO POR BYTES + empirico):
+- Help (`agent_controller.py -h`): `--manager-approve <ticket>` (l.17) y
+  `--request-changes <ticket>` (l.18) muestran `<ticket>`; PERO
+  `--reopen-terminal-ticket` (l.21) aparece SIN `<ticket>` aunque su parser lo
+  consume (l.6030-6033).
+- Condicion invertida en la rama `--ticket` (l.6020):
+  `if idx + 1 >= len(sys.argv) and not sys.argv[idx + 1].startswith("--")`.
+  Pide que `--ticket` sea el ULTIMO arg (fuera de rango) Y a la vez accede a ese
+  indice -> contradictorio + IndexError potencial -> NUNCA asigna `ticket_id`.
+  Las ramas posicionales (l.6024/6028/6032) usan la condicion CORRECTA
+  (`idx + 1 < len(sys.argv)`).
+- Estructura if(--ticket)/elif(posicional): correcta para precedencia; solo la
+  condicion de la rama `--ticket` esta invertida.
 
-HALLAZGO RELEVANTE (matiz que refina FP-012, verificado por experimento):
-- `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` -> **True**. Ambos
-  modulos hacen `import shutil`, asi que comparten el MISMO objeto modulo `shutil`
-  (cache de `sys.modules`). Por eso `patch("scripts.upgrade.shutil.copytree")` SI
-  intercepta las llamadas del SUT (call_count=8 == len(CRITICAL_PATHS)), aunque el
-  SUT no importe `scripts.upgrade`.
-- Implicacion: el bug de FP-012 es de **target de patch incorrecto/fragil** (higiene),
-  NO de dos objetos `shutil` distintos. Repuntar el string del patch al modulo
-  realmente importado es la correccion honesta; pero el DoD "revertir el fix ->
-  pytest FALLA" NO se cumple como diferencia entre dos shutil distintos.
-- DECISION (con aprobacion humana, dentro del Paso 1, sin abrir Paso 2): construir
-  la barrera fail-sin-fix por BINDING CORRECTO: (a) repuntar los 8 patches a
-  `scripts.upgrade_agent_system.shutil.*`; (b) barrera que monkeypatchea
-  copytree/copy2 a `raise` en el shutil del modulo del SUT y verifica que el flujo
-  propaga el error; (c) assert explicito de que el modulo parcheado coincide con
-  `UpgradeManager.__module__` (el realmente importado), de modo que apuntar a un
-  modulo que el SUT NO usa deje pasar las copias y delate el drift.
+Reproduccion empirica (dispatch CLI real, no handler):
+- `--manager-approve --ticket WOT-TEST-001 ...` -> `{"error": "No ticket_id provided"}` (BUG).
+- `--manager-approve WOT-TEST-001 ...` -> `{"error": "Ticket WOT-TEST-001 does not
+  match active ticket WOT-2026-013u"}` (posicional SI captura el ticket; falla
+  despues por no coincidir, sin tocar el bus -> seam ideal para barrera sin mutar estado).
 
-Desviaciones de scope: ninguna. `scripts/upgrade.py` y `scripts/upgrade_agent_system.py`
-NO se tocan (Paso 1). FLT operativo: `tests/unit/test_upgrade.py`.
+Superficies de test versionadas confirmadas:
+- `tests/test_agent_controller.py::test_agent_controller_help_lists_critical_flags`
+  (usa subprocess `-h`; modelo para probar dispatch CLI real).
+- `tests/unit/test_manager_approve.py` (invoca `_handle_manager_approve` directo;
+  el contrato pide barrera por PARSER real, no solo handler).
+- `tests/unit/test_request_changes_requeue.py`.
 
-## Fase 1 + Fase 2 - Implementacion, barrera y gates (Builder, 2026-06-25)
+Desviaciones de scope: ninguna. Fix = corregir l.6020 + alinear help de
+`--reopen-terminal-ticket` + barreras. bus/runtime/run_pytest_safe NO se tocan.
 
-Cambios en `tests/unit/test_upgrade.py` (FLT, repo_motor):
-- 8 patches repuntados: `scripts.upgrade.shutil.*` -> `scripts.upgrade_agent_system.shutil.*`
-  (el modulo que el SUT realmente importa). Conteo verificado: wrong=0, right=11
-  (8 originales + 3 en la barrera nueva).
-- Clase nueva `TestUpgradeMockTargetBarrier` con 3 barreras:
-  - `test_patch_target_is_the_module_the_sut_imports`: assert de binding correcto
-    (`UpgradeManager.__module__ == "scripts.upgrade_agent_system"`).
-  - `test_backup_propagates_real_copytree_failure`: monkeypatch copytree a raise
-    en el shutil del modulo del SUT -> el flujo de backup propaga el error
-    (`pytest.raises`), probando que las copias destructivas son reales.
-  - `test_backup_invokes_real_copies_count`: copytree+copy2 call_count ==
-    len(CRITICAL_PATHS) y > 0 (cobertura real, no pasiva).
+## Fase 1 + Fase 2 - Implementacion, barreras y gates (Builder, 2026-06-25)
 
-Evidencia FAIL-sin-fix (mutation test, reproducible):
-- Mute el assert de binding al fork viejo (`"scripts.upgrade"`) -> 
-  `pytest ...::test_patch_target_is_the_module_the_sut_imports` -> **1 failed**
-  (AssertionError: `- scripts.upgrade / + scripts.upgrade_agent_system`).
-- Restaure el archivo correcto -> 21 passed.
+Cambios en `.agent/agent_controller.py` (FLT):
+- Parser de `--ticket` (antes l.6020): condicion invertida
+  `idx + 1 >= len(sys.argv)` -> `idx + 1 < len(sys.argv)` (igual que las ramas
+  posicionales). Comentario justificante WOT-2026-013u inline. La estructura
+  if(--ticket)/elif(posicional) se conserva: `--ticket` tiene precedencia y las
+  formas posicionales siguen soportadas.
+- Help: `--reopen-terminal-ticket` ahora muestra `<ticket>` (consume uno); el
+  control flag `--ticket` documenta que las 3 acciones aceptan AMBAS formas
+  (posicional y `--ticket <id>`).
 
-Matiz honesto sobre el DoD "revertir el fix -> FALLA": verifique por experimento
-que `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` (mismo objeto
-modulo compartido via sys.modules). Por eso revertir SOLO el string de los 8
-patches NO cambia el comportamiento de copia (siguen interceptando por el shutil
-compartido). La barrera honesta que SI distingue el target correcto del
-incorrecto es la de BINDING: los dos forks definen clases `UpgradeManager`
-DISTINTAS (`scripts.upgrade.UpgradeManager is scripts.upgrade_agent_system.UpgradeManager`
--> False), y el SUT importado vive en `scripts.upgrade_agent_system`. Decision
-tomada con aprobacion humana, dentro del Paso 1 (sin tocar codigo productivo ni
-abrir el Paso 2 de deduplicacion).
+Verificacion empirica (dispatch CLI real, sin mutar bus; WOT-TEST-001 no coincide
+con el activo -> falla limpio):
+- `--manager-approve --ticket WOT-TEST-001` -> "does not match active ticket"
+  (antes: "No ticket_id provided"). Idem `--request-changes --ticket` y
+  `--reopen-terminal-ticket --ticket`. Formas posicionales: siguen capturando.
+
+Barreras (Fase 2) en las 3 superficies versionadas (probando el PARSER real via
+subprocess, no handlers internos):
+- `tests/test_agent_controller.py`:
+  - `test_agent_controller_help_lists_critical_flags` extendido: exige
+    `--reopen-terminal-ticket <ticket>` + documentacion de ambas formas.
+  - `test_ticket_parser_reads_control_flag_before_positional_fallback` (nuevo).
+  - `test_reopen_terminal_ticket_accepts_ticket_flag` (nuevo) +
+    `test_reopen_terminal_ticket_positional_still_supported` (nuevo).
+- `tests/unit/test_manager_approve.py`: `TestManagerApproveCLIContract` con
+  `test_manager_approve_accepts_ticket_flag` + `_positional_ticket_still_supported`.
+- `tests/unit/test_request_changes_requeue.py`:
+  `test_request_changes_accepts_ticket_flag` + `_positional_ticket_still_supported`.
+
+Evidencia mutation-verified (DoD l.97 y l.99): reintroduje la condicion invertida
+-> las 4 barreras de `--ticket` FALLARON
+("'does not match active ticket' in '... No ticket_id provided ...'" AssertionError).
+Restaure el fix -> 133 passed.
 
 Gates (comandos exactos + exit):
-- `python -m pytest tests/unit/test_upgrade.py -q` -> 21 passed (exit 0).
-- `python -m ruff check tests/unit/test_upgrade.py` -> All checks passed (exit 0).
-- `uv run ruff format --check tests/unit/test_upgrade.py` -> 1 file already formatted (exit 0).
-- `agent_controller --validate --json --force --project-root <repo_destino>` -> 0 errors / 0 warnings.
-- Suite canonica `run_pytest_safe --level all`: se ejecuta al HEAD post-commit (ver last-run.json).
+- `pytest tests/test_agent_controller.py tests/unit/test_manager_approve.py
+  tests/unit/test_request_changes_requeue.py -q` -> 133 passed (exit 0).
+- `ruff check` (4 archivos) -> All checks passed. `ruff format --check` -> formatted.
+- `validate --json --force --project-root <repo_destino>` -> 0 errors / 0 warnings.
+- Suite canonica `run_pytest_safe --level all`: se corre al HEAD post-commit (last-run.json).
 
-Scope: sin creep. `scripts/upgrade.py` y `scripts/upgrade_agent_system.py` NO
-tocados. `README.md` NO tocado (Paso 2 no acometido). Paso 2 no requerido: el
-Paso 1 demuestra la barrera honesta sin necesidad de deduplicar forks.
-
-## CONTRACT_GAP -- WOT-2026-013r (tras CHANGES del Manager, 2026-06-25)
-
-El Manager devolvio CHANGES con un unico bloqueo CENTRAL y CORRECTO: el DoD
-binario linea 102 exige "revertir el fix de los patches -> 
-`pytest tests/unit/test_upgrade.py -q` FALLA", y en un worktree pre-fix (38e65c9)
-la suite sigue verde (18 passed). Eso es falso-verde segun el criterio escrito.
-
-Diagnostico (verificado por experimento 3x, no relato):
-- `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` -> True (objeto
-  modulo compartido). Parchear cualquiera de los dos modulos parchea el MISMO
-  atributo -> el repunte del target es FISICAMENTE INDISTINGUIBLE en runtime.
-- Por tanto el DoD literal NO es satisfacible en el Paso 1 (sin tocar codigo
-  productivo). La unica via es dar binding shutil independiente a cada fork /
-  deduplicar -> Paso 2, que el packet marca como "requiere reaprobacion humana".
-
-Decision (con aprobacion humana): emitir CONTRACT_GAP y PARAR, sin reescribir el
-DoD ni acometer el Paso 2 sin reaprobacion. Artefactos:
-- `.agent/planning/contract_gaps/CG-WOT-2026-013r.md` (gap + evidencia + 3 vias).
-- Follow-up `WOT-2026-013t` registrado en `backlog.md` (fila + ficha; superficie
-  fija que exige el work_plan lineas 59-65) para el Paso 2 (dedup de forks).
-- Escalacion canonica a HUMAN_GATE via `--escalate-human-gate`.
-
-Entrega del Paso 1 (verificada, queda como base si se aprueba 013t o se enmienda
-el DoD): 8 patches repuntados al modulo importado (wrong=0), barrera de binding
-mutation-verified, 21 passed focal, ruff OK, validate 0/0, suite canonica al HEAD
-8e84a25 exit 0, commit motor 8e84a25.
-
-## Enmienda de DoD aprobada -- WOT-2026-013r (Opcion 2, reaprobacion humana 2026-06-25)
-
-Decision humana sobre el CONTRACT_GAP: Opcion 2 -- enmendar el DoD de 013r a la
-barrera de binding y cerrar en Paso 1, con `013t` como deuda OPCIONAL (no
-requisito de cierre). NO se acomete el Paso 2 (dedup de forks).
-
-Cambios de contrato aplicados:
-- `work_plan.md` (activo) y `.agent/planning/work_plan_WOT-2026-013r.md` (packet):
-  DoD linea 102 enmendada. El criterio "revertir patches -> pytest FALLA"
-  (imposible en Paso 1 por shutil compartido) se reemplaza por
-  "barrera de BINDING mutation-verified": mutar `UpgradeManager.__module__` al
-  fork viejo -> `pytest ...::test_patch_target_is_the_module_the_sut_imports`
-  FALLA; correcto -> pasa. Nota de procedencia (CG-WOT-2026-013r + reaprobacion)
-  embebida en ambos contratos. Los 6 items del DoD quedan marcados [x] con
-  evidencia.
-- `backlog.md`: `013t` degradado de Alta/pending a Baja/deferred, deuda
-  estructural OPCIONAL, ya NO depende-de/bloquea 013r.
-
-Estado de cierre tras enmienda: todos los DoD (enmendados) cumplidos con
-evidencia ya registrada. Re-validate y re-handoff para re-review del Manager
-contra el contrato corregido.
-
-
-Manager approved canonical closeout for WOT-2026-013r
+Scope: sin creep. Solo `.agent/agent_controller.py` + las 3 superficies de test del
+FLT. bus/runtime/run_pytest_safe/prompts/skills NO tocados. Sin migracion a argparse.
