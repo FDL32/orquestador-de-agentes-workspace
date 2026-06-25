@@ -72,6 +72,27 @@
 
 
 
+## PLAN-013K-001 -- Cuarta superficie gitignored para retention local
+
+- objetivo: extender la utilidad opt-in `scripts/prune_runtime_retention.py` para cubrir tambien `.agent/collaboration/archive/notifications_*.md`, manteniendo la retencion local fuera del closeout y sin tocar otros artefactos de `collaboration/archive/`.
+- tickets: [WOT-2026-013k]
+- depends_on: [WOT-2026-013l]
+- superficies_archivo:
+  - repo_motor/scripts/prune_runtime_retention.py
+  - repo_motor/tests/unit/test_prune_runtime_retention.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python scripts/prune_runtime_retention.py --project-root <workspace_activo> --dry-run`
+  - CLI `python scripts/prune_runtime_retention.py --project-root <workspace_activo> --apply --keep-notification-archives <N>`
+  - ruta gitignored `.agent/collaboration/archive/notifications_*.md`
+- shared_dependencies:
+  - `.gitignore` del repo_destino (read-only; `collaboration/archive/` ya esta excluido)
+  - `repo_motor/.agent/agent_controller.py::archive_old_notifications()` (read-only; productor de los snapshots)
+  - `repo_motor/scripts/run_pytest_safe.py` y `repo_motor/.agent/agent_controller.py --validate` (gates read-only)
+- paralelizable: no
+- Merge Regression Audit:
+  - la regresion a bloquear es que la utilidad siga ignorando `notifications_*.md` o, peor, seleccione otros archivos de `collaboration/archive/`
+  - la barrera debe FALLAR si el selector incluye algo distinto de `notifications_*.md` bajo `collaboration/archive/`, o si `--dry-run` deja de ser no destructivo
 ## PLAN-013L-001 -- Retencion local opt-in para runtime gitignored
 
 - objetivo: introducir una via auditable y de bajo riesgo para podar por conteo/edad las superficies locales gitignored de runtime (`reviews`, `review_packets`, `observations.jsonl.bak.*`) sin cablearla al closeout ni tocar historico versionado.

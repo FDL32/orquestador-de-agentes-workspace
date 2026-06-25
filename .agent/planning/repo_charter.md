@@ -163,6 +163,14 @@ referencias publicadas.
 - related_plans: [PLAN-013J-001]
 
 
+### OBJ-013K-001 -- Incluir notifications archivadas en la retencion local opt-in
+- description: cerrar la laguna restante de runtime-retention local extendiendo la utilidad opt-in para cubrir tambien `collaboration/archive/notifications_*.md`, sin tocar otros artefactos del archive ni mezclar la solucion con closeout/controller.
+- success_criteria: `prune_runtime_retention.py` reconoce `notifications_*.md` como cuarta superficie local gitignored y puede listarlos/podarlos por keep-count explicito, mientras mantiene intactos `review_queue`, `manager_feedback` y cualquier otro archivo de `collaboration/archive/`.
+- failure_modes:
+  - la solucion vuelve a tocar `agent_controller.py`, `session_closeout` o el lifecycle de cierre en vez de extender la utilidad local existente;
+  - el selector alcanza archivos de `collaboration/archive/` ajenos a `notifications_*.md`;
+  - la CLI deja ambigua la nueva superficie o permite borrado sin `--apply` explicito.
+- related_plans: [PLAN-013K-001]
 ### OBJ-013L-001 -- Retencion local segura para runtime gitignored
 - description: acotar el crecimiento de artefactos locales gitignored de runtime con una politica opt-in, auditable y reversible, sin degradar historico versionado ni mezclar la solucion con el lifecycle de cierre canonico.
 - success_criteria: existe una CLI pequena y verificable que lista/poda solo `reviews`, `review_packets` y `observations.jsonl.bak.*` bajo `--project-root`, con `dry-run` explicito y barreras que prueban que no toca superficies versionadas.

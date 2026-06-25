@@ -1703,7 +1703,7 @@
 - **Integracion cross-ticket:** `013j` sucede a `013i` como fix de proceso/contrato. Puede tocar el gate del backlog y la instruccion de pipeline, pero no debe reabrir tickets de scope gate/handoff (`010n`, `011h`) ni reinterpretar el FLT fuera del contrato frozen.
 - **CONTRACT_GAP behavior:** si la unica solucion segura exige redisenar el lifecycle completo de packet, tocar `scope_gate` / `pre_handoff_guard` / `agent_controller.py`, o convertir `backlog.md` en una segunda autoridad del FLT, emitir `CG-WOT-2026-013j.md`, bloquear y devolver a Contract Formation.
 - **Builder clarification budget:** 0.
-- **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad â€œsincronizadas manualmenteâ€; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
+- **STOP conditions:** parar si el patron real no vive en la validacion/generacion del backlog sino en otra superficie no declarada; parar si la unica salida verde consiste en aceptar dos fuentes de verdad ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œsincronizadas manualmenteÃƒÂ¢Ã¢â€šÂ¬Ã‚Â; parar si el fix pide ampliar scope a lifecycle de packet completo en vez de un cambio acotado.
 - **Depende de:** -.
 
 ## T-013L-001 -- Retencion local opt-in para runtime gitignored
@@ -1772,6 +1772,41 @@
 - **STOP conditions:** parar si el codigo real resulta no usar `mtime` de directorio, si la ayuda no puede expresarlo sin cambiar el algoritmo, o si aparece una dependencia no prevista con historico versionado / lifecycle.
 - **Depende de:** WOT-2026-013l (COMPLETED).
 
+## T-013K-001 -- Extender retention local a notifications archivadas gitignored
+
+- **ticket_id:** WOT-2026-013k
+- **status:** frozen
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Objective-Link:** OBJ-013K-001
+- **Plan-Link:** PLAN-013K-001
+- **Premise:** `repo_destino/.agent/collaboration/archive/notifications_*.md` NO es historico versionado; es una superficie LOCAL gitignored. Verificacion por bytes: `git ls-files ".agent/collaboration/archive/notifications_*.md"` devuelve 0 hits, `git check-ignore -v` resuelve a `.gitignore:72` (`.agent/collaboration/archive/`), y `git log -- .agent/collaboration/archive/notifications_*.md` no muestra historial trackeado. El productor real de esos snapshots es `.agent/agent_controller.py::archive_old_notifications()`, pero el problema de 013k no es el productor sino la ausencia de politica de retencion en la utilidad local ya entregada por `013l`. Hoy `scripts/prune_runtime_retention.py` cubre `reviews/`, `review_packets/` y `observations.jsonl.bak.*`; la laguna restante es `collaboration/archive/notifications_*.md` como cuarta superficie local opt-in.
+- **Premise Re-check (read-only):**
+  - ejecutar `git -C <workspace_activo> ls-files ".agent/collaboration/archive/notifications_*.md"` y confirmar 0 hits;
+  - ejecutar `git -C <workspace_activo> check-ignore -v .agent/collaboration/archive/notifications_20200101_000000.md` y confirmar que la ruta queda cubierta por `.gitignore`;
+  - releer `scripts/prune_runtime_retention.py` y `tests/unit/test_prune_runtime_retention.py` para confirmar que hoy la utilidad cubre tres superficies (`reviews`, `review_packets`, `observations.jsonl.bak.*`) y NO `notifications_*.md`;
+  - releer `.agent/agent_controller.py::archive_old_notifications()` solo como productor read-only de la nueva superficie;
+  - ejecutar `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` antes del arranque y dejar constancia del estado.
+- **Context Baseline Evidence:** source_ticket=`WOT-2026-013k`; depends_on=`WOT-2026-013l`; git_ls_files_notifications=0; git_check_ignore=`.gitignore:72`; tracked_history_for_notifications=`none`; utility_gap=`prune_runtime_retention.py omite collaboration/archive/notifications_*.md`; generated_at=2026-06-25.
+- **Files Likely Touched:**
+  - Builder repo_motor: `scripts/prune_runtime_retention.py`
+  - Builder repo_motor: `tests/unit/test_prune_runtime_retention.py`
+  - Builder repo_destino: `.agent/collaboration/execution_log.md`
+- **Read/inspect only:** `repo_destino/.gitignore`; `repo_destino/.agent/collaboration/archive/notifications_*.md`; `repo_motor/.agent/agent_controller.py`; `repo_motor/scripts/session_closeout.py`; `repo_motor/bus/**`; `repo_motor/runtime/**`; `repo_destino/.agent/collaboration/_archive/backlog_done.md`.
+- **Forbidden Surfaces:** `repo_motor/.agent/agent_controller.py`; `repo_motor/scripts/session_closeout.py`; `repo_motor/bus/**`; `repo_motor/runtime/**`; archivos de `repo_destino/.agent/collaboration/archive/` que no sean `notifications_*.md`; `repo_motor/.gitignore`; manifests; `privada/`; `.env`.
+- **DoD (criterios binarios de cierre):**
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_notification_archives_are_collected_as_gitignored_local_surface -q` pasa y demuestra que `notifications_*.md` entra como cuarta superficie local del selector.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_only_old_notification_archives -q` pasa; el selector conserva exactamente los N mas recientes de `notifications_*.md` y poda solo el resto.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_non_notification_collaboration_archive_files_are_never_selected -q` pasa; si la utilidad intenta incluir `review_queue`, `manager_feedback` u otros archivos de `collaboration/archive/`, FALLA.
+  - [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` sigue pasando con cobertura de la nueva superficie.
+  - [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+  - [ ] `python scripts/run_pytest_safe.py --level all` termina verde sobre el commit entregado.
+  - [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` termina con `0 errors / 0 warnings`.
+- **Integracion cross-ticket:** follow-up directo de `013l`; NO reabre `013v`, NO toca el controller, y mantiene la retencion como utilidad opt-in separada del closeout.
+- **CONTRACT_GAP behavior:** si la unica forma de incluir `notifications_*.md` exige tocar `agent_controller.py`, `session_closeout` o seleccionar otros archivos de `collaboration/archive/`, emitir `CG-WOT-2026-013k.md` y bloquear.
+- **Builder clarification budget:** 0. El ticket ya decide la via de producto: extender la utilidad local existente, no el seam del controller.
+- **STOP conditions:** parar si `notifications_*.md` resulta no estar gitignored; parar si la utilidad no puede distinguirlos de otros artefactos de `collaboration/archive/`; parar si la nueva superficie solo puede cubrirse con wiring automatico en closeout/controller.
+- **Depende de:** WOT-2026-013l (COMPLETED).
 ## T-013N-001 -- Estados terminales honestos no-exito
 
 - **ticket_id:** WOT-2026-013n
