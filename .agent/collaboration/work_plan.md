@@ -143,16 +143,17 @@ ampliar el enum sin redisenar la taxonomia -> emite
 fuerces un mapeo semanticamente falso para poner verde el gate.
 
 ## DoD (binario, comandos exactos)
-- [ ] `python scripts/validate_observations.py --strict --file .agent/runtime/memory/observations.jsonl` -> **EXIT 0**.
-- [ ] Backup `.bak.<timestamp>` creado por el migrador (reversibilidad demostrada).
-- [ ] Cada dominio de `uncovered_by_MAP` mapeado con comentario justificante, O enum ampliado con barrera+doc.
-- [ ] **Check "solo schema" (verificable):** `git show HEAD:.agent/runtime/memory/observations.jsonl` vs el archivo migrado, comparando SOLO el campo `signal` por `id`:
+- [x] `python scripts/validate_observations.py --strict --file .agent/runtime/memory/observations.jsonl` -> **EXIT 0**. (verificado; antes 168 errores)
+- [x] Backup `.bak.<timestamp>` creado por el migrador (reversibilidad demostrada). (observations.jsonl.bak.20260625103008)
+- [x] Cada dominio de `uncovered_by_MAP` mapeado con comentario justificante, O enum ampliado con barrera+doc. (9 dominios via DOMAIN_MIGRATION_MAP/TOPIC_OVERRIDE; enum NO ampliado; uncovered_by_MAP == [])
+- [x] **Check "solo schema" (verificable):** (0 signals cambiados/perdidos/inventados, by-id + multiset; em-dash UTF-8 intactos)
+     <!-- nota: comando de verificacion debajo --> `git show HEAD:.agent/runtime/memory/observations.jsonl` vs el archivo migrado, comparando SOLO el campo `signal` por `id`:
       ```
       python -c "import json; from pathlib import Path; import subprocess; before={json.loads(l)['id']:json.loads(l)['signal'] for l in subprocess.run(['git','show','HEAD:.agent/runtime/memory/observations.jsonl'],capture_output=True,text=True).stdout.splitlines() if l.strip()}; after={json.loads(l)['id']:json.loads(l)['signal'] for l in Path('.agent/runtime/memory/observations.jsonl').read_text(encoding='utf-8').splitlines() if l.strip()}; changed=[k for k in before if k in after and before[k]!=after[k]]; print('signal CAMBIADOS (debe ser 0):', changed); assert not changed"
       ```
-- [ ] `python -m ruff check scripts/migrate_observations.py scripts/validate_observations.py tests/unit/test_migrate_observations.py` -> `All checks passed`.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0, level all, tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force` -> `0 errors / 0 warnings`.
+- [x] `python -m ruff check scripts/migrate_observations.py scripts/validate_observations.py tests/unit/test_migrate_observations.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0, level all, tested_commit_sha == HEAD`. (3168 passed; tested_sha == 38e65c9 == HEAD)
+- [x] `python .agent/agent_controller.py --validate --json --force` -> `0 errors / 0 warnings`. (tras sanear cierre: FLT parseable + archivado 013o commiteado)
 
 ## STOP
 - Si reparar exige reinterpretar el `signal` de una entrada (no solo normalizar campos).
