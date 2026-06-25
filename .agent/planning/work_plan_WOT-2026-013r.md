@@ -7,6 +7,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013r
+- **Estado:** APPROVED
 - **Titulo:** Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
@@ -31,6 +32,15 @@ importa `UpgradeManager` de `scripts.upgrade_agent_system` pero parchea
 `scripts.upgrade.shutil.*` (8 ocurrencias: 46,47,83,84,112,113,204,205) -> NO
 intercepta `shutil.copytree`/`copy2` reales (`upgrade_agent_system.py:148,151,
 199,202`). Detalle completo y causa raiz: FP-012. Si no reproduce, PARA.
+
+## Decision Arquitectonica
+El enfoque correcto en `013r` es corregir primero la barrera de test sobre el
+modulo realmente importado (`scripts.upgrade_agent_system`) y demostrar el rojo
+sin fix en `tests/unit/test_upgrade.py`, sin tocar aun el codigo productivo de
+upgrade. Esta via minimiza blast radius: ataca el falso verde documentado en
+FP-012, preserva intacto el flujo de install/upgrade mientras no haya evidencia
+de un bug de producto y deja la deduplicacion `upgrade.py` vs
+`upgrade_agent_system.py` como escalado explicito solo si el paso 1 no alcanza.
 
 ## Plan - secuencia minima FIJA (no es eleccion libre)
 ### Paso 1 (OBLIGATORIO PRIMERO) - repuntar patches + barrera
@@ -61,7 +71,7 @@ intercepta `shutil.copytree`/`copy2` reales (`upgrade_agent_system.py:148,151,
 Non-goal de superficie: `scripts/upgrade.py` y `scripts/upgrade_agent_system.py`
 NO se tocan en el paso 1; solo en el paso 2 con reaprobacion humana explicita.
 
-## Bateria focal (primer loop; NO toda la suite hasta el cierre)
+## Bateria focal (primer loop; NO la suite canonica completa hasta el cierre)
 ```
 # Loop rapido (diagnostico, primer ciclo):
 python -m pytest tests/unit/test_upgrade.py -q
@@ -76,7 +86,9 @@ python scripts/run_pytest_safe.py --level all
 - NO unificar los forks sin reaprobacion (paso 2).
 
 ## CONTRACT_GAP / STOP
-- Si unificar forks obligaria a redisenar todo el flujo install/upgrade.
+- Si unificar forks obligaria a redisenar el flujo completo de install/upgrade
+  del motor (instalacion, sync y upgrade), en vez de corregir el falso verde
+  aislado de `test_upgrade.py`.
 - Si la correccion depende de reinterpretar no-verificablemente cual
   `UpgradeManager` es canonico.
 - Si se intenta mezclar este fix con la migracion de schema de 013s.
