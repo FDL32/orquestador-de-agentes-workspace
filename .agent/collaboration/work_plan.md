@@ -97,14 +97,14 @@ python scripts/run_pytest_safe.py --level all
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013t.md` y PARA.
 
 ## DoD (binario, comandos exactos)
-- [ ] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_patch_target_is_the_module_the_sut_imports -q` pasa y deja verificado un owner unico coherente con el modulo realmente ejercitado.
-- [ ] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_propagates_real_copytree_failure tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_invokes_real_copies_count -q` pasa; romper `copytree` en el owner real hace FALLAR la prueba focal sin el fix.
-- [ ] `python -m pytest tests/integration/test_lifecycle_integration.py -q` pasa y mantiene la superficie publica `from scripts.upgrade import UpgradeManager` operativa tras la deduplicacion.
-- [ ] `python -m pytest tests/unit/test_upgrade.py -q` pasa y, si se reintroduce una segunda clase editable divergente entre `upgrade.py` y `upgrade_agent_system.py`, la barrera de owner unico FALLA.
-- [ ] `python -m ruff check scripts/upgrade.py scripts/upgrade_agent_system.py tests/unit/test_upgrade.py tests/integration/test_lifecycle_integration.py` -> `All checks passed`.
-- [ ] `python scripts/check_encoding_guard.py README.md` -> exit 0.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
+- [x] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_patch_target_is_the_module_the_sut_imports -q` pasa y deja verificado un owner unico coherente con el modulo realmente ejercitado.
+- [x] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_propagates_real_copytree_failure tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_invokes_real_copies_count -q` pasa; romper `copytree` en el owner real hace FALLAR la prueba focal sin el fix.
+- [x] `python -m pytest tests/integration/test_lifecycle_integration.py -q` pasa y mantiene la superficie publica `from scripts.upgrade import UpgradeManager` operativa tras la deduplicacion.
+- [x] `python -m pytest tests/unit/test_upgrade.py -q` pasa y, si se reintroduce una segunda clase editable divergente entre `upgrade.py` y `upgrade_agent_system.py`, la barrera de owner unico FALLA.
+- [x] `python -m ruff check scripts/upgrade.py scripts/upgrade_agent_system.py tests/unit/test_upgrade.py tests/integration/test_lifecycle_integration.py` -> `All checks passed`.
+- [x] `python scripts/check_encoding_guard.py README.md` -> exit 0.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013t`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
