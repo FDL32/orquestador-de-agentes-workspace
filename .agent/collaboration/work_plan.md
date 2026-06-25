@@ -86,14 +86,14 @@ python scripts/run_pytest_safe.py --level all
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013l.md` y PARA.
 
 ## DoD (binario, comandos exactos)
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_collects_only_gitignored_runtime_targets -q` pasa y demuestra que el selector solo considera `reviews`, `review_packets` y `observations.jsonl.bak.*`.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` pasa; si se reintroduce spillover hacia otra ruta o se rompe el orden determinista, FALLA.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_observation_backups_follow_the_same_retention_policy -q` pasa y cubre `observations.jsonl.bak.*` sin crear una politica separada opaca.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` pasa; `dry-run` no borra nada y `apply` elimina solo los candidatos seleccionados.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_versioned_history_surfaces_are_never_selected -q` pasa; si se intenta incluir `events/archive`, `collaboration/archive`, `_archive/plan_audit` o `audits/system_health`, FALLA.
-- [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_collects_only_gitignored_runtime_targets -q` pasa y demuestra que el selector solo considera `reviews`, `review_packets` y `observations.jsonl.bak.*`.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` pasa; si se reintroduce spillover hacia otra ruta o se rompe el orden determinista, FALLA.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_observation_backups_follow_the_same_retention_policy -q` pasa y cubre `observations.jsonl.bak.*` sin crear una politica separada opaca.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` pasa; `dry-run` no borra nada y `apply` elimina solo los candidatos seleccionados.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_versioned_history_surfaces_are_never_selected -q` pasa; si se intenta incluir `events/archive`, `collaboration/archive`, `_archive/plan_audit` o `audits/system_health`, FALLA.
+- [x] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root <repo_destino>` -> `0 errors / 0 warnings`.
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013l`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano. Ejemplo focal portable: `python scripts/prune_runtime_retention.py --project-root <repo_destino> --dry-run --keep-reviews 20 --keep-packets 20 --keep-observation-baks 10`.
