@@ -38,16 +38,16 @@
 - **Prioridad:** Alta
 - **Scope:** motor/memory-schema
 - **Estado:** pending
-- **deliverable_type:** mixed
+- **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-013n
 - **Reactivation:** -
 - **Origen:** session-2026-06-22-memory-upload.
-- **Problema:** `observations.jsonl` del `repo_motor` falla `python scripts/validate_observations.py --strict --file <obs>` con drift de schema verificado. La evidencia actual marca 29 entradas con `applies_to` no canonico en `repo_motor/.agent/runtime/memory/observations.jsonl`, mientras el `repo_destino` usado como contraste esta limpio (0 entradas no canonicas). No es un unico problema: hay corrupcion de datos en `applies_to` y dominios fuera del enum canonico. La observacion nueva de `013n` sobre seams duplicados seria valida por si sola, pero no conviene escribir memoria portable nueva sobre una base que hoy rompe el contrato estricto del motor.
-- **Objetivo:** dejar `repo_motor/.agent/runtime/memory/observations.jsonl` en `--strict` verde separando explicitamente (A) reparacion determinista de datos para los `applies_to` cruzados y (B) decision de contrato para los dominios fuera de enum (mapearlos a dominios canonicos o ampliar el enum con barreras y docs). Una vez verde, decidir de forma auditable si se inserta la observacion diferida de `013n`.
-- **Superficie (resumen, no FLT autoritativo):** migrador/validador/schema del motor (`migrate_observations.py`, `validate_observations.py`, `ap-schema.md` y tests) + `repo_motor/.agent/runtime/memory/observations.jsonl`; reutilizar el migrador existente en vez de bypass manual. Si se ejecuta por ruta explicita, usar `python scripts/migrate_observations.py --apply --file <repo_motor>/.agent/runtime/memory/observations.jsonl`.
-- **Criterios binarios:** `observations.jsonl` queda verde en `--strict`; los 14 errores de datos se corrigen con evidencia linea-a-linea; los 3 errores de dominio quedan resueltos por decision explicita de contrato (no por fallback silencioso); si la observacion diferida de `013n` se inserta, entra solo despues del verde estricto y mantiene el archivo valido.
-- **STOP:** si alguna de las 17 lineas no puede repararse sin reinterpretacion semantica no verificable; si la decision de dominios obliga a redisenar la taxonomia completa de memoria; si el fix exige tocar memorias portables del motor (`repo_motor/.agent/runtime/memory/observations.jsonl`) en la misma ronda.
+- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013o.md`.
+  El cuerpo del ticket (objetivo, premise re-check reproducible, ejes A/B, DoD
+  binario, STOP, CONTRACT_GAP) vive SOLO ahi para evitar dual-contract drift.
+  Esta fila es indice; no reproducir conteos ni criterios aqui (la autoridad del
+  estado es `validate_observations.py --strict`, no un numero del backlog).
 
 ### WOT-2026-013r - Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
 - **Prioridad:** Alta
@@ -58,11 +58,11 @@
 - **Depende de:** WOT-2026-013o
 - **Reactivation:** -
 - **Origen:** session-2026-06-25-motor-closeout.
-- **Problema:** `tests/unit/test_upgrade.py` importa `UpgradeManager` desde `scripts.upgrade_agent_system`, pero parchea `scripts.upgrade.shutil.copytree` / `copy2` (8 ocurrencias verificadas). El verde actual no intercepta las copias reales del codigo bajo test (`scripts/upgrade_agent_system.py:148,151,199,202`) y por tanto da confianza falsa sobre una operacion destructiva. Ademas, `upgrade.py` y `upgrade_agent_system.py` mantienen forks casi identicos de `UpgradeManager`, mientras `README.md` apunta al fork opuesto como canonico.
-- **Objetivo:** cerrar el falso verde de upgrade de forma verificable: (A) repuntar los patch al modulo realmente importado o unificar el consumer hacia un unico `UpgradeManager`, (B) resolver la duplicacion estructural `upgrade.py` vs `upgrade_agent_system.py` o documentar explicitamente la frontera si no se unifican en este ticket, y (C) dejar una barrera que falle-sin-fix cuando `copytree` / `copy2` del codigo bajo test no se intercepten. La promocion del aprendizaje FP-012 a `observations.jsonl` solo se evalua despues de `013o`, con schema estricto ya saneado.
-- **Superficie (resumen, no FLT autoritativo):** `tests/unit/test_upgrade.py`, `scripts/upgrade_agent_system.py`, `scripts/upgrade.py`, `README.md` y tests/gates relacionados con upgrade; NO tocar memoria portable en la misma ronda salvo que `013o` ya haya cerrado verde.
-- **Criterios binarios:** la suite de upgrade falla sin el fix correcto (por ejemplo, monkeypatch de `copytree`/`copy2` real a `raise`); el patch apunta al modulo que de verdad se importa; cualquier duplicacion restante de `UpgradeManager` queda eliminada o explicitamente justificada y alineada con `README`; `ruff`, `validate` y la bateria focal de upgrade quedan verdes.
-- **STOP:** si unificar los forks obliga a redisenar todo el flujo de install/upgrade; si la correccion del mock-drift depende de una reinterpretacion no verificable de cual `UpgradeManager` es canonico; si el ticket intenta mezclar el fix de codigo con la migracion de schema de memoria portable.
+- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013r.md`.
+  Fuente de verdad del problema: FP-012 en
+  `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md`. El cuerpo del ticket (premise
+  re-check, secuencia minima fija paso 1/paso 2, DoD, STOP) vive SOLO en el
+  packet. Esta fila es indice; no duplicar el detalle aqui.
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media
