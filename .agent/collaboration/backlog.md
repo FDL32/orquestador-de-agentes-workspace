@@ -1,4 +1,4 @@
-# Backlog (cola viva)
+﻿# Backlog (cola viva)
 
 > Cola viva de tickets candidatos y en curso del workspace.
 > NO es estado activo: el ticket activo vive en `work_plan.md`.
@@ -22,7 +22,7 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013r | Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager | motor/upgrade-integrity | pending | WOT-2026-013s | session-2026-06-25-motor-closeout | - |
+| Alta | WOT-2026-013u | Arreglar parser CLI de closeout/review para que respete --ticket y alinee el help | motor/controller-cli | pending | - | session-2026-06-25-post-013r-closeout | - |
 | Baja | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | deferred | - | CG-WOT-2026-013r (deuda estructural opcional) | condition:deuda-opcional-no-bloquea-013r |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WOT-2026-013l | Retencion local para runtime/reviews, review_packets, observations.bak | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
@@ -31,23 +31,22 @@
 
 ## Fichas detalladas (tickets vivos)
 
-> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. Follow-up vivo actual: `013r`, que corrige el mock-drift de `test_upgrade.py` y cierra la duplicacion `UpgradeManager` ahora que el bloqueo de schema quedo despejado. `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
+> Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. `013r` ya cerro canonico 2026-06-25: corrigio el mock-drift de `test_upgrade.py` con DoD enmendado a barrera de binding y dejo `013t` como deuda estructural opcional. Follow-up vivo actual: `013u`, que corrige el parser CLI de closeout/review descubierto durante ese cierre (`--manager-approve/--request-changes/--reopen-terminal-ticket` no respetan `--ticket` aunque el help/Control flags lo prometen). `013k`/`013l` siguen DIFERIDOS por ser higiene del repo de dogfooding LOCAL que NO viaja a otros proyectos (VERIFICADO POR BYTES: `notifications_*` y runtime gitignored estan excluidos de MANIFEST.distribute y MANIFEST.workspace). El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
 
 
-### WOT-2026-013r - Corregir mock-drift de test_upgrade.py + cerrar duplicacion UpgradeManager
+### WOT-2026-013u - Arreglar parser CLI de closeout/review para que respete --ticket y alinee el help
 - **Prioridad:** Alta
-- **Scope:** motor/upgrade-integrity
+- **Scope:** motor/controller-cli
 - **Estado:** pending
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Depende de:** WOT-2026-013s (sucesor de 013o; 013o cerro contra target equivocado)
+- **Depende de:** -
 - **Reactivation:** -
-- **Origen:** session-2026-06-25-motor-closeout.
-- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013r.md`.
-  Fuente de verdad del problema: FP-012 en
-  `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md`. El cuerpo del ticket (premise
-  re-check, secuencia minima fija paso 1/paso 2, DoD, STOP) vive SOLO en el
-  packet. Esta fila es indice; no duplicar el detalle aqui.
+- **Origen:** session-2026-06-25-post-013r-closeout.
+- **Problema:** durante el cierre canonico de `013r` se verifico que `python .agent/agent_controller.py --manager-approve --ticket WOT-2026-013r ...` falla con `No ticket_id provided`, mientras la forma posicional `--manager-approve WOT-2026-013r` si funciona. El parser de `agent_controller.py` promete `--ticket` como control flag comun, pero la rama `if "--ticket" in sys.argv:` nunca asigna `ticket_id` por una condicion invertida (`idx + 1 >= len(sys.argv)` en vez de `< len(sys.argv)`). Ademas `--reopen-terminal-ticket` muestra ayuda sin `<ticket>` aunque su parser intenta leer uno.
+- **Objetivo:** unificar el contrato CLI para acciones que aceptan ticket (`--manager-approve`, `--request-changes`, `--reopen-terminal-ticket`): deben aceptar `--ticket <id>` de forma consistente, conservar compatibilidad con la forma posicional si ya existe, y alinear `-h`/mensajes de error/tests con ese contrato real.
+- **Contrato canonico (FUENTE UNICA):** `.agent/planning/work_plan_WOT-2026-013u.md`.
+  El packet contiene premise re-check, FLT, bateria focal y DoD. Esta fila es indice; no duplicar el detalle aqui.
 
 ### WOT-2026-013t - Deduplicar UpgradeManager / binding shutil independiente (Paso 2 de 013r)
 - **Prioridad:** Alta
@@ -99,3 +98,4 @@
 - **Superficie (resumen, no FLT autoritativo):** script de retencion / paso opt-in del closeout para rutas runtime gitignored.
 - **Criterios binarios:** existe una via auditable para podar por edad/conteo esas 3 superficies sin tocar historico util; no borra nada versionado; `validate` verde.
 - **STOP:** si la retencion toca superficies versionadas o historico util; si exige cambiar gitignore o el contrato de runtime.
+

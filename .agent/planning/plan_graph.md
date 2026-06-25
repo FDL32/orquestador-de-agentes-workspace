@@ -1,4 +1,4 @@
-# plan_graph.md -- Plan WOT-2026-008
+﻿# plan_graph.md -- Plan WOT-2026-008
 
 ## PLAN-001 -- Inventario y contrato de migracion
 
@@ -72,6 +72,31 @@
 
 
 
+## PLAN-013U-001 -- Contrato CLI coherente para acciones con ticket
+
+- objetivo: alinear el parser comun de `--ticket`, la ayuda y las barreras de regresion del controller para que las acciones de closeout/review acepten `--ticket <id>` de forma consistente sin romper la compatibilidad posicional existente.
+- tickets: [WOT-2026-013u]
+- depends_on: []
+- superficies_archivo:
+  - repo_motor/.agent/agent_controller.py
+  - repo_motor/tests/test_agent_controller.py
+  - repo_motor/tests/unit/test_manager_approve.py
+  - repo_motor/tests/unit/test_request_changes_requeue.py
+  - repo_destino/.agent/collaboration/execution_log.md
+- interfaces:
+  - CLI `python .agent/agent_controller.py --manager-approve <ticket>`
+  - CLI `python .agent/agent_controller.py --request-changes <ticket>`
+  - CLI `python .agent/agent_controller.py --reopen-terminal-ticket <ticket>`
+  - control flag comun `--ticket <ticket>`
+  - help `python .agent/agent_controller.py -h`
+- shared_dependencies:
+  - `repo_motor/bus/**` y `repo_motor/runtime/**` (read-only; semantica del closeout no cambia)
+  - `repo_motor/scripts/run_pytest_safe.py` (read-only; gate canonico)
+  - backward-compat de CLI para cierres previos ya documentados
+- paralelizable: no
+- Merge Regression Audit:
+  - la regresion a bloquear es el drift entre help/Control flags y parser real (`--ticket` anunciado pero ignorado por condicion invertida)
+  - la barrera debe FALLAR si se reintroduce `idx + 1 >= len(sys.argv)` en la rama comun de `--ticket`
 ## PLAN-013A-001 -- Robustez del test approved_pending sin drift de topologia
 
 - objetivo: reparar el rojo aislado de `test_approved_pending_returns_builder_implement` endureciendo solo el fixture/driver de `tests/test_controller_integration.py`, sin tocar codigo productivo del controller ni introducir features nuevas de topologia.
@@ -542,3 +567,4 @@ Para 013n, cualquier merge con tickets que toquen `bus/state_machine.py`, `bus/s
 - PLAN-013O-001: no tocar `repo_motor/.agent/runtime/memory/observations.jsonl`, no insertar observaciones nuevas en `repo_destino/.agent/runtime/memory/observations.jsonl` antes del verde estricto, no tocar `repo_destino/.agent/runtime/memory/MEMORY.md`, `memory_profile.md`, `memory_rules.md`, `bus/memory_loader.py` (salvo CONTRACT_GAP), `scripts/session_close_observations.py`, CI/workflows.
 
 Para 013o, cualquier merge con tickets que toquen `scripts/migrate_observations.py`, `scripts/validate_observations.py`, `skills/_shared/ap-schema.md`, `scripts/memory_consolidate.py` o `repo_destino/.agent/runtime/memory/observations.jsonl` obliga a revalidar la union con `python scripts/validate_observations.py --strict --file <repo_destino>/.agent/runtime/memory/observations.jsonl`, `python -m pytest tests/test_migration_bootstrap.py tests/unit/test_validate_observations.py -q -p no:cacheprovider`, `python scripts/run_pytest_safe.py --level all` y `validate --json --project-root <repo_destino>`.
+

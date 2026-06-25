@@ -1,4 +1,4 @@
-# Backlog -- historico (movido por WOT-2026-012a)
+﻿# Backlog -- historico (movido por WOT-2026-012a)
 
 > Historico de tickets terminales y fichas cerradas, movido aqui por WOT-2026-012a
 > para dejar backlog.md como cola viva parseable.
@@ -25,6 +25,7 @@
 | WOT-2026-013i | completed | cerrado canonico 2026-06-22; purge de sandbox arreglado (PermissionError en .git read-only que ignore_errors tragaba, dejando el purge no-op). Latencia recurrente ~39s/sesion creciente -> ~0s en estado estable. Follow-up: WOT-2026-013j (drift FLT backlog<->contrato). |
 | WOT-2026-013j | completed | cerrado canonico 2026-06-22 (bus seq 1358 COMPLETED, Manager-approved); gate ejecutable que bloquea fichas de backlog que re-declaran Files Likely Touched (check_backlog_contract). Follow-ups: 013k/013l/013m. |
 | WOT-2026-013s | completed | cerrado canonico 2026-06-25; `repo_motor/.agent/runtime/memory/observations.jsonl` paso de 168 errores a `validate_observations.py --strict` EXIT 0 sin tocar `signal`. Sucesor vivo desbloqueado: WOT-2026-013r. |
+| WOT-2026-013r | completed | cerrado canonico 2026-06-25; fix motor `8e84a25` (barrera honesta contra FP-012 en `tests/unit/test_upgrade.py`) y cierre workspace `39eabd6`. Follow-ups vivos: WOT-2026-013u (parser CLI de closeout/review expuesto por el cierre) y WOT-2026-013t (deuda estructural opcional de dedup/binding independiente). |
 | WOT-2026-013m | delivered-no-bus | ENTREGADO Y VERIFICADO fuera del lifecycle de bus (2026-06-22): commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de Overall FAIL a WARN. overall_status del closeout ahora respeta blocking=False (un step no-bloqueante ya no fuerza exit 1). NO tiene eventos de bus por no haberse bootstrappeado como ticket activo; cierre canonico por bus no realizado, evidencia = commit+tests+efecto. |
 | WOT-2026-013n | completed | cerrado canonico 2026-06-22; commit motor f48191f y cierre destino 935907c/85b76cb. El motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin mapearlos a `COMPLETED`; validate final 0/0 tras session-close y health audit 1449. Follow-up vivo: WOT-2026-013o (strict-green de observations portable antes de nuevas memorias). |
 | WT-2026-200 | completed | reconciliado canonico 2026-06-22 (campana legacy WT). Entrega real: commit motor 3b9f649 (launcher/supervisor resume, 5 tests regresion, ruff PASSED). Aprobado: bus seq 414 REVIEW_DECISION=approve. Atasco solo operativo: faltaba STATE_CHANGED->COMPLETED + SUPERVISOR_CLOSED tras READY_TO_CLOSE (seq 415). reconcile_ticket.py READY_TO_CLOSE->COMPLETED, validate 0/0. |
@@ -2571,3 +2572,5 @@ Fila retirada de la cola viva:
 - **STOP:** si la unica cura segura exige tocar `scripts/run_pytest_safe.py`, `quality-gates.yml`, CI o la politica default/opt-in de xdist; si la unica forma de estabilizar el triple verde exige mover el sandbox fuera del arbol o romper la invariante custodiada por `tests/unit/test_windows_safe_temp_runtime.py`; o si la reproduccion deja de concentrarse en las superficies declaradas y reaparece como deuda de runner/global-state ajena, parar y emitir `CG-WOT-2026-013d.md`.
 
 - **Cierre:** completed. `scripts/project_scanner.py` y `agent_system/scripts/project_paths.py` sustituyen los `rglob` crudos por recorridos robustos con poda previa del sandbox volatil; `tests/conftest.py` limpia huerfanos `session_<PID>` al inicio; el triple xdist quedo verde en 3 corridas consecutivas y `run_pytest_safe.py --level all` cerro `3091 passed, 20 skipped, 0 failed` sobre `e251bd7`. Cierre canonico confirmado por bus (`REVIEW_DECISION`, `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `COMPLETED`, `SUPERVISOR_CLOSED`).
+
+

@@ -1,4 +1,4 @@
-# repo_charter.md -- Plan WOT-2026-008
+﻿# repo_charter.md -- Plan WOT-2026-008
 
 > Scope restringido: taxonomia portable de prompts y skills del repo_motor.
 > El motor es la herramienta canonica; el repo_destino conserva el contrato,
@@ -163,6 +163,14 @@ referencias publicadas.
 - related_plans: [PLAN-013J-001]
 
 
+### OBJ-013U-001 -- Contrato CLI coherente para acciones de closeout/review
+- description: asegurar que el controller trate `--ticket <id>` como contrato comun real para las acciones de closeout/review que aceptan ticket, manteniendo compatibilidad con la forma posicional existente y sin degradar la semantica del bus.
+- success_criteria: el help, el parser y las barreras de test describen y verifican el mismo contrato CLI para `manager-approve`, `request-changes` y `reopen-terminal-ticket`.
+- failure_modes:
+  - el help promete `--ticket` pero el parser sigue ignorandolo o fallando con `No ticket_id provided`;
+  - se rompe en silencio la forma posicional usada por cierres previos;
+  - la correccion deriva en un rediseno amplio de la CLI o en cambios de semantica del bus fuera de scope.
+- related_plans: [PLAN-013U-001]
 ### OBJ-013N-001 -- Estados terminales honestos no-exito
 - description: modelar `SUPERSEDED` y `BLOCKED_FINAL` como estados terminales honestos del runtime para que validadores, vistas y checks de salud no obliguen a falsear `COMPLETED` cuando el cierre correcto no es de exito.
 - success_criteria: el motor reconoce ambos estados como terminales irreversibles en las superficies operativas relevantes, sin mapearlos a `COMPLETED` ni romper el cierre canonico exitoso existente.
@@ -180,3 +188,4 @@ referencias publicadas.
   - la decision de dominios obliga a redisenar la taxonomia completa de memoria portable o tocar `bus/memory_loader.py`;
   - se inserta observacion portable nueva antes de dejar la base en verde estricto.
 - related_plans: [PLAN-013O-001]
+
