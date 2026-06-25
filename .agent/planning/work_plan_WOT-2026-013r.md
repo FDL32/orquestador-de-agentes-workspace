@@ -48,9 +48,11 @@ intercepta `shutil.copytree`/`copy2` reales (`upgrade_agent_system.py:148,151,
   los forks en este ticket: registra un follow-up explicito y ESCALA.
 - **Superficie donde se registra el follow-up (fija):**
   `orquestador_de_agentes_workspace/.agent/collaboration/backlog.md` como ticket
-  derivado nuevo (p.ej. `WOT-2026-013s`), con referencia a FP-012; opcionalmente
-  una nota en `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md` (FP-012, seccion
-  "Tickets relacionados"). No vale "lo registre" sin una de estas superficies.
+  derivado nuevo con el siguiente ID libre de la familia 013 (p.ej.
+  `WOT-2026-013t`; NO `013s`, que ya existe y es la dependencia de este ticket),
+  con referencia a FP-012; opcionalmente una nota en
+  `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md` (FP-012, seccion "Tickets
+  relacionados"). No vale "lo registre" sin una de estas superficies.
 
 ## Files Likely Touched (relativos a repo_motor)
 - `tests/unit/test_upgrade.py`  (EXISTE -> repuntar 8 patches + barrera fail-sin-fix)
