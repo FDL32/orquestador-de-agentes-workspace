@@ -24,6 +24,7 @@
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Media | WOT-2026-013l | Retencion local opt-in para runtime gitignored (reviews, review_packets, observations.bak) | motor/runtime-retention | pending | - | session-2026-06-22-close-audit | - |
 | Baja | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | deferred | - | CG-WOT-2026-013r (deuda estructural opcional) | condition:deuda-opcional-no-bloquea-013r |
+| Baja | WOT-2026-013v | Retencion de reviews/: decidir doc vs orden por archivo-mas-reciente-dentro-del-dir (mtime de dir != ultimo intento logico) | motor/runtime-retention | deferred | - | manager-review WOT-2026-013l (sugerencia no bloqueante) | condition:mejora-no-bloquea-013l |
 | Media | WOT-2026-013k | Politica de retencion para notifications_*.md versionado | motor/runtime-retention | deferred | - | session-2026-06-22-close-audit | condition:higiene-dogfooding-local-no-portable |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
@@ -65,6 +66,31 @@
   y alinear `README`), de modo que parchear el modulo equivocado deje de interceptar y
   "revertir el fix -> FALLA" sea verificable. Referencia: FP-012.
 - **Non-goal:** no redisenar el flujo completo de install/upgrade (clausula STOP de 013r).
+
+### WOT-2026-013v - Retencion de reviews/: semantica de "reciente" (mtime de dir)
+- **Prioridad:** Baja
+- **Scope:** motor/runtime-retention
+- **Estado:** deferred (mejora OPCIONAL; NO bloquea 013l, ya cerrado/aprobado)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente; 013l entrego la CLI base)
+- **Origen:** sugerencia no bloqueante del Manager en la review de WOT-2026-013l.
+- **Problema (VERIFICADO POR BYTES 2026-06-25):** `prune_runtime_retention.py`
+  ordena `reviews/` por el mtime del DIRECTORIO por ticket. En el workspace de
+  dogfooding, 23 de 38 dirs de `reviews/` tienen el mtime del directorio
+  DIVERGENTE del archivo mas reciente que contienen (deltas de hasta ~38883 s
+  ~= 11 h), porque el FS actualiza el mtime del dir al anadir/quitar entradas
+  directas, no al modificar archivos anidados. Por tanto "los N reviews mas
+  recientes" por mtime-de-dir NO equivale a "los N ultimos intentos logicos".
+- **Riesgo:** bajo-medio. La CLI es opt-in, conservadora y exige `--dry-run`
+  antes de `--apply`, que expone la seleccion antes de borrar. No hay perdida
+  sorpresa, pero el orden puede ser contraintuitivo en ~60% de los dirs.
+- **Objetivo (decidir una via, no ambas):**
+  (a) DOCUMENTAR explicitamente en docstring/help que "reciente" = ultima
+      modificacion del DIRECTORIO, no ultimo intento logico; o
+  (b) CAMBIAR el orden de `reviews/` a "mtime del archivo mas reciente DENTRO
+      del dir" (los packets/baks ya son archivos, no cambian).
+- **Non-goal:** no cablear la poda al closeout; no cambiar packets/baks.
 
 ### WOT-2026-013k - Politica de retencion para notifications_*.md versionado
 - **Prioridad:** Media
