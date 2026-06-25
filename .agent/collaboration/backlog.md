@@ -37,7 +37,9 @@
 ### WOT-2026-013s - Saneamiento estricto de observations.jsonl del repo_motor
 - **Prioridad:** Alta
 - **Scope:** motor/memory-schema
-- **Estado:** pending
+- **Estado:** pending en cola viva; el estado operativo real vive en
+  `.agent/collaboration/STATE.md` / `work_plan.md` y ya puede estar
+  `IN_PROGRESS` tras bootstrap.
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Depende de:** WOT-2026-013n

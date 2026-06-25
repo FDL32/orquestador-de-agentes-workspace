@@ -22,6 +22,16 @@
   (FP-012 y futuros) dejando `observations.jsonl` en `--strict` verde.
 - **Plan-Link:** backlog del workspace (familia 013).
 
+## Estado operativo de arranque
+Este ticket YA esta materializado en `.agent/collaboration/` del workspace:
+`STATE.md` = `ACTIVE_TICKET: WOT-2026-013s` / `IN_PROGRESS`,
+`work_plan.md` = este contrato, `execution_log.md` = bootstrap de 013s, y el
+bus ya emitio `STATE_CHANGED -> IN_PROGRESS`.
+
+Implicacion para el Builder: **NO re-bootstrappear** si el preflight confirma
+esa alineacion. Arrancar directamente por `Premise Re-check` y registrar
+evidencia en `execution_log.md`.
+
 ## Objetivo
 Dejar `repo_motor/.agent/runtime/memory/observations.jsonl` en
 `validate_observations.py --strict` EXIT 0, reparando el schema drift de forma
