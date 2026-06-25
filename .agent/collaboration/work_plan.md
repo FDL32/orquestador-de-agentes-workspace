@@ -95,13 +95,13 @@ python scripts/run_pytest_safe.py --level all
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013k.md` y PARA.
 
 ## DoD (binario, comandos exactos)
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_notification_archives_are_collected_as_gitignored_local_surface -q` pasa y demuestra que `notifications_*.md` entra como cuarta superficie local del selector.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_only_old_notification_archives -q` pasa; el selector conserva exactamente los N mas recientes de `notifications_*.md` y poda solo el resto.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_non_notification_collaboration_archive_files_are_never_selected -q` pasa; si la utilidad intenta incluir `review_queue`, `manager_feedback` u otros archivos de `collaboration/archive/`, FALLA.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` sigue pasando con cobertura de la nueva superficie.
-- [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_notification_archives_are_collected_as_gitignored_local_surface -q` pasa y demuestra que `notifications_*.md` entra como cuarta superficie local del selector.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_only_old_notification_archives -q` pasa; el selector conserva exactamente los N mas recientes de `notifications_*.md` y poda solo el resto.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSafety::test_non_notification_collaboration_archive_files_are_never_selected -q` pasa; si la utilidad intenta incluir `review_queue`, `manager_feedback` u otros archivos de `collaboration/archive/`, FALLA.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_dry_run_reports_without_deleting tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionCLI::test_apply_deletes_only_selected_candidates -q` sigue pasando con cobertura de la nueva superficie.
+- [x] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013k`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
