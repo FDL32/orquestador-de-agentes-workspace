@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-013k
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## Re-encuadre contractual -- WOT-2026-013k
 
@@ -105,12 +105,22 @@ solo leido. CONTRACT_GAP NO aplica (premisa reprodujo; selector distingue la fam
 
 ## Cierre canonico - suite + falso-verde descartado (Builder, 2026-06-25)
 
-IMPORTANTE (evidencia, no relato): la primera corrida de la suite canonica con
-`AGENT_PROJECT_ROOT=<workspace>` (como sugeria la seccion cross-repo del prompt)
-fue un FALSO VERDE. El runner eligio el interprete del workspace
-(`<workspace>/.venv`), que NO tiene pytest instalado -> "No module named pytest",
-y aunque el proceso devolvio exit 0, la suite NO corrio. El last-run.json del
-workspace quedo en exit_code=1.
+IMPORTANTE (evidencia, no relato; redaccion alineada LITERALMENTE con el artefacto):
+la primera corrida de la suite canonica con `AGENT_PROJECT_ROOT=<workspace>` (como
+sugeria la seccion cross-repo del prompt) NO produjo una suite valida. El runner
+eligio el interprete del workspace (`<workspace>/.venv`), que NO tiene pytest
+instalado -> stdout literal "No module named pytest". La suite NO corrio.
+
+Distincion exacta de exit codes (VERIFICADA POR ARTEFACTO, sin contradiccion):
+- El `last-run.json` del workspace (el ARTEFACTO canonico del gate) registro
+  `exit_code: 1`, status=finished. Es decir, el gate canonico SI capturo el fallo;
+  un cierre que lea el artefacto NO se deja enganar.
+- La unica senal "0" fue el exit del PROCESO WRAPPER de fondo (el shell que lanzo
+  run_pytest_safe.py, reportado por la task-notification del entorno), NO el del
+  gate. Ese 0 del wrapper NO es evidencia de suite verde.
+- Leccion: la evidencia de cierre es el `last-run.json` (exit_code/sha/N passed),
+  nunca el exit del wrapper que orquesta la corrida. El riesgo es fiarse del exit
+  del wrapper, no que el artefacto mienta.
 
 Razon: WOT-2026-013k es `delivery_authority: repo_motor`; el codigo entregado vive
 en el motor (`scripts/prune_runtime_retention.py`) y la suite que lo prueba es la
@@ -122,3 +132,25 @@ Corrida autoritativa correcta (last-run.json del MOTOR, VERIFICADO):
 - status=finished, exit_code=0, level=all, args_mode=default_discovery,
   tested_commit_sha=8454c96 == HEAD, cwd=repo_motor.
 - 3197 passed, 20 skipped.
+
+## Correccion tras CHANGES del Manager (Builder, 2026-06-25)
+
+CHANGES del Manager: 1 BLOCKER (redaccion del execution_log) + 1 sugerencia no
+bloqueante (help). Codigo aprobado, sin defectos de implementacion.
+
+- BLOCKER (contradiccion exit 0 vs exit_code=1 en la narrativa del falso-verde):
+  reescrito el bloque "Cierre canonico - suite + falso-verde descartado" arriba
+  para que coincida LITERALMENTE con el artefacto. Distincion exacta: el
+  `last-run.json` del workspace = `exit_code: 1` (el gate SI capturo el fallo); el
+  "0" era SOLO el exit del proceso WRAPPER de fondo (task-notification del entorno),
+  NO del gate. Eliminada la frase "el proceso devolvio exit 0 ... la suite NO corrio"
+  que mezclaba ambos. Mismo error que el Manager ya me corrigio en la memoria
+  Claude; aplicado aqui.
+- Sugerencia no bloqueante (help description listaba 3 superficies): corregido el
+  `description` del argparse en `prune_runtime_retention.py` para listar tambien
+  `collaboration/archive/notifications_*.md`. Help-only, sin cambio de comportamiento;
+  15 focal passed (barreras de help de 013v intactas), ruff limpio. Commit motor
+  `84726ad`.
+
+Re-cierre: suite canonica re-ejecutada al nuevo HEAD `84726ad` con el INTERPRETE
+DEL MOTOR (delivery_authority repo_motor); ver last-run.json del motor.
