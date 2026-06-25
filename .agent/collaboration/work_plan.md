@@ -91,13 +91,13 @@ python scripts/run_pytest_safe.py --level all
 -> emite `.agent/planning/contract_gaps/CG-WOT-2026-013v.md` y PARA.
 
 ## DoD (binario, comandos exactos)
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_help_makes_directory_mtime_semantics_explicit -q` pasa y el help deja claro que `reviews/` se ordena por el `mtime` del DIRECTORIO del ticket.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_reviews_semantics_do_not_claim_last_logical_attempt -q` pasa; si el texto vuelve a sugerir "ultimo intento logico" o una semantica por archivo interno, FALLA.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_review_directories_are_ranked_by_directory_mtime_not_nested_file_mtime -q` pasa; si alguien reinterpreta `reviews/` por archivo interno sin decision explicita, FALLA.
-- [ ] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` sigue pasando para confirmar que packets/baks conservan su politica existente y el ticket no deriva el algoritmo general.
-- [ ] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
-- [ ] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [ ] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_help_makes_directory_mtime_semantics_explicit -q` pasa y el help deja claro que `reviews/` se ordena por el `mtime` del DIRECTORIO del ticket.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionDocs::test_reviews_semantics_do_not_claim_last_logical_attempt -q` pasa; si el texto vuelve a sugerir "ultimo intento logico" o una semantica por archivo interno, FALLA.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_review_directories_are_ranked_by_directory_mtime_not_nested_file_mtime -q` pasa; si alguien reinterpreta `reviews/` por archivo interno sin decision explicita, FALLA.
+- [x] `python -m pytest tests/unit/test_prune_runtime_retention.py::TestRuntimeRetentionSelection::test_keep_count_prunes_old_review_and_packet_entries -q` sigue pasando para confirmar que packets/baks conservan su politica existente y el ticket no deriva el algoritmo general.
+- [x] `python -m ruff check scripts/prune_runtime_retention.py tests/unit/test_prune_runtime_retention.py` -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
 
 ## Handoff
 Commit productivo en repo_motor (mensaje con `WOT-2026-013v`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
