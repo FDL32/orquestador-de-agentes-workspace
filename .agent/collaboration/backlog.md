@@ -24,6 +24,7 @@
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
 | Alta | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | completed | - | CG-WOT-2026-013r + reactivacion humana 2026-06-25 | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
+| Media | WOT-2026-014a | closeout self-dirty: prepush (delivery_hygiene) bloquea por el session_close_report.md que el cierre escribe | motor/closeout-hygiene | pending | - | session-2026-06-26-cleanup-triage | - |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
@@ -51,3 +52,46 @@
 - **Non-goal:** no redisenar el flujo completo de install/upgrade (clausula STOP de 013r).
 
 
+### WOT-2026-014a - closeout self-dirty: prepush bloquea por su propio reporte
+- **Prioridad:** Media
+- **Scope:** motor/closeout-hygiene
+- **Estado:** pending (identificado en la pasada de limpieza 2026-06-26; reproducido en vivo esta sesion).
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente)
+- **Origen:** session-2026-06-26-cleanup-triage (triage adversarial de items diferidos).
+- **Problema (VERIFICADO en codigo + en vivo):** `scripts/session_closeout.py` escribe su
+  reporte real en `.agent/runtime/memory/session_close_report.md` (`REPORT_REL`, **tracked**,
+  se commitea en cada cierre). El paso 2 del pipeline, `prepush_check` ->
+  `delivery_hygiene_check.check_git_tree_clean` (`scripts/delivery_hygiene_check.py:~260`),
+  corre `git status --porcelain` **sin allowlist** y marca ese reporte como arbol sucio,
+  abortando el cierre (exit 1, bloqueante). En cambio el paso 25,
+  `closeout_steps/rotation.py:step_git_clean` (~linea 389), SI tiene allowlist
+  (`expected_patterns` incluye `session_close_report.md`) y lo perdona. La asimetria hace
+  el cierre **circular**: si una corrida previa dejo el reporte sin commitear, la siguiente
+  corrida falla en su propio artefacto. Esta sesion obligo a `git checkout` del reporte
+  para conseguir un arbol limpio antes de que `--session-close` pasara.
+- **Aclaracion (premisa falsa descartada):** un subagente afirmo "el reporte esta gitignored,
+  no puede bloquear prepush" -> **FALSO**: `git ls-files` confirma que esta tracked y SI
+  bloqueo en vivo. No es by-design limpio.
+- **Decision a resolver (el ticket DEBE elegir una, no asumir):**
+  - **Opcion A:** dar a `check_git_tree_clean` la misma allowlist de artefactos runtime
+    esperados que `step_git_clean` (extraer `expected_patterns` a una constante compartida).
+    Riesgo: la allowlist NO debe debilitar el gate pre-push **general** (delivery_hygiene se
+    usa fuera del closeout). Acotar la allowlist al contexto closeout o exigir que el reporte
+    este staged.
+  - **Opcion B:** que el closeout **commitee** el reporte como ultimo paso (flujo previsto),
+    dejando el arbol limpio; documentar que ese commit es parte del cierre.
+  - **Opcion C:** mover el reporte a una ruta gitignored y dejar solo un puntero tracked.
+- **Objetivo:** eliminar la circularidad sin debilitar el gate pre-push general, con barrera
+  que reproduzca el bloqueo (reporte sucio -> prepush falla) y verifique que el fix lo resuelve.
+- **Criterio binario de cierre:** una segunda corrida consecutiva de `--session-close --force`
+  (con el reporte de la primera sin commitear) NO falla en delivery_hygiene por el propio
+  reporte; y un test de barrera reproduce el bloqueo previo (mutation-verified: sin el fix, FALLA).
+- **Non-goal:** no debilitar `delivery_hygiene_check` para artefactos NO esperados; no tocar
+  el contrato de `prepush_check` para usos fuera del closeout.
+- **STOP/escalado:** si la opcion elegida implica cambiar el contrato de un gate pre-push
+  usado fuera del closeout, escalar a decision humana antes de implementar.
+- **Riesgos:** falso verde si la allowlist es demasiado amplia (permitiria pushear con trabajo
+  real sin commitear); por eso la barrera debe distinguir "reporte runtime esperado" de
+  "cambio productivo sin commitear".
