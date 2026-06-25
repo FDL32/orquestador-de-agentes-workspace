@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-013t
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
