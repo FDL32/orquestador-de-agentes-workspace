@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014c
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Hacer que el tree-scan de classify_publication respete .gitignore
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor

@@ -2579,3 +2579,28 @@ Fila retirada de la cola viva:
 - **Cierre:** completed. `scripts/project_scanner.py` y `agent_system/scripts/project_paths.py` sustituyen los `rglob` crudos por recorridos robustos con poda previa del sandbox volatil; `tests/conftest.py` limpia huerfanos `session_<PID>` al inicio; el triple xdist quedo verde en 3 corridas consecutivas y `run_pytest_safe.py --level all` cerro `3091 passed, 20 skipped, 0 failed` sobre `e251bd7`. Cierre canonico confirmado por bus (`REVIEW_DECISION`, `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `COMPLETED`, `SUPERVISOR_CLOSED`).
 
 
+## Movido por cierre canonico WOT-2026-014c (COMPLETED 2026-06-27)
+
+| Media | WOT-2026-014c | tree-scan de classify_publication debe respetar .gitignore (escanear lo publicable, no el disco) | motor/publication-audit | completed | - | session-2026-06-26-extractor-adopt | - |  <!-- completed: motor 0c412f0; manager APPROVE workspace closeout COMPLETED; workspace docs 5525221 + 41b1a0a -->
+
+### WOT-2026-014c - tree-scan de classify_publication debe respetar .gitignore (escanear lo publicable, no el disco)
+- **Prioridad:** Media
+- **Scope:** motor/publication-audit
+- **Estado:** completed (motor 0c412f0; manager APPROVE)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente)
+- **Reactivation:** -
+- **Origen:** session-2026-06-26-extractor-adopt, cerrando EXF-2026-005a en el destino Extractor.
+- **Problema (VERIFICADO):** el tree-scan de `classify_publication` montaba su universo desde disco (`_walk_repo_files` + `rglob("*")`) y por eso inspeccionaba archivos git-ignored que git no publicaria. El history-scan ya era correcto porque solo ve blobs commiteados.
+- **Objetivo:** limitar el tree-scan a lo publicable por git (`tracked + untracked no ignorado`) usando `git ls-files` y `git ls-files --others --exclude-standard`, sin tocar regex, buckets ni history-scan.
+- **Files Likely Touched:**
+  - repo_motor: `scripts/classify_publication.py`
+  - repo_motor: `tests/test_classify_publication.py`
+- **Criterios binarios:**
+  - Un archivo git-ignored con secreto-ejemplo ya no activa `tree_secret_scan`.
+  - Un archivo tracked con secreto sigue siendo detectado.
+  - Un archivo untracked pero no ignorado sigue siendo detectado.
+  - `python -m pytest tests/test_classify_publication.py -q`, `ruff` sobre las dos superficies, `python scripts/run_pytest_safe.py --level all` y `python .agent/agent_controller.py --validate --json --project-root <repo_destino>` quedan verdes.
+- **Cierre:** completed. `scripts/classify_publication.py` reemplaza el universo basado en disco por `git ls-files` + `git ls-files --others --exclude-standard`, aplica `runtime_excludes` sin auto-escaneo y elimina `_walk_repo_files`. La suite focal agrega la matriz `ignored / tracked / untracked-no-ignored` con barrera mutation-verified real; `run_pytest_safe.py --level all` cerro `3212 passed, 20 skipped` sobre `0c412f08f053ca34518433820017d31b277de0cf`; cierre canonico confirmado por bus (`BUILDER_EXIT`, `READY_FOR_REVIEW`, `REVIEW_DECISION`, `READY_TO_CLOSE`, `CLOSE_CONFIRMED`, `COMPLETED`, `SUPERVISOR_CLOSED`).
+
