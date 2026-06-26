@@ -31,6 +31,7 @@
 | Media | WOT-2026-014f | Unificar helpers de descubrimiento/parseo de manager_feedback (3 copias -> 1 canonica importada) | motor/closeout-hygiene | pending | - | session-2026-06-26-docs-audit | - |
 | Media | WOT-2026-014g | Desync frontmatter name vs carpeta en 6 skills + gate name==dir ausente | motor/skills-discovery | pending | - | session-2026-06-26-docs-audit | - |
 | Baja | WOT-2026-014h | Extraer scope-verification del orquestador.py DEPRECATED | motor/legacy-deprecation | pending | - | session-2026-06-26-docs-audit | - |
+| Baja | WOT-2026-014i | Bump GitHub Actions a versiones no-Node20 (checkout/setup-python/upload-artifact) en workflows motor+workspace | ci/actions-version-bump | pending | - | session-2026-06-26-security-audit-flake | - |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
@@ -263,3 +264,50 @@
 - **Objetivo:** Mover las 4 funciones de scope-verification (`snapshot_paths`, `detect_changed_files`, `classify_scope`, `generate_scope_report`) a un modulo NO-deprecado (p.ej. `scripts/scope_verification.py`), reapuntar el test, y dejar `orquestador.py` como cascaron Goose/Claw sin codigo vivo consumido por otros modulos.
 - **Criterio binario de cierre:** Las 4 funciones residen en el modulo nuevo no-deprecado; `tests/test_orquestador_scope.py` importa desde ese modulo nuevo (ya no desde `scripts.orquestador`) y pasa en verde; ningun consumidor importa `orquestador` como modulo Python para esa logica viva tras la extraccion, verificado mediante BUSQUEDA TRANSVERSAL (Impact Simulation, audit_agent_output 2.c): no solo en el motor sino tambien en el workspace de dogfooding (`orquestador_de_agentes_workspace`) y en cualquier destino que tenga el archivo vendorizado. NOTA VERIFICADA: `orquestador.py` NO esta en `MANIFEST.distribute`/`MANIFEST.workspace`, asi que el instalador NO lo vendoriza a destinos -> blast-radius acotado a motor + dogfooding; aun asi, si la busqueda transversal halla algun consumidor de las funciones extraidas, conservar un re-export shim en `orquestador.py` (como hizo 013t con `scripts.upgrade`) hasta confirmar 0 consumidores. La evidencia de cierre cita el SHA del commit motor que contiene el fix.
 - **Non-goal:** NO borrar `scripts/orquestador.py` en este mismo cambio (la retirada total del cascaron es un follow-up posterior); el cascaron permanece pero ANTES de retirarlo en el follow-up debe verificarse que ningun modulo lo importa y que el modo `--skill` (delega via subprocess a `discover_skills.py`, no por import Python) ya no se referencia. RIESGO RESIDUAL EXPLICITO (Impact Simulation): el MANIFEST ACOTA pero NO prueba 0 consumidores -pueden existir copias manuales o consumidores fuera de manifest-; por eso la AUTORIDAD de "0 consumidores" es la busqueda transversal real (`grep -rn 'import.*orquestador|from scripts.orquestador'` en motor + workspace de dogfooding + destinos conocidos), NO el manifest. Si aparece cualquiera, re-export shim antes de vaciar. NO tocar los adapters Goose/Claw ni reintroducir esos engines.
+
+
+### WOT-2026-014i - Bump GitHub Actions a versiones no-Node20 (checkout/setup-python/upload-artifact/setup-uv) en workflows del motor y del workspace
+- **Prioridad:** Baja
+- **Scope:** ci/actions-version-bump
+- **Estado:** pending (detectado al validar en CI el fix del flake de Security Audit, sesion 2026-06-26)
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente; el fix del flake gitleaks entro como commit de CI 2d69d57 del workspace, NO como ticket)
+- **Origen:** session-2026-06-26-security-audit-flake (al confirmar verde el reemplazo de gitleaks-action@v2 por el CLI OSS, la anotacion de Node-20 quedo visible en el run).
+- **Problema (VERIFICADO en CI + en codigo):** Los runs de GitHub Actions emiten la anotacion
+  "Node.js 20 is deprecated. The following actions ... are being forced to run on Node.js 24"
+  (ref: github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners).
+  VERIFICADO en el run del workspace 28269573551 (2026-06-26): `actions/checkout@v4`,
+  `actions/setup-python@v5`, `actions/upload-artifact@v4`. Las mismas action-pins viven en
+  AMBOS repos (lectura directa de los YAML):
+  - Motor: `.github/workflows/security-audit.yml` (checkout@v4, astral-sh/setup-uv@v5,
+    setup-python@v5), `quality-gates.yml` (checkout@v4, setup-uv@v5, setup-python@v5),
+    `monthly-deps-bump.yml` (checkout@v4, setup-uv@v5, setup-python@v5).
+  - Workspace: `.github/workflows/security-audit.yml` (checkout@v4, setup-python@v5,
+    upload-artifact@v4), `quality-gates.yml` (checkout@v4 x2, setup-python@v5).
+  Hoy NO bloquea: el motor lleva `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` que fuerza Node24
+  y GitHub aun ejecuta los v4/v5 sobre Node24. Pero es deuda con fecha de caducidad: cuando
+  GitHub retire el shim, esas pins haran hard-fail. El otro disparador historico,
+  `gitleaks/gitleaks-action@v2`, ya se elimino del workspace (commit de CI 2d69d57).
+- **Objetivo:** Subir cada action marcada a su major actual que ya NO targetea Node20 (VERIFICAR
+  contra las releases de cada action EN EL MOMENTO de implementar; no fijar el numero aqui),
+  en los workflows de ambos repos, SIN tocar la logica de los jobs. Revisar si
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` sigue siendo necesario tras el bump (probablemente
+  retirable, pero solo tras confirmar que ninguna action restante lo requiere).
+- **Decision a resolver al activar (cross-repo):** este ticket toca DOS repos (motor +
+  workspace), cada uno con su propio `.github/`. Decidir si se ejecuta como un solo ticket de
+  mantenimiento con doble superficie (commit motor + commit workspace separados) o se parte en
+  dos. La `delivery_authority` declarada (repo_motor) cubre la superficie canonica; los
+  workflows del workspace NO los vendoriza el motor (workspace de agente puro), asi que su bump
+  es un commit workspace paralelo, no parte del diff del motor.
+- **Criterio binario de cierre:** tras el bump, un push que dispare cada workflow afectado (en
+  motor y en workspace) produce 0 anotaciones de Node-20-deprecation para las actions
+  bumpeadas y los workflows quedan verdes. La evidencia de cierre cita el/los SHA de los
+  commits (motor y/o workspace) que contienen el bump. NOTA de gates: al ser cambio de YAML-CI
+  puro, la validacion de cierre es "el workflow corre verde sin la anotacion", NO ruff/pytest;
+  reconciliar `deliverable_type`/dispatch de gates al materializar el work_plan (friccion
+  relacionada con WOT-2026-014b).
+- **Non-goal:** NO cambiar la logica ni los pasos de ningun job (solo las versiones de las
+  actions); NO re-tocar el step de gitleaks (ya migrado al CLI OSS en 2d69d57); NO retirar
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` sin confirmar antes que ninguna action restante lo
+  necesita.
