@@ -25,6 +25,8 @@
 | Alta | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | completed | - | CG-WOT-2026-013r + reactivacion humana 2026-06-25 | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 | Media | WOT-2026-014a | closeout self-dirty: prepush (delivery_hygiene) bloquea por el session_close_report.md que el cierre escribe | motor/closeout-hygiene | pending | - | session-2026-06-26-cleanup-triage | - |
+| Media | WOT-2026-014b | run_pytest_safe asume pytest; falso rojo en repos destino que usan unittest | motor/test-runner-portability | pending | - | session-2026-06-26-extractor-EXF-2026-005a | - |
+| Media | WOT-2026-014c | tree-scan de classify_publication debe respetar .gitignore (escanear lo publicable, no el disco) | motor/publication-audit | pending | - | session-2026-06-26-extractor-adopt | - |
 > Solapamiento `011e <-> 010m`: resuelto como `keep-both-with-boundary` (011e = paralelizacion runner local opt-in; 010m = piloto xdist en CI). No fusionar; respetar la frontera local-vs-CI.
 
 ## Fichas detalladas (tickets vivos)
@@ -95,3 +97,115 @@
 - **Riesgos:** falso verde si la allowlist es demasiado amplia (permitiria pushear con trabajo
   real sin commitear); por eso la barrera debe distinguir "reporte runtime esperado" de
   "cambio productivo sin commitear".
+
+
+### WOT-2026-014b - run_pytest_safe debe soportar repos destino en unittest
+- **Prioridad:** Media
+- **Scope:** motor/test-runner-portability
+- **Estado:** pending (identificado al operar un repo_destino real: Extractor_Facturas_PDF_Seguro, EXF-2026-005a, 2026-06-26).
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente)
+- **Origen:** session-2026-06-26 cerrando EXF-2026-005a en el destino Extractor (app en unittest, sin pytest declarado).
+- **Problema (VERIFICADO en vivo):** `scripts/run_pytest_safe.py` asume que el `.venv` del
+  destino tiene **pytest**. Un `repo_destino` que vive en **unittest** (caso real:
+  Extractor tiene 25 `unittest.TestCase`, pytest NO en su pyproject) produce un **falso
+  rojo** en el gate canonico `run_pytest_safe --level all` (`No module named pytest`)
+  aunque la suite real pase 25/25 con `python -m unittest`. Acopla "suite canonica" a un
+  runner concreto, rompiendo la agnosticidad del motor frente a destinos no-pytest.
+- **Workaround usado (parche operativo, NO arquitectura):** `uv pip install pytest` solo en
+  el `.venv` del destino (sin tocar su pyproject/uv.lock); pytest descubre y corre los
+  unittest nativamente. Desbloquea pero no resuelve la desalineacion de fondo.
+- **Objetivo:** que `run_pytest_safe` detecte el runner (pytest si esta instalado; fallback a
+  `python -m unittest discover` si no) y emita `last-run.json` igual en ambos modos, con el
+  mismo criterio `tested_commit_sha == HEAD`. Opcionalmente: declarar el runner canonico del
+  destino en un sitio estable (pyproject/config/contrato) para eliminar la ambiguedad.
+- **Criterio binario de cierre:** sobre un destino unittest SIN pytest instalado,
+  `run_pytest_safe --level all` corre la suite unittest, sale EXIT 0 si pasa, y escribe
+  `last-run.json` con `tested_commit_sha`, `exit_code` y `level`; un test de barrera
+  reproduce el falso rojo previo (sin el fix, FALLA por `No module named pytest`).
+- **Non-goal:** no cambiar el contrato de gates para repos que SI usan pytest; no imponer un
+  runner unico a los destinos.
+
+
+### WOT-2026-014c - tree-scan de classify_publication debe respetar .gitignore (escanear lo publicable, no el disco)
+- **Prioridad:** Media
+- **Scope:** motor/publication-audit
+- **Estado:** pending (identificado al publicar un repo_destino real: Extractor_Facturas_PDF_Seguro, sesion 2026-06-26; falso positivo DECIDE_PENDING/exit 3 documentado en AUDIT_PUBLICATION_2026-06-26_v2.md).
+- **deliverable_type:** code
+- **delivery_authority:** repo_motor
+- **Depende de:** - (independiente)
+- **Origen:** session-2026-06-26-extractor-adopt, cerrando EXF-2026-005a en el destino Extractor; el tree-scan bloqueo por contenido de archivos ignorados/no-trackeados.
+- **Problema (VERIFICADO en codigo + reproduccion empirica):** El tree-scan de
+  `classify_publication` NO respeta `.gitignore`; el history-scan, en la practica, si
+  (solo ve blobs commiteados). Asimetria CONFIRMADA por lectura y por reproduccion.
+  - Tree-scan: `_scan_tree_secrets` (L337-350) se alimenta de `_collect_repo_files`
+    (L253-260), que arma `untracked = all_files - tracked` donde `all_files =
+    _walk_repo_files(...)` (L258-259). `_walk_repo_files` (L263-285) recorre **el disco
+    completo** con `repo_root.rglob("*")` (L275) y solo filtra por un set **hardcodeado**
+    `ignored_dirs = {.git, .venv, venv, __pycache__, .pytest_cache, .ruff_cache,
+    node_modules}` (L265-273, aplicado en L279) mas `runtime_excludes` (L282). El unico
+    filtro extra dentro del scan es `_is_excluded` (L343), que usa `EXCLUDE_PATTERNS`
+    hardcodeados (L48-67) menos `ALLOW_PUBLISH_PATTERNS` (L68-71), **NO** el `.gitignore`
+    del repo. No hay `git check-ignore`, ni `git ls-files --others --exclude-standard`, ni
+    parser de `.gitignore` en ninguna parte (grep: las unicas apariciones de "gitignore"
+    son L33 como extension de texto y L609 como clave de salida `gitignore_proposed`,
+    ninguna es un filtro). Resultado: cualquier archivo git-ignored que no caiga en un dir
+    hardcodeado entra al universo a escanear.
+  - History-scan: `_scan_history_secrets` (L361-407), alimentado por `git rev-list --all`
+    + `git ls-tree -r <commit>` (L373-374) leyendo blobs con `git show` (L390). Por
+    construccion solo expone contenido **commiteado** (trackeado); un archivo git-ignored
+    y nunca commiteado no puede aparecer.
+  - **Falso positivo concreto:** en la publicacion del Extractor el script salio
+    **DECIDE_PENDING (exit 3)** (AUDIT_PUBLICATION_2026-06-26_v2.md L7, L15). El tree-scan
+    leyo `.agent/context/destination_map.md` y `.agent/context/project-map.json`
+    (ignorados + `git rm --cached`, siguen en disco => leidos pero NO publicados). En la
+    variante exit-1 (memoria del proyecto) el disparo fue el placeholder
+    `API_KEY=your_api_key_here` en un bundle legacy ignorado y no trackeado
+    (`publica/repo/agent_system/docs/01-INSTALACION.md`). En ambos casos
+    `tree_secret_scan.ok=false` por contenido de archivos que git NUNCA publicaria, mientras
+    `history_secret_scan.ok=true` (0 findings sobre la historia). Veredicto humano de Pasada B:
+    PUBLICABLE (el exit del script no es veredicto final).
+- **Objetivo:** que el tree-scan opere sobre **lo que git PUBLICARIA** = trackeado +
+  untracked-NO-ignorado, excluyendo SOLO lo git-ignored. Fix minimo localizado en
+  `_collect_repo_files` (L253-260): obtener el universo desde git en vez de desde el disco,
+  equivalente a `git ls-files -co --exclude-standard` (es decir, `tracked = git ls-files`
+  + `untracked = git ls-files --others --exclude-standard`), conservando `runtime_excludes`
+  (out_path) como guarda. El codigo ya invoca git por subprocess (`_git_lines`, L136-138) y
+  ya separa tracked/untracked en `RepoFiles`, por lo que el cambio queda acotado;
+  `_walk_repo_files` queda redundante (decidir si se elimina o se mantiene como red de
+  seguridad secundaria). Verificado empiricamente que `git ls-files -co --exclude-standard`
+  (a) EXCLUYE un archivo ignorado (`legacy_docs/old.md`, confirmado por `git check-ignore`)
+  y (b) INCLUYE un untracked-no-ignorado (`new_untracked.md`, publicable con `git add -A`).
+- **Criterio binario de cierre (matriz de aceptacion explicita, atada a los flags de git):**
+  sobre un repo git de prueba, cada archivo de prueba contiene un `API_KEY=...`; el tree-scan
+  corregido (universo = `git ls-files -co --exclude-standard` = trackeado `-c` cached +
+  untracked-NO-ignorado `-o` others, excluyendo lo ignorado via `--exclude-standard`) debe
+  satisfacer las TRES filas a la vez:
+  - (a) archivo **git-ignored** (cubierto por `.gitignore`; `git check-ignore -v <path>`
+    matchea; NO aparece en `git ls-files -co --exclude-standard`) -> el tree-scan **NO** lo
+    flaguea (ni DECIDE ni BLOQUEADO_POR_SECRETO).
+  - (b) archivo **trackeado** (`git ls-files <path>` lo lista; entra como `-c` cached) -> el
+    tree-scan **SI** detecta el secreto.
+  - (c) archivo **untracked pero NO ignorado** (publicable con `git add -A`; `git status` lo
+    muestra `??` y `git check-ignore` NO matchea; entra como `-o` others) -> el tree-scan
+    **SI** detecta el secreto.
+  Falso-verde parcial a EVITAR: restringir el universo a solo `git ls-files` (sin
+  `-o --exclude-standard`) pasa (a) y (b) pero **FALLA la fila (c)** -> dejaria de detectar
+  secretos en untracked publicables. El history-scan permanece sin cambios.
+- **Barrera sugerida (mutation-verified):** test que crea un archivo ignorado con
+  `API_KEY=...` (placeholder o secreto-de-ejemplo) y verifica que el tree-scan NO lo
+  flaguea; sin el fix (universo = disco via `_walk_repo_files`) el test DEBE fallar porque
+  el archivo ignorado se escanea y dispara DECIDE/BLOQUEADO. Complementar con un test que
+  confirme la deteccion en (b) trackeado y (c) untracked-no-ignorado para que el fix no
+  degrade cobertura.
+- **Non-goal:** NO tocar el history-scan (`_scan_history_secrets`, L361-407): ya es correcto
+  (solo ve blobs commiteados, los git-ignored-no-commiteados no pueden aparecer). NO
+  resolver aqui el **FP-010** (KNOWN_FAILURE_PATTERNS.md L463-510): ese es un modo DISTINTO
+  (falso positivo INTRA-archivo por over-match lexico de palabras-cabecera dentro de un
+  archivo que SI se publica; fix = endurecer la regex exigiendo valor asignado + allowlist
+  de fixtures). ESTE ticket es un falso positivo de ALCANCE/SCOPE (el archivo flagueado NO
+  se publica porque esta git-ignored; fix = acotar el set de entrada del scan al universo de
+  git). No cerrar como duplicado de FP-010. NO imponer un comportamiento que pierda deteccion
+  en untracked-NO-ignorado (restringir a solo `git ls-files` seria incorrecto: un untracked
+  no-ignorado SI se publica con `git add -A`).
