@@ -22,7 +22,6 @@
 | Prioridad | Ticket | Titulo | Scope | Estado | Depende de | Origen | Reactivation |
 |-----------|--------|--------|-------|--------|------------|--------|--------------|
 | Alta | WOT-2026-002c | A2d: eliminar copias motor-provides + ejecutar decisiones (FASE3 diferida) | system/host-extends | completed-partial | WOT-2026-002a, WOT-2026-002b | session-2026-06-13-host-extends | condition:install-sync-revendor-resuelto |
-| Alta | WOT-2026-013t | Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente | motor/upgrade-integrity | completed | - | CG-WOT-2026-013r + reactivacion humana 2026-06-25 | - |
 | Baja | WT-2026-256a | Retirar excepcion PYSEC-2026-196 cuando uv resuelva pip>=26.1.2 | system/security-dependencies | blocked | - | session-2026-06-11-security-followup | condition:uv-resuelve-pip>=26.1.2 |
 | Media | WOT-2026-014a | closeout self-dirty: prepush (delivery_hygiene) bloquea por el session_close_report.md que el cierre escribe | motor/closeout-hygiene | pending | - | session-2026-06-26-cleanup-triage | - |
 | Media | WOT-2026-014b | run_pytest_safe asume pytest; falso rojo en repos destino que usan unittest | motor/test-runner-portability | pending | - | session-2026-06-26-extractor-EXF-2026-005a | - |
@@ -32,26 +31,6 @@
 ## Fichas detalladas (tickets vivos)
 
 > Familia 013e-013j CERRADA (`completed`, confirmado en bus): `013e` inventario de suite; `013f` podo `tests/deprecated/`; `013g` explico el coste `unknown` (purge de sandbox); `013h` elimino el limbo recurrente `archive_rename_uncommitted` (staging en origen); `013i` arreglo el purge no-op por `PermissionError` en `.git` read-only; `013j` blindo el drift backlog<->contrato FLT con gate ejecutable. `013m` (overall_status del closeout respeta blocking=False) quedo ENTREGADO Y VERIFICADO fuera del lifecycle de bus (commit motor 3bbfea2, 62 tests verdes, --session-close --dry-run paso de FAIL a WARN): movido a historico como implemented-and-verified, sin eventos de bus por no haberse bootstrappeado como ticket activo. `013n` cerro canonico 2026-06-22: el motor reconoce `SUPERSEDED` y `BLOCKED_FINAL` como terminales honestos sin falsear `COMPLETED`. `013o` CERRO COMPLETED en el bus (terminal) pero contra TARGET EQUIVOCADO: saneo `repo_destino/observations.jsonl` (limpio, 17 errores) y dejo SIN sanear el `repo_motor/observations.jsonl` (168 errores --strict, VERIFICADO 2026-06-25). NO se reabre (ID terminal); el saneamiento real del MOTOR se trato como ticket NUEVO `013s`, ya cerrado canonico y movido a historico. `013r` ya cerro canonico 2026-06-25: corrigio el mock-drift de `test_upgrade.py` con DoD enmendado a barrera de binding y dejo `013t` como deuda estructural opcional. ``013v`` ya cerro canonico 2026-06-25: hizo explicita la semantica de `reviews/` por `mtime` de directorio sin tocar el algoritmo de orden, y la blindo con help/docstring/tests. `013l`, `013v` y `013k` quedan resueltos como familia de bajo riesgo en runtime-retention gitignored. `013t` YA CERRO CANONICO 2026-06-25 (COMPLETED + SUPERVISOR_CLOSED en bus, commit motor `a1b99af`): un unico owner editable de `UpgradeManager` (`scripts.upgrade_agent_system`) con `scripts.upgrade` como re-export y copy-seam shutil/datetime inequivoco. La familia 013 queda CERRADA sin tickets vivos. El historico util (events/archive, audits, _archive/plan_audit) NO se poda. `002c` (`completed-partial`) y `256a` (`blocked` externo) siguen fuera por naturaleza.
-
-
-### WOT-2026-013t - Deduplicar UpgradeManager / binding shutil independiente (Paso 2 de 013r)
-- **Prioridad:** Alta
-- **Scope:** motor/upgrade-integrity
-- **Estado:** completed (cierre canonico 2026-06-25: COMPLETED + SUPERVISOR_CLOSED en bus, commit motor `a1b99af`, suite 3200 passed @ HEAD, validate 0/0). Nacio como deuda estructural opcional heredada de 013r, reactivado con OK humano explicito; en esta ronda se acometio el saneamiento estructural postergado. El DoD de 013r se enmendo (2026-06-25, reaprobacion humana) a la barrera de binding; 013t consolido `UpgradeManager` en un unico owner editable (`scripts.upgrade_agent_system`) con `scripts.upgrade` como re-export y copy-seam shutil/datetime inequivoco. Tests/integration y README alineados al owner.
-- **deliverable_type:** code
-- **delivery_authority:** repo_motor
-- **Depende de:** - (independiente; 013r ya cerro su aprendizaje con DoD enmendado)
-- **Origen:** CG-WOT-2026-013r (`.agent/planning/contract_gaps/CG-WOT-2026-013r.md`).
-- **Problema:** `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` (objeto
-  modulo compartido), por lo que repuntar el target del patch en `test_upgrade.py` es
-  indistinguible en runtime y el DoD binario de 013r ("revertir patches -> pytest FALLA")
-  es inalcanzable sin tocar codigo productivo. Los dos forks definen clases
-  `UpgradeManager` distintas (`upgrade.py` vs `upgrade_agent_system.py`); `README:104`
-  declara canonico `upgrade.py` pero el test ejercita el otro fork.
-- **Objetivo:** dar a cada fork binding de shutil independiente (o deduplicar los forks
-  y alinear `README`), de modo que parchear el modulo equivocado deje de interceptar y
-  "revertir el fix -> FALLA" sea verificable. Referencia: FP-012.
-- **Non-goal:** no redisenar el flujo completo de install/upgrade (clausula STOP de 013r).
 
 
 ### WOT-2026-014a - closeout self-dirty: prepush bloquea por su propio reporte
