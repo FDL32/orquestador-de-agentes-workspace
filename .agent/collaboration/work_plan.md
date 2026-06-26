@@ -1,110 +1,181 @@
-# Plan de Trabajo: WOT-2026-013t
+# Plan de Trabajo: WOT-2026-014c
 
 > Fuente canonica unica del ticket (packet oficial). El backlog del workspace
 > debe REFERENCIAR este archivo, no reproducir su cuerpo.
 
 ## Metadata
-- **ID:** WOT-2026-013t
-- **Estado:** COMPLETED
-- **Titulo:** Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente
+- **ID:** WOT-2026-014c
+- **Estado:** APPROVED
+- **Titulo:** Hacer que el tree-scan de classify_publication respete .gitignore
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Prioridad:** Alta
-- **Depende de:** WOT-2026-013r
-- **Objective-Link:** OBJ-013T-001
-- **Plan-Link:** PLAN-013T-001
-- **Builder clarification budget:** 0 (el ticket fija owner canonico, FLT, barreras, surfaces prohibidas y el criterio binario de salida; no deja decisiones de arquitectura abiertas)
+- **Prioridad:** Media
+- **Depende de:** -
+- **Objective-Link:** OBJ-014C-001
+- **Plan-Link:** PLAN-014C-001
+- **Builder clarification budget:** 0 (la premisa, FLT, barrera primaria y
+  criterios binarios ya fijan el cambio minimo y evitan decisiones abiertas)
 
 ## Objetivo
-Reemplazar las dos implementaciones editables de `UpgradeManager` por un solo owner efectivo, mantener `scripts/upgrade.py` como entrypoint publico documentado, preservar `scripts/upgrade_agent_system.py` solo como compatibilidad explicita si hiciera falta, y dejar el seam de copia (`copytree`/`copy2`) inequ?voco para que las barreras del upgrade fallen sin el fix real.
+Cambiar `scripts/classify_publication.py` para que el tree-scan opere sobre lo
+que git publicaria de verdad (`tracked + untracked no ignorado`) en vez de
+recorrer el disco completo, y dejar una barrera automatica en
+`tests/test_classify_publication.py` que falle si reaparece el falso positivo
+contra archivos git-ignored.
 
 ## Premise
-`013r` resolvio el falso verde inmediato de `tests/unit/test_upgrade.py`, pero cerro su DoD por enmienda porque el criterio literal era inalcanzable dentro del Paso 1: `scripts.upgrade.shutil IS scripts.upgrade_agent_system.shutil` al hacer ambos `import shutil`, y ademas el repo conserva dos forks casi identicos de `UpgradeManager`. La realidad verificada hoy sigue siendo dual: `README.md:104` declara canonico `scripts/upgrade.py`, `tests/integration/test_lifecycle_integration.py` importa `scripts.upgrade.UpgradeManager`, y `tests/unit/test_upgrade.py` importa `scripts.upgrade_agent_system.UpgradeManager`. Mientras existan dos owners efectivos o un seam ambiguo de copia, el contrato de pruebas y la documentacion seguiran pudiendo divergir.
+La implementacion actual de `classify_publication` mezcla dos universos
+distintos: el history-scan ya opera sobre blobs commiteados, pero el tree-scan
+monta `untracked = _walk_repo_files(...) - tracked` y `_walk_repo_files()`
+recorre el disco via `repo_root.rglob("*")` con una lista hardcodeada de
+directorios a saltar. Eso mete en el analisis archivos git-ignored que git no
+publicaria. El fix correcto es de alcance, no de regex ni de deteccion de
+secretos: el universo del tree-scan debe salir de git, no del filesystem.
 
 ## Premise Re-check (cwd=repo_motor, solo lectura)
+```powershell
+rg -n "_collect_repo_files|_walk_repo_files|_scan_tree_secrets|_scan_history_secrets|gitignore_proposed" scripts/classify_publication.py
+rg -n "ignored|gitignore|untracked|tree_secret_scan|history_secret_scan" tests/test_classify_publication.py
+python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 ```
-rg -n "Canonical upgrade scripts|upgrade.py|upgrade_agent_system.py" README.md DISTRIBUTION_GUIDE.md UPGRADE_GUIDE.md
-rg -n "from scripts.upgrade import UpgradeManager|from scripts.upgrade_agent_system import UpgradeManager|patch\("scripts\.upgrade|patch\("scripts\.upgrade_agent_system" tests/integration/test_lifecycle_integration.py tests/unit/test_upgrade.py
-rg -n "import shutil|copytree|copy2|class UpgradeManager|ProjectPathsResolver|DoctorAgentSystem" scripts/upgrade.py scripts/upgrade_agent_system.py
-python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>
-```
-Condicion de arranque (read-only, VERIFICABLE POR BYTES):
-- `README` sigue declarando canonico `scripts/upgrade.py`;
-- el repo aun tiene dos modulos de upgrade con `class UpgradeManager` propia o cuerpo casi duplicado;
-- la superficie de tests/documentacion sigue partida entre ambos forks;
-- `validate` del workspace sigue en `0 errors / 0 warnings` antes de tocar nada.
-Si esta premisa no reproduce, PARA y documenta el drift antes de tocar codigo.
+
+Condicion de arranque (VERIFICABLE):
+- `scripts/classify_publication.py` sigue obteniendo el universo del tree-scan
+  desde `_walk_repo_files(...)` o equivalente basado en disco, no desde
+  `git ls-files -co --exclude-standard`.
+- `tests/test_classify_publication.py` todavia no cubre de forma explicita la
+  matriz completa `ignored / tracked / untracked-no-ignored`.
+- `validate` del workspace sigue en `0 errors / 0 warnings` antes de tocar el
+  ticket.
+
+Si esta premisa no reproduce, PARA y documenta el drift antes de modificar
+codigo o tests.
 
 ## Decision Arquitectonica
-La salida de menor ambiguedad es fijar un owner unico de la logica de upgrade y dejar el otro modulo como wrapper/compatibilidad explicita, no mantener dos clases paralelas que requieran disciplina manual para no divergir. En esta ronda, el owner de implementacion permanece en `scripts/upgrade_agent_system.py` (ya integra `ProjectPathsResolver` y `DoctorAgentSystem`, y es la superficie unitaria focal actual); `scripts/upgrade.py` debe quedar como entrypoint publico documentado que reexporta o delega de forma controlada al owner unico. Ademas, el owner unico debe bindear `copytree`/`copy2` de forma que el target correcto sea inequ?voco y la barrera fail-sin-fix no dependa del accidente de un `shutil` compartido.
+La fuente de verdad del universo publicable debe ser git. Por tanto,
+`_collect_repo_files()` debe construir:
+- `tracked` desde `git ls-files`
+- `untracked` desde `git ls-files --others --exclude-standard`
 
-## Plan - secuencia minima FIJA
-### Paso 1 - fijar owner unico de UpgradeManager
-- Mover la logica productiva de `UpgradeManager` a un solo owner efectivo y eliminar la segunda clase editable divergente del par `upgrade.py` / `upgrade_agent_system.py`.
-- `scripts/upgrade.py` debe seguir siendo la via canonica documentada, pero no puede conservar una segunda clase editable divergente.
-- Si hace falta compatibilidad CLI con `upgrade_agent_system.py`, que sea explicita y pequena; no se admite mantener dos cuerpos de logica paralelos.
+`runtime_excludes` (por ejemplo `out_path`) se conserva como filtro adicional
+local del script, pero no sustituye a `.gitignore`.
 
-### Paso 2 - seam de copia inequ?voco
-- El owner unico debe exponer un seam de copia (`copytree`/`copy2`) que permita distinguir sin ambiguedad el target correcto del equivocado.
-- La barrera debe demostrar que romper la copia en el owner real hace fallar la prueba focal, y que el wrapper/documented entrypoint no reintroduce una segunda ruta mutable.
+Consecuencias:
+- `history_scan` NO se toca.
+- no se introduce parser propio de `.gitignore`.
+- `_walk_repo_files()` solo puede sobrevivir si queda claro que ya no define el
+  universo del tree-scan; si queda muerto, eliminarlo es aceptable.
 
-### Paso 3 - alinear contrato publico y tests
-- Alinear README y superficies de test con el owner unico decidido.
-- Mantener `scripts/upgrade.py` como entrypoint documentado para el operador.
-- La suite no puede terminar con docs diciendo un owner y tests ejercitando otro sin explicitar compatibilidad.
+## Plan - secuencia minima fija
+### Paso 1 - reconfirmar seam y cobertura actual
+- Confirmar en `scripts/classify_publication.py` que el tree-scan depende de
+  `_collect_repo_files()` y que la version previa todavia toma archivos desde
+  disco.
+- Confirmar en `tests/test_classify_publication.py` la cobertura existente y
+  localizar el mejor bloque para anadir la matriz nueva sin crear archivo
+  paralelo.
+
+### Paso 2 - acotar el universo del tree-scan a git
+- Reescribir `_collect_repo_files()` para usar git como autoridad del universo
+  publicable.
+- Mantener la separacion `RepoFiles(tracked=..., untracked=...)`.
+- Mantener `runtime_excludes` para que el artefacto de salida no se autoescanee.
+
+### Paso 3 - barrera mutation-verified
+- Anadir o ajustar tests en `tests/test_classify_publication.py` para cubrir
+  simultaneamente:
+  - archivo git-ignored con `API_KEY=...` -> NO debe ser flagueado por
+    `tree_secret_scan`.
+  - archivo tracked con `API_KEY=...` -> SI debe ser flagueado.
+  - archivo untracked pero no ignorado con `API_KEY=...` -> SI debe ser
+    flagueado.
+- Verificar explicitamente el fail-sin-fix de la fila `ignored`: sin el cambio
+  del universo, ese caso debe disparar `DECIDE` o `BLOQUEADO_POR_SECRETO`.
+
+### Paso 4 - gates focales y cierre
+- Ejecutar la bateria focal del ticket.
+- Registrar evidencia literal en `execution_log.md`.
+- Preparar el commit productivo del `repo_motor` con `WOT-2026-014c` en el
+  mensaje.
 
 ## Files Likely Touched (relativos a repo_motor)
-- `scripts/upgrade.py`
-- `scripts/upgrade_agent_system.py`
-- `tests/unit/test_upgrade.py`
-- `tests/integration/test_lifecycle_integration.py`
-- `README.md`
+- `scripts/classify_publication.py`
+- `tests/test_classify_publication.py`
 
 Aclaraciones (no parte de las rutas):
-- `scripts/upgrade.py`: entrypoint publico canonico; debe dejar de ser fork editable si hoy aun lo es.
-- `scripts/upgrade_agent_system.py`: owner unico de implementacion o wrapper legado explicito; no puede quedar ambigua su autoridad.
-- `tests/unit/test_upgrade.py`: barreras estructurales contra duplicacion + seam de copia equivocado.
-- `tests/integration/test_lifecycle_integration.py`: alinear import surface publica con el owner/wrapper final.
-- `README.md`: reflejar la relacion real entre entrypoint publico y owner de implementacion.
+- `scripts/classify_publication.py`: el cambio debe quedar localizado en el
+  seam que define el universo del tree-scan; no redisenar la clasificacion
+  completa.
+- `tests/test_classify_publication.py`: extender la suite existente con la
+  matriz nueva; no abrir un archivo de test paralelo para el mismo seam.
+
+## Read/inspect only
+- `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\backlog.md`
+- `docs/KNOWN_FAILURE_PATTERNS.md`
+- `C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\AUDIT_WOT-2026-014c.md`
 
 ## Forbidden Surfaces
-- `repo_motor/scripts/rollback.py`, `repo_motor/scripts/detect_version.py`, `repo_motor/scripts/doctor_agent_system.py`, `repo_motor/agent_system/scripts/project_paths.py`: read-only por defecto; solo tocarlos si el diff demuestra necesidad directa del owner unico.
-- `repo_motor/.agent/**`, `repo_motor/bus/**`, `repo_motor/runtime/**`: fuera de scope; 013t no toca lifecycle, bus ni cierre canonico.
-- `repo_motor/docs/KNOWN_FAILURE_PATTERNS.md`: read-only en esta ronda; ya describe FP-012 como contexto, no es entregable del fix.
-- nuevas dependencias, migraciones masivas de guias o retirada de compat legacy fuera del par `upgrade.py` / `upgrade_agent_system.py`: prohibido.
-- `privada/`, `.env*`, credenciales, tokens y configuraciones sensibles: fuera de scope absoluto.
+- `scripts/classify_publication.py` fuera del seam del universo publicable:
+  `_scan_history_secrets`, regex de secretos, buckets de clasificacion y
+  veredictos globales quedan read-only salvo ajuste estrictamente derivado del
+  fix de alcance.
+- `tests/` fuera de `tests/test_classify_publication.py`: prohibido abrir una
+  segunda suite para este seam.
+- `docs/KNOWN_FAILURE_PATTERNS.md`, `README.md`, `CHANGELOG.md`: contexto
+  read-only en esta ronda; no forman parte del entregable productivo.
+- `repo_motor/.agent/**`, `repo_motor/bus/**`, `repo_motor/runtime/**`:
+  fuera de scope.
+- nuevas dependencias, parser custom de `.gitignore`, cambios en el
+  history-scan o en la politica de secretos fuera del universo de entrada:
+  prohibido.
 
 ## Bateria focal (primer loop; NO la suite canonica completa hasta el cierre)
-```
-python -m pytest tests/unit/test_upgrade.py -q
-python -m pytest tests/integration/test_lifecycle_integration.py -q
-python -m ruff check scripts/upgrade.py scripts/upgrade_agent_system.py tests/unit/test_upgrade.py tests/integration/test_lifecycle_integration.py
-python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>
+```powershell
+python -m pytest tests/test_classify_publication.py -q
+python -m ruff check scripts/classify_publication.py tests/test_classify_publication.py
+python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 # Cierre canonico:
 python scripts/run_pytest_safe.py --level all
 ```
 
 ## Non-goals
-- NO reabrir 013r ni cambiar su cierre historico.
-- NO redisenar el flujo completo de install/upgrade/rollback mas alla de fijar owner unico y seam verificable.
-- NO mezclar este ticket con memoria, closeout, bus o runner.
-- NO retirar de golpe comandos, imports, guias o referencias operativas de `upgrade_agent_system.py` si aun se necesita compatibilidad explicita en esta ronda.
+- NO tocar `_scan_history_secrets()` ni reinterpretar la historia git.
+- NO resolver aqui falsos positivos intra-archivo como FP-010.
+- NO restringir el universo a solo `git ls-files` si eso elimina la deteccion
+  de `untracked` publicables.
+- NO introducir una allowlist de archivos ignorados como parche puntual; la
+  correccion debe ser de clase, basada en git.
 
 ## CONTRACT_GAP / STOP
-- Si fijar un owner unico obliga a tocar `rollback.py`, `detect_version.py`, `doctor_agent_system.py` o `ProjectPathsResolver` de forma no prevista y sustantiva.
-- Si la compatibilidad publica de `scripts/upgrade.py` no puede preservarse sin una migracion documental mucho mas amplia que README + tests declarados.
-- Si la barrera fail-sin-fix solo puede demostrarse reescribiendo de forma amplia la estrategia de testing del upgrade.
--> emite `.agent/planning/contract_gaps/CG-WOT-2026-013t.md` y PARA.
+- Si el fix exige tocar regex de secretos, buckets o veredictos globales fuera
+  del seam del universo publicable.
+- Si la matriz `ignored / tracked / untracked-no-ignored` no puede expresarse
+  de forma estable dentro de `tests/test_classify_publication.py`.
+- Si aparece una dependencia no prevista de `_walk_repo_files()` en otra ruta
+  semantica del script que no sea el tree-scan.
+-> emitir `CG-WOT-2026-014c.md` y PARAR.
 
 ## DoD (binario, comandos exactos)
-- [x] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_patch_target_is_the_module_the_sut_imports -q` pasa y deja verificado un owner unico coherente con el modulo realmente ejercitado.
-- [x] `python -m pytest tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_propagates_real_copytree_failure tests/unit/test_upgrade.py::TestUpgradeMockTargetBarrier::test_backup_invokes_real_copies_count -q` pasa; romper `copytree` en el owner real hace FALLAR la prueba focal sin el fix.
-- [x] `python -m pytest tests/integration/test_lifecycle_integration.py -q` pasa y mantiene la superficie publica `from scripts.upgrade import UpgradeManager` operativa tras la deduplicacion.
-- [x] `python -m pytest tests/unit/test_upgrade.py -q` pasa y, si se reintroduce una segunda clase editable divergente entre `upgrade.py` y `upgrade_agent_system.py`, la barrera de owner unico FALLA.
-- [x] `python -m ruff check scripts/upgrade.py scripts/upgrade_agent_system.py tests/unit/test_upgrade.py tests/integration/test_lifecycle_integration.py` -> `All checks passed`.
-- [x] `python scripts/check_encoding_guard.py README.md` -> exit 0.
-- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json`: `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
-- [x] `python .agent/agent_controller.py --validate --json --force --project-root <workspace_activo>` -> `0 errors / 0 warnings`.
+- [x] `python -m pytest tests/test_classify_publication.py -q` pasa.
+- [x] Existe una barrera automatica en `tests/test_classify_publication.py`
+  donde un archivo git-ignored con `API_KEY=...` NO activa
+  `tree_secret_scan`; al reintroducir un universo basado en disco, esa barrera
+  FALLA.
+- [x] La misma suite confirma que un archivo tracked con `API_KEY=...` SI se
+  detecta.
+- [x] La misma suite confirma que un archivo untracked pero no ignorado con
+  `API_KEY=...` SI se detecta.
+- [x] `python -m ruff check scripts/classify_publication.py tests/test_classify_publication.py`
+  -> `All checks passed`.
+- [x] `python scripts/run_pytest_safe.py --level all` -> `last-run.json` con
+  `exit_code 0`, `level all`, `tested_commit_sha == HEAD`.
+- [x] `python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
+  -> `0 errors / 0 warnings`.
+- [x] La evidencia de cierre cita el SHA del commit del `repo_motor` que
+  contiene el fix.
+  SHA verificado: `0c412f08f053ca34518433820017d31b277de0cf`.
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con `WOT-2026-013t`), suite canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. NO push hasta OK humano.
+Commit productivo en `repo_motor` (mensaje con `WOT-2026-014c`), suite
+canonica fresca al HEAD, luego `--pre-handoff` + `--mark-ready`. No hacer push
+hasta OK humano.

@@ -1,62 +1,63 @@
-# Execution Log -- WOT-2026-013t
+# Execution Log -- WOT-2026-014c
 
-**Estado:** COMPLETED
+**Estado:** IN_PROGRESS
 
 ## Preparacion
 
-- Ticket reactivado y packet canonico copiado a `work_plan.md`.
-- Pendiente: bootstrap canonico del bus + arranque Builder.
+- Packet canonico de `WOT-2026-014c` preparado en `work_plan.md`.
+- Rubrica de revision preparada en `AUDIT_WOT-2026-014c.md`.
+- Fuente contractual: backlog vivo del workspace (`WOT-2026-014c`,
+  `motor/publication-audit`, `deliverable_type=code`,
+  `delivery_authority=repo_motor`).
 
-## Implementacion + barreras + gates (Builder, 2026-06-25)
+## Handoff al Builder
 
-Decision de contrato (ya congelada en work_plan l.39): owner unico =
-scripts/upgrade_agent_system.py; scripts/upgrade.py = entrypoint publico que
-re-exporta. Esto resolvio los 2 BLOCKERs de la auditoria adversarial (owner
-decidido + DoD item 1 coherente), asi clarification=0 es honesto.
+- Superficie productiva prevista (FLT): `scripts/classify_publication.py`,
+  `tests/test_classify_publication.py`.
+- Barrera primaria: matriz `ignored / tracked / untracked-no-ignored` en la
+  suite existente de `tests/test_classify_publication.py`.
+- Restriccion critica: NO tocar `history_scan`, regex de secretos ni abrir
+  allowlists de contenido para cerrar un falso positivo de scope.
+- Cierre exigido por contrato: suite focal verde, `run_pytest_safe --level all`,
+  `validate --json --project-root <workspace_activo>` en `0 errors / 0 warnings`
+  y cita del SHA del commit del `repo_motor`.
 
-Cambios (FLT, repo_motor):
-- `scripts/upgrade.py`: reescrito como RE-EXPORT delgado del owner. Elimina su 2a
-  clase editable (365 -> ~45 lineas). Re-exporta UpgradeManager, shutil, datetime,
-  main del owner; conserva el CLI (`python scripts/upgrade.py` via main del owner)
-  y `from scripts.upgrade import UpgradeManager`. VERIFICADO: public.UpgradeManager
-  IS owner.UpgradeManager; __module__ == scripts.upgrade_agent_system; shutil/
-  datetime/main re-exportados (seam de copia inequivoco, Paso 2).
-- `scripts/upgrade_agent_system.py`: owner unico, sin cambios de logica (ya era el
-  fork moderno con ProjectPathsResolver/DoctorAgentSystem).
-- `tests/integration/test_lifecycle_integration.py`: ALINEADO al owner (Paso 3,
-  FLT modificable). (a) los 2 tests COMPLETED creaban proyectos legacy sin
-  manifest; el owner es manifest-first -> el de upgrade_then_rollback recibe
-  manifest canonico (como los unit tests del owner) -> COMPLETED; (b)
-  test_full_lifecycle_chain mantiene deteccion legacy v9.2 pero ahora asierta el
-  contrato REAL del owner: upgrade legacy sin manifest -> BLOCKED ("Run migration
-  first", detection_mode=legacy_markers). El viejo upgrade.py upgradeaba legacy
-  laxamente; consolidar al owner elimina esa via insegura. (c)
-  test_concurrent_upgrade_safety: patches repuntados de scripts.upgrade.* a
-  scripts.upgrade_agent_system.* (el owner que ejecuta las copias).
-- `tests/unit/test_upgrade.py`: nueva clase TestUpgradeSingleOwner (3 barreras):
-  scripts.upgrade.UpgradeManager IS owner; seam re-export; upgrade.py no define
-  clase propia. DoD item 4.
-- `README.md`: l.104 alineado: upgrade.py = entrypoint publico, owner =
-  upgrade_agent_system.py (re-export), sin 2a clase editable.
+## Siguiente paso canonico
 
-Evidencia mutation-verified:
-- Reintroducir `class UpgradeManager` en upgrade.py -> 2 de 3 barreras
-  TestUpgradeSingleOwner FALLAN; restaurado -> 3 passed. (DoD item 4: la barrera
-  de owner unico FALLA si reaparece una 2a clase editable divergente).
-- Las barreras de copia de 013r (test_backup_propagates_real_copytree_failure,
-  test_backup_invokes_real_copies_count) siguen verdes sobre el owner real.
+- Ejecutar `python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`.
+- Si el validate sigue verde, bootstrap canonico del ticket activo con
+  `python .agent/agent_controller.py --bootstrap-ticket --json --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`.
+- Lanzar Builder usando el packet actual de `work_plan.md` + `AUDIT_WOT-2026-014c.md`.
 
-Gates:
-- `ruff check` (4 archivos) -> All checks passed; `ruff format` OK.
-- `check_encoding_guard.py README.md` -> exit 0.
-- focal: test_upgrade.py (24) + test_lifecycle_integration.py (4) = 28 passed.
-- validate + suite canonica: ver abajo. delivery_authority=repo_motor -> suite con
-  INTERPRETE DEL MOTOR, sin AGENT_PROJECT_ROOT al workspace (ver
-  docs/RUNNER_INTERPRETER_SEMANTICS.md).
+## Runtime
 
-Scope: solo los 5 archivos del FLT. Forbidden surfaces (rollback/detect_version/
-doctor/project_paths, .agent/**, bus, runtime) NO tocadas. CONTRACT_GAP no aplica:
-la compat publica de upgrade.py se preservo via re-export sin migracion amplia.
+- `--bootstrap-ticket` emitido para `WOT-2026-014c`.
+- Proyecciones activas alineadas a `IN_PROGRESS` para que el Builder consuma el
+  ticket correcto al arrancar.
 
+## Evidencia de cierre
 
-Manager approved canonical closeout for WOT-2026-013t
+- Commit `repo_motor`: `0c412f08f053ca34518433820017d31b277de0cf`
+  (`WOT-2026-014c Respect .gitignore in publication tree scan`).
+- `python -m pytest tests/test_classify_publication.py -q` -> `26 passed in 13.08s`.
+- `python -m ruff check scripts/classify_publication.py tests/test_classify_publication.py`
+  -> `All checks passed!`.
+- `mutation check`: collector viejo reinyectado localmente ->
+  `tree_secret_scan.ok=False` y finding `legacy_docs/old.md` (caso esperado);
+  collector actual restaurado -> `mutation-check: green-current / red-old-collector verified`.
+- `python scripts/run_pytest_safe.py --level all --force-unlock` ->
+  `3212 passed, 20 skipped in 150.27s (0:02:30)`.
+- `last-run.json` canonico del motor
+  (`C:\Users\fdl\Proyectos_Python\orquestador_de_agentes\.agent\runtime\pytest-safe\last-run.json`)
+  -> `status=finished`, `exit_code=0`, `level=all`,
+  `args_mode=default_discovery`,
+  `tested_commit_sha=0c412f08f053ca34518433820017d31b277de0cf`.
+- Nota de precision: el snapshot homologo del workspace destino esta stale y NO
+  es autoridad para este ticket `delivery_authority=repo_motor`.
+- `python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace`
+  -> `0 errors / 0 warnings`.
+- `pip-audit skip: FLT sin manifiesto de dependencias (WP-2026-092)`.
+- Cobertura del caso real `git rm --cached`:
+  la combinacion de la fila tracked + la fila git-ignored cubre la transicion
+  desde "archivo antes publicado" a "archivo aun en disco pero ya no
+  publicable por git".
