@@ -60,15 +60,14 @@
 - **Aclaracion (premisa falsa descartada):** un subagente afirmo "el reporte esta gitignored,
   no puede bloquear prepush" -> **FALSO**: `git ls-files` confirma que esta tracked y SI
   bloqueo en vivo. No es by-design limpio.
-- **Decision a resolver (el ticket DEBE elegir una, no asumir):**
-  - **Opcion A:** dar a `check_git_tree_clean` la misma allowlist de artefactos runtime
-    esperados que `step_git_clean` (extraer `expected_patterns` a una constante compartida).
-    Riesgo: la allowlist NO debe debilitar el gate pre-push **general** (delivery_hygiene se
-    usa fuera del closeout). Acotar la allowlist al contexto closeout o exigir que el reporte
-    este staged.
-  - **Opcion B:** que el closeout **commitee** el reporte como ultimo paso (flujo previsto),
-    dejando el arbol limpio; documentar que ese commit es parte del cierre.
-  - **Opcion C:** mover el reporte a una ruta gitignored y dejar solo un puntero tracked.
+- **Decision congelada para materializacion:** **Opcion A**.
+  El ticket debe extraer una allowlist/constante compartida para artefactos runtime
+  esperados del closeout y aplicarla solo en la ruta de higiene relevante para el
+  cierre, sin debilitar el gate pre-push general frente a cambios productivos no
+  esperados. **Opcion B** y **Opcion C** quedan descartadas en esta ronda:
+  auto-commit del reporte altera el contrato del cierre y mover el reporte a ruta
+  gitignored abre un cambio de producto/artefacto mayor que no se necesita para
+  cerrar el bug reproducido.
 - **Objetivo:** eliminar la circularidad sin debilitar el gate pre-push general, con barrera
   que reproduzca el bloqueo (reporte sucio -> prepush falla) y verifique que el fix lo resuelve.
 - **Criterio binario de cierre:** una segunda corrida consecutiva de `--session-close --force`
@@ -146,9 +145,40 @@
 - **delivery_authority:** repo_motor
 - **Depende de:** - (independiente)
 - **Origen:** session-2026-06-26-docs-audit (auditoria adversarial de scripts/prompts/skills del motor)
-- **Problema (VERIFICADO en codigo):** Los helpers de descubrimiento y parseo del `manager_feedback` estan triplicados en tres modulos con cuerpos gemelos: `scripts/archive_collaboration_artifacts.py:248` (`find_manager_feedback_files`) y `:268` (`extract_ticket_id_from_feedback`), version CLI exportada via `--archive` / `--list-manager-feedback`; `scripts/closeout_steps/archival.py:211` (`_find_manager_feedback_files`) y `:228` (`_extract_ticket_id_from_feedback`), copia privada; `scripts/session_closeout.py:489` (`_find_manager_feedback_files`) y `:494` (`_extract_ticket_id_from_feedback`), tercera copia. El sub-bloque de mover/`unlink` esta duplicado verbatim entre los consumidores. A un agente que deba cambiar "como se archiva el manager_feedback" se le presentan 3 cuerpos gemelos y no puede saber cual esta activo sin trazar imports; arreglar uno deja el comportamiento incoherente entre CLI y closeout. (Nota: `step_archive_manager_feedback` NO es copia identica: diverge en el contrato de SELECCION -el CLI recibe lista explicita `ticket_ids`, el closeout deriva los tickets via `_can_prove_close(bus events)`-; esa divergencia es legitima y NO entra en este ticket.)
-- **Objetivo:** Dejar una sola definicion canonica de cada helper de descubrimiento/parseo (`find_manager_feedback_files` y `extract_ticket_id_from_feedback`) en `scripts/archive_collaboration_artifacts.py`, y que `scripts/closeout_steps/archival.py` y `scripts/session_closeout.py` la importen en vez de redefinirla.
-- **Criterio binario de cierre:** (1) Un TEST DE ARQUITECTURA COMMITEADO en la suite del motor (p.ej. `test_no_duplicate_manager_feedback_helpers` usando el AST de Python: `ast.parse` sobre `scripts/` + contar los `FunctionDef`/`AsyncFunctionDef` con esos nombres en CUALQUIER scope) afirma que existe exactamente 1 definicion de cada helper, en `archive_collaboration_artifacts.py`. El test debe ser robusto a re-introduccion por alias/reordenacion: cuenta por NOMBRE de funcion definida (no por linea ni orden; un `import ... as` no crea def, pero una re-`def` del cuerpo bajo otro nombre debe quedar cubierta por la barrera de (3)); el `grep -E 'def .*manager_feedback_files|...'` queda como AYUDA manual, NO como gate. (2) `closeout_steps/archival.py` y `session_closeout.py` importan los helpers en vez de redefinirlos; (3) **BARRERA PRIMARIA DE CIERRE** (mutation-verified) codificada como TEST UNITARIO COMMITEADO (no grep-en-log): muta el helper canonico (via import-identity) y verifica que el cambio se observa en los 3 consumidores -sin el fix (copias independientes) el cambio no propaga y el test FALLA-; (4) la suite de tests de closeout queda verde; (5) la evidencia de cierre cita el SHA del commit motor que contiene el fix.
+- **Problema (VERIFICADO en codigo):** La premisa original de "3 copias reales" quedo
+  **stale**. Hoy existen **2 implementaciones reales + 1 wrapper de compatibilidad**:
+  `scripts/archive_collaboration_artifacts.py:248` (`find_manager_feedback_files`) y `:268`
+  (`extract_ticket_id_from_feedback`) son la version CLI/base; `scripts/closeout_steps/archival.py:211`
+  (`_find_manager_feedback_files`) y `:228` (`_extract_ticket_id_from_feedback`) son la copia
+  privada real del closeout; `scripts/session_closeout.py:489-499` ya NO reimplementa, sino
+  que delega mediante wrappers de compatibilidad a helpers importados. Ademas, las dos
+  implementaciones reales no tienen la misma firma: la de `archive_collaboration_artifacts.py`
+  usa `extract_ticket_id_from_feedback(filename: str)`, mientras la de
+  `closeout_steps/archival.py` usa `_extract_ticket_id_from_feedback(filename: str, *,
+  ticket_id_pattern: str)`. Sin fijar cual firma canonica gana, el ticket deja una decision
+  de producto abierta al Builder.
+- **Decision congelada para materializacion:** la firma canonica debe ser la del closeout,
+  con `ticket_id_pattern` explicito (`filename: str, *, ticket_id_pattern: str`) porque es la
+  mas general y preserva el control del patron desde el consumidor. Para eliminar la duda de
+  direccion de import, la definicion canonica debe vivir en un modulo neutro e importable del
+  motor (NO en `session_closeout.py`), y tanto el CLI/base como el closeout deben importar de
+  ahi; `closeout_steps/archival.py` puede actuar como hogar transitorio solo si la extraccion a
+  ese modulo comun queda cerrada dentro del mismo ticket, no como canonico final implicito.
+- **Objetivo:** Dejar una sola definicion canonica real de cada helper de
+  descubrimiento/parseo en un modulo importable del motor y que
+  `archive_collaboration_artifacts.py`, `closeout_steps/archival.py` y
+  `session_closeout.py` consuman esa definicion comun; `session_closeout.py` puede conservar
+  wrappers de compatibilidad mientras no introduzcan una tercera implementacion real.
+- **Criterio binario de cierre:** (1) Un TEST DE ARQUITECTURA COMMITEADO en la suite del
+  motor afirma que existe exactamente 1 implementacion real de descubrimiento y 1 de parseo
+  para `manager_feedback`; `session_closeout.py` puede conservar wrappers delgados de
+  compatibilidad, pero no cuerpos logicos divergentes. (2) `archive_collaboration_artifacts.py`
+  y `session_closeout.py` importan el helper canonico en vez de redefinir logica propia.
+  (3) **BARRERA PRIMARIA DE CIERRE** (mutation-verified): mutar el helper canonico (via
+  import-identity) cambia el comportamiento observable en CLI, paso de archival y wrapper de
+  `session_closeout`; sin el fix, al menos uno de los consumidores no recibe la mutacion y el
+  test FALLA. (4) La suite de tests de closeout queda verde. (5) La evidencia de cierre cita
+  el SHA del commit motor que contiene el fix.
 - **Non-goal:** NO unificar la politica de SELECCION de tickets (el `_can_prove_close` por bus events del closeout y la lista explicita `ticket_ids` del CLI se conservan separadas). Solo se unifican los helpers de descubrimiento/parseo.
 
 
@@ -184,7 +214,7 @@
 - **Prioridad:** Baja
 - **Scope:** ci/actions-version-bump
 - **Estado:** pending (detectado al validar en CI el fix del flake de Security Audit, sesion 2026-06-26)
-- **deliverable_type:** code
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Depende de:** - (independiente; el fix del flake gitleaks entro como commit de CI 2d69d57 del workspace, NO como ticket)
 - **Origen:** session-2026-06-26-security-audit-flake (al confirmar verde el reemplazo de gitleaks-action@v2 por el CLI OSS, la anotacion de Node-20 quedo visible en el run).
@@ -217,11 +247,14 @@
 - **Criterio binario de cierre:** tras el bump, un push que dispare cada workflow afectado (en
   motor y en workspace) produce 0 anotaciones de Node-20-deprecation para las actions
   bumpeadas y los workflows quedan verdes. La evidencia de cierre cita el/los SHA de los
-  commits (motor y/o workspace) que contienen el bump. NOTA de gates: al ser cambio de YAML-CI
-  puro, la validacion de cierre es "el workflow corre verde sin la anotacion", NO ruff/pytest;
-  reconciliar `deliverable_type`/dispatch de gates al materializar el work_plan (friccion
-  relacionada con WOT-2026-014b).
+  commits (motor y workspace) que contienen el bump. **Gates canonicos del ticket al
+  materializar:** al ser cambio de YAML/CI puro, la validacion principal es externa y queda
+  como `Manager-only`: workflow green post-push + ausencia de anotacion Node20. Localmente, el
+  Builder solo debe verificar sintaxis/estructura de los YAML tocados y `validate --json` del
+  workspace; `ruff`/`pytest` no cuentan como evidencia principal del cierre de este ticket.
 - **Non-goal:** NO cambiar la logica ni los pasos de ningun job (solo las versiones de las
   actions); NO re-tocar el step de gitleaks (ya migrado al CLI OSS en 2d69d57); NO retirar
   `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` sin confirmar antes que ninguna action restante lo
   necesita.
+
+
