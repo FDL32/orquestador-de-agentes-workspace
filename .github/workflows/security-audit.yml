@@ -31,8 +31,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+      - name: Gitleaks (OSS CLI)
+        # Replaces gitleaks/gitleaks-action@v2 (license-gated JS/Docker action) with
+        # the OSS gitleaks CLI, mirroring the engine's security-audit (motor
+        # WOT-2026-010x). Removes the JS-action runtime that the hosted runner traces
+        # on job bootstrap (the source of the intermittent HostTraceListener encoding
+        # crash) and the GITLEAKS_LICENSE / Node-20-deprecation exposure. Default
+        # rules: the workspace does not vendor the engine's gitleaks config, and a
+        # local full-history scan (506 commits) is clean under defaults. Fail-closed:
+        # --exit-code 1 makes the step fail on a detected leak.
+        env:
+          GITLEAKS_VERSION: "8.30.1"
+        run: |
+          set -euo pipefail
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL "$url" -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks version
+          ./gitleaks detect --source . --redact --exit-code 1 --log-opts="--all"
 
       - name: pip-audit
         if: hashFiles('pyproject.toml', 'requirements*.txt') != ''
