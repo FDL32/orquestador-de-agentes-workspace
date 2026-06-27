@@ -18,14 +18,14 @@
 (a) Re-encodar skills/builder-self-audit/SKILL.md a UTF-8 limpio: corregir los 4 codepoints de control C1
 (U+0085, U+008C, U+0092, U+0094) a su caracter intencional (marcadores OK/Error/separador coherentes con
 el resto de skills sanas del ecosistema). (b) Endurecer scripts/encoding_guard.py con una BARRERA POR CLASE
-(no lista negra de bytes): (i) flaguear TODO codepoint de control C1 (U+0080-U+009F) en el texto decodificado;
+(no lista negra de bytes): (i) flaguear cualquier codepoint de control C1 (U+0080-U+009F) en el texto decodificado;
 (ii) anadir decode('utf-8', errors='strict') como capa complementaria para bytes UTF-8 invalidos.
 Verificacion del objetivo: barrera mutation-verified en tests/ (ver DoD) + check_encoding_guard verde tras el re-encode.
 
 ## Blast-radius (RESUELTO empiricamente por orquestacion)
 Consultado el propio guard (encoding_guard.collect_scope_set / is_in_scope): de los 284 archivos en scope,
 EXACTAMENTE 1 tiene codepoints C1: skills/builder-self-audit/SKILL.md (el target). El backup
-(.agent/backups/...) esta is_excluded; los otros archivos con C1 (agent_system/refactor_kit/*, tests/0X-*.md)
+(.agent/backups/...) esta is_excluded; los otros archivos con C1 (los 5 prompt_templates de agent_system/refactor_kit, agent_system/refactor_kit/refactor_manager.py, y tests/01-session-management.md, tests/02-security-collaboration.md, tests/03-tools-validation.md)
 NO matchean ningun GLOB_PATTERN del guard. Por tanto endurecer el rango C1 es COLATERAL-CERO: tras re-encodar
 builder-self-audit, el guard escanea su scope y encuentra 0 C1 -> verde. NO se necesita allowlist ni limpieza
 colateral; NO se amplia el alcance a otros archivos.
@@ -96,7 +96,7 @@ python scripts/run_pytest_safe.py --level all
 ## DoD (binario, comandos exactos)
 - [ ] skills/builder-self-audit/SKILL.md: 0 codepoints C1 (U+0080-U+009F); marcadores corregidos al caracter intencional, coherentes con el resto de skills.
 - [ ] BARRERA PRIMARIA (mutation-verified): tras endurecer el guard, check_encoding_guard / file_issues FALLA si se reinyecta (i) cualquier codepoint C1 (U+0080-U+009F) O (ii) un byte UTF-8 invalido.
-- [ ] CASO NEGATIVO EXPLICITO: una cadena que ES UTF-8 valido pero contiene un codepoint C1 (p.ej. U+0094) PASA decode('utf-8',errors='strict') y AUN ASI es flagueada por el chequeo de rango (demuestra que strict solo NO basta).
+- [ ] CASO NEGATIVO EXPLICITO: una cadena que ES UTF-8 valido pero contiene un codepoint C1 (por ejemplo U+0094) PASA decode('utf-8',errors='strict') y AUN ASI es flagueada por el chequeo de rango (demuestra que strict solo NO basta).
 - [ ] El guard ANTES del fix deja pasar el caso real de builder-self-audit; el endurecido lo bloquea (mutation-verified contra el archivo real o un fixture identico).
 - [ ] python scripts/check_encoding_guard.py -> exit 0 (verde) sobre el repo tras el re-encode (blast-radius cero confirmado).
 - [ ] python -m ruff check (FLT py) -> All checks passed.
