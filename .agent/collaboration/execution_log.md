@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-014a
 
-**Estado:** IN_PROGRESS
+**Estado:** COMPLETED
 
 ## Preparacion
 - Packet canonico de WOT-2026-014a en work_plan.md + rubrica en AUDIT_WOT-2026-014a.md.
@@ -55,3 +55,8 @@
 - git status --porcelain: (clean)
 - No CRLF in any committed file
 - No sandbox artifacts committed
+
+
+Scope override: WOT-2026-014a: scripts/closeout_steps/gates.py is the actual closeout invoker that must pass --closeout-mode (Manager-approved FLT expansion; the integration point of the fix). Affected files: scripts/closeout_steps/gates.py
+
+Manager approved canonical closeout for WOT-2026-014a

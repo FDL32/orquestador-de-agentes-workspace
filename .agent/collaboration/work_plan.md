@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014a
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** closeout self-dirty: prepush deja de bloquear por su propio reporte (Opcion A congelada)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
