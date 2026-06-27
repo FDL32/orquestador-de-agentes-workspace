@@ -1,100 +1,109 @@
-# Plan de Trabajo: WOT-2026-014b
+# Plan de Trabajo: WOT-2026-014d
 
 > Fuente canonica unica del ticket (packet oficial).
 
 ## Metadata
-- **ID:** WOT-2026-014b
-- **Estado:** COMPLETED
-- **Titulo:** run_pytest_safe soporta repos destino en unittest (fallback cuando no hay pytest)
+- **ID:** WOT-2026-014d
+- **Estado:** APPROVED
+- **Titulo:** Re-encodar builder-self-audit/SKILL.md a UTF-8 limpio + endurecer encoding_guard al rango C1 0x80-0x9F
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
-- **Prioridad:** Media
+- **Prioridad:** Alta
 - **Depende de:** -
-- **Objective-Link:** OBJ-014B-001
-- **Plan-Link:** PLAN-014B-001
-- **Builder clarification budget:** 0
+- **Objective-Link:** OBJ-014D-001
+- **Plan-Link:** PLAN-014D-001
+- **Builder clarification budget:** 0 (blast-radius resuelto; alcance fijado)
 
 ## Objetivo
-Que scripts/run_pytest_safe.py detecte el runner del interprete de tests: usa pytest si esta instalado;
-si NO, hace fallback a `python -m unittest discover`; y emite last-run.json igual en ambos modos
-(tested_commit_sha, exit_code, level), con el mismo criterio tested_commit_sha == HEAD.
-Verificacion del objetivo (que comando/test lo demuestra): un test de barrera mutation-verified que,
-forzando pytest-ausente (monkeypatch del probe), selecciona el runner unittest y produce last-run.json
-exit 0 sobre un proyecto fixture con un unittest.TestCase; sin el fix (pytest hardcodeado) ese caso
-FALLA por "No module named pytest". Ver DoD.
+(a) Re-encodar skills/builder-self-audit/SKILL.md a UTF-8 limpio: corregir los 4 codepoints de control C1
+(U+0085, U+008C, U+0092, U+0094) a su caracter intencional (marcadores OK/Error/separador coherentes con
+el resto de skills sanas del ecosistema). (b) Endurecer scripts/encoding_guard.py con una BARRERA POR CLASE
+(no lista negra de bytes): (i) flaguear TODO codepoint de control C1 (U+0080-U+009F) en el texto decodificado;
+(ii) anadir decode('utf-8', errors='strict') como capa complementaria para bytes UTF-8 invalidos.
+Verificacion del objetivo: barrera mutation-verified en tests/ (ver DoD) + check_encoding_guard verde tras el re-encode.
 
-## Resolucion de la clausula abierta (CONGELADA por orquestacion)
-La clausula "Opcionalmente: declarar el runner canonico del destino en un sitio estable
-(pyproject/config/contrato)" queda como NON-GOAL de 014b: es un follow-up separado, NO entregable de
-este ticket. 014b se limita a la deteccion + fallback + last-run.json consistente.
+## Blast-radius (RESUELTO empiricamente por orquestacion)
+Consultado el propio guard (encoding_guard.collect_scope_set / is_in_scope): de los 284 archivos en scope,
+EXACTAMENTE 1 tiene codepoints C1: skills/builder-self-audit/SKILL.md (el target). El backup
+(.agent/backups/...) esta is_excluded; los otros archivos con C1 (agent_system/refactor_kit/*, tests/0X-*.md)
+NO matchean ningun GLOB_PATTERN del guard. Por tanto endurecer el rango C1 es COLATERAL-CERO: tras re-encodar
+builder-self-audit, el guard escanea su scope y encuentra 0 C1 -> verde. NO se necesita allowlist ni limpieza
+colateral; NO se amplia el alcance a otros archivos.
 
-## Premise (VERIFICADO en vivo)
-run_pytest_safe asume pytest en el .venv del destino. Un destino en unittest sin pytest produce falso
-rojo en el gate canonico (No module named pytest) aunque la suite real pase con python -m unittest.
-El comando se construye y ejecuta en subprocess (stream_pytest, ~L372) sobre el interprete resuelto.
+## Premise (VERIFICADO en codigo)
+- skills/builder-self-audit/SKILL.md decodifica como UTF-8 VALIDO (0 U+FFFD) pero contiene los codepoints C1
+  U+0085, U+008C, U+0092, U+0094 (validos-pero-erroneos) en los marcadores de los Pasos 1-7.
+- scripts/encoding_guard.py: find_control_chars (~L123) solo flaguea ASCII control <32; SUSPICIOUS_CODEPOINTS
+  (~L28) = {0x00C3,0x00C2,0x00E2,0x00F0,0x0102,0xFFFD} NO incluye el rango C1, asi que el guard pasa en verde
+  sobre la corrupcion actual (drift silencioso).
 
 ## Premise Re-check (cwd=repo_motor, solo lectura)
-grep -nE "stream_pytest|-m pytest|interpreter|resolve_test_interpreter|last-run.json|tested_commit_sha" scripts/run_pytest_safe.py
-python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-Condicion de arranque: el comando se construye SIEMPRE como pytest; no hay deteccion de runner ni fallback unittest.
+python -c "t=open('skills/builder-self-audit/SKILL.md',encoding='utf-8').read(); print(sorted({hex(ord(c)) for c in t if 0x80<=ord(c)<=0x9F}))"
+python scripts/check_encoding_guard.py; echo exit=$?
+Condicion de arranque: builder-self-audit sigue con C1; el guard pasa verde (no chequea C1 aun).
 
 ## Decision Arquitectonica
-- Factorizar la SELECCION de runner en una funcion testable (p.ej. select_test_runner / build_test_command)
-  que, dado el interprete de tests resuelto, PRUEBA si tiene pytest (p.ej. `<interp> -c "import pytest"`
-  o find_spec en el interprete objetivo) y devuelve:
-  - si pytest disponible -> el comando pytest ACTUAL (comportamiento sin cambios para repos con pytest);
-  - si NO -> `<interp> -m unittest discover` (sobre el directorio de tests configurado).
-- last-run.json se escribe identico en ambos modos (tested_commit_sha, exit_code, level); opcionalmente
-  un campo informativo `runner: pytest|unittest` para observabilidad (no cambia el contrato del gate).
-- El criterio tested_commit_sha == HEAD NO cambia.
+- Endurecer encoding_guard por CLASE: anadir un chequeo que flaguee cualquier codepoint en U+0080-U+009F en el
+  texto decodificado (no una lista de bytes concretos). Integrarlo en la ruta de deteccion (find_control_chars o
+  un find_c1_controls hermano, reportado en el tercer elemento de file_issues junto a los control chars existentes).
+- Anadir decode('utf-8', errors='strict') como capa COMPLEMENTARIA para bytes UTF-8 invalidos (otra clase).
+- PRECISION: builder-self-audit es UTF-8 valido con C1 -> strict SOLO no lo detecta; el chequeo de rango C1 si.
+- NO prohibir Latin-1 legitimos (letras): solo el rango de CONTROL C1.
+- Re-encodar builder-self-audit: mapear cada C1 a su marcador intencional cotejando como rinden esos marcadores
+  las skills sanas (sin corrupcion). NO inventar; igualar el ecosistema.
 
 ## Files Likely Touched (relativos a repo_motor)
-- scripts/run_pytest_safe.py
-- tests/unit/test_run_pytest_safe_runner_detection.py
+- skills/builder-self-audit/SKILL.md
+- scripts/encoding_guard.py
+- tests/unit/test_encoding_guard_c1.py
 
-Aclaraciones: la deteccion debe ser sobre el INTERPRETE DE TESTS objetivo (no el del proceso actual).
-No reescribir el locking ni el resto del runner; solo anadir deteccion + fallback en la construccion del comando.
+Aclaraciones: solo se re-encoda builder-self-audit (NO las otras skills). El guard gana el chequeo de rango C1 +
+strict-decode; no se tocan las reglas de mojibake/path-bullet existentes salvo extension aditiva.
 
 ## Read/inspect only
+- scripts/check_encoding_guard.py
+- otras skills sanas (para cotejar marcadores intencionales), read-only
 - C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\backlog.md
 
 ## Forbidden Surfaces
-- El comportamiento para repos que SI tienen pytest: IDENTICO (no se cambia el contrato del gate).
-- El contrato de last-run.json (campos exigidos por el gate de handoff): no se rompe; solo se anaden
-  campos informativos opcionales si hace falta.
-- NO imponer un runner unico ni declarar el runner canonico en pyproject/config (NON-GOAL).
-- El locking / runtime dirs / state-leak barrier de run_pytest_safe: read-only salvo el seam de seleccion de comando.
+- NO re-encodar las otras 30 skills ni normalizar lineas en blanco del ecosistema.
+- NO prohibir Latin-1 supplement legitimo (letras acentuadas); solo el rango de CONTROL C1 (U+0080-U+009F).
+- Las reglas existentes del guard (mojibake SUSPICIOUS_CODEPOINTS, path-bullet, ASCII control): read-only salvo
+  extension aditiva del nuevo chequeo.
 - bus/**, runtime/**, repo_destino/.agent/** (salvo execution_log.md): prohibidos.
 - nuevas dependencias: prohibidas.
 
 ## Bateria focal
-python -m pytest tests/unit/test_run_pytest_safe_runner_detection.py -q
-python -m ruff check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe_runner_detection.py
+python -m pytest tests/unit/test_encoding_guard_c1.py -q
+python scripts/check_encoding_guard.py
+python -m ruff check scripts/encoding_guard.py tests/unit/test_encoding_guard_c1.py
 python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-# Cierre canonico (el motor SI tiene pytest -> ruta pytest sin cambios):
+# Cierre canonico:
 python scripts/run_pytest_safe.py --level all
 
 ## Non-goals
-- NO declarar el runner canonico del destino en un sitio estable (follow-up separado).
-- NO cambiar el contrato de gates para repos con pytest.
-- NO imponer un runner unico a los destinos.
+- NO re-encodar otras skills.
+- NO prohibir Latin-1 legitimo.
+- NO una lista negra de bytes concretos (la barrera es por CLASE).
 
 ## CONTRACT_GAP / STOP
-- Si la deteccion de pytest en el interprete objetivo no se puede hacer sin cambiar el contrato de last-run.json.
-- Si el fallback unittest exige un directorio de tests no descubrible de forma estable.
--> emitir CG-WOT-2026-014b.md y PARAR.
+- Si re-encodar builder-self-audit a marcadores limpios no puede hacerse sin tocar contenido sustantivo (mas alla
+  de los marcadores corruptos).
+- Si endurecer el rango C1 flaguea algun OTRO archivo in-scope (el blast-radius dice que no, pero si aparece, PARAR
+  y reportar en vez de allowlistear a ciegas).
+-> emitir CG-WOT-2026-014d.md y PARAR.
 
 ## DoD (binario, comandos exactos)
-- [ ] BARRERA mutation-verified: forzando pytest-ausente (monkeypatch del probe), run_pytest_safe selecciona
-  el runner unittest y, sobre un proyecto fixture con un unittest.TestCase que pasa, escribe last-run.json
-  con tested_commit_sha, exit_code 0 y level; sin el fix (pytest hardcodeado) ese caso FALLA por "No module named pytest".
-- [ ] Con pytest disponible, el comando construido es el pytest ACTUAL (test que fija el comportamiento sin cambios).
-- [ ] last-run.json conserva los campos exigidos por el gate (tested_commit_sha, exit_code, level) en ambos modos.
+- [ ] skills/builder-self-audit/SKILL.md: 0 codepoints C1 (U+0080-U+009F); marcadores corregidos al caracter intencional, coherentes con el resto de skills.
+- [ ] BARRERA PRIMARIA (mutation-verified): tras endurecer el guard, check_encoding_guard / file_issues FALLA si se reinyecta (i) cualquier codepoint C1 (U+0080-U+009F) O (ii) un byte UTF-8 invalido.
+- [ ] CASO NEGATIVO EXPLICITO: una cadena que ES UTF-8 valido pero contiene un codepoint C1 (p.ej. U+0094) PASA decode('utf-8',errors='strict') y AUN ASI es flagueada por el chequeo de rango (demuestra que strict solo NO basta).
+- [ ] El guard ANTES del fix deja pasar el caso real de builder-self-audit; el endurecido lo bloquea (mutation-verified contra el archivo real o un fixture identico).
+- [ ] python scripts/check_encoding_guard.py -> exit 0 (verde) sobre el repo tras el re-encode (blast-radius cero confirmado).
 - [ ] python -m ruff check (FLT py) -> All checks passed.
-- [ ] python scripts/run_pytest_safe.py --level all -> last-run.json exit_code 0, level all, tested_commit_sha == HEAD (ruta pytest, motor con pytest).
+- [ ] python scripts/run_pytest_safe.py --level all -> last-run.json exit_code 0, level all, tested_commit_sha == HEAD.
 - [ ] python .agent/agent_controller.py --validate --json --force --project-root <repo_destino> -> 0 errors / 0 warnings.
 - [ ] la evidencia cita el SHA del commit del repo_motor.
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con WOT-2026-014b), suite canonica fresca al HEAD, luego
+Commit productivo en repo_motor (mensaje con WOT-2026-014d), suite canonica fresca al HEAD, luego
 --pre-handoff + --mark-ready. No push hasta OK humano.
