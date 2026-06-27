@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014d
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Re-encodar builder-self-audit/SKILL.md a UTF-8 limpio + endurecer encoding_guard al rango C1 0x80-0x9F
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
