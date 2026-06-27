@@ -15,3 +15,10 @@
 
 ## Siguiente paso canonico
 - validate; bootstrap-ticket; reset-turn; lanzar Builder.
+
+## Evidencia de cierre (Manager-verified)
+- Commit motor: 41347e220ad6d22ca68c2c54ae67a5f4a5eba895.
+- select_test_runner: probe `<interp> -c "import pytest"`; fallback `python -m unittest discover -s tests`.
+- Barrera mutation-verified (Manager): always-pytest -> 5 tests FALLAN (incl test_mutation_*); restaurado -> 8 passed.
+- run_pytest_safe --level all: exit 0, level all, tested_commit_sha == 41347e2 (ruta pytest del motor, sin cambios).
+- validate 0/0. ruff All checks passed.
