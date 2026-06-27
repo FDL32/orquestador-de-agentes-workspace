@@ -1,13 +1,13 @@
 # Memory Profile (L3)
 
-Total observations: 98
+Total observations: 100
 
 High-level profile of project memory for quick context loading. This is the first memory tier loaded (before L2 rules and L1 raw observations).
 
 ## Active Domains
 
-- bus-architecture: 62 observations
-- delivery-hygiene: 21 observations
+- bus-architecture: 63 observations
+- delivery-hygiene: 22 observations
 - review-quality: 8 observations
 - builder-contract: 5 observations
 - testing: 2 observations
@@ -60,6 +60,7 @@ High-level profile of project memory for quick context loading. This is the firs
 - WOT-2026-013t
 - WOT-2026-013u
 - WOT-2026-013v
+- WOT-2026-014i
 - WOT-AUDIT-A2a
 - WOT-AUDIT-A2b
 - WOT-AUDIT-CI
@@ -83,7 +84,9 @@ High-level profile of project memory for quick context loading. This is the firs
 
 ## Recent Signals
 
-- [ticket-completion] Ticket WOT-2026-013t completado: ** Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente (deliverable_type (session-close)
+- [ticket-completion] Ticket WOT-2026-014i completado: ** Bump de GitHub Actions a versiones no-Node20 en workflows del motor y del workspace (deliverable_type=mixed) (session-close)
+- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-014i (session-close)
+- [ticket-completion] Ticket WOT-2026-013t completado: ** Deduplicar UpgradeManager (upgrade.py vs upgrade_agent_system.py) / binding shutil independiente (deliverable_type...[truncated] (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013t (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013k (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013v (session-close)
@@ -91,5 +94,3 @@ High-level profile of project memory for quick context loading. This is the firs
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013u (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013r (session-close)
 - [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013s (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013o (session-close)
-- [architecture] Decisiones arquitectonicas documentadas en WOT-2026-013n (session-close)

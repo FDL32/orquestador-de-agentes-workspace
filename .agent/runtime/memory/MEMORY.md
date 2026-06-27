@@ -1,10 +1,10 @@
 # MEMORY
 
-Regenerated: 2026-06-25T22:00:39.876689+00:00
+Regenerated: 2026-06-27T08:15:06.317002+00:00
 
-Total observations: 98
+Total observations: 100
 
-- Architecture (56 observations)
+- Architecture (57 observations)
 - Atomic-Requeue-Claim (1 observations)
 - Auditor-Skeptic-Pattern (1 observations)
 - Backlog-Summary-Detail-Reconcile-After-Rescope (1 observations)
@@ -36,10 +36,11 @@ Total observations: 98
 - Session-Close-May-Need-Final-Memory-Commit (1 observations)
 - State-Seam-Requires-Cross-Surface-Grep (1 observations)
 - Suite-Performance (1 observations)
-- Ticket-Completion (8 observations)
+- Ticket-Completion (9 observations)
 - Ticket-Letter-Recovery-Rule (1 observations)
 
 ## architecture
+- Decisiones arquitectonicas documentadas en WOT-2026-014i
 - Decisiones arquitectonicas documentadas en WOT-2026-013t
 - Decisiones arquitectonicas documentadas en WOT-2026-013k
 - Decisiones arquitectonicas documentadas en WOT-2026-013v
@@ -49,31 +50,30 @@ Total observations: 98
 - Decisiones arquitectonicas documentadas en WOT-2026-013s
 - Decisiones arquitectonicas documentadas en WOT-2026-013o
 - Decisiones arquitectonicas documentadas en WOT-2026-013n
-- Decisiones arquitectonicas documentadas en WOT-2026-013n
 
 ## atomic-requeue-claim
-- Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super
+- Cross-process requeue authority should be a real atomic claim keyed by (ticket_id, trigger_seq), not a read-modify-write watermark. The watermark is a fast-path, but it cannot survive concurrent super...[truncated]
 
 ## auditor-skeptic-pattern
-- The strongest review role is an auditor who searches for counterexamples in the real codebase and test suite, not a second pass that only judges whether the contract sounds plausible. That role catche
+- The strongest review role is an auditor who searches for counterexamples in the real codebase and test suite, not a second pass that only judges whether the contract sounds plausible. That role catche...[truncated]
 
 ## backlog-summary-detail-reconcile-after-rescope
-- When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and de
+- When a ticket is re-scoped or closed through follow-up reviews, the backlog table and the detailed ticket cards can drift apart. Before final closeout, reconcile both layers so the summary rows and de...[truncated]
 
 ## bom-breaks-lightweight-validators
-- UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics
+- UTF-8 with BOM can make lightweight validators and Windows subprocess readers fail as if frontmatter or text were missing entirely. In operational artifacts parsed with regex or line-prefix heuristics...[truncated]
 
 ## builder-evidence-gate
-- When Builder can declare ready without implementation evidence, Manager spends review cycles detecting an obvious no-op. The durable defense is a --mark-ready evidence gate that checks real file chang
+- When Builder can declare ready without implementation evidence, Manager spends review cycles detecting an obvious no-op. The durable defense is a --mark-ready evidence gate that checks real file chang...[truncated]
 
 ## builder-validates-existing-work
-- When the implementation is already committed, Builder's job is not to reimplement it but to verify it systematically against the AUDIT, TP checks, tests, and closure gates. In that situation the highe
+- When the implementation is already committed, Builder's job is not to reimplement it but to verify it systematically against the AUDIT, TP checks, tests, and closure gates. In that situation the highe...[truncated]
 
 ## bus-first-read-authority
-- For operational launch, resume, and recovery decisions, derive ticket state from the event bus first and treat TURN.md/STATE.md as fallback or documentary projections only. WT-2026-216 established thi
+- For operational launch, resume, and recovery decisions, derive ticket state from the event bus first and treat TURN.md/STATE.md as fallback or documentary projections only. WT-2026-216 established thi...[truncated]
 
 ## canonical-consumer-recovery
-- When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_
+- When a critical bus trigger outlives its main consumer, the durable fix is to ensure the canonical consumer runs again rather than adding a second authority. WT-2026-212 applied this by having review_...[truncated]
 
 ---
 

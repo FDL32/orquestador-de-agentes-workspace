@@ -1,27 +1,27 @@
 # Session Close Report
 
-**Generated:** 2026-06-25 22:00:40 UTC
+**Generated:** 2026-06-27 08:15:06 UTC
 **Dry Run:** No
 **Skip Slow:** No
 
 ## Session Window
 
-- **Start:** from last report (2026-06-25 21:58:31 UTC)
-- **End:** 2026-06-25 22:00:40 UTC
+- **Start:** from last report (2026-06-27 08:10:05 UTC)
+- **End:** 2026-06-27 08:15:06 UTC
 
 ## Tickets
 
-- WOT-2026-013t
+- WOT-2026-014i
 
 ## Steps
 
 | # | Step | Status | Blocking | Detail |
 |---|------|--------|----------|--------|
-| 1 | resolve_tickets | PASS | No | Source: fallback from work_plan.md active ticket. Tickets: ['WOT-2026-013t'] |
+| 1 | resolve_tickets | PASS | No | Source: fallback from work_plan.md active ticket. Tickets: ['WOT-2026-014i'] |
 | 2 | prepush_check | PASS | Yes | All blocking quality checks passed |
 | 3 | local_audit | PASS | No | Local audit snapshot captured |
 | 4 | validate_ticket_prose | PASS | No | Ticket prose validated, clean |
-| 5 | observations:WOT-2026-013t | PASS | No | Observations processed for WOT-2026-013t |
+| 5 | observations:WOT-2026-014i | PASS | No | Observations processed for WOT-2026-014i |
 | 6 | memory_consolidate | PASS | No | Memory consolidated successfully |
 | 7 | upstream_learnings_ttl | PASS | No | No pending learnings near TTL expiry |
 | 8 | cleanup_builder_session | SKIP | No | builder_session.json already absent |
