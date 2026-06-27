@@ -1,112 +1,100 @@
-# Plan de Trabajo: WOT-2026-014a
+# Plan de Trabajo: WOT-2026-014b
 
 > Fuente canonica unica del ticket (packet oficial).
 
 ## Metadata
-- **ID:** WOT-2026-014a
-- **Estado:** COMPLETED
-- **Titulo:** closeout self-dirty: prepush deja de bloquear por su propio reporte (Opcion A congelada)
+- **ID:** WOT-2026-014b
+- **Estado:** APPROVED
+- **Titulo:** run_pytest_safe soporta repos destino en unittest (fallback cuando no hay pytest)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
 - **Prioridad:** Media
 - **Depende de:** -
-- **Objective-Link:** OBJ-014A-001
-- **Plan-Link:** PLAN-014A-001
-- **Builder clarification budget:** 0 (Opcion A congelada; B y C descartadas)
+- **Objective-Link:** OBJ-014B-001
+- **Plan-Link:** PLAN-014B-001
+- **Builder clarification budget:** 0
 
 ## Objetivo
-Eliminar la circularidad del cierre: que el reporte de cierre (session_close_report.md, tracked) no
-haga fallar prepush_check->check_git_tree_clean cuando una corrida previa lo dejo sin commitear,
-SIN debilitar el gate pre-push general frente a cambios productivos no esperados.
-Verificacion del objetivo (que comando/test lo demuestra): un test de barrera mutation-verified que
-reproduce el bloqueo (reporte sucio -> prepush falla SIN el fix) y verifica que CON el fix el reporte
-esperado se perdona en la ruta del cierre, mientras un cambio productivo sin commitear SIGUE fallando.
+Que scripts/run_pytest_safe.py detecte el runner del interprete de tests: usa pytest si esta instalado;
+si NO, hace fallback a `python -m unittest discover`; y emite last-run.json igual en ambos modos
+(tested_commit_sha, exit_code, level), con el mismo criterio tested_commit_sha == HEAD.
+Verificacion del objetivo (que comando/test lo demuestra): un test de barrera mutation-verified que,
+forzando pytest-ausente (monkeypatch del probe), selecciona el runner unittest y produce last-run.json
+exit 0 sobre un proyecto fixture con un unittest.TestCase; sin el fix (pytest hardcodeado) ese caso
+FALLA por "No module named pytest". Ver DoD.
 
-## Premise (VERIFICADO en codigo + en vivo)
-- session_closeout.py:115 REPORT_REL = .agent/runtime/memory/session_close_report.md (tracked, se commitea en cada cierre).
-- delivery_hygiene_check.py:260 check_git_tree_clean corre git status --porcelain (L271) SIN allowlist -> marca el reporte como arbol sucio (exit 1, bloqueante).
-- closeout_steps/rotation.py:389 step_git_clean SI tiene expected_patterns (incluye session_close_report.md, L390) y lo perdona (L398).
-La asimetria hace el cierre circular. Premisa falsa descartada: el reporte NO esta gitignored (git ls-files lo confirma tracked).
+## Resolucion de la clausula abierta (CONGELADA por orquestacion)
+La clausula "Opcionalmente: declarar el runner canonico del destino en un sitio estable
+(pyproject/config/contrato)" queda como NON-GOAL de 014b: es un follow-up separado, NO entregable de
+este ticket. 014b se limita a la deteccion + fallback + last-run.json consistente.
+
+## Premise (VERIFICADO en vivo)
+run_pytest_safe asume pytest en el .venv del destino. Un destino en unittest sin pytest produce falso
+rojo en el gate canonico (No module named pytest) aunque la suite real pase con python -m unittest.
+El comando se construye y ejecuta en subprocess (stream_pytest, ~L372) sobre el interprete resuelto.
 
 ## Premise Re-check (cwd=repo_motor, solo lectura)
-grep -nE "REPORT_REL|check_git_tree_clean|expected_patterns" scripts/session_closeout.py scripts/delivery_hygiene_check.py scripts/closeout_steps/rotation.py
-git ls-files .agent/runtime/memory/session_close_report.md
+grep -nE "stream_pytest|-m pytest|interpreter|resolve_test_interpreter|last-run.json|tested_commit_sha" scripts/run_pytest_safe.py
 python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-Condicion de arranque: check_git_tree_clean sigue sin allowlist; expected_patterns sigue local en step_git_clean.
+Condicion de arranque: el comando se construye SIEMPRE como pytest; no hay deteccion de runner ni fallback unittest.
 
 ## Decision Arquitectonica
-Opcion A (congelada). Opcion B (auto-commit) y C (gitignored) descartadas.
-- Extraer la allowlist de artefactos runtime esperados del closeout (hoy expected_patterns local en
-  step_git_clean) a una CONSTANTE COMPARTIDA importable (hogar: scripts/delivery_hygiene_check.py, p.ej.
-  EXPECTED_CLOSEOUT_RUNTIME_ARTIFACTS), y que closeout_steps/rotation.py la importe en vez de redefinirla.
-- check_git_tree_clean gana un parametro OPCIONAL de allowlist (p.ej. expected_artifacts: list[str] | None = None).
-  Default None == comportamiento ACTUAL (gate pre-push general SIN cambios). El consumidor del CLOSEOUT
-  (la invocacion de prepush_check dentro del pipeline de cierre) pasa la constante compartida; los usos
-  de check_git_tree_clean FUERA del closeout NO pasan allowlist y quedan IDENTICOS.
-- La allowlist solo perdona el match exacto del/los artefacto(s) runtime esperado(s); un cambio
-  productivo sin commitear (cualquier otra ruta) SIGUE marcando arbol sucio.
-- Opcion B (auto-commit del reporte) y Opcion C (mover a gitignored) quedan DESCARTADAS.
-
-## Plan - secuencia minima fija
-1. Confirmar el call-chain exacto: closeout -> prepush_check -> check_git_tree_clean (localizar el call-site
-   del closeout que invoca prepush_check, para pasar ahi la allowlist).
-2. Extraer la constante compartida; rewire de step_git_clean para importarla.
-3. Anadir el parametro opcional a check_git_tree_clean (default = comportamiento general intacto) y pasar la
-   constante SOLO desde el contexto del cierre.
-4. Barrera mutation-verified + gates + commit productivo con WOT-2026-014a.
+- Factorizar la SELECCION de runner en una funcion testable (p.ej. select_test_runner / build_test_command)
+  que, dado el interprete de tests resuelto, PRUEBA si tiene pytest (p.ej. `<interp> -c "import pytest"`
+  o find_spec en el interprete objetivo) y devuelve:
+  - si pytest disponible -> el comando pytest ACTUAL (comportamiento sin cambios para repos con pytest);
+  - si NO -> `<interp> -m unittest discover` (sobre el directorio de tests configurado).
+- last-run.json se escribe identico en ambos modos (tested_commit_sha, exit_code, level); opcionalmente
+  un campo informativo `runner: pytest|unittest` para observabilidad (no cambia el contrato del gate).
+- El criterio tested_commit_sha == HEAD NO cambia.
 
 ## Files Likely Touched (relativos a repo_motor)
-- scripts/delivery_hygiene_check.py
-- scripts/closeout_steps/rotation.py
-- scripts/prepush_check.py
-- tests/unit/test_closeout_self_dirty_allowlist.py
+- scripts/run_pytest_safe.py
+- tests/unit/test_run_pytest_safe_runner_detection.py
 
-Aclaraciones: el call-site exacto del threading (prepush_check vs su invocacion en el closeout) se
-confirma en Fase 0; si el threading toca session_closeout.py de forma minima y derivada, es aceptable
-declararlo, pero NO se cambia el contrato general de check_git_tree_clean.
+Aclaraciones: la deteccion debe ser sobre el INTERPRETE DE TESTS objetivo (no el del proceso actual).
+No reescribir el locking ni el resto del runner; solo anadir deteccion + fallback en la construccion del comando.
 
 ## Read/inspect only
-- scripts/session_closeout.py
 - C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\backlog.md
 
 ## Forbidden Surfaces
-- El comportamiento DEFAULT de check_git_tree_clean (sin allowlist) usado por el pre-push GENERAL: no se
-  toca; debe seguir marcando sucio cualquier cambio no esperado.
-- Auto-commit del reporte (Opcion B) y mover el reporte a ruta gitignored (Opcion C): PROHIBIDOS.
-- El contrato de prepush_check para usos fuera del closeout: no se altera.
+- El comportamiento para repos que SI tienen pytest: IDENTICO (no se cambia el contrato del gate).
+- El contrato de last-run.json (campos exigidos por el gate de handoff): no se rompe; solo se anaden
+  campos informativos opcionales si hace falta.
+- NO imponer un runner unico ni declarar el runner canonico en pyproject/config (NON-GOAL).
+- El locking / runtime dirs / state-leak barrier de run_pytest_safe: read-only salvo el seam de seleccion de comando.
 - bus/**, runtime/**, repo_destino/.agent/** (salvo execution_log.md): prohibidos.
 - nuevas dependencias: prohibidas.
 
 ## Bateria focal
-python -m pytest tests/unit/test_closeout_self_dirty_allowlist.py -q
-python -m ruff check scripts/delivery_hygiene_check.py scripts/closeout_steps/rotation.py scripts/prepush_check.py tests/unit/test_closeout_self_dirty_allowlist.py
+python -m pytest tests/unit/test_run_pytest_safe_runner_detection.py -q
+python -m ruff check scripts/run_pytest_safe.py tests/unit/test_run_pytest_safe_runner_detection.py
 python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-# Cierre canonico:
+# Cierre canonico (el motor SI tiene pytest -> ruta pytest sin cambios):
 python scripts/run_pytest_safe.py --level all
 
 ## Non-goals
-- NO debilitar delivery_hygiene_check para artefactos NO esperados.
-- NO tocar el contrato de prepush_check para usos fuera del closeout.
-- NO adoptar Opcion B ni C.
+- NO declarar el runner canonico del destino en un sitio estable (follow-up separado).
+- NO cambiar el contrato de gates para repos con pytest.
+- NO imponer un runner unico a los destinos.
 
 ## CONTRACT_GAP / STOP
-- Si aplicar la allowlist SOLO se puede haciendo que el comportamiento general de check_git_tree_clean
-  cambie (no via parametro opt-in), escalar a decision humana (STOP).
-- Si el call-chain del closeout no permite pasar la allowlist sin tocar el contrato de prepush_check usado fuera del cierre.
--> emitir CG-WOT-2026-014a.md y PARAR.
+- Si la deteccion de pytest en el interprete objetivo no se puede hacer sin cambiar el contrato de last-run.json.
+- Si el fallback unittest exige un directorio de tests no descubrible de forma estable.
+-> emitir CG-WOT-2026-014b.md y PARAR.
 
 ## DoD (binario, comandos exactos)
-- [ ] BARRERA mutation-verified: un test reproduce el bloqueo (reporte runtime esperado sin commitear ->
-  check_git_tree_clean SIN allowlist FALLA); con la allowlist del cierre, ese mismo reporte se perdona.
-- [ ] El MISMO test (o uno hermano) confirma que un cambio PRODUCTIVO sin commitear SIGUE marcando sucio
-  (la allowlist no se traga trabajo real).
-- [ ] check_git_tree_clean SIN allowlist (default) conserva su comportamiento exacto (test que lo fija).
-- [ ] expected_patterns vive en una constante compartida importada por step_git_clean (no duplicada).
+- [ ] BARRERA mutation-verified: forzando pytest-ausente (monkeypatch del probe), run_pytest_safe selecciona
+  el runner unittest y, sobre un proyecto fixture con un unittest.TestCase que pasa, escribe last-run.json
+  con tested_commit_sha, exit_code 0 y level; sin el fix (pytest hardcodeado) ese caso FALLA por "No module named pytest".
+- [ ] Con pytest disponible, el comando construido es el pytest ACTUAL (test que fija el comportamiento sin cambios).
+- [ ] last-run.json conserva los campos exigidos por el gate (tested_commit_sha, exit_code, level) en ambos modos.
 - [ ] python -m ruff check (FLT py) -> All checks passed.
-- [ ] python scripts/run_pytest_safe.py --level all -> last-run.json exit_code 0, level all, tested_commit_sha == HEAD.
+- [ ] python scripts/run_pytest_safe.py --level all -> last-run.json exit_code 0, level all, tested_commit_sha == HEAD (ruta pytest, motor con pytest).
 - [ ] python .agent/agent_controller.py --validate --json --force --project-root <repo_destino> -> 0 errors / 0 warnings.
 - [ ] la evidencia cita el SHA del commit del repo_motor.
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con WOT-2026-014a), suite canonica fresca al HEAD, luego
+Commit productivo en repo_motor (mensaje con WOT-2026-014b), suite canonica fresca al HEAD, luego
 --pre-handoff + --mark-ready. No push hasta OK humano.
