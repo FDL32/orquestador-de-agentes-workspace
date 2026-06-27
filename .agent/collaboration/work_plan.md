@@ -16,9 +16,9 @@
 
 ## Objetivo
 Subir las action-pins marcadas como Node-20-deprecated a su primer major no-Node20, en los workflows de
-AMBOS repos, sin cambiar la logica de los jobs. Verificacion del objetivo: localmente, sintaxis/estructura
-YAML valida + validate del workspace; la evidencia PRIMARIA (workflow verde post-push sin anotacion Node-20)
-es Manager-only y se obtiene en el push (gateado a OK humano). Ver DoD.
+AMBOS repos, sin cambiar la logica de los jobs. Verificacion del objetivo (que comando/test lo demuestra): cada YAML tocado parsea (python -c yaml.safe_load),
+validate --json del workspace en 0 errors / 0 warnings, run_pytest_safe del motor exit 0; la evidencia PRIMARIA
+(workflow verde post-push SIN anotacion Node-20) es Manager-only y se obtiene en el push (gateado a OK humano). Ver DoD.
 
 ## Regla cross-repo CONGELADA: 1 ticket = 2 commits
 Este ticket toca DOS repos. Se cierra con DOS commits: uno en repo_motor (.github/workflows del motor) y
