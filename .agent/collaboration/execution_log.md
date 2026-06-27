@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-014i
 
-**Estado:** IN_PROGRESS
+**Estado:** READY_FOR_REVIEW
 
 ## Preparacion
 - Packet canonico de WOT-2026-014i en work_plan.md + rubrica en AUDIT_WOT-2026-014i.md.
@@ -98,3 +98,24 @@ Fix-forward (mismo scope/objetivo de 014i, solo corrige 2 tags):
 - workspace security-audit.yml: upload-artifact@v5 -> @v6
 Compat de inputs verificada: nuestras invocaciones usan solo enable-cache (setup-uv) y name/path/if-no-files-found
 (upload-artifact); ningun input retirado en el nuevo major. 5 YAML parsean. 0 pins node20 restantes en ambos repos.
+
+### EVIDENCIA PRIMARIA OBTENIDA (post fix-forward) -- ANOTACION NODE-20 = 0
+Push fix-forward: motor cef7e52..960b3e2, workspace 0e8059d..761b038.
+Runs disparados por los commits de fix (todos conclusion=success):
+- motor Quality Gates  run 28283008140 (sha 960b3e2): success, 0 anotaciones Node-20.
+- motor Security Audit  run 28283008139 (sha 960b3e2): success, 0 anotaciones.
+- workspace Quality Gates run 28283011496 (sha 761b038): success, 0 anotaciones.
+- workspace Security Audit run 28283011488 (sha 761b038): success, 0 anotaciones.
+Unica anotacion residual (motor QG): cache-race benigna ("Unable to reserve cache ... another job may be
+creating this cache") entre los jobs paralelos 3.10/3.11 del matrix -> NO es deprecation Node-20, NO es fallo.
+
+DoD COMPLETO:
+- 5 superficies bumpeadas a majors node24 reales: checkout@v5, setup-python@v6, setup-uv@v7, upload-artifact@v6.
+- 5 YAML parsean; 0 pins node20 restantes en ambos repos.
+- validate --json workspace: 0 errors / 0 warnings.
+- run_pytest_safe --level all motor: 3285 passed, 20 skipped, exit 0; tested_commit_sha=960b3e2 == motor HEAD.
+- Commits por repo (regla cross-repo): motor 6014654-equiv -> cef7e52 (bump inicial) + 960b3e2 (fix-forward);
+  workspace 6014654 (bump inicial) + 761b038 (fix-forward).
+- EVIDENCIA PRIMARIA verificada en runs live: workflows verdes SIN anotacion Node-20.
+
+SHAs de cierre citados: motor 960b3e2 (HEAD del bump completo), workspace 761b038.
