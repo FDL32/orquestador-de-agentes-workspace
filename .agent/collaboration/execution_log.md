@@ -81,3 +81,20 @@ Los gates locales (YAML parse, grep, validate 0/0, pytest exit 0) estan completo
 ### Desvios / contract gaps
 Ninguno. FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 conservado (no fue necesario retirarlo).
 El step de gitleaks no fue tocado. No se cambio logica de jobs.
+
+### CONTRACT_GAP detectado y corregido (post-push #1) -- fix-forward
+La evidencia primaria post-push #1 REVELO que dos targets congelados del contrato NO eran node24:
+- astral-sh/setup-uv@v6 -> using: node20 (real, via action.yml). Anotacion Node-20 persistia en AMBOS runs del motor.
+- actions/upload-artifact@v5 -> using: node20 (real). Anotacion persistia en el run Security Audit del workspace.
+checkout@v5 (node24) y setup-python@v6 (node24) SI limpiaron su anotacion.
+
+Causa raiz: la premisa "primer major no-Node20 = @v6/@v5" era falsa para esas dos actions.
+Ground truth (action.yml runs.using por major):
+- setup-uv: v6=node20, v7=node24  -> target correcto = @v7
+- upload-artifact: v5=node20, v6=node24 -> target correcto = @v6
+
+Fix-forward (mismo scope/objetivo de 014i, solo corrige 2 tags):
+- motor security-audit.yml / quality-gates.yml / monthly-deps-bump.yml: setup-uv@v6 -> @v7
+- workspace security-audit.yml: upload-artifact@v5 -> @v6
+Compat de inputs verificada: nuestras invocaciones usan solo enable-cache (setup-uv) y name/path/if-no-files-found
+(upload-artifact); ningun input retirado en el nuevo major. 5 YAML parsean. 0 pins node20 restantes en ambos repos.
