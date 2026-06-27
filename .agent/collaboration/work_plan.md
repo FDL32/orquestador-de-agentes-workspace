@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014b
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** run_pytest_safe soporta repos destino en unittest (fallback cuando no hay pytest)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
