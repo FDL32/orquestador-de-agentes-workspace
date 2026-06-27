@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014f
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Unificar helpers de descubrimiento/parseo de manager_feedback en un modulo canonico
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
