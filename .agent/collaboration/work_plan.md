@@ -5,7 +5,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014e
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Unificar lectura de motor_root en runtime.motor_link
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
