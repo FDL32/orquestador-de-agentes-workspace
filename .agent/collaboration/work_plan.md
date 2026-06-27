@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014g
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Alinear name frontmatter == nombre de carpeta en 6 skills y anadir gate name==dir en discovery
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor

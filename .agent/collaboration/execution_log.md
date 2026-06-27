@@ -1,6 +1,6 @@
 # Execution Log -- WOT-2026-014g
 
-**Estado:** IN_PROGRESS
+**Estado:** COMPLETED
 
 ## Preparacion
 - Packet canonico de WOT-2026-014g en work_plan.md + rubrica en AUDIT_WOT-2026-014g.md.
@@ -72,3 +72,8 @@
 ### Motor status
 - git status: clean
 - HEAD: 651fe66cc5bfb30fc98b97d6881c21c47950b293
+
+
+Scope override: WOT-2026-014g: tests/test_check_naming.py conformed to the new name==dir gate (Manager-approved FLT expansion; fixtures write name==dir, gate not weakened). Affected files: tests/test_check_naming.py
+
+Manager approved canonical closeout for WOT-2026-014g
