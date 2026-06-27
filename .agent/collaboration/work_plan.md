@@ -34,7 +34,8 @@ git ls-files .agent/runtime/memory/session_close_report.md
 python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
 Condicion de arranque: check_git_tree_clean sigue sin allowlist; expected_patterns sigue local en step_git_clean.
 
-## Decision Arquitectonica (Opcion A CONGELADA)
+## Decision Arquitectonica
+Opcion A (congelada). Opcion B (auto-commit) y C (gitignored) descartadas.
 - Extraer la allowlist de artefactos runtime esperados del closeout (hoy expected_patterns local en
   step_git_clean) a una CONSTANTE COMPARTIDA importable (hogar: scripts/delivery_hygiene_check.py, p.ej.
   EXPECTED_CLOSEOUT_RUNTIME_ARTIFACTS), y que closeout_steps/rotation.py la importe en vez de redefinirla.
