@@ -22,6 +22,8 @@ scripts/session_closeout.py) consuman esa unica definicion canonica. Conservar w
 de compatibilidad donde haya que preservar una firma publica existente, sin introducir una tercera
 implementacion real.
 
+Verificacion del objetivo (que comando/test lo demuestra): el test de arquitectura AST (exactamente 1 implementacion real por helper, en scripts/manager_feedback_helpers.py) y la barrera import-identity de tests/unit/test_manager_feedback_helpers.py; ver DoD para los exit-codes exactos.
+
 ## Premise (VERIFICADO en codigo)
 2 implementaciones reales + 1 wrapper (la premisa "3 copias" quedo stale):
 - archive_collaboration_artifacts.py:248 find_manager_feedback_files(collaboration_dir) y
@@ -37,7 +39,7 @@ python .agent/agent_controller.py --validate --json --force --project-root C:\Us
 Condicion de arranque: 2 firmas reales aun divergentes; session_closeout sigue delegando; NO existe
 aun scripts/manager_feedback_helpers.py. Si no reproduce, PARA y documenta drift.
 
-## Decision Arquitectonica (CONGELADA)
+## Decision Arquitectonica
 - Firma canonica = la del closeout:
   extract_ticket_id_from_feedback(filename: str, *, ticket_id_pattern: str) -> str | None
   y find_manager_feedback_files(collaboration_dir: Path) -> list[Path].
