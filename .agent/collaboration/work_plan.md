@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014h
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Extraer la logica viva de scope-verification fuera de scripts/orquestador.py (DEPRECATED)
 - **deliverable_type:** code
 - **delivery_authority:** repo_motor
