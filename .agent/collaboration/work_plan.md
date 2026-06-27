@@ -1,97 +1,100 @@
-# Plan de Trabajo: WOT-2026-014h
+# Plan de Trabajo: WOT-2026-014i
 
 > Fuente canonica unica del ticket (packet oficial).
 
 ## Metadata
-- **ID:** WOT-2026-014h
-- **Estado:** COMPLETED
-- **Titulo:** Extraer la logica viva de scope-verification fuera de scripts/orquestador.py (DEPRECATED)
-- **deliverable_type:** code
+- **ID:** WOT-2026-014i
+- **Estado:** APPROVED
+- **Titulo:** Bump de GitHub Actions a versiones no-Node20 en workflows del motor y del workspace
+- **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
 - **Prioridad:** Baja
 - **Depende de:** -
-- **Objective-Link:** OBJ-014H-001
-- **Plan-Link:** PLAN-014H-001
-- **Builder clarification budget:** 0 (consumidores transversales resueltos; shim no necesario)
+- **Objective-Link:** OBJ-014I-001
+- **Plan-Link:** PLAN-014I-001
+- **Builder clarification budget:** 0 (versiones objetivo fijadas; regla 2-commits fijada)
 
 ## Objetivo
-Mover la logica VIVA de scope-verification desde scripts/orquestador.py (marcado DEPRECATED y lleno de
-adapters Goose/Claw muertos) a un modulo NO-deprecado nuevo scripts/scope_verification.py, y reapuntar el
-unico consumidor (tests/test_orquestador_scope.py). Verificacion del objetivo: el test importa del modulo
-nuevo y pasa; busqueda transversal confirma 0 consumidores live restantes de esas funciones en orquestador.
-Ver DoD.
+Subir las action-pins marcadas como Node-20-deprecated a su primer major no-Node20, en los workflows de
+AMBOS repos, sin cambiar la logica de los jobs. Verificacion del objetivo: localmente, sintaxis/estructura
+YAML valida + validate del workspace; la evidencia PRIMARIA (workflow verde post-push sin anotacion Node-20)
+es Manager-only y se obtiene en el push (gateado a OK humano). Ver DoD.
 
-## Funciones a mover (5, no 4 -- VERIFICADO por busqueda transversal)
-El test importa CINCO simbolos de scripts.orquestador, no cuatro: ademas de snapshot_paths,
-detect_changed_files, classify_scope y generate_scope_report, importa snapshot_file_info (lineas 40 y 54
-de tests/test_orquestador_scope.py). Las 5 se mueven juntas (snapshot_file_info es dependencia de snapshot_paths
-y se importa directo en el test).
+## Regla cross-repo CONGELADA: 1 ticket = 2 commits
+Este ticket toca DOS repos. Se cierra con DOS commits: uno en repo_motor (.github/workflows del motor) y
+uno en repo_destino/workspace (.github/workflows del workspace). El workspace NO esta vendorizado por el motor.
 
-## Premise (VERIFICADO por busqueda transversal)
-- scripts/orquestador.py lleva banner DEPRECATED (L6-8) + adapters Goose/Claw muertos, pero contiene logica
-  viva: snapshot_file_info, snapshot_paths, detect_changed_files, classify_scope, generate_scope_report.
-- UNICO consumidor LIVE: tests/test_orquestador_scope.py (motor). Ningun codigo de produccion las importa.
-- Workspace: solo copias MUERTAS en _backups/ y _legacy/goose_claw_deprecated/ (no importadas por codigo vivo).
-- orquestador.py NO esta en MANIFEST.distribute/workspace (no vendorizado a destinos; Extractor no lo tiene).
-- => NO se necesita re-export shim (no aparece consumidor live mas alla del test).
+## Versiones objetivo CONGELADAS (verificadas que existen via API)
+- actions/checkout@v4 -> @v5
+- actions/setup-python@v5 -> @v6
+- actions/upload-artifact@v4 -> @v5
+- astral-sh/setup-uv@v5 -> @v6
+(primer major no-Node20 de cada action; minimiza breaking changes vs saltar a latest v7/v8).
+
+## Premise (VERIFICADO en codigo)
+- Motor .github/workflows: security-audit.yml, quality-gates.yml, monthly-deps-bump.yml usan checkout@v4,
+  astral-sh/setup-uv@v5, actions/setup-python@v5.
+- Workspace .github/workflows: security-audit.yml (checkout@v4, setup-python@v5, upload-artifact@v4),
+  quality-gates.yml (checkout@v4 x2, setup-python@v5).
+- La anotacion Node-20 aparece en los runs; FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 (motor) lo enmascara hoy.
 
 ## Premise Re-check (cwd=repo_motor, solo lectura)
-grep -rnE "from scripts.orquestador import|snapshot_file_info|snapshot_paths|detect_changed_files|classify_scope|generate_scope_report" . --include="*.py" | grep -v "__pycache__"
-python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-Condicion de arranque: las 5 funciones siguen en scripts/orquestador.py; el unico import live es el test.
+grep -rn "uses:" .github/workflows/ ; grep -rn "uses:" C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.github\workflows\
+Condicion de arranque: las pins v4/v5 siguen en ambos repos.
 
 ## Decision Arquitectonica
-- Crear scripts/scope_verification.py (NO deprecado) con las 5 funciones movidas tal cual (sin reescribir logica).
-- tests/test_orquestador_scope.py reapunta sus imports: from scripts.orquestador import X -> from scripts.scope_verification import X. Se conserva el nombre del archivo de test (no se renombra; minimiza churn).
-- scripts/orquestador.py queda como cascaron Goose/Claw SIN esas 5 funciones; NO se borra; NO se anade shim (busqueda transversal = 0 consumidores live).
-- NO se tocan los adapters Goose/Claw ni el banner DEPRECATED.
+- Sustituir SOLO el tag de version en cada `uses:` (checkout@v4->v5, setup-python@v5->v6, upload-artifact@v4->v5,
+  setup-uv@v5->v6). NO cambiar steps, env, ni logica de jobs.
+- Revisar si FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 sigue siendo necesario tras el bump: dejarlo si alguna action
+  restante lo requiere; solo retirarlo si se confirma que ninguna lo necesita (en duda, conservarlo: el bump
+  no depende de retirarlo).
+- Cada YAML debe seguir parseando correctamente (estructura intacta).
 
-## Files Likely Touched (relativos a repo_motor)
-- scripts/scope_verification.py
-- scripts/orquestador.py
-- tests/test_orquestador_scope.py
-
-Aclaraciones: mover las 5 funciones (incluyendo helpers internos que solo ellas usan); reapuntar imports del test; no renombrar el test.
+## Files Likely Touched
+Motor (repo_motor):
+- .github/workflows/security-audit.yml
+- .github/workflows/quality-gates.yml
+- .github/workflows/monthly-deps-bump.yml
+Workspace (repo_destino):
+- .github/workflows/security-audit.yml
+- .github/workflows/quality-gates.yml
 
 ## Read/inspect only
-- MANIFEST.distribute, MANIFEST.workspace
 - C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace\.agent\collaboration\backlog.md
 
 ## Forbidden Surfaces
-- Los adapters Goose/Claw y el banner DEPRECATED de orquestador.py: read-only, no se tocan.
-- NO borrar scripts/orquestador.py (retirada total = follow-up posterior).
-- El modo --skill de orquestador (delega via subprocess a discover_skills.py): no se toca.
-- bus/**, runtime/**, repo_destino/.agent/** (salvo execution_log.md): prohibidos.
+- La LOGICA / steps / env de los jobs: no se tocan (solo el tag de version de cada uses:).
+- El step de gitleaks (ya migrado al CLI OSS en 2d69d57): no se re-toca.
+- FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: no retirarlo sin confirmar que ninguna action restante lo necesita.
+- Codigo Python, bus/**, runtime/**, .agent/** operativo: prohibidos.
 - nuevas dependencias: prohibidas.
 
-## Bateria focal
-python -m pytest tests/test_orquestador_scope.py -q
-python -m ruff check scripts/scope_verification.py scripts/orquestador.py tests/test_orquestador_scope.py
-python .agent/agent_controller.py --validate --json --force --project-root C:\Users\fdl\Proyectos_Python\orquestador_de_agentes_workspace
-# Cierre canonico:
-python scripts/run_pytest_safe.py --level all
+## Gates canonicos del ticket (mixed, YAML/CI)
+- LOCAL (Builder): cada YAML tocado parsea (estructura valida); validate --json del workspace en 0/0.
+- ruff/pytest NO son evidencia principal de cierre (no se toca Python); run_pytest_safe del motor solo confirma
+  que el motor sigue verde (no cambia por YAML).
+- MANAGER-only / POST-PUSH (gateado a OK humano): cada workflow afectado corre verde y SIN anotacion Node-20.
+  Esta es la evidencia PRIMARIA del cierre; se obtiene tras el push.
 
 ## Non-goals
-- NO borrar orquestador.py.
-- NO tocar adapters Goose/Claw.
-- NO renombrar el archivo de test.
-- NO anadir shim (busqueda transversal confirma 0 consumidores live; un shim seria codigo muerto).
+- NO cambiar la logica ni los steps de ningun job.
+- NO re-tocar gitleaks.
+- NO retirar FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 sin confirmacion.
 
 ## CONTRACT_GAP / STOP
-- Si al mover las funciones aparece un consumidor live no inventariado (que obligue a un shim).
-- Si alguna de las 5 funciones depende de estado/import del cascaron Goose/Claw que no se pueda mover limpio.
--> emitir CG-WOT-2026-014h.md y PARAR.
+- Si alguna version objetivo no existe o introduce un breaking change evidente en la estructura del job.
+- Si retirar FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 fuese necesario para el bump (no deberia).
+-> emitir CG-WOT-2026-014i.md y PARAR.
 
-## DoD (binario, comandos exactos)
-- [ ] Las 5 funciones (snapshot_file_info, snapshot_paths, detect_changed_files, classify_scope, generate_scope_report) residen en scripts/scope_verification.py.
-- [ ] tests/test_orquestador_scope.py importa esas funciones desde scripts.scope_verification (ya no desde scripts.orquestador) y pasa en verde.
-- [ ] BUSQUEDA TRANSVERSAL post-extraccion: ningun consumidor live importa esas funciones desde scripts.orquestador (grep en motor + workspace de dogfooding, excluyendo _backups/_legacy/__pycache__).
-- [ ] scripts/orquestador.py ya no define esas 5 funciones; el cascaron Goose/Claw y el banner DEPRECATED quedan intactos.
-- [ ] python -m ruff check (FLT py) -> All checks passed.
-- [ ] python scripts/run_pytest_safe.py --level all -> last-run.json exit_code 0, level all, tested_commit_sha == HEAD.
+## DoD (binario)
+- [ ] Las 5 superficies (3 workflows motor + 2 workspace) tienen las pins bumpeadas (checkout@v5, setup-python@v6, upload-artifact@v5, setup-uv@v6); NINGUN otro cambio en los jobs.
+- [ ] Cada YAML tocado parsea correctamente (estructura valida).
 - [ ] python .agent/agent_controller.py --validate --json --force --project-root <repo_destino> -> 0 errors / 0 warnings.
-- [ ] la evidencia cita el SHA del commit del repo_motor.
+- [ ] python scripts/run_pytest_safe.py --level all del motor -> exit 0 (sin cambios por YAML), tested_commit_sha == HEAD del motor tras el commit motor.
+- [ ] DOS commits: uno en repo_motor (mensaje WOT-2026-014i) y uno en repo_destino (mensaje WOT-2026-014i).
+- [ ] EVIDENCIA PRIMARIA (Manager-only, post-push, GATEADA): cada workflow afectado corre verde y sin anotacion Node-20. Se completa tras el push (OK humano).
+- [ ] la evidencia de cierre cita los SHA de los DOS commits (motor + workspace).
 
 ## Handoff
-Commit productivo en repo_motor (mensaje con WOT-2026-014h), suite canonica fresca al HEAD, luego
---pre-handoff + --mark-ready. No push hasta OK humano.
+Builder: bump en ambos repos, sintaxis YAML + validate locales, run_pytest_safe del motor, y DOS commits
+(motor + workspace). NO --pre-handoff/--mark-ready, NO push. El Manager (post-push gateado) valida CI verde.
