@@ -4,7 +4,7 @@
 
 ## Metadata
 - **ID:** WOT-2026-014i
-- **Estado:** APPROVED
+- **Estado:** COMPLETED
 - **Titulo:** Bump de GitHub Actions a versiones no-Node20 en workflows del motor y del workspace
 - **deliverable_type:** mixed
 - **delivery_authority:** repo_motor
